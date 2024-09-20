@@ -3,8 +3,11 @@ import LayoutPage from "../pages/Layout";
 import Dashboard from "../pages/Dashboard";
 import CustomerVisit from "../pages/CustomerVisit";
 import CustomerVisitSecurity from "../pages/CustomerVisitSecurity";
+import CustomerVisitStaff from "../pages/CustomerVisitStaff";
 import DetailCustomerVisit from "../pages/DetailCustomerVisit";
+import CustomerVisitDP from "../pages/CustomerVisitDP";
 import NewCustomerVisit from "../pages/NewCustomerVisit";
+import ProjectManager from "../pages/ProjectManager";
 import History from "../pages/History";
 import Chat from "../pages/Chat";
 import Login from "../pages/Login";
@@ -48,7 +51,37 @@ const ContentRouter = () => {
             <CustomerVisitSecurity />
           </LayoutPage>
         }
+
       />
+          <Route
+        index
+        path="/DPCustomerVisit"
+        element={
+          <LayoutPage>
+            <CustomerVisitDP />
+          </LayoutPage>
+        }
+
+      />
+      <Route
+        index
+        path="/ProjectManager"
+        element={
+          <LayoutPage>
+            <ProjectManager />
+          </LayoutPage>
+        }
+
+      />
+      <Route
+      index
+      path="/staffCustomerVisit"
+      element={
+        <LayoutPage>
+          <CustomerVisitStaff />
+        </LayoutPage>
+      }
+    />
       <Route
         index
         path="/newCustomerVisit"

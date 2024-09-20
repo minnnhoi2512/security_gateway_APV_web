@@ -1,80 +1,336 @@
-import { Table, Button, Tag } from "antd";
-import type { ColumnsType } from "antd/es/table";
-import { useNavigate } from "react-router-dom";
-interface Visitor {
+import {
+  Layout,
+  Button,
+  Table,
+  Tag,
+  Modal,
+  Descriptions,
+  Upload,
+  message,
+  Form,
+  Input,
+} from "antd";
+import { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { UploadOutlined } from "@ant-design/icons";
+
+const { Content } = Layout;
+
+interface DataType {
+  key: string;
   name: string;
-  area: string;
+  images: string[];
+  area: string[];
 }
 
 const DetailCustomerVisit = () => {
-  const navigate = useNavigate(); // Initialize the useNavigate hook
-  const visitors: Visitor[] = [
-    { name: "Tú Thảo", area: "Sản xuất" },
-    { name: "Tú Thảo", area: "Sản xuất" },
-    { name: "Tú Thảo", area: "Sản xuất" },
-    { name: "Tú Thảo", area: "Sản xuất" },
-    { name: "Tú Thảo", area: "Sản xuất" },
-    { name: "Tú Thảo", area: "Sản xuất" },
-  ];
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { title } = location.state || {};
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isAddModalVisible, setIsAddModalVisible] = useState(false); // State for add modal
+  const [selectedCustomer, setSelectedCustomer] = useState<DataType | null>(
+    null
+  );
+  const [newImage, setNewImage] = useState<string | null>(null); // Single image state
+  const [newCustomerImage, setNewCustomerImage] = useState<string | null>(null); // New customer image state
+  const [data, setData] = useState<DataType[]>([
+    {
+      key: "1",
+      name: "Hà Thảo",
+      images: ["/api/placeholder/32"],
+      area: ["Sản xuất"],
+    },
+    {
+      key: "2",
+      name: "Mai",
+      images: ["/api/placeholder/32"],
+      area: ["Sản xuất"],
+    },
+    {
+      key: "3",
+      name: "Hà Thảo",
+      images: ["/api/placeholder/32"],
+      area: ["Sản xuất"],
+    },
+  ]);
 
-  const columns: ColumnsType<Visitor> = [
+  const [form] = Form.useForm(); // Form for the add modal
+
+  const showModal = (customer: DataType) => {
+    setSelectedCustomer(customer);
+    setNewImage(customer.images[0]);
+    setIsModalVisible(true);
+  };
+
+  const showAddModal = () => {
+    setIsAddModalVisible(true);
+  };
+
+  const handleCancel = () => {
+    setIsModalVisible(false);
+    setSelectedCustomer(null);
+    setNewImage(null);
+  };
+
+  const handleAddCancel = () => {
+    setIsAddModalVisible(false);
+    form.resetFields();
+    setNewCustomerImage(null);
+  };
+
+  const handleSave = () => {
+    if (selectedCustomer && newImage) {
+      const updatedData = data.map((customer) =>
+        customer.key === selectedCustomer.key
+          ? { ...customer, images: [newImage] }
+          : customer
+      );
+      setData(updatedData);
+      message.success("Cập nhật thành công!");
+      setIsModalVisible(false);
+    }
+  };
+
+  const handleUploadChange = (info: any) => {
+    const file = info.file.originFileObj;
+    const newUploadedImage = URL.createObjectURL(file);
+    setNewImage(newUploadedImage);
+  };
+
+  const handleNewUploadChange = (info: any) => {
+    const file = info.file.originFileObj;
+    const newUploadedImage = URL.createObjectURL(file);
+    setNewCustomerImage(newUploadedImage);
+  };
+
+  const handleAddCustomer = () => {
+    form.validateFields().then((values) => {
+      const newCustomer: DataType = {
+        key: (data.length + 1).toString(),
+        name: values.name,
+        images: [newCustomerImage || "/api/placeholder/32"], // Use default image if not uploaded
+        area: ["Sản xuất"], // Default area, or you can make it dynamic
+      };
+      setData([newCustomer, ...data]);
+      message.success("Thêm khách hàng thành công!");
+      setIsAddModalVisible(false);
+      form.resetFields();
+      setNewCustomerImage(null);
+    });
+  };
+
+  // Handle deleting a customer
+  const handleDeleteCustomer = (key: string) => {
+    const updatedData = data.filter((customer) => customer.key !== key);
+    setData(updatedData);
+    message.success("Xóa khách hàng thành công!");
+  };
+
+  const columns = [
     {
       title: "Họ và tên",
       dataIndex: "name",
       key: "name",
-      render: (name) => <span>{name}</span>,
+      render: (text: any) => (
+        <div className="flex items-center">
+          <span className="ml-2">{text}</span>
+        </div>
+      ),
     },
     {
       title: "Hình ảnh",
       dataIndex: "images",
       key: "images",
-      render: () => (
-        <div className="flex space-x-1">
-          <div className="w-6 h-6 bg-gray-200"></div>
-          <div className="w-6 h-6 bg-gray-200"></div>
+      render: (images: any) => (
+        <div className="flex">
+          {images.map((img: any, index: any) => (
+            <img
+              key={index}
+              src={img}
+              alt=""
+              className="w-8 h-8 rounded-full mr-1"
+            />
+          ))}
         </div>
       ),
     },
     {
       title: "Khu vực",
-      dataIndex: "area",
       key: "area",
-      render: (area) => <Tag color="green">{area}</Tag>,
+      dataIndex: "area",
+      render: (_: any, { area }: { area: string[] }) => (
+        <>
+          {area.map((areaItem) => {
+            let color = areaItem.length > 5 ? "geekblue" : "green";
+            return (
+              <Tag color={color} key={areaItem}>
+                {areaItem.toUpperCase()}
+              </Tag>
+            );
+          })}
+        </>
+      ),
     },
     {
       title: "Hành động",
       key: "action",
-      render: () => <Button type="link">Chỉnh sửa</Button>,
+      render: (_: any, record: DataType) => (
+        <>
+          <Button
+            type="primary"
+            className="bg-green-500 hover:bg-green-600 mr-2"
+            onClick={() => showModal(record)}
+          >
+            Chỉnh sửa
+          </Button>
+          <Button
+            type="primary"
+            danger
+            onClick={() => handleDeleteCustomer(record.key)}
+          >
+            Xóa
+          </Button>
+        </>
+      ),
     },
   ];
 
   return (
-    <div className="bg-gray-100 min-h-screen">
-      <main className="flex-1">
-        <Button type="default" onClick={() => navigate(-1)} className="m-5">
-          Quay lại
-        </Button>
-        <div className="bg-blue-600 text-white p-4 rounded-lg mb-6">
-          <h2 className="font-bold">Số kế hoạch: 1</h2>
-          <p>Ngày tạo: 6/8/2024 9:00:13</p>
-          <p>Số lượng: 6</p>
-        </div>
-
-        <div className="bg-white rounded-lg p-6">
-          <div className="flex justify-between items-center mb-4">
-            <Button type="primary">Xuất</Button>
+    <Layout className="min-h-screen">
+      <Layout>
+        <Content className="p-6">
+          <div className="flex justify-center mb-4">
+            <h1 className="text-green-500 text-2xl font-bold">{title}</h1>
           </div>
+          <div className="bg-blue-100 p-4 rounded-lg mb-4">
+            <span className="font-bold">Thời gian: 05/09/2048</span>
+            <span className="ml-4">Vào lúc: 13h00 - 13h30</span>
+            <span className="ml-4">Số lượng: 7 người</span>
+          </div>
+          <Button
+            type="primary"
+            className="mb-4 bg-blue-500 hover:bg-blue-600"
+            onClick={showAddModal}
+          >
+            Thêm khách hàng mới
+          </Button>
+          <Table columns={columns} dataSource={data} pagination={false} />
+          <div className="flex justify-end mt-4">
+            <Button className="mr-2" onClick={() => navigate(-1)}>
+              Quay lại
+            </Button>
+            <Button
+              type="primary"
+              className="mr-2 bg-blue-500 hover:bg-blue-600"
+              onClick={() => {
+                message.success("Cập nhật thành công!");
+                navigate("/staffCustomerVisit");
+              }}
+            >
+              Cập nhật
+            </Button>
+            <Button
+              type="primary"
+              className="bg-green-500 hover:bg-green-600"
+              onClick={() => {
+                message.success("Cập nhật thành công!");
+                navigate("/staffCustomerVisit");
+              }}
+            >
+              Duyệt
+            </Button>
+          </div>
+        </Content>
 
-          <Table
-            columns={columns}
-            dataSource={visitors.map((visitor, index) => ({
-              key: index,
-              ...visitor,
-            }))}
-          />
-        </div>
-      </main>
-    </div>
+        {/* Modal for Customer Detail */}
+        <Modal
+          title="Chi tiết khách hàng"
+          visible={isModalVisible}
+          onCancel={handleCancel}
+          footer={[
+            <Button key="cancel" onClick={handleCancel}>
+              Hủy bỏ
+            </Button>,
+            <Button key="save" type="primary" onClick={handleSave}>
+              Lưu
+            </Button>,
+          ]}
+        >
+          {selectedCustomer && (
+            <Descriptions bordered column={1}>
+              <Descriptions.Item label="Họ và tên">
+                {selectedCustomer.name}
+              </Descriptions.Item>
+              <Descriptions.Item label="Khu vực">
+                {selectedCustomer.area.join(", ")}
+              </Descriptions.Item>
+              <Descriptions.Item label="Hình ảnh">
+                <div className="flex">
+                  {newImage && (
+                    <img
+                      src={newImage}
+                      alt=""
+                      className="w-8 h-8 rounded-full mr-1"
+                    />
+                  )}
+                </div>
+                <Upload
+                  listType="picture"
+                  onChange={handleUploadChange}
+                  showUploadList={false}
+                  maxCount={1}
+                >
+                  <Button icon={<UploadOutlined />}>Thay đổi hình ảnh</Button>
+                </Upload>
+              </Descriptions.Item>
+            </Descriptions>
+          )}
+        </Modal>
+
+        {/* Modal for Adding New Customer */}
+        <Modal
+          title="Thêm khách hàng mới"
+          visible={isAddModalVisible}
+          onCancel={handleAddCancel}
+          footer={[
+            <Button key="cancel" onClick={handleAddCancel}>
+              Hủy bỏ
+            </Button>,
+            <Button key="save" type="primary" onClick={handleAddCustomer}>
+              Thêm
+            </Button>,
+          ]}
+        >
+          <Form form={form} layout="vertical">
+            <Form.Item
+              name="name"
+              label="Họ và tên"
+              rules={[{ required: true, message: "Vui lòng nhập họ và tên" }]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item label="Hình ảnh">
+              <Upload
+                listType="picture"
+                onChange={handleNewUploadChange}
+                showUploadList={false}
+                maxCount={1}
+              >
+                <Button icon={<UploadOutlined />}>Tải lên hình ảnh</Button>
+              </Upload>
+              {newCustomerImage && (
+                <img
+                  src={newCustomerImage}
+                  alt=""
+                  className="w-8 h-8 rounded-full mt-2"
+                />
+              )}
+            </Form.Item>
+          </Form>
+        </Modal>
+      </Layout>
+    </Layout>
   );
 };
 

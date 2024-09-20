@@ -1,18 +1,9 @@
 import { Layout, Menu, Input, Table, Button } from 'antd';
 import { SearchOutlined, BellOutlined } from '@ant-design/icons';
 
-const { Header, Sider, Content } = Layout;
+const { Header, Content } = Layout;
 
 const History = () => {
-  const menuItems = [
-    { key: 'dashboard', icon: <span className="icon">📊</span>, label: 'Dashboard' },
-    { key: 'customer-visit', icon: <span className="icon">👥</span>, label: 'Customer visit' },
-    { key: 'project', icon: <span className="icon">📁</span>, label: 'Project' },
-    { key: 'history', icon: <span className="icon">🕒</span>, label: 'History' },
-    { key: 'chat', icon: <span className="icon">💬</span>, label: 'Chat' },
-    { key: 'my-schedule', icon: <span className="icon">📅</span>, label: 'My schedule' },
-    { key: 'logout', icon: <span className="icon">🚪</span>, label: 'Logout' },
-  ];
 
   const columns = [
     { title: 'Tiêu đề', dataIndex: 'title', key: 'title' },
@@ -33,21 +24,6 @@ const History = () => {
 
   return (
     <Layout className="min-h-screen">
-      <Sider width={200} className="bg-white">
-        <div className="h-16 bg-blue-600 flex items-center justify-center text-white font-bold">
-          SECURITY GATE APACHE
-        </div>
-        <div className="p-4">
-          <img src="/api/placeholder/32/32" alt="User" className="rounded-full" />
-          <span className="ml-2">Kha Han</span>
-        </div>
-        <Menu
-          mode="inline"
-          defaultSelectedKeys={['history']}
-          className="h-full border-r-0"
-          items={menuItems}
-        />
-      </Sider>
       <Layout>
         <Header className="bg-white flex justify-between items-center px-4">
           <Input

@@ -38,10 +38,25 @@ const MenuNav = () => {
                 icon: <UserOutlined />,
                 label: "Customer visit",
               },
+              // {
+              //   key: "securityCustomerVisit",
+              //   icon: <UserOutlined />,
+              //   label: "Security Customer Visit",
+              // },
               {
-                key: "securityCustomerVisit",
+                key: "DPCustomerVisit",
                 icon: <UserOutlined />,
-                label: "Security Customer Visit",
+                label: "DP_Customer Visit",
+              },
+              {
+                key: "ProjectManager",
+                icon: <UserOutlined />,
+                label: "M_Project",
+              },
+              {
+                key: "staffCustomerVisit",
+                icon: <UserOutlined />,
+                label: "S_Customer Visit",
               },
               {
                 key: "calendar",
