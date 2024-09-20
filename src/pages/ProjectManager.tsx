@@ -4,16 +4,12 @@ import {
     Table,
     Tag,
     Modal,
-    Descriptions,
-    Upload,
     message,
     Form,
     Input,
     DatePicker,
   } from "antd";
   import { useState } from "react";
-  import { useNavigate } from "react-router-dom";
-  import { UploadOutlined } from "@ant-design/icons";
   import moment from "moment";
   
   const { Content } = Layout;
@@ -28,10 +24,9 @@ import {
   }
   
   const ProjectManager = () => {
-    const navigate = useNavigate();
-    const [isModalVisible, setIsModalVisible] = useState(false);
+
     const [isAddModalVisible, setIsAddModalVisible] = useState(false);
-    const [selectedProject, setSelectedProject] = useState<DataType | null>(null);
+
     const [data, setData] = useState<DataType[]>([
       {
         key: "1",

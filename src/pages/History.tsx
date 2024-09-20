@@ -1,4 +1,4 @@
-import { Layout, Menu, Input, Table, Button } from 'antd';
+import { Layout, Input, Table, Button } from 'antd';
 import { SearchOutlined, BellOutlined } from '@ant-design/icons';
 
 const { Header, Content } = Layout;

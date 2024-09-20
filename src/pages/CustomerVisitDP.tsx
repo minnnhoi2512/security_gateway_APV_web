@@ -3,7 +3,6 @@ import {
   Button,
   Table,
   Tag,
-  Form,
   Input,
 } from "antd";
 import type { TableProps } from "antd";
@@ -23,9 +22,9 @@ interface DataType {
 const CustomerVisitStaff = () => {
   const navigate = useNavigate();
   const [searchText, setSearchText] = useState<string>(""); // For search functionality
-  const [filteredDate, setFilteredDate] = useState<string | null>(null); // Date filter state
-  const [filteredTime, setFilteredTime] = useState<string | null>(null); // Time filter state
-  const [data, setData] = useState<DataType[]>([
+  const [filteredDate] = useState<string | null>(null); // Date filter state
+  const [filteredTime] = useState<string | null>(null); // Time filter state
+  const [data] = useState<DataType[]>([
     {
       key: "1",
       title: "Lịch hẹn khảo sát",

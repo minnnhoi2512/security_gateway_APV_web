@@ -30,8 +30,8 @@ const CustomerVisitStaff = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
   const [searchText, setSearchText] = useState<string>(""); // For search functionality
-  const [filteredDate, setFilteredDate] = useState<string | null>(null); // Date filter state
-  const [filteredTime, setFilteredTime] = useState<string | null>(null); // Time filter state
+  const [filteredDate] = useState<string | null>(null); // Date filter state
+  const [filteredTime] = useState<string | null>(null); // Time filter state
   const [data, setData] = useState<DataType[]>([
     {
       key: "1",
