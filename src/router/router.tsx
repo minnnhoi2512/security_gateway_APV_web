@@ -2,16 +2,23 @@ import { Route, Routes } from "react-router-dom";
 import LayoutPage from "../pages/Layout";
 import Dashboard from "../pages/Dashboard";
 import CustomerVisit from "../pages/CustomerVisit";
-import CustomerVisitSecurity from "../pages/CustomerVisitSecurity";
-import CustomerVisitStaff from "../pages/CustomerVisitStaff";
 import DetailCustomerVisit from "../pages/DetailCustomerVisit";
-import CustomerVisitDP from "../pages/CustomerVisitDP";
-import NewCustomerVisit from "../pages/NewCustomerVisit";
-import ProjectManager from "../pages/ProjectManager";
+import Project from "../pages/Project";
+import Manager from "../pages/Manager";
+import DetailProject from "../pages/DetailProject";
+import HistoryDetail from "../pages/HistoryDetail";
 import History from "../pages/History";
 import Chat from "../pages/Chat";
 import Login from "../pages/Login";
 import CalendarPage from "../pages/Calendar";
+import Security from "../pages/Security";
+import DepartmentManager from "../pages/DepartManager";
+import DetailUser from "../pages/DetailUser";
+import CreateUser from "../pages/CreateUser";
+import CreateNewVisitList from "../pages/CreateNewVisitList";
+// import CreateNewGuest from "../pages/CreateNewGuest";
+import CardManager from "../pages/CardManager";
+import GateManager from "../pages/GateManager";
 
 const ContentRouter = () => {
   return (
@@ -27,6 +34,51 @@ const ContentRouter = () => {
       />
       <Route
         index
+        path="/manager"
+        element={
+          <LayoutPage>
+            <Manager />
+          </LayoutPage>
+        }
+      />
+      <Route
+        index
+        path="/departmentManager"
+        element={
+          <LayoutPage>
+            <DepartmentManager />
+          </LayoutPage>
+        }
+      />
+      <Route
+        index
+        path="/security"
+        element={
+          <LayoutPage>
+            <Security />
+          </LayoutPage>
+        }
+      />
+      <Route
+        index
+        path="/detailUser"
+        element={
+          <LayoutPage>
+            <DetailUser />
+          </LayoutPage>
+        }
+      />
+      <Route
+        index
+        path="/createUser"
+        element={
+          <LayoutPage>
+            <CreateUser />
+          </LayoutPage>
+        }
+      />
+      <Route
+        index
         path="/customerVisit"
         element={
           <LayoutPage>
@@ -34,7 +86,25 @@ const ContentRouter = () => {
           </LayoutPage>
         }
       />
-       <Route
+      <Route
+        index
+        path="/createNewVisitList"
+        element={
+          <LayoutPage>
+            <CreateNewVisitList />
+          </LayoutPage>
+        }
+      />
+      {/* <Route
+        index
+        path="/createNewGuest"
+        element={
+          <LayoutPage>
+            <CreateNewGuest />
+          </LayoutPage>
+        }
+      /> */}
+      <Route
         index
         path="/detailVisit"
         element={
@@ -45,49 +115,37 @@ const ContentRouter = () => {
       />
       <Route
         index
-        path="/securityCustomerVisit"
+        path="/project"
         element={
           <LayoutPage>
-            <CustomerVisitSecurity />
+            <Project />
           </LayoutPage>
         }
-
-      />
-          <Route
-        index
-        path="/DPCustomerVisit"
-        element={
-          <LayoutPage>
-            <CustomerVisitDP />
-          </LayoutPage>
-        }
-
       />
       <Route
         index
-        path="/ProjectManager"
+        path="/card"
         element={
           <LayoutPage>
-            <ProjectManager />
+            <CardManager />
           </LayoutPage>
         }
-
       />
       <Route
-      index
-      path="/staffCustomerVisit"
-      element={
-        <LayoutPage>
-          <CustomerVisitStaff />
-        </LayoutPage>
-      }
-    />
-      <Route
         index
-        path="/newCustomerVisit"
+        path="/gate"
         element={
           <LayoutPage>
-            <NewCustomerVisit />
+            <GateManager />
+          </LayoutPage>
+        }
+      />
+      <Route
+        index
+        path="/detailProject"
+        element={
+          <LayoutPage>
+            <DetailProject />
           </LayoutPage>
         }
       />
@@ -106,6 +164,15 @@ const ContentRouter = () => {
         element={
           <LayoutPage>
             <History />
+          </LayoutPage>
+        }
+      />
+      <Route
+        index
+        path="/historyDetail"
+        element={
+          <LayoutPage>
+            <HistoryDetail />
           </LayoutPage>
         }
       />

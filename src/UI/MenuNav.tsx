@@ -31,52 +31,62 @@ const MenuNav = () => {
               {
                 key: "dashboard",
                 icon: <DashboardOutlined />,
-                label: "Dashboard",
+                label: "Thông tin chung",
+              },
+              {
+                key: "manager",
+                icon: <UserOutlined />,
+                label: "Quản lý",
+              },
+              {
+                key: "departmentManager",
+                icon: <UserOutlined />,
+                label: "Trợ lý giám đốc",
+              },
+              {
+                key: "security",
+                icon: <UserOutlined />,
+                label: "Bảo vệ",
               },
               {
                 key: "customerVisit",
                 icon: <UserOutlined />,
-                label: "Customer visit",
-              },
-              // {
-              //   key: "securityCustomerVisit",
-              //   icon: <UserOutlined />,
-              //   label: "Security Customer Visit",
-              // },
-              {
-                key: "DPCustomerVisit",
-                icon: <UserOutlined />,
-                label: "DP_Customer Visit",
+                label: "Danh sách khách",
               },
               {
-                key: "ProjectManager",
+                key: "card",
                 icon: <UserOutlined />,
-                label: "M_Project",
+                label: "Danh sách thẻ",
               },
               {
-                key: "staffCustomerVisit",
+                key: "gate",
                 icon: <UserOutlined />,
-                label: "S_Customer Visit",
+                label: "Danh sách cổng",
+              },
+              {
+                key: "project",
+                icon: <UserOutlined />,
+                label: "Dự án ",
               },
               {
                 key: "calendar",
                 icon: <CalendarOutlined />,
-                label: "Calendar",
+                label: "Lịch trình",
               },
               {
                 key: "history",
                 icon: <HistoryOutlined />,
-                label: "History",
+                label: "Lịch sử",
               },
               {
                 key: "chat",
                 icon: <WechatWorkOutlined />,
-                label: "Chat",
+                label: "Nhắn tin",
               },
               {
                 key: "",
                 icon: <LogoutOutlined />,
-                label: "Logout",
+                label: "Đăng xuất",
               },
             ]}
           />

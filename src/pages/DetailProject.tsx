@@ -1,4 +1,3 @@
-import React, { useState } from "react";
 import {
   Layout,
   Button,
@@ -8,11 +7,13 @@ import {
   Descriptions,
   Upload,
   message,
+  Form,
+  Input,
 } from "antd";
+import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { UploadOutlined } from "@ant-design/icons";
-import CreateNewGuest from "./CreateNewGuest"; // Adjust the import path as needed
-
+import moment from "moment";
 const { Content } = Layout;
 
 interface DataType {
@@ -22,14 +23,17 @@ interface DataType {
   area: string[];
 }
 
-const DetailCustomerVisit: React.FC = () => {
+const DetailProject = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { title } = location.state || {};
+  const { title, startDate, endDate, numberOfPeople, status } = location.state;
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isCreatingNewGuest, setIsCreatingNewGuest] = useState(false); // State for CreateNewGuest
-  const [selectedCustomer, setSelectedCustomer] = useState<DataType | null>(null);
-  const [newImage, setNewImage] = useState<string | null>(null);
+  const [isAddModalVisible, setIsAddModalVisible] = useState(false); // State for add modal
+  const [selectedCustomer, setSelectedCustomer] = useState<DataType | null>(
+    null
+  );
+  const [newImage, setNewImage] = useState<string | null>(null); // Single image state
+  const [newCustomerImage, setNewCustomerImage] = useState<string | null>(null); // New customer image state
   const [data, setData] = useState<DataType[]>([
     {
       key: "1",
@@ -51,16 +55,28 @@ const DetailCustomerVisit: React.FC = () => {
     },
   ]);
 
+  const [form] = Form.useForm(); // Form for the add modal
+
   const showModal = (customer: DataType) => {
     setSelectedCustomer(customer);
     setNewImage(customer.images[0]);
     setIsModalVisible(true);
   };
 
+  const showAddModal = () => {
+    setIsAddModalVisible(true);
+  };
+
   const handleCancel = () => {
     setIsModalVisible(false);
     setSelectedCustomer(null);
     setNewImage(null);
+  };
+
+  const handleAddCancel = () => {
+    setIsAddModalVisible(false);
+    form.resetFields();
+    setNewCustomerImage(null);
   };
 
   const handleSave = () => {
@@ -82,22 +98,33 @@ const DetailCustomerVisit: React.FC = () => {
     setNewImage(newUploadedImage);
   };
 
-  const handleAddCustomer = (guest: { name: string; image: string | null }) => {
-    const newCustomer: DataType = {
-      key: (data.length + 1).toString(),
-      name: guest.name,
-      images: [guest.image || "/api/placeholder/32"], // Use default image if not uploaded
-      area: ["Sản xuất"], // Default area, or you can make it dynamic
-    };
-    setData([newCustomer, ...data]);
-    message.success("Thêm khách hàng thành công!");
-    setIsCreatingNewGuest(false);
+  const handleNewUploadChange = (info: any) => {
+    const file = info.file.originFileObj;
+    const newUploadedImage = URL.createObjectURL(file);
+    setNewCustomerImage(newUploadedImage);
   };
 
+  const handleAddCustomer = () => {
+    form.validateFields().then((values) => {
+      const newCustomer: DataType = {
+        key: (data.length + 1).toString(),
+        name: values.name,
+        images: [newCustomerImage || "/api/placeholder/32"], // Use default image if not uploaded
+        area: ["Sản xuất"], // Default area, or you can make it dynamic
+      };
+      setData([newCustomer, ...data]);
+      message.success("Thêm nhân viên thành công!");
+      setIsAddModalVisible(false);
+      form.resetFields();
+      setNewCustomerImage(null);
+    });
+  };
+
+  // Handle deleting a customer
   const handleDeleteCustomer = (key: string) => {
     const updatedData = data.filter((customer) => customer.key !== key);
     setData(updatedData);
-    message.success("Xóa khách hàng thành công!");
+    message.success("Xóa nhân viên thành công!");
   };
 
   const columns = [
@@ -118,7 +145,12 @@ const DetailCustomerVisit: React.FC = () => {
       render: (images: any) => (
         <div className="flex">
           {images.map((img: any, index: any) => (
-            <img key={index} src={img} alt="" className="w-8 h-8 rounded-full mr-1" />
+            <img
+              key={index}
+              src={img}
+              alt=""
+              className="w-8 h-8 rounded-full mr-1"
+            />
           ))}
         </div>
       ),
@@ -172,14 +204,15 @@ const DetailCustomerVisit: React.FC = () => {
             <h1 className="text-green-500 text-2xl font-bold">{title}</h1>
           </div>
           <div className="bg-blue-100 p-4 rounded-lg mb-4">
-            <span className="font-bold">Thời gian: 05/09/2048</span>
-            <span className="ml-4">Vào lúc: 13h00 - 13h30</span>
-            <span className="ml-4">Số lượng: 7 người</span>
+            <p>Bắt đầu: {moment(startDate).format("DD/MM/YYYY HH:mm")}</p>
+            <p>Kết thúc: {moment(endDate).format("DD/MM/YYYY HH:mm")}</p>
+            <p>Số người: {numberOfPeople}</p>
+            <p>Trạng thái: {status}</p>
           </div>
           <Button
             type="primary"
             className="mb-4 bg-blue-500 hover:bg-blue-600"
-            onClick={() => setIsCreatingNewGuest(true)} // Show CreateNewGuest component
+            onClick={showAddModal}
           >
             Thêm khách hàng mới
           </Button>
@@ -256,16 +289,50 @@ const DetailCustomerVisit: React.FC = () => {
           )}
         </Modal>
 
-        {/* Create New Guest Component */}
-        {isCreatingNewGuest && (
-          <CreateNewGuest
-            onAddGuest={handleAddCustomer}
-            onCancel={() => setIsCreatingNewGuest(false)}
-          />
-        )}
+        {/* Modal for Adding New Customer */}
+        <Modal
+          title="Thêm khách hàng mới"
+          visible={isAddModalVisible}
+          onCancel={handleAddCancel}
+          footer={[
+            <Button key="cancel" onClick={handleAddCancel}>
+              Hủy bỏ
+            </Button>,
+            <Button key="save" type="primary" onClick={handleAddCustomer}>
+              Thêm
+            </Button>,
+          ]}
+        >
+          <Form form={form} layout="vertical">
+            <Form.Item
+              name="name"
+              label="Họ và tên"
+              rules={[{ required: true, message: "Vui lòng nhập họ và tên" }]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item label="Hình ảnh">
+              <Upload
+                listType="picture"
+                onChange={handleNewUploadChange}
+                showUploadList={false}
+                maxCount={1}
+              >
+                <Button icon={<UploadOutlined />}>Tải lên hình ảnh</Button>
+              </Upload>
+              {newCustomerImage && (
+                <img
+                  src={newCustomerImage}
+                  alt=""
+                  className="w-8 h-8 rounded-full mt-2"
+                />
+              )}
+            </Form.Item>
+          </Form>
+        </Modal>
       </Layout>
     </Layout>
   );
 };
 
-export default DetailCustomerVisit;
+export default DetailProject;

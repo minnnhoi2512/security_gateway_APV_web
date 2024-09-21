@@ -1,49 +1,130 @@
-import { Layout, Input, Table, Button } from 'antd';
-import { SearchOutlined, BellOutlined } from '@ant-design/icons';
+import { Table, Tag, Button, Input } from "antd";
+import { useState } from "react";
+import type { TableProps } from "antd";
+import { useNavigate } from "react-router-dom";
 
-const { Header, Content } = Layout;
+interface DataType {
+  key: string;
+  title: string;
+  time: string;
+  date: string;
+  area: string[];
+  status: string[];
+}
+const data: DataType[] = [
+  {
+    key: "1",
+    title: "Lịch hẹn khảo sát",
+    date: "2024-09-05",
+    time: "11h00 - 12h00",
+    area: ["Kinh Doanh"],
+    status: ["Đã duyệt"],
+  },
+  {
+    key: "2",
+    title: "Lịch hẹn tham quan",
+    date: "2024-09-05",
+    time: "11h00 - 12h00",
+    area: ["Sản xuất"],
+    status: ["Đã duyệt"],
+  },
+];
 
 const History = () => {
+  const [searchText, setSearchText] = useState<string>("");
+  const [filteredData, setFilteredData] = useState<DataType[]>(data); // Holds filtered data
 
-  const columns = [
-    { title: 'Tiêu đề', dataIndex: 'title', key: 'title' },
-    { title: 'Thời gian', dataIndex: 'time', key: 'time' },
-    { title: 'Khung giờ', dataIndex: 'timeframe', key: 'timeframe' },
-    { title: 'Khu vực', dataIndex: 'area', key: 'area', render: (text:any) => <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full">{text}</span> },
-    { title: 'Trạng thái', dataIndex: 'status', key: 'status', render: (text:any) => <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full">{text}</span> },
-  ];
+  const navigate = useNavigate();
 
-  const data = [
-    { key: 1, title: 'Lịch hẹn khảo sát', time: '05/09/2021', timeframe: '11h00 am - 12h00 pm', area: 'Sản xuất', status: 'Đã duyệt' },
-    { key: 2, title: 'Lịch hẹn tham quan', time: '05/09/2021', timeframe: '11h00 am - 12h00 pm', area: 'Sản xuất', status: 'Đã duyệt' },
-    { key: 3, title: 'Lịch hẹn khảo sát', time: '05/09/2021', timeframe: '11h00 am - 12h00 pm', area: 'Sản xuất', status: 'Đã duyệt' },
-    { key: 4, title: 'Lịch hẹn tham quan', time: '05/09/2021', timeframe: '11h00 am - 12h00 pm', area: 'Sản xuất', status: 'Đã duyệt' },
-    { key: 5, title: 'Lịch hẹn khảo sát', time: '05/09/2021', timeframe: '11h00 am - 12h00 pm', area: 'Sản xuất', status: 'Đã duyệt' },
-    { key: 6, title: 'Lịch hẹn tham quan', time: '05/09/2021', timeframe: '11h00 am - 12h00 pm', area: 'Sản xuất', status: 'Đã duyệt' },
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.toLowerCase();
+    setSearchText(value);
+
+    // Filter the data based on the search text
+    const filtered = data.filter((entry) =>
+      entry.title.toLowerCase().includes(value)
+    );
+    setFilteredData(filtered);
+  };
+
+  const columns: TableProps<DataType>["columns"] = [
+    {
+      title: "Tiêu đề",
+      dataIndex: "title",
+      key: "title",
+    },
+    {
+      title: "Khung giờ",
+      dataIndex: "date",
+      key: "date",
+      sorter: (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+    },
+    {
+      title: "Thời gian",
+      dataIndex: "time",
+      key: "time",
+      sorter: (a, b) => a.time.localeCompare(b.time),
+    },
+    {
+      title: "Khu vực",
+      key: "area",
+      dataIndex: "area",
+      render: (_, { area }) => (
+        <>
+          {area.map((area) => {
+            let color = area.length > 5 ? "geekblue" : "green";
+            return (
+              <Tag color={color} key={area}>
+                {area.toUpperCase()}
+              </Tag>
+            );
+          })}
+        </>
+      ),
+    },
+    {
+      title: "Trạng thái",
+      key: "status",
+      dataIndex: "status",
+      render: (_, { status }) => (
+        <>
+          {status.map((status) => {
+            let color = status === "Chưa duyệt" ? "volcano" : "green";
+            return (
+              <Tag color={color} key={status}>
+                {status.toUpperCase()}
+              </Tag>
+            );
+          })}
+        </>
+      ),
+    },
+    {
+      title: "Action",
+      key: "action",
+      render: (_, record) => (
+        <Button
+          size="middle"
+          onClick={() =>
+            navigate("/historyDetail", { state: { title: record.title } })
+          }
+        >
+          Chi tiết
+        </Button>
+      ),
+    },
   ];
 
   return (
-    <Layout className="min-h-screen">
-      <Layout>
-        <Header className="bg-white flex justify-between items-center px-4">
-          <Input
-            placeholder="Search"
-            prefix={<SearchOutlined />}
-            className="w-64"
-          />
-          <BellOutlined className="text-xl" />
-        </Header>
-        <Content className="m-4 p-4 bg-white">
-          <h2 className="text-xl font-bold mb-4">Danh sách lịch sử ghé thăm công ty</h2>
-          <Table columns={columns} dataSource={data} pagination={false} />
-          <div className="mt-4 flex justify-end">
-            <Button type="primary" className="bg-green-500 hover:bg-green-600">
-              In
-            </Button>
-          </div>
-        </Content>
-      </Layout>
-    </Layout>
+    <div>
+      <Input
+        placeholder="Tìm kiếm theo tiêu đề"
+        value={searchText}
+        onChange={handleSearchChange}
+        style={{ marginBottom: 16, width: 300 }}
+      />
+      <Table columns={columns} dataSource={filteredData} />
+    </div>
   );
 };
 
