@@ -14,6 +14,8 @@ const LayoutPage = ({ children }: Props) => {
   const {
     token: { colorBgContainer },
   } = theme.useToken();
+  const userName = localStorage.getItem('userName');
+  const userRole = localStorage.getItem('userRole');
   return (
     <div>
       <Layout className="min-h-screen">
@@ -61,10 +63,10 @@ const LayoutPage = ({ children }: Props) => {
               <div className="ml-2">
                 <div>
                   <h1 className="text-[#000000] text-sm font-inter">
-                    Thien An
+                    {userName}
                   </h1>
                 </div>
-                <h2 className="text-[#C2C2C2] text-xs font-inter">Nhân Viên</h2>
+                <h2 className="text-[#C2C2C2] text-xs font-inter">{userRole}</h2>
               </div>
             </div>
             <div className="border-b-[1.5px] border-[#D0D0D0] mt-2 w-[80%] ml-3"></div>
