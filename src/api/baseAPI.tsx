@@ -1,3 +1,3 @@
-const baseAPI = "https://securitygateapv-be-iiah.onrender.com"
+const baseAPI = import.meta.env.VITE_BE_API;
 
 export default baseAPI;

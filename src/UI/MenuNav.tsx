@@ -83,6 +83,11 @@ const MenuNav = () => {
       label: 'Nhắn tin',
     },
     {
+      key: 'notification-test',
+      icon: <WechatWorkOutlined />,
+      label: 'Thoong baos -test',
+    },
+    {
       key: '',
       icon: <LogoutOutlined />,
       label: 'Đăng xuất',

@@ -19,6 +19,7 @@ import CreateNewVisitList from "../pages/CreateNewVisitList";
 // import CreateNewGuest from "../pages/CreateNewGuest";
 import CardManager from "../pages/CardManager";
 import GateManager from "../pages/GateManager";
+import Notification from "../pages/NotificationTest";
 
 const ContentRouter = () => {
   return (
@@ -79,7 +80,7 @@ const ContentRouter = () => {
       />
       <Route
         index
-        path="/customerVisit"
+        path="/customerVisit/"
         element={
           <LayoutPage>
             <CustomerVisit />
@@ -110,6 +111,15 @@ const ContentRouter = () => {
         element={
           <LayoutPage>
             <DetailCustomerVisit />
+          </LayoutPage>
+        }
+      />
+       <Route
+        index
+        path="/notification-test"
+        element={
+          <LayoutPage>
+            <Notification />
           </LayoutPage>
         }
       />

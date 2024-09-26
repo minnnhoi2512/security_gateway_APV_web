@@ -4,35 +4,48 @@ import LoginImg from '../assets/login-img.jpeg';
 import { useNavigate } from 'react-router-dom';
 import { useLoginUserMutation } from '../services/user.service';
 import {jwtDecode} from 'jwt-decode'; // Import jwt-decode
+import { toast } from 'react-toastify'; // Import toast for notification
+import 'react-toastify/dist/ReactToastify.css'; // Import toast styles
 
 function Login() {
   const [rememberMe, setRememberMe] = useState(false);
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
   const navigate = useNavigate();
-  const [loginUser, { isLoading, isError, isSuccess }] = useLoginUserMutation();
+  const [loginUser, { isLoading }] = useLoginUserMutation();
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
     try {
-      const result = await loginUser({ email, password }).unwrap();
+      const result = await loginUser({ username, password }).unwrap();
       const { jwtToken } = result;
-
-      // Save the token in localStorage (or any store)
-      localStorage.setItem('jwtToken', jwtToken);
 
       // Decode the token
       const decodedToken: any = jwtDecode(jwtToken);
-      // Save the decoded token in localStorage or store
+      console.log(decodedToken)
+      // Check if the role is 'Security' and prevent access
+      if (decodedToken.role === 'Security') {
+        toast.error('Người dùng này không có quyền truy cập vào hệ thống');
+        // navigate(`/`);
+        return; // Stop further actions
+      }
+
+      // Save the token and other details in localStorage
+      localStorage.setItem('jwtToken', jwtToken);
       localStorage.setItem('userRole', decodedToken.role);
       localStorage.setItem('userId', result.userId);
       localStorage.setItem('userName', result.userName);
+
+      // Success toast notification
+      toast.success('Đăng nhập thành công!');
+
       // Navigate to dashboard after successful login
       navigate(`/dashboard`);
     } catch (error) {
       console.error('Login failed:', error);
+      toast.error('Đăng nhập thất bại. Vui lòng thử lại.');
     }
   };
 
@@ -70,8 +83,8 @@ function Login() {
                   required
                   className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                 />
               </div>
             </div>
@@ -122,8 +135,6 @@ function Login() {
               >
                 {isLoading ? 'Đang đăng nhập...' : 'Đăng nhập'}
               </button>
-              {isError && <p className="text-red-500 mt-2">Đăng nhập thất bại. Vui lòng thử lại.</p>}
-              {isSuccess && <p className="text-green-500 mt-2">Đăng nhập thành công!</p>}
             </div>
           </form>
         </div>

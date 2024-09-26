@@ -26,13 +26,15 @@ interface DataType {
 
 const { Option } = Select;
 
-const CustomerVisitStaff = () => {
+const CustomerVisit = () => {
+  const userRole = localStorage.getItem("userRole"); // Retrieve user role
   const navigate = useNavigate();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
   const [searchText, setSearchText] = useState<string>(""); // For search functionality
-  const [filteredDate] = useState<string | null>(null); // Date filter state
-  const [filteredTime] = useState<string | null>(null); // Time filter state
+  const [currentPage, setCurrentPage] = useState<number>(1); // Current page number
+  const [pageSize, setPageSize] = useState<number>(5); // Rows per page
+
   const [data, setData] = useState<DataType[]>([
     {
       key: "1",
@@ -58,6 +60,7 @@ const CustomerVisitStaff = () => {
       area: ["Sản xuất"],
       status: "Đã duyệt",
     },
+    // Additional sample data can be added here
   ]);
 
   const columns: TableProps<DataType>["columns"] = [
@@ -65,17 +68,15 @@ const CustomerVisitStaff = () => {
       title: "Tiêu đề",
       dataIndex: "title",
       key: "title",
-      render: (text) => <a>{text}</a>,
       filteredValue: searchText ? [searchText] : null,
       onFilter: (value, record) =>
         record.title.toLowerCase().includes(value.toString().toLowerCase()),
+      render: (text) => <a>{text}</a>,
     },
     {
       title: "Ngày",
       dataIndex: "date",
       key: "date",
-      filteredValue: filteredDate ? [filteredDate] : null,
-      onFilter: (value, record) => record.date === value,
     },
     {
       title: "Thời gian",
@@ -83,8 +84,6 @@ const CustomerVisitStaff = () => {
       key: "time",
       sorter: (a, b) =>
         moment(a.time, "HH:mm").unix() - moment(b.time, "HH:mm").unix(),
-      filteredValue: filteredTime ? [filteredTime] : null,
-      onFilter: (value, record) => record.time === value,
     },
     {
       title: "Khu vực",
@@ -92,14 +91,11 @@ const CustomerVisitStaff = () => {
       dataIndex: "area",
       render: (_, { area }) => (
         <>
-          {area.map((area) => {
-            let color = area.length > 5 ? "geekblue" : "green";
-            return (
-              <Tag color={color} key={area}>
-                {area.toUpperCase()}
-              </Tag>
-            );
-          })}
+          {area.map((area) => (
+            <Tag color={area.length > 5 ? "geekblue" : "green"} key={area}>
+              {area.toUpperCase()}
+            </Tag>
+          ))}
         </>
       ),
     },
@@ -107,14 +103,11 @@ const CustomerVisitStaff = () => {
       title: "Trạng thái",
       key: "status",
       dataIndex: "status",
-      render: (_, { status }) => {
-        let color = status === "Chưa duyệt" ? "volcano" : "green";
-        return (
-          <Tag color={color} key={status}>
-            {status.toUpperCase()}
-          </Tag>
-        );
-      },
+      render: (_, { status }) => (
+        <Tag color={status === "Chưa duyệt" ? "volcano" : "green"}>
+          {status.toUpperCase()}
+        </Tag>
+      ),
     },
     {
       title: "Action",
@@ -122,9 +115,7 @@ const CustomerVisitStaff = () => {
       render: (_, record) => (
         <Button
           size="middle"
-          onClick={() =>
-            navigate("/detailVisit", { state: { title: record.title } })
-          }
+          onClick={() => navigate("/detailVisit", { state: { title: record.title } })}
         >
           Chi tiết
         </Button>
@@ -157,6 +148,12 @@ const CustomerVisitStaff = () => {
     setSearchText(e.target.value);
   };
 
+  // Handle pagination change
+  const handleTableChange = (pagination: any) => {
+    setCurrentPage(pagination.current);
+    setPageSize(pagination.pageSize);
+  };
+
   return (
     <Content className="p-6">
       <div className="flex justify-center mb-4">
@@ -164,6 +161,7 @@ const CustomerVisitStaff = () => {
           Danh sách khách đến công ty
         </h1>
       </div>
+
       {/* Search Input */}
       <div>
         <Input
@@ -172,11 +170,15 @@ const CustomerVisitStaff = () => {
           onChange={handleSearchChange}
           style={{ marginBottom: 16, width: 300 }}
         />
-        <Button type="default" onClick={() => navigate("/createNewVisitList")}>
-          Tạo mới
-        </Button>
+        {/* Conditionally render "Tạo mới" button based on userRole */}
+        {userRole !== "Security" && (
+          <Button type="default" onClick={() => navigate("/createNewVisitList")}>
+            Tạo mới
+          </Button>
+        )}
       </div>
 
+      {/* Modal for creating new visit */}
       <Modal
         title="Tạo mới lịch hẹn"
         visible={isModalVisible}
@@ -193,8 +195,8 @@ const CustomerVisitStaff = () => {
           </Form.Item>
           <Form.Item
             name="date"
-            label="Khung giờ"
-            rules={[{ required: true, message: "Vui lòng chọn khung giờ" }]}
+            label="Ngày"
+            rules={[{ required: true, message: "Vui lòng chọn ngày" }]}
           >
             <DatePicker format="DD/MM/YYYY" />
           </Form.Item>
@@ -218,10 +220,22 @@ const CustomerVisitStaff = () => {
           </Form.Item>
         </Form>
       </Modal>
-      {/* Table */}
-      <Table columns={columns} dataSource={data} />
+
+      {/* Table with pagination */}
+      <Table
+        columns={columns}
+        dataSource={data}
+        pagination={{
+          current: currentPage,
+          pageSize: pageSize,
+          total: data.length,
+          showSizeChanger: true,
+          pageSizeOptions: ["5", "10", "20"],
+        }}
+        onChange={handleTableChange}
+      />
     </Content>
   );
 };
 
-export default CustomerVisitStaff;
+export default CustomerVisit;
