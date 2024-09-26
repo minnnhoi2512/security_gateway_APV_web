@@ -1,21 +1,28 @@
-
 import { useState } from 'react';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import LoginImg from '../assets/login-img.jpeg';
 import { useNavigate } from 'react-router-dom';
+import { useLoginUserMutation } from '../services/user.service'; // Import mutation
 
 function Login() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
+  const [email, setEmail] = useState(''); // Updated state for email
+  const [password, setPassword] = useState(''); // Updated state for password
 
   const navigate = useNavigate();
+  const [loginUser, { isLoading, isError, isSuccess }] = useLoginUserMutation(); // Mutation hook
 
-  const handleSubmit = (e : any) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
-    navigate(`/dashboard`)
-    console.log('Login attempt', { username, password, rememberMe });
-    // Add your login logic here
+    
+    try {
+      const result = await loginUser({ email, password }).unwrap(); // Use unwrap to handle success or error
+      console.log('Login successful:', result);
+      navigate(`/dashboard`);
+    } catch (error) {
+      // console.error('Login failed:', error);
+      // Handle login failure (e.g., display error message)
+    }
   };
 
   return (
@@ -28,7 +35,7 @@ function Login() {
           alt="Modern office building"
         />
       </div>
-      
+
       {/* Right side - Login form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
@@ -38,22 +45,22 @@ function Login() {
           </div>
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                Tên đăng nhập
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                Địa chỉ email
               </label>
               <div className="mt-1 relative rounded-md shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <UserOutlined className="text-gray-400" />
                 </div>
                 <input
-                  id="username"
-                  name="username"
+                  id="email"
+                  name="email"
                   type="text"
                   required
                   className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)} // Updated to set email
                 />
               </div>
             </div>
@@ -73,7 +80,7 @@ function Login() {
                   className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => setPassword(e.target.value)} // Updated to set password
                 />
               </div>
             </div>
@@ -102,13 +109,15 @@ function Login() {
                 type="submit"
                 className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
-                Đăng nhập
+                {isLoading ? 'Đang đăng nhập...' : 'Đăng nhập'} {/* Handle loading state */}
               </button>
+              {isError && <p className="text-red-500 mt-2">Đăng nhập thất bại. Vui lòng thử lại.</p>} {/* Handle error */}
+              {isSuccess && <p className="text-green-500 mt-2">Đăng nhập thành công!</p>} {/* Handle success */}
             </div>
           </form>
-          </div>
         </div>
       </div>
+    </div>
   );
 }
 
