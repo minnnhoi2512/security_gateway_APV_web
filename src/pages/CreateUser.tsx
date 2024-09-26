@@ -23,12 +23,12 @@ const CreateUser: React.FC = () => {
             await form.validateFields();
             
             // Create a user object (you can modify this as needed)
-            const user = {
-                username,
-                password,
-                status,
-                department: form.getFieldValue('department'),
-            };
+            // const user = {
+            //     username,
+            //     password,
+            //     status,
+            //     department: form.getFieldValue('department'),
+            // };
 
             // Upload images to Firebase Storage
             const idCardPromises = idCardImg.map((file) => {
