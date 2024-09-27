@@ -1,6 +1,6 @@
 // public/firebase-messaging-sw.js
-importScripts('https://www.gstatic.com/firebasejs/9.18.0/firebase-app.js');
-importScripts('https://www.gstatic.com/firebasejs/9.18.0/firebase-messaging.js');
+importScripts('https://www.gstatic.com/firebasejs/10.10.0/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/10.10.0/firebase-messaging-compat.js');
 
 
 // Initialize Firebase
@@ -23,7 +23,7 @@ messaging.onBackgroundMessage((payload) => {
     const notificationTitle = payload.notification.title;
     const notificationOptions = {
         body: payload.notification.body,
-        icon: '/firebase-logo.png' // Change to your icon path
+        icon: payload.notification.icon // Change to your icon path
     };
 
     return self.registration.showNotification(notificationTitle, notificationOptions);

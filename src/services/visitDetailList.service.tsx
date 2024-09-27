@@ -8,11 +8,8 @@ export const visitDetailListAPI = createApi({
     getListDetailVisit: builder.query<any, { visitId: number }>({
       query: ({ visitId }) => {
         return {
-          url: "GetVisitDetailByVisitId",
+          url: `GetVisitDetailByVisitId/${visitId}`,
           method: "GET",
-          params: {
-            visitId,
-          },
         };
       },
     }),

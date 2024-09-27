@@ -3,16 +3,16 @@ import { initializeApp } from "firebase/app";
 import { getStorage } from "firebase/storage";
 import { getFirestore } from "firebase/firestore";
 import { getMessaging } from "firebase/messaging/sw";
-import { getToken } from "firebase/messaging";
+import { getToken, onMessage } from "firebase/messaging";
 // Firebase configuration object from your Firebase project settings
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_APIKEY,
-  authDomain: "apv-gateway-security.firebaseapp.com",
-  projectId: "apv-gateway-security",
-  storageBucket: "apv-gateway-security.appspot.com",
-  messagingSenderId: "312706996675",
-  appId: "1:312706996675:web:4f31dada64321656564576",
-  measurementId: "G-3NF2N2QQ2P",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTHDOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECTID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STOREGEBUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGINGSENDERID,
+  appId: import.meta.env.VITE_FIREBASE_APPID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENTID,
 };
 
 // Initialize Firebase
@@ -32,4 +32,10 @@ const generateToken = async () => {
   }
 };
 
-export { firebaseConfig, imageDB, chatDB, message, generateToken };
+export {
+  firebaseConfig,
+  imageDB,
+  chatDB,
+  message,
+  generateToken,
+};
