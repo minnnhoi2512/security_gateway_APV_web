@@ -1,14 +1,14 @@
 import Visitor from "./visitorType"
 
 type VisitDetail = {
-    VisitDetailId : number,
-    VisitId? : number,
-    ExpectedStartDate : Date,
-    ExpectedEndDate : Date,
-    ExpectedStartTime: Date,
-    ExpectedEndTime : Date,
-    Status: number,
-    Visitor : Visitor,
+    visitDetailId : number,
+    visitId? : number,
+    expectedStartDate : Date,
+    expectedEndDate : Date,
+    expectedStartTime: Date,
+    expectedEndTime : Date,
+    status: number,
+    visitor : Visitor,
 }
 
 export default VisitDetail

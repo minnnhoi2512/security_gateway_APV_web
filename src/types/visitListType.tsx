@@ -1,12 +1,12 @@
 type VisitList = {
-  VisitId: number;
-  DateRegister: Date;
-  VisitName: string;
-  VisitQuantity: number;
-  Description: string;
-  VisitType: string;
-  CreatedBy?: string;
-  UpdatedBy?: string;
+  visitId: number;
+  dateRegister: Date;
+  visitName: string;
+  visitQuantity: number;
+  description: string;
+  visitType: string;
+  createdBy?: string;
+  updatedBy?: string;
 };
 
 export default VisitList;

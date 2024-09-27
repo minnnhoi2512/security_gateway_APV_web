@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import LoginImg from '../assets/login-img.jpeg';
 import { useNavigate } from 'react-router-dom';
 import { useLoginUserMutation } from '../services/user.service';
-import {jwtDecode} from 'jwt-decode'; // Import jwt-decode
+import { jwtDecode } from 'jwt-decode'; // Import jwt-decode
 import { toast } from 'react-toastify'; // Import toast for notification
 import 'react-toastify/dist/ReactToastify.css'; // Import toast styles
 
@@ -11,24 +11,35 @@ function Login() {
   const [rememberMe, setRememberMe] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-
   const navigate = useNavigate();
   const [loginUser, { isLoading }] = useLoginUserMutation();
 
+  // Check for existing token on component mount
+  useEffect(() => {
+    const token = localStorage.getItem('jwtToken');
+    if (token) {
+      // If a token exists, decode it and check the role
+      const decodedToken: any = jwtDecode(token);
+      if (decodedToken.role !== 'Security') {
+        // If the role is not 'Security', redirect to dashboard
+        navigate('/dashboard');
+      }
+    }
+  }, [navigate]);
+
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-
     try {
       const result = await loginUser({ username, password }).unwrap();
       const { jwtToken } = result;
 
       // Decode the token
       const decodedToken: any = jwtDecode(jwtToken);
-      console.log(decodedToken)
+      console.log(decodedToken);
+
       // Check if the role is 'Security' and prevent access
       if (decodedToken.role === 'Security') {
         toast.error('Người dùng này không có quyền truy cập vào hệ thống');
-        // navigate(`/`);
         return; // Stop further actions
       }
 
@@ -42,7 +53,7 @@ function Login() {
       toast.success('Đăng nhập thành công!');
 
       // Navigate to dashboard after successful login
-      navigate(`/dashboard`);
+      navigate('/dashboard');
     } catch (error) {
       console.error('Login failed:', error);
       toast.error('Đăng nhập thất bại. Vui lòng thử lại.');
@@ -59,7 +70,6 @@ function Login() {
           alt="Modern office building"
         />
       </div>
-
       {/* Right side - Login form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
         <div className="w-full max-w-md">

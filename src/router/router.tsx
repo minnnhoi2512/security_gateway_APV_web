@@ -107,7 +107,7 @@ const ContentRouter = () => {
       /> */}
       <Route
         index
-        path="/detailVisit"
+        path="/detailVisit/:id"
         element={
           <LayoutPage>
             <DetailCustomerVisit />

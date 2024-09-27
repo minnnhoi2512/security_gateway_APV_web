@@ -1,11 +1,11 @@
 type Visitor = {
-    VisitorId : number,
-    VisitorName : string,
-    CompanyName : string,
-    PhoneNumber: string,
-    CreateDate : Date,
-    UpdateDate: Date,
-    CredentialsCard : string,
+    visitorId : number,
+    visitorName : string,
+    companyName : string,
+    phoneNumber: string,
+    createdDate : Date,
+    updatedDate: Date,
+    credentialsCard : string,
 }
 
 export default Visitor
