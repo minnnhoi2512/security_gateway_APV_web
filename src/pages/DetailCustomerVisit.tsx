@@ -42,7 +42,7 @@ const DetailCustomerVisit: React.FC = () => {
     {
       title: "Thời gian ra - vào",
       key: "expectedTime",
-      render: (text: any, record: any) => (
+      render: (record: any) => (
         <span>
           {record.expectedStartTime} - {record.expectedEndTime}
         </span>

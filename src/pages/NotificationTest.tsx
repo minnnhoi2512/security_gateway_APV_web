@@ -9,13 +9,13 @@ const NotificationTest: React.FC = () => {
   useEffect(() => {
     // Generate token for the device
     generateToken();
-
+    setNotification("")
     // Set up the notification listener
     const unsubscribe = onMessage(message, (payload) => {
       console.log(payload)
       toast(payload.notification?.body);
     });
-
+    console.log(unsubscribe)
     // Cleanup function to handle unsubscription
     return () => {
       

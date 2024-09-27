@@ -3,7 +3,7 @@ import { initializeApp } from "firebase/app";
 import { getStorage } from "firebase/storage";
 import { getFirestore } from "firebase/firestore";
 import { getMessaging } from "firebase/messaging/sw";
-import { getToken, onMessage } from "firebase/messaging";
+import { getToken } from "firebase/messaging";
 // Firebase configuration object from your Firebase project settings
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_APIKEY,
