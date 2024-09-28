@@ -5,23 +5,24 @@ import VisitDetail from "../../types/visitDetailType";
 import Visitor from "../../types/visitorType";
 
 const initVisitor: Visitor = {
-    visitorId: 0,
-    visitorName: "",
-    companyName: "",
-    phoneNumber: "",
-    createdDate: new Date(),
-    updatedDate: new Date(),
-    credentialsCard: "",
-  };
-  
+  visitorId: 0,
+  visitorName: "",
+  companyName: "",
+  phoneNumber: "",
+  createdDate: new Date(),
+  updatedDate: new Date(),
+  credentialsCard: "",
+  credentialCardTypeId: 0,
+};
+
 const initVisitDetail: VisitDetail = {
   visitDetailId: 0,
   visitId: undefined, // Optional field
   expectedStartDate: new Date(),
   expectedEndDate: new Date(),
-  expectedStartTime: new Date(),
-  expectedEndTime: new Date(),
-  status: 0,
+  expectedStartTime: "",
+  expectedEndTime: "",
+  status: true,
   visitor: initVisitor,
 };
 const initialState: visitDetailListType = {

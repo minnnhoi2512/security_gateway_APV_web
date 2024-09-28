@@ -1,20 +1,145 @@
-import { Form, Input, Select, DatePicker, TimePicker, Button, message } from "antd";
+import {
+  Form,
+  Input,
+  DatePicker,
+  TimePicker,
+  Button,
+  message,
+  InputNumber,
+} from "antd";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import moment, { Moment } from "moment";
+import VisitDetailList from "../types/visitDetailListType";
+import VisitDetail from "../types/visitDetailType";
+import Visitor from "../types/visitorType";
+import { useCreateNewListDetailVisitMutation } from "../services/visitDetailList.service";
+import * as XLSX from "xlsx"; // Import the xlsx library
 
-const { Option } = Select;
+interface FormValues {
+  title: string;
+  date: Moment;
+  time: Moment;
+  expectedTimeOut: Moment;
+  area: string;
+  visitQuantity: number;
+  [key: string]: any; // Dynamic fields for visitors
+}
 
-const CreateNewVisitList = () => {
+const CreateNewVisitList: React.FC = () => {
   const navigate = useNavigate();
-  const [form] = Form.useForm();
+  const [form] = Form.useForm<FormValues>();
+  const [visitCount, setVisitCount] = useState<number>(1); // Default to 1 visitor
+  const userIdString = localStorage.getItem("userId"); // Retrieve user ID as a string
+  const userId = userIdString ? parseInt(userIdString, 10) : null; // Parse it as an integer, default to null if not found
+  const [createNewListDetailVisit] = useCreateNewListDetailVisitMutation();
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const data = new Uint8Array(e.target?.result as ArrayBuffer);
+      const workbook = XLSX.read(data, { type: "array" });
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+      // Assuming the JSON data contains fields like visitorName, companyName, phoneNumber, and credentialsCard
+      const visitors: Visitor[] = jsonData.map((row: any) => ({
+        visitorName: row.visitorName,
+        companyName: row.companyName,
+        phoneNumber: row.phoneNumber,
+        credentialsCard: row.credentialsCard,
+        createdDate: new Date(),
+        updatedDate: new Date(),
+        status: true,
+        credentialCardTypeId: 0, // Adjust if needed
+      }));
+
+      // Clear the form before setting new fields
+      form.resetFields();
+
+      // Update the form with the imported visitor data
+      visitors.forEach((visitor, index) => {
+        form.setFieldsValue({
+          [`visitorName${index}`]: visitor.visitorName,
+          [`companyName${index}`]: visitor.companyName,
+          [`phoneNumber${index}`]: visitor.phoneNumber,
+          [`credentialsCard${index}`]: visitor.credentialsCard,
+        });
+      });
+      setVisitCount(visitors.length);
+    
+    };
+
+    reader.readAsArrayBuffer(file);
+  };
+
+  const handleDeleteVisitor = (index: number) => {
+    // Clear the visitor fields for the specified index
+    form.setFieldsValue({
+      [`visitorName${index}`]: "",
+      [`companyName${index}`]: "",
+      [`phoneNumber${index}`]: "",
+      [`credentialsCard${index}`]: "",
+    });
+  };
 
   const handleSubmit = () => {
-    form.validateFields().then(() => {
-      // Logic to handle new visit creation
-      message.success("Lịch hẹn đã được tạo thành công!");
-      navigate(-1); // Redirect back
-    }).catch((errorInfo) => {
-      console.error("Failed to create visit:", errorInfo);
-    });
+    form
+      .validateFields()
+      .then(async (values) => {
+        const visitDetails: VisitDetail[] = Array.from({
+          length: visitCount,
+        }).map((_, index) => {
+          const newVisitor: Visitor = {
+            visitorName: values[`visitorName${index}`],
+            companyName: values[`companyName${index}`],
+            phoneNumber: values[`phoneNumber${index}`],
+            createdDate: new Date(),
+            updatedDate: new Date(),
+            credentialsCard: values[`credentialsCard${index}`],
+            status: true,
+            credentialCardTypeId: 0, // Adjust if needed
+          };
+          return {
+            description: values.title,
+            expectedTimeIn: values.time
+              ? moment(values.time).format("HH:mm:ss")
+              : "07:00:00",
+            expectedTimeOut: values.expectedTimeOut
+              ? moment(values.expectedTimeOut).format("HH:mm:ss")
+              : "12:00:00",
+            status: true,
+            visitor: newVisitor,
+          };
+        });
+
+        const visitData: VisitDetailList = {
+          visitQuantity: visitCount,
+          acceptLevel: 2,
+          visitName: values.title,
+          createById: userId || 0,
+          updateById: userId || 0,
+          visitDetailOfNewVisitor: visitDetails,
+          visitDetailOfOldVisitor: [],
+        };
+
+        try {
+          await createNewListDetailVisit({
+            newVisitDetailList: visitData,
+          }).unwrap();
+          message.success("Lịch hẹn đã được tạo thành công!");
+          navigate(-1);
+        } catch (error) {
+          console.error("Failed to create visit:", error);
+          message.error("Đã có lỗi xảy ra khi tạo lịch hẹn.");
+        }
+      })
+      .catch((errorInfo) => {
+        console.error("Failed to validate fields:", errorInfo);
+      });
   };
 
   return (
@@ -37,22 +162,98 @@ const CreateNewVisitList = () => {
         </Form.Item>
         <Form.Item
           name="time"
-          label="Thời gian"
-          rules={[{ required: true, message: "Vui lòng chọn thời gian" }]}
+          label="Thời gian vào"
+          rules={[{ required: true, message: "Vui lòng chọn thời gian vào" }]}
         >
           <TimePicker format="HH:mm" />
         </Form.Item>
         <Form.Item
-          name="area"
-          label="Khu vực"
-          rules={[{ required: true, message: "Vui lòng chọn khu vực" }]}
+          name="expectedTimeOut"
+          label="Thời gian ra"
+          rules={[{ required: true, message: "Vui lòng chọn thời gian ra" }]}
         >
-          <Select>
-            <Option value="Sản xuất">Sản xuất</Option>
-            <Option value="Kinh doanh">Kinh doanh</Option>
-            <Option value="Nhân sự">Nhân sự</Option>
-          </Select>
+          <TimePicker format="HH:mm" />
         </Form.Item>
+        {/* Number of visitors */}
+        <Form.Item
+          name="visitQuantity"
+          label="Số lượng khách"
+          rules={[{ required: true, message: "Vui lòng nhập số lượng khách" }]}
+          
+        >
+          <InputNumber
+            min={1}
+            defaultValue={visitCount}
+            value={visitCount}
+            onChange={(value) => {
+              setVisitCount(value ?? 1);
+              form.setFieldsValue({ visitQuantity: value ?? 1 }); // Update form's visitQuantity field
+            }}
+          />
+        </Form.Item>
+        {/* File upload for visitor details */}
+        <Form.Item label="Nhập thông tin khách từ file Excel">
+          <Input type="file" accept=".xlsx, .xls" onChange={handleFileUpload} />
+        </Form.Item>
+        {/* Visitor details form fields - dynamically rendered based on visitCount */}
+        <h2 className="text-xl font-bold mt-4">Thông tin khách</h2>
+        {Array.from({ length: visitCount }).map((_, index) => (
+          <div key={index} className="visitor-section">
+            <h3 className="text-lg font-semibold mt-2">Khách {index + 1}</h3>
+            <Form.Item
+              name={`visitorName${index}`}
+              label="Tên khách"
+              rules={[
+                {
+                  required: true,
+                  message: `Vui lòng nhập tên khách ${index + 1}`,
+                },
+              ]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name={`companyName${index}`}
+              label="Tên công ty"
+              rules={[
+                {
+                  required: true,
+                  message: `Vui lòng nhập tên công ty khách ${index + 1}`,
+                },
+              ]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name={`phoneNumber${index}`}
+              label="Số điện thoại"
+              rules={[
+                {
+                  required: true,
+                  message: `Vui lòng nhập số điện thoại khách ${index + 1}`,
+                },
+              ]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name={`credentialsCard${index}`}
+              label="CCCD"
+              rules={[
+                {
+                  required: true,
+                  message: `Vui lòng nhập CCCD khách ${index + 1}`,
+                },
+              ]}
+            >
+              <Input />
+            </Form.Item>
+            {/* Delete button for visitor */}
+            <Button type="dashed" onClick={() => handleDeleteVisitor(index)}>
+              Xóa thông tin khách
+            </Button>
+          </div>
+        ))}
         <Form.Item>
           <Button type="primary" onClick={handleSubmit}>
             Tạo lịch hẹn
