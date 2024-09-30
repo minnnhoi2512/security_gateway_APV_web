@@ -8,15 +8,29 @@ export const userAPI = createApi({
     loginUser: builder.mutation({
       query: (body: { username: string; password: string }) => {
         return {
-          url: "Login", 
+          url: "Login",
           method: "POST",
           body,
+        };
+      },
+    }),
+    getListUserByRole: builder.query<
+      any,
+      { pageNumber: number; pageSize: number; role: string }
+    >({
+      query: ({ pageNumber, pageSize, role }) => {
+        return {
+          url: "GetAllUserPaging",
+          method: "GET",
+          params: {
+            pageNumber,
+            pageSize,
+            role,
+          },
         };
       },
     }),
   }),
 });
 
-export const { useLoginUserMutation } = userAPI;
-
-
+export const { useLoginUserMutation,useGetListUserByRoleQuery } = userAPI;

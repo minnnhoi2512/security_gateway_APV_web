@@ -1,14 +1,15 @@
 type User = {
-    UserId : number,
-    Username : string,
-    Password : string,
-    FullName : string,
-    Email : string,
-    PhoneNumber: string,
-    CreateDate : Date,
-    UpdateDate: Date,
-    Status : string,
-    RoleId : number 
+    userId : number,
+    username : string,
+    password : string,
+    fullName : string,
+    email : string,
+    image? : string,
+    phoneNumber: string,
+    createDate? : Date,
+    updateDate?: Date,
+    status : string,
+    roleId : number 
 }
 
 export default User

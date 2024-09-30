@@ -5,14 +5,14 @@ import UserType from "../types/userType";
 import { useGetListUserByRoleQuery } from "../services/user.service";
 const { Content } = Layout;
 
-const Manager = () => {
+const Staff = () => {
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [searchText, setSearchText] = useState<string>("");
   const navigate = useNavigate();
   const { data = [] } = useGetListUserByRoleQuery({
     pageNumber: 1,
     pageSize: 5,
-    role: "Manager",
+    role: "Staff",
   });
   console.log(data);
   const [form] = Form.useForm();
@@ -89,7 +89,7 @@ const Manager = () => {
       dataIndex: "role",
       key: "role",
       render: (role: string | null) => {
-        const displayedRole = role || "Quản lý";
+        const displayedRole = role || "Nhân viên";
         let color = displayedRole === "Active" ? "green" : "volcano";
         return <Tag color={color}>{displayedRole}</Tag>;
       },
@@ -124,7 +124,7 @@ const Manager = () => {
         <Content className="p-6">
           <div className="flex justify-center mb-4">
             <h1 className="text-green-500 text-2xl font-bold">
-              Danh sách quản lý
+              Danh sách nhân viên
             </h1>
           </div>
           <Button
@@ -154,4 +154,4 @@ const Manager = () => {
   );
 };
 
-export default Manager;
+export default Staff;

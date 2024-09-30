@@ -40,7 +40,7 @@ const MenuNav = () => {
     {
       key: 'departmentManager',
       icon: <UserOutlined />,
-      label: 'Trợ lý giám đốc',
+      label: 'Trợ lý phòng ban',
     },
     {
       key: 'security',
@@ -53,6 +53,11 @@ const MenuNav = () => {
       label: 'Danh sách khách',
     },
     {
+      key: 'staff',
+      icon: <UserOutlined />,
+      label: 'Danh sách nhân viên',
+    },
+    {
       key: 'card',
       icon: <UserOutlined />,
       label: 'Danh sách thẻ',
@@ -63,9 +68,9 @@ const MenuNav = () => {
       label: 'Danh sách cổng',
     },
     {
-      key: 'project',
+      key: 'process',
       icon: <UserOutlined />,
-      label: 'Dự án ',
+      label: 'Tiến trình hằng ngày',
     },
     {
       key: 'calendar',

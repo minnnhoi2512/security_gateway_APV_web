@@ -1,136 +1,134 @@
 import { useState, useEffect } from "react";
-import {
-  Button,
-  Table,
-  message,
-} from "antd";
-import { TableProps,Input } from "antd";
+import { Button, Table, Input, Tag, Space } from "antd";
+import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
+import { TableProps, PaginationProps } from "antd";
 import { useNavigate } from "react-router-dom";
-import moment from "moment-timezone"; // Import moment-timezone
+import moment from "moment-timezone";
 import { Content } from "antd/es/layout/layout";
-import { useGetListVisitQuery } from "../services/visitList.service";
 import VisitListType from "../types/visitListType";
+import { useGetListVisitQuery } from "../services/visitList.service";
 
 const CustomerVisit = () => {
-  const userRole = localStorage.getItem("userRole"); // Retrieve user role
+  const userRole = localStorage.getItem("userRole");
   const navigate = useNavigate();
-  const [searchText, setSearchText] = useState<string>(""); // For search functionality
-  const [currentPage, setCurrentPage] = useState<number>(1); // Current page number
-  const [pageSize, setPageSize] = useState<number>(5); // Rows per page
-  const { data = [], error, isLoading } = useGetListVisitQuery({
-    pageNumber: currentPage,
-    pageSize,
-  });
+  const [searchText, setSearchText] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(5);
 
-  useEffect(() => {
-    if (error) {
-      message.error("Failed to load visits!");
-    }
-  }, [error]);
+  // Fetching data using the query
+  const { data, isLoading, error } = useGetListVisitQuery({ pageNumber: currentPage, pageSize });
+  console.log(data);
+  // Mapping visit types to corresponding tags with colors
+  const statusTags: Record<string, JSX.Element> = {
+    ProcessWeek: <Tag color="green">ProcessWeek</Tag>,
+    VisitStaff: <Tag color="red">VisitStaff</Tag>,
+  };
+
+  const getMappedVisitType = (type: string) => statusTags[type] || <Tag color="gray">Khác</Tag>;
 
   const columns: TableProps<VisitListType>["columns"] = [
     {
       title: "Tiêu đề",
-      dataIndex: "visitName", // Ensure this matches your data structure
+      dataIndex: "visitName",
       key: "visitName",
       filteredValue: searchText ? [searchText] : null,
       onFilter: (value, record) =>
-        record.visitName.toLowerCase().includes(value.toString().toLowerCase()), // Use visitName for filtering
-      render: (text) => <a>{text}</a>,
+        record.visitName.toLowerCase().includes(value.toString().toLowerCase()),
+      sorter: (a, b) => a.visitName.localeCompare(b.visitName),
+      render: (text) => <span style={{ fontSize: "14px", color: "#000" }}>{text}</span>,
     },
     {
       title: "Ngày",
       dataIndex: "dateRegister",
       key: "dateRegister",
-      render: (date) => moment.tz(date, "Asia/Ho_Chi_Minh").format("MMMM DD, YYYY, HH:mm:ss"), // Format date to Vietnam time
+      render: (date: Date) => moment.tz(date, "Asia/Ho_Chi_Minh").format("DD/MM/YYYY"),
+      sorter: (a, b) => new Date(a.dateRegister).getTime() - new Date(b.dateRegister).getTime(),
     },
     {
       title: "Số lượng (Người)",
-      dataIndex: "visitQuantity", // Ensure this matches your data structure
+      dataIndex: "visitQuantity",
       key: "visitQuantity",
-      render: (text) => text, // Handle potential undefined
+      sorter: (a, b) => a.visitQuantity - b.visitQuantity,
+      render: (text) => <span style={{ fontSize: "14px", color: "#000" }}>{text}</span>,
     },
     {
       title: "Miêu tả",
-      dataIndex: "description", // Ensure this matches your data structure
+      dataIndex: "description",
       key: "description",
+      render: (text) => <span style={{ fontSize: "14px", color: "#000" }}>{text}</span>,
     },
     {
       title: "Loại",
-      dataIndex: "visitType", // Ensure this matches your data structure
+      dataIndex: "visitType",
       key: "visitType",
-      render: (text) => text, // Handle potential undefined
+      render: (text) => getMappedVisitType(text),
     },
     {
       title: "Tạo bởi",
-      dataIndex: "createBy", // Ensure this matches your data structure
+      dataIndex: "createBy",
       key: "createBy",
-      render: (text) => text?.fullName || "-", // Handle potential undefined
+      render: (text) => <span style={{ fontSize: "14px", color: "#000" }}>{text?.fullName || "-"}</span>,
     },
     {
       title: "Hành động",
       key: "action",
       render: (_, record) => (
-        <Button
-          size="middle"
-          onClick={() => 
-            navigate(`/detailVisit/${record.visitId}`)
-            // console.log(record?.visitId)
-          } // Navigate with ID
-        >
+        <Button size="middle" onClick={() => navigate(`/detailVisit/${record.visitId}`)}>
           Chi tiết
         </Button>
       ),
     },
   ];
 
-  // Handling search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchText(e.target.value);
   };
 
-  // Handle pagination change
-  const handleTableChange = (pagination: any) => {
-    setCurrentPage(pagination.current);
-    setPageSize(pagination.pageSize);
+  const handleTableChange = (pagination: PaginationProps) => {
+    setCurrentPage(pagination.current || 1);
+    setPageSize(pagination.pageSize || 5);
   };
 
   return (
     <Content className="p-6">
       <div className="flex justify-center mb-4">
-        <h1 className="text-green-500 text-2xl font-bold">
-          Danh sách khách đến công ty
-        </h1>
+        <h1 className="text-green-500 text-2xl font-bold">Danh sách khách đến công ty</h1>
       </div>
-      {/* Search Input */}
-      <div>
+      <Space style={{ marginBottom: 16, display: "flex", justifyContent: "space-between" }}>
         <Input
           placeholder="Tìm kiếm theo tiêu đề"
+          prefix={<SearchOutlined />}
           value={searchText}
           onChange={handleSearchChange}
-          style={{ marginBottom: 16, width: 300 }}
+          style={{ marginBottom: 16, width: 300, borderColor: "#1890ff", borderRadius: 5 }}
         />
-        {/* Conditionally render "Tạo mới" button based on userRole */}
         {userRole !== "Security" && (
-          <Button type="default" onClick={() => navigate("/createNewVisitList")}>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => navigate('/createNewVisitList')}
+            style={{ borderRadius: 5 }}
+          >
             Tạo mới
           </Button>
         )}
-      </div>
-      {/* Table with pagination */}
+      </Space>
       <Table
         columns={columns}
-        dataSource={data} // Ensure data is an array
+        dataSource={data || []} // Fallback to an empty array if data is undefined
         pagination={{
           current: currentPage,
           pageSize: pageSize,
-          total: data.length, // This should now be safe
+          total: data?.total || 0, // Assuming data contains total count
           showSizeChanger: true,
           pageSizeOptions: ["5", "10", "20"],
+          hideOnSinglePage: false,
+          size: "small",
         }}
         onChange={handleTableChange}
-        loading={isLoading} // Show loading state
+        loading={isLoading}
         rowKey="visitId"
+        bordered
       />
     </Content>
   );
