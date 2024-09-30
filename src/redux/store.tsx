@@ -2,6 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import { userAPI } from "../services/user.service";
 import { visitListAPI } from "../services/visitList.service";
 import { visitDetailListAPI } from "../services/visitDetailList.service";
+import { qrCardAPI } from "../services/QRCard.service";
 import { setupListeners } from "@reduxjs/toolkit/query";
 import { processAPI } from "../services/process.service";
 import { qrCardAPI } from "../services/QRCard.service";
