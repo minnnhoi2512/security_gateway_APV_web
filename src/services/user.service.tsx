@@ -30,7 +30,22 @@ export const userAPI = createApi({
         };
       },
     }),
+    getListStaffByDepartmentManager: builder.query<
+      any,
+      { pageNumber: number; pageSize: number; id: number }
+    >({
+      query: ({ pageNumber, pageSize, id }) => {
+        return {
+          url: `GetAllStaffPagingByDepartmentManagerId/${id}`,
+          method: "GET",
+          params: {
+            pageNumber,
+            pageSize,
+          },
+        };
+      },
+    }),
   }),
 });
 
-export const { useLoginUserMutation,useGetListUserByRoleQuery } = userAPI;
+export const { useLoginUserMutation, useGetListUserByRoleQuery,useGetListStaffByDepartmentManagerQuery } = userAPI;

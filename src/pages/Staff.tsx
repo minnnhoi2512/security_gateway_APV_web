@@ -1,25 +1,41 @@
-import { Layout, Button, Table, Tag, Modal, Form, Input } from "antd";
-import { useState } from "react";
+import { Layout, Button, Table, Tag, Input } from "antd";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import UserType from "../types/userType";
-import { useGetListUserByRoleQuery } from "../services/user.service";
+import {
+  useGetListStaffByDepartmentManagerQuery,
+  useGetListUserByRoleQuery,
+} from "../services/user.service";
 const { Content } = Layout;
 
 const Staff = () => {
-  const [isAddModalVisible, setIsAddModalVisible] = useState(false);
+  const userRole = localStorage.getItem("userRole");
+  const userId = Number(localStorage.getItem("userId"));
+  // console.log("userRole", userRole);
+  // console.log("userId", userId);
   const [searchText, setSearchText] = useState<string>("");
   const navigate = useNavigate();
-  const { data = [] } = useGetListUserByRoleQuery({
-    pageNumber: 1,
-    pageSize: 5,
-    role: "Staff",
-  });
-  console.log(data);
-  const [form] = Form.useForm();
-  const handleAddCancel = () => {
-    setIsAddModalVisible(false);
-    form.resetFields();
-  };
+  const [data, setData] = useState<UserType[]>([]);
+
+  // Fetch data based on user role
+  const staffQuery = useGetListStaffByDepartmentManagerQuery(
+    { pageNumber: 1, pageSize: 5, id: userId },
+    { skip: userRole !== "DepartmentManager" } // Skip if not Department Manager
+  );
+
+  const userQuery = useGetListUserByRoleQuery(
+    { pageNumber: 1, pageSize: 5, role: "Staff" },
+    { skip: userRole === "DepartmentManager" } // Skip if Department Manager
+  );
+
+  useEffect(() => {
+    if (staffQuery.data) {
+      setData(staffQuery.data);
+    } else if (userQuery.data) {
+      setData(userQuery.data);
+    }
+  }, [staffQuery.data, userQuery.data]);
+
 
   // const handleAddUser = () => {
   //   form.validateFields().then((values) => {
