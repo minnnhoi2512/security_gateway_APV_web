@@ -3,7 +3,7 @@ import { userAPI } from "../services/user.service";
 import { visitListAPI } from "../services/visitList.service";
 import { visitDetailListAPI } from "../services/visitDetailList.service";
 import { setupListeners } from "@reduxjs/toolkit/query";
-import { processAPI } from "../services/process.service";
+import { scheduleAPI } from "../services/schedule.service";
 import { qrCardAPI } from "../services/QRCard.service";
 
 export const store = configureStore({
@@ -11,7 +11,7 @@ export const store = configureStore({
     [userAPI.reducerPath]: userAPI.reducer,
     [visitListAPI.reducerPath]: visitListAPI.reducer,
     [visitDetailListAPI.reducerPath]: visitDetailListAPI.reducer,
-    [processAPI.reducerPath]: processAPI.reducer,
+    [scheduleAPI.reducerPath]: scheduleAPI.reducer,
     [qrCardAPI.reducerPath]: qrCardAPI.reducer,
   },
   middleware: (getDefaultMiddleware) =>
@@ -19,7 +19,7 @@ export const store = configureStore({
       .concat(userAPI.middleware)
       .concat(visitListAPI.middleware)
       .concat(visitDetailListAPI.middleware)
-      .concat(processAPI.middleware)
+      .concat(scheduleAPI.middleware)
       .concat(qrCardAPI.middleware),
 });
 

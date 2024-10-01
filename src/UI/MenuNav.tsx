@@ -68,7 +68,7 @@ const MenuNav = () => {
       label: 'Danh sách cổng',
     },
     {
-      key: 'process',
+      key: 'schedule',
       icon: <UserOutlined />,
       label: 'Tiến trình hằng ngày',
     },

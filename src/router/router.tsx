@@ -3,7 +3,7 @@ import LayoutPage from "../pages/Layout";
 import Dashboard from "../pages/Dashboard";
 import CustomerVisit from "../pages/CustomerVisit";
 import DetailCustomerVisit from "../pages/DetailCustomerVisit";
-import Project from "../pages/Process";
+import Schedule from "../pages/Schedule";
 import Manager from "../pages/Manager";
 import DetailProject from "../pages/DetailProject";
 import HistoryDetail from "../pages/HistoryDetail";
@@ -22,6 +22,7 @@ import GateManager from "../pages/GateManager";
 import Notification from "../pages/NotificationTest";
 import Staff from "../pages/Staff";
 import ChatRoom from "../pages/ChatRoom";
+
 
 const ContentRouter = () => {
   return (
@@ -62,7 +63,8 @@ const ContentRouter = () => {
           </LayoutPage>
         }
       />
-       <Route
+    
+      <Route
         index
         path="/staff"
         element={
@@ -125,7 +127,7 @@ const ContentRouter = () => {
           </LayoutPage>
         }
       />
-       <Route
+      <Route
         index
         path="/notification-test"
         element={
@@ -136,10 +138,10 @@ const ContentRouter = () => {
       />
       <Route
         index
-        path="/process"
+        path="/schedule"
         element={
           <LayoutPage>
-            <Project />
+            <Schedule />
           </LayoutPage>
         }
       />
@@ -206,7 +208,7 @@ const ContentRouter = () => {
           </LayoutPage>
         }
       />
-       <Route
+      <Route
         index
         path="/chat/:id"
         element={
