@@ -3,155 +3,149 @@ import { Layout, Button, Form, Input, message, Upload } from "antd";
 import { useNavigate } from "react-router-dom";
 import { UploadOutlined } from "@ant-design/icons";
 import { v4 as uuidv4 } from "uuid"; // Import uuid
-import { ref, uploadBytes } from "firebase/storage";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage"; // Import getDownloadURL
 import { imageDB } from "../api/firebase"; // Adjust the path as necessary
+import UserType from "../types/userType"; // Ensure this type is defined
+import { useCreateNewUserMutation } from "../services/user.service";
 
 const { Content } = Layout;
 
 const CreateUser: React.FC = () => {
-    const navigate = useNavigate();
-    const [form] = Form.useForm();
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
-    const [email, setEmail] = useState("");
-    const [fullName, setFullName] = useState("");
-    const [phoneNumber, setPhoneNumber] = useState("");
-    const [idCardImg, setIdCardImg] = useState<File[]>([]);
-    const [faceImg, setFaceImg] = useState<File[]>([]);
+  const navigate = useNavigate();
+  const [form] = Form.useForm();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [faceImg, setFaceImg] = useState<File[]>([]);
+  const [createNewUser] = useCreateNewUserMutation(); // Destructure the mutation
 
-    const handleCreateUser = async () => {
-        try {
-            await form.validateFields();
-            const user = {
-                username,
-                password,
-                fullName,
-                phoneNumber,
-                email,
-            };
+  const handleCreateUser = async () => {
+    try {
+      await form.validateFields();
 
-            // Upload images to Firebase Storage
-            const idCardPromises = idCardImg.map((file) => {
-                const uniqueFileName = `${uuidv4()}`; // Use uuid for unique filename
-                const storageRef = ref(imageDB, `idCards/${uniqueFileName}`);
-                return uploadBytes(storageRef, file);
-            });
+      // Upload images to Firebase Storage
+      const faceImgPromises = faceImg.map((file) => {
+        const uniqueFileName = `${uuidv4()}`; // Use uuid for unique filename
+        const storageRef = ref(imageDB, `avtImg/${uniqueFileName}`);
+        return uploadBytes(storageRef, file).then((snapshot) => {
+          return getDownloadURL(snapshot.ref); // Get the download URL after upload
+        });
+      });
 
-            const faceImgPromises = faceImg.map((file) => {
-                const uniqueFileName = `${uuidv4()}`; // Use uuid for unique filename
-                const storageRef = ref(imageDB, `faceImages/${uniqueFileName}`);
-                return uploadBytes(storageRef, file);
-            });
+      // Wait for all uploads to complete and get URLs
+      const faceImgUrls = await Promise.all(faceImgPromises);
+      const user: UserType = {
+        userName: username,
+        password: password,
+        fullName: fullName,
+        email: email,
+        phoneNumber: phoneNumber,
+        image: faceImgUrls[0], // Assuming you want to store the first uploaded image
+        roleID: 1, // Replace with actual role ID
+        departmentId: 1, // Replace with actual department ID
+      };
 
-            // Wait for all uploads to complete
-            await Promise.all([...idCardPromises, ...faceImgPromises]);
+      // Call the mutation to create the user
+      const result = await createNewUser(user).unwrap(); // Use unwrap to handle the promise correctly
 
-            message.success("Tạo người dùng thành công!");
-            setIdCardImg([]); // Clear the uploaded images
-            setFaceImg([]); // Clear the uploaded images
-            form.resetFields(); // Reset form fields
-            navigate(-1); // Go back after successful creation
-        } catch (errorInfo) {
-            console.error("Failed to create user:", errorInfo);
-            message.error("Tạo người dùng thất bại!"); // Show error message
-        }
-    };
+      message.success("Tạo người dùng thành công!");
+      setFaceImg([]); // Clear the uploaded images
+      form.resetFields(); // Reset form fields
+      navigate(-1); // Go back after successful creation
+    } catch (error) {
+      console.error("Failed to create user:", error);
+      // Check if the error has a message or status and display it
+      const errorMessage = "Tạo người dùng thất bại!"; // Default message if none
+      message.error(errorMessage); // Show error message
+    }
+  };
 
-    const handleCancel = () => {
-        navigate(-1);
-    };
+  const handleCancel = () => {
+    navigate(-1);
+  };
 
-    return (
-        <Layout className="min-h-screen">
-            <Content className="p-6">
-                <h1 className="text-green-500 text-2xl font-bold">Tạo người dùng mới</h1>
-                <Form form={form} layout="vertical">
-                    <Form.Item
-                        name="fullName"
-                        label="Họ Và Tên"
-                        rules={[{ required: true, message: "Vui lòng nhập họ và tên" }]}
-                    >
-                        <Input
-                            placeholder="Nhập tên"
-                            onChange={(e) => setFullName(e.target.value)}
-                        />
-                    </Form.Item>
-                    <Form.Item
-                        name="email"
-                        label="Email"
-                        rules={[{ required: true, message: "Vui lòng nhập email" }]}
-                    >
-                        <Input
-                            placeholder="Nhập email"
-                            onChange={(e) => setEmail(e.target.value)}
-                        />
-                    </Form.Item>
-                    <Form.Item
-                        name="username"
-                        label="Tên đăng nhập"
-                        rules={[{ required: true, message: "Vui lòng nhập tên đăng nhập" }]}
-                    >
-                        <Input
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            placeholder="Nhập tên đăng nhập"
-                        />
-                    </Form.Item>
-                    <Form.Item
-                        name="password"
-                        label="Mật khẩu"
-                        rules={[{ required: true, message: "Vui lòng nhập mật khẩu" }]}
-                    >
-                        <Input.Password
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            placeholder="Nhập mật khẩu"
-                        />
-                    </Form.Item>
-                    <Form.Item
-                        name="phoneNumber"
-                        label="Số điện thoại"
-                        rules={[{ required: true, message: "Vui lòng nhập số điện thoại" }]}
-                    >
-                        <Input
-                            placeholder="Nhập số điện thoại"
-                            onChange={(e) => setPhoneNumber(e.target.value)}
-                        />
-                    </Form.Item>
-                    <Form.Item label="Ảnh ID Card">
-                        <Upload
-                            beforeUpload={(file) => {
-                                setIdCardImg((prev) => [...prev, file]);
-                                return false; // Prevent automatic upload
-                            }}
-                            showUploadList={true}
-                        >
-                            <Button icon={<UploadOutlined />}>Tải lên ảnh ID Card</Button>
-                        </Upload>
-                    </Form.Item>
-                    <Form.Item label="Ảnh Gương Mặt">
-                        <Upload
-                            beforeUpload={(file) => {
-                                setFaceImg((prev) => [...prev, file]);
-                                return false; // Prevent automatic upload
-                            }}
-                            showUploadList={true}
-                        >
-                            <Button icon={<UploadOutlined />}>Tải lên ảnh gương mặt</Button>
-                        </Upload>
-                    </Form.Item>
-                    <Form.Item>
-                        <Button type="primary" onClick={handleCreateUser}>
-                            Tạo người dùng
-                        </Button>
-                        <Button onClick={handleCancel} style={{ marginLeft: "10px" }}>
-                            Hủy
-                        </Button>
-                    </Form.Item>
-                </Form>
-            </Content>
-        </Layout>
-    );
+  return (
+    <Layout className="min-h-screen">
+      <Content className="p-6">
+        <h1 className="text-green-500 text-2xl font-bold">Tạo người dùng mới</h1>
+        <Form form={form} layout="vertical">
+          <Form.Item
+            name="fullName"
+            label="Họ Và Tên"
+            rules={[{ required: true, message: "Vui lòng nhập họ và tên" }]}
+          >
+            <Input
+              placeholder="Nhập tên"
+              onChange={(e) => setFullName(e.target.value)}
+            />
+          </Form.Item>
+          <Form.Item
+            name="email"
+            label="Email"
+            rules={[{ required: true, message: "Vui lòng nhập email" }]}
+          >
+            <Input
+              placeholder="Nhập email"
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </Form.Item>
+          <Form.Item
+            name="username"
+            label="Tên đăng nhập"
+            rules={[{ required: true, message: "Vui lòng nhập tên đăng nhập" }]}
+          >
+            <Input
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Nhập tên đăng nhập"
+            />
+          </Form.Item>
+          <Form.Item
+            name="password"
+            label="Mật khẩu"
+            rules={[{ required: true, message: "Vui lòng nhập mật khẩu" }]}
+          >
+            <Input.Password
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Nhập mật khẩu"
+            />
+          </Form.Item>
+          <Form.Item
+            name="phoneNumber"
+            label="Số điện thoại"
+            rules={[{ required: true, message: "Vui lòng nhập số điện thoại" }]}
+          >
+            <Input
+              placeholder="Nhập số điện thoại"
+              onChange={(e) => setPhoneNumber(e.target.value)}
+            />
+          </Form.Item>
+          <Form.Item label="Ảnh đại diện">
+            <Upload
+              beforeUpload={(file) => {
+                setFaceImg((prev) => [...prev, file]);
+                return false; // Prevent automatic upload
+              }}
+              showUploadList={true}
+            >
+              <Button icon={<UploadOutlined />}>Tải lên ảnh</Button>
+            </Upload>
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" onClick={handleCreateUser}>
+              Tạo người dùng
+            </Button>
+            <Button onClick={handleCancel} style={{ marginLeft: "10px" }}>
+              Hủy
+            </Button>
+          </Form.Item>
+        </Form>
+      </Content>
+    </Layout>
+  );
 };
 
 export default CreateUser;

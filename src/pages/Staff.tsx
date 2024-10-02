@@ -19,12 +19,12 @@ const Staff = () => {
 
   // Fetch data based on user role
   const staffQuery = useGetListStaffByDepartmentManagerQuery(
-    { pageNumber: 1, pageSize: 5, id: userId },
+    { pageNumber: -1, pageSize: -1, id: userId },
     { skip: userRole !== "DepartmentManager" } // Skip if not Department Manager
   );
 
   const userQuery = useGetListUserByRoleQuery(
-    { pageNumber: 1, pageSize: 5, role: "Staff" },
+    { pageNumber: -1, pageSize: -1, role: "Staff" },
     { skip: userRole === "DepartmentManager" } // Skip if Department Manager
   );
 
@@ -104,10 +104,11 @@ const Staff = () => {
       title: "Vai trò",
       dataIndex: "role",
       key: "role",
-      render: (role: string | null) => {
-        const displayedRole = role || "Nhân viên";
-        let color = displayedRole === "Active" ? "green" : "volcano";
-        return <Tag color={color}>{displayedRole}</Tag>;
+      render: (role: { roleName: string; status: string } | null) => {
+        const displayedRole = role ? role.roleName : "Nhân viên"; // Use roleName if role is not null
+        const color = role && role.status === "Active" ? "green" : "volcano"; // Check status for color
+    
+        return <Tag color={color}>{displayedRole}</Tag>; // Use displayedRole for the tag
       },
     },
     {

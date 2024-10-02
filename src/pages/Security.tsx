@@ -10,8 +10,8 @@ const Security = () => {
   const [searchText, setSearchText] = useState<string>("");
   const navigate = useNavigate();
   const { data = [] } = useGetListUserByRoleQuery({
-    pageNumber: 1,
-    pageSize: 5,
+    pageNumber: -1,
+    pageSize: -1,
     role: "Security",
   });
   console.log(data);
@@ -88,10 +88,11 @@ const Security = () => {
       title: "Vai trò",
       dataIndex: "role",
       key: "role",
-      render: (role: string | null) => {
-        const displayedRole = role || "Bảo vệ";
-        let color = displayedRole === "Active" ? "green" : "volcano";
-        return <Tag color={color}>{displayedRole}</Tag>;
+      render: (role: { roleName: string; status: string } | null) => {
+        const displayedRole = role ? role.roleName : "Bảo vệ"; // Use roleName if role is not null
+        const color = role && role.status === "Active" ? "green" : "volcano"; // Check status for color
+    
+        return <Tag color={color}>{displayedRole}</Tag>; // Use displayedRole for the tag
       },
     },
     {
