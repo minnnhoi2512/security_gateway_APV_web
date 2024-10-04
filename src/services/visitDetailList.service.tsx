@@ -31,7 +31,7 @@ export const visitDetailListAPI = createApi({
     >({
       query: ({ newVisitDetailList }) => {
         return {
-          url: `CreateVisit`,
+          url: "",
           method: "POST",
           body: newVisitDetailList, // Include the body in the request
         };

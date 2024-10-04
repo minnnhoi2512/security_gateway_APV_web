@@ -6,6 +6,7 @@ import { setupListeners } from "@reduxjs/toolkit/query";
 import { scheduleAPI } from "../services/schedule.service";
 import { qrCardAPI } from "../services/QRCard.service";
 import { departmentAPI } from "../services/department.service";
+import { scheduleTypeAPI } from "../services/scheduleType.service";
 
 export const store = configureStore({
   reducer: {
@@ -15,6 +16,7 @@ export const store = configureStore({
     [scheduleAPI.reducerPath]: scheduleAPI.reducer,
     [qrCardAPI.reducerPath]: qrCardAPI.reducer,
     [departmentAPI.reducerPath]: departmentAPI.reducer,
+    [scheduleTypeAPI.reducerPath]: scheduleTypeAPI.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
@@ -23,6 +25,7 @@ export const store = configureStore({
       .concat(visitDetailListAPI.middleware)
       .concat(qrCardAPI.middleware)
       .concat(scheduleAPI.middleware)
+      .concat(scheduleTypeAPI.middleware)
       .concat(departmentAPI.middleware),
 });
 

@@ -13,7 +13,7 @@ const { Content } = Layout;
 const Staff = () => {
   const userRole = localStorage.getItem("userRole");
   const userId = Number(localStorage.getItem("userId"));
-  
+
   const [searchText, setSearchText] = useState<string>("");
   const navigate = useNavigate();
   const [data, setData] = useState<UserType[]>([]);
@@ -21,21 +21,17 @@ const Staff = () => {
   const [userIdToDelete, setUserIdToDelete] = useState<number | null>(null); // State to store user ID for deletion
 
   // Fetch data based on user role
-  const {
-    data: staffData,
-    refetch: refetchStaffData,
-  } = useGetListStaffByDepartmentManagerQuery(
-    { pageNumber: -1, pageSize: -1, departmentManagerId: userId },
-    { skip: userRole !== "DepartmentManager" } // Skip if not Department Manager
-  );
+  const { data: staffData, refetch: refetchStaffData } =
+    useGetListStaffByDepartmentManagerQuery(
+      { pageNumber: -1, pageSize: -1, departmentManagerId: userId },
+      { skip: userRole !== "DepartmentManager" } // Skip if not Department Manager
+    );
 
-  const {
-    data: userData,
-    refetch: refetchUserData,
-  } = useGetListUserByRoleQuery(
-    { pageNumber: -1, pageSize: -1, role: "Staff" },
-    { skip: userRole === "DepartmentManager" } // Skip if Department Manager
-  );
+  const { data: userData, refetch: refetchUserData } =
+    useGetListUserByRoleQuery(
+      { pageNumber: -1, pageSize: -1, role: "Staff" },
+      { skip: userRole === "DepartmentManager" } // Skip if Department Manager
+    );
 
   useEffect(() => {
     if (staffData) {
@@ -64,7 +60,7 @@ const Staff = () => {
         message.success("Xóa người dùng thành công");
         setIsModalVisible(false); // Close the modal
         setUserIdToDelete(null); // Reset the user ID
-        
+
         // Refetch the data after deletion based on the user role
         if (userRole === "DepartmentManager") {
           refetchStaffData();

@@ -23,6 +23,8 @@ import GateManager from "../pages/GateManager";
 import Notification from "../pages/NotificationTest";
 import Staff from "../pages/Staff";
 import ChatRoom from "../pages/ChatRoom";
+import CreateNewSchedule from "../pages/CreateNewSchedule";
+import DetailSchedule from "../pages/DetailSchedule";
 
 
 const ContentRouter = () => {
@@ -152,6 +154,24 @@ const ContentRouter = () => {
         element={
           <LayoutPage>
             <Schedule />
+          </LayoutPage>
+        }
+      />
+      <Route
+        index
+        path="/detailSchedule"
+        element={
+          <LayoutPage>
+            <DetailSchedule  />
+          </LayoutPage>
+        }
+      />
+       <Route
+        index
+        path="/createNewSchedule"
+        element={
+          <LayoutPage>
+            <CreateNewSchedule />
           </LayoutPage>
         }
       />

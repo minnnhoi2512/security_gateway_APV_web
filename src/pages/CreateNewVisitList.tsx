@@ -122,6 +122,7 @@ const CreateNewVisitList: React.FC = () => {
           visitName: values.title,
           createById: userId || 0,
           updateById: userId || 0,
+          scheduleId : 0,
           visitDetailOfNewVisitor: visitDetails,
           visitDetailOfOldVisitor: [],
         };

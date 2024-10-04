@@ -1,5 +1,5 @@
 type Schedule = {
-  scheduleId: number;
+  scheduleId?: number;
   scheduleName: string;
   daysOfProcess?: string;
   createTime: Date;

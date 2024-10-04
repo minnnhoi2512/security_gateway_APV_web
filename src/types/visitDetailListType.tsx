@@ -1,10 +1,13 @@
 import VisitDetail from "./visitDetailType";
 
 type VisitDetailList = {
-  dateRegister?: Date;
+  expectedStartTime?: Date;
+  expectedEndTime?: Date;
   acceptLevel?: number;
   visitName?: string;
+  description?: string;
   visitQuantity: number;
+  scheduleId: number;
   visitType?: string;
   createById?: number;
   updateById?: number;

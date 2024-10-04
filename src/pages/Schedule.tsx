@@ -1,42 +1,24 @@
-import {
-  Layout,
-  Button,
-  Table,
-  Input,
-  Tag,
-  Modal,
-  Form,
-  Select,
-  message,
-} from "antd";
-import { useState, useEffect } from "react";
+import { Layout, Button, Table, Input, Tag, Modal, message } from "antd";
+import { useState } from "react";
 import {
   useGetListScheduleQuery,
-  useCreateNewScheduleMutation,
-  useUpdateScheduleMutation,
   useDeleteScheduleMutation,
 } from "../services/schedule.service";
 import ScheduleType from "../types/scheduleType";
-
+import { useNavigate } from "react-router-dom";
 const { Content } = Layout;
-const { Option } = Select;
 
 const ScheduleManager = () => {
   const [searchText, setSearchText] = useState<string>("");
-  const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
-  const [selectedSchedule, setSelectedSchedule] = useState<ScheduleType | null>(null);
-  const [form] = Form.useForm();
   const userId = localStorage.getItem("userId");
-
+  const navigate = useNavigate();
   if (userId === null) return;
 
   const { data, refetch } = useGetListScheduleQuery({
     pageNumber: -1,
     pageSize: -1,
   });
-
-  const [createNewSchedule, { isLoading: isCreating }] = useCreateNewScheduleMutation();
-  const [updateSchedule, { isLoading: isUpdating }] = useUpdateScheduleMutation();
+  console.log(data);
   const [deleteSchedule] = useDeleteScheduleMutation();
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -44,45 +26,11 @@ const ScheduleManager = () => {
   };
 
   const handleCreateSchedule = () => {
-    setSelectedSchedule(null);
-    form.resetFields();
-    setIsModalVisible(true);
+    navigate("/createNewSchedule");
   };
 
   const handleEditSchedule = (record: ScheduleType) => {
-    setSelectedSchedule(record);
-    setIsModalVisible(true);
-  };
-
-  const handleCancel = () => {
-    setIsModalVisible(false);
-    form.resetFields();
-  };
-
-  const handleFinish = async (values: any) => {
-    try {
-      const parsedValues = {
-        ...values,
-        duration: Number(values.duration),
-        status: values.status === "true",
-        createById: parseInt(userId, 10),
-      };
-      if (selectedSchedule) {
-        await updateSchedule({
-          schedule: parsedValues,
-          idSchedule: selectedSchedule.scheduleId,
-        }).unwrap();
-        message.success("Dự án đã được cập nhật thành công!");
-      } else {
-        await createNewSchedule(parsedValues).unwrap();
-        message.success("Dự án đã được tạo thành công!");
-      }
-      refetch();
-      handleCancel();
-    } catch (error) {
-      message.error("Đã xảy ra lỗi khi tạo hoặc cập nhật dự án.");
-      console.error(error);
-    }
+    navigate("/detailSchedule", { state: { selectedSchedule: record } });
   };
 
   const handleDeleteSchedule = (scheduleId: number) => {
@@ -104,15 +52,6 @@ const ScheduleManager = () => {
       },
     });
   };
-
-  useEffect(() => {
-    if (selectedSchedule) {
-      form.setFieldsValue({
-        ...selectedSchedule,
-        status: selectedSchedule.status.toString(),
-      });
-    }
-  }, [selectedSchedule, form]);
 
   const columns = [
     {
@@ -162,7 +101,7 @@ const ScheduleManager = () => {
           <Button
             type="primary"
             danger
-            onClick={() => handleDeleteSchedule(record.scheduleId)}
+            onClick={() => handleDeleteSchedule(record.scheduleId || 0)}
           >
             Xóa
           </Button>
@@ -170,16 +109,6 @@ const ScheduleManager = () => {
       ),
     },
   ];
-
-  const initialValues = {
-    scheduleTypeId: 3,
-    createById: parseInt(userId, 10),
-    status: true,
-    scheduleName: "",
-    daysOfProcess: "",
-    duration: "",
-    description: "",
-  };
 
   return (
     <Layout className="min-h-screen">
@@ -210,104 +139,6 @@ const ScheduleManager = () => {
               total: data?.totalCount, // Assuming totalCount is provided in the response
             }}
           />
-          <Modal
-            title={selectedSchedule ? "Chỉnh sửa dự án" : "Tạo mới dự án"}
-            visible={isModalVisible}
-            onCancel={handleCancel}
-            footer={null}
-          >
-            <Form
-              form={form}
-              layout="vertical"
-              onFinish={handleFinish}
-              initialValues={initialValues}
-            >
-              <Form.Item
-                label="Tiêu đề"
-                name="scheduleName"
-                rules={[{ required: true, message: "Vui lòng nhập tiêu đề!" }]}
-              >
-                <Input placeholder="Nhập tiêu đề dự án" />
-              </Form.Item>
-              <Form.Item
-                label="Ngày thực hiện"
-                name="daysOfProcess"
-                rules={[
-                  { required: true, message: "Vui lòng nhập ngày thực hiện!" },
-                ]}
-              >
-                <Input />
-              </Form.Item>
-              <Form.Item
-                label="Thời gian kéo dài (ngày)"
-                name="duration"
-                rules={[
-                  {
-                    required: true,
-                    message: "Vui lòng nhập thời gian kéo dài!",
-                  },
-                ]}
-              >
-                <Input type="number" placeholder="Nhập số ngày" />
-              </Form.Item>
-              <Form.Item
-                label="Miêu tả"
-                name="description"
-                rules={[{ required: true, message: "Vui lòng nhập miêu tả!" }]}
-              >
-                <Input.TextArea placeholder="Nhập miêu tả dự án" rows={4} />
-              </Form.Item>
-              <Form.Item
-                label="Trạng thái"
-                name="status"
-                rules={[
-                  { required: true, message: "Vui lòng chọn trạng thái!" },
-                ]}
-              >
-                <Select placeholder="Chọn trạng thái">
-                  <Option value="true">Còn hiệu lực</Option>
-                  <Option value="false">Hết hiệu lực</Option>
-                </Select>
-              </Form.Item>
-              <Form.Item
-                label="Loại dự án"
-                name="scheduleTypeId"
-                rules={[
-                  { required: true, message: "Vui lòng chọn loại dự án!" },
-                ]}
-              >
-                <Select placeholder="Chọn loại dự án">
-                  <Option value={1}>Lịch trình theo tuần</Option>
-                  <Option value={2}>Lịch trình theo tháng</Option>
-                  <Option value={3}>Lịch trình cho khách</Option>
-                </Select>
-              </Form.Item>
-              <Form.Item
-                hidden={true}
-                label="Người tạo"
-                name="createById"
-                rules={[
-                  { required: true, message: "Người tạo không xác định!" },
-                ]}
-              >
-                <Input disabled value={parseInt(userId, 10)} />
-              </Form.Item>
-              <Form.Item>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  loading={isCreating || isUpdating}
-                >
-                  {selectedSchedule ? "Cập nhật dự án" : "Tạo mới dự án"}
-                </Button>
-              </Form.Item>
-              <Form.Item>
-                <Button type="default" onClick={handleCancel}>
-                  Hủy
-                </Button>
-              </Form.Item>
-            </Form>
-          </Modal>
         </Content>
       </Layout>
     </Layout>

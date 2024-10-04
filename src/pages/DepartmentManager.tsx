@@ -22,7 +22,7 @@ const DepartmentManager = () => {
     pageSize: -1,
     role: "DepartmentManager",
   });
-
+  console.log(data);
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchText(e.target.value);
   };

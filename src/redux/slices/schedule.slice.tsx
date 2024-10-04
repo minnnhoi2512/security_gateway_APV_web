@@ -11,7 +11,6 @@ const initialState: ScheduleType = {
   description: "", // Empty string for description
   duration : 0,
   status: false, // Default false for status
-  scheduleTypeId: 0, // Optional fields can be undefined
   createById: 0,
 };
 

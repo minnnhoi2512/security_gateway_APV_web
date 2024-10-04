@@ -1,6 +1,6 @@
 import React from "react";
-import { Layout, Table, Button, Row, Col, Input } from "antd";
-import { useNavigate, useParams } from "react-router-dom";
+import { Layout, Table, Button, Row, Col, Input, Tag, Spin } from "antd";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   CalendarOutlined,
   TeamOutlined,
@@ -16,12 +16,14 @@ const DetailCustomerVisit: React.FC = () => {
   const navigate = useNavigate(); // For navigating back
   const { id } = useParams<{ id: string }>(); // Extract id from params
   const visitId: number | null = id ? parseInt(id, 10) : null; // Convert id to a number
-
+  const location = useLocation(); // Get the location
+  const visit = location.state.record;
   // Fetch data using the id from params
   const { data = [], isLoading } = useGetListDetailVisitQuery({
     visitId: visitId,
   });
-
+  // console.log("Visit : ", visit);
+  // console.log(data);
   // Format date to DD/MM/YYYY
   const formatDate = (date: string) =>
     moment.tz(date, "Asia/Ho_Chi_Minh").format("DD/MM/YYYY");
@@ -39,24 +41,24 @@ const DetailCustomerVisit: React.FC = () => {
       key: "companyName",
     },
     {
-      title: "Ngày dự kiến bắt đầu",
-      dataIndex: "expectedStartDate",
-      key: "expectedStartDate",
-      render: (text: string) => <span>{formatDate(text)}</span>,
+      title: "Giờ vào dự kiến",
+      dataIndex: "expectedStartHour",
+      key: "expectedStartHour",
     },
     {
-      title: "Ngày dự kiến kết thúc",
-      dataIndex: "expectedEndDate",
-      key: "expectedEndDate",
-      render: (text: string) => <span>{formatDate(text)}</span>,
-    },
-    {
-      title: "Thời gian ra - vào",
-      key: "expectedTime",
+      title: "Giờ ra dự kiến",
+      dataIndex: "expectedEndHour",
+      key: "expectedEndHour",
     },
     {
       title: "Trạng thái",
       key: "status",
+      dataIndex: "status",
+      render: (status : boolean) => (
+        <Tag color={status ? "green" : "volcano"}>
+          {status ? "Còn hiệu lực" : "Hết hiệu lực"}
+        </Tag>
+      ),
     },
     {
       title: "Hành động",
@@ -73,7 +75,13 @@ const DetailCustomerVisit: React.FC = () => {
   ];
 
   if (isLoading) {
-    return <div>Loading...</div>; // Optionally handle loading state
+    return (
+      <Layout className="min-h-screen">
+        <Content className="p-6 flex justify-center items-center h-screen">
+          <Spin size="large" /> {/* Use Ant Design's Spin component for loading */}
+        </Content>
+      </Layout>
+    );
   }
 
   return (
@@ -90,11 +98,12 @@ const DetailCustomerVisit: React.FC = () => {
               <div>
                 <p className="text-sm text-gray-600">Ngày đăng ký:</p>
                 <p className="text-base font-semibold text-gray-800">
-                  {formatDate(data.dateRegister)}
+                  {formatDate(visit.createTime)}
                 </p>
                 <p className="text-sm text-gray-600">Lịch di chuyển:</p>
                 <p className="text-base font-semibold text-gray-800">
-                  {data.daysOfProcess}
+                  {formatDate(visit.expectedStartTime)} -{" "}
+                  {formatDate(visit.expectedEndTime)}
                 </p>
               </div>
             </div>
@@ -111,7 +120,7 @@ const DetailCustomerVisit: React.FC = () => {
                   Số lượng người tham gia:
                 </p>
                 <p className="text-base font-semibold text-gray-800">
-                  {data.visitQuantity}
+                  {visit.visitQuantity}
                 </p>
               </div>
             </div>

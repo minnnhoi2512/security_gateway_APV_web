@@ -103,7 +103,9 @@ const CustomerVisit = () => {
       render: (_, record) => (
         <Button
           size="middle"
-          onClick={() => navigate(`/detailVisit/${record.visitId}`)}
+          onClick={() =>
+            navigate(`/detailVisit/${record.visitId}`, { state: { record } })
+          }
         >
           Chi tiết
         </Button>

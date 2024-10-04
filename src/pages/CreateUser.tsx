@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from "uuid"; // Import uuid
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"; // Import getDownloadURL
 import { imageDB } from "../api/firebase"; // Adjust the path as necessary
 import UserType from "../types/userType"; // Ensure this type is defined
-import { useCreateNewUserMutation } from "../services/user.service";
+import { useCreateNewUserMutation, useGetListUserByRoleQuery } from "../services/user.service";
 import { useGetListDepartmentsQuery } from "../services/department.service";
 import DepartmentType from "../types/departmentType";
 
@@ -31,7 +31,11 @@ const CreateUser: React.FC = () => {
     pageNumber: -1,
     pageSize: -1,
   }); // Destructure the mutation
-
+  const { refetch: refetchUserList } = useGetListUserByRoleQuery({
+    pageNumber: -1,
+    pageSize: -1,
+    role: "DepartmentManager",
+  });
   const handleCreateUser = async () => {
     try {
       await form.validateFields();
@@ -58,6 +62,7 @@ const CreateUser: React.FC = () => {
       // Call the mutation to create the user
       await createNewUser(user).unwrap(); // Use unwrap to handle the promise correctly
       message.success("Tạo người dùng thành công!");
+      await refetchUserList();
       setFaceImg([]); // Clear the uploaded images
       form.resetFields(); // Reset form fields
       navigate(-1); // Go back after successful creation
