@@ -22,6 +22,7 @@ export const store = configureStore({
       .concat(visitListAPI.middleware)
       .concat(visitDetailListAPI.middleware)
       .concat(qrCardAPI.middleware)
+      .concat(scheduleAPI.middleware)
       .concat(departmentAPI.middleware),
 });
 

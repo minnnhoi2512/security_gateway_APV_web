@@ -3,8 +3,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import UserType from "../types/userType";
 import {
-  useGetListUsersByDepartmentIdQuery,
-  useGetListUserByRoleQuery,
+  useGetListStaffByDepartmentManagerQuery,
+  useGetListUserByRoleQuery
 } from "../services/user.service";
 const { Content } = Layout;
 
@@ -18,13 +18,13 @@ const Staff = () => {
   const [data, setData] = useState<UserType[]>([]);
 
   // Fetch data based on user role
-  const staffQuery = useGetListUsersByDepartmentIdQuery(
-    { pageNumber: 1, pageSize: 5, departmentId: userId },
+  const staffQuery = useGetListStaffByDepartmentManagerQuery(
+    { pageNumber: -1, pageSize: -1, departmentManagerId: userId },
     { skip: userRole !== "DepartmentManager" } // Skip if not Department Manager
   );
 
   const userQuery = useGetListUserByRoleQuery(
-    { pageNumber: 1, pageSize: 5, role: "Staff" },
+    { pageNumber: -1, pageSize: -1, role: "Staff" },
     { skip: userRole === "DepartmentManager" } // Skip if Department Manager
   );
 
@@ -104,10 +104,11 @@ const Staff = () => {
       title: "Vai trò",
       dataIndex: "role",
       key: "role",
-      render: (role: string | null) => {
-        const displayedRole = role || "Nhân viên";
-        let color = displayedRole === "Active" ? "green" : "volcano";
-        return <Tag color={color}>{displayedRole}</Tag>;
+      render: (role: { roleName: string; status: string } | null) => {
+        const displayedRole = role ? role.roleName : "Nhân viên"; // Use roleName if role is not null
+        const color = role && role.status === "Active" ? "green" : "volcano"; // Check status for color
+    
+        return <Tag color={color}>{displayedRole}</Tag>; // Use displayedRole for the tag
       },
     },
     {

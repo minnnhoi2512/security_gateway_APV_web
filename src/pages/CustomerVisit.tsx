@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button, Table, Input, Tag, Space } from "antd";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
 import { TableProps, PaginationProps } from "antd";
@@ -16,7 +16,7 @@ const CustomerVisit = () => {
   const [pageSize, setPageSize] = useState<number>(5);
 
   // Fetching data using the query
-  const { data, isLoading, error } = useGetListVisitQuery({ pageNumber: currentPage, pageSize });
+  const { data, isLoading } = useGetListVisitQuery({ pageNumber: currentPage, pageSize });
   console.log(data);
   // Mapping visit types to corresponding tags with colors
   const statusTags: Record<string, JSX.Element> = {
@@ -73,7 +73,7 @@ const CustomerVisit = () => {
       title: "Hành động",
       key: "action",
       render: (_, record) => (
-        <Button size="middle" onClick={() => navigate(`/detailVisit/${record.visitId}`)}>
+        <Button size="middle" onClick={() => navigate(`/detailVi  sit/${record.visitId}`)}>
           Chi tiết
         </Button>
       ),

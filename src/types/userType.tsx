@@ -1,6 +1,6 @@
 type User = {
-    userId : number,
-    username : string,
+    userId?: number,
+    userName : string,
     password : string,
     fullName : string,
     email : string,
@@ -8,8 +8,9 @@ type User = {
     phoneNumber: string,
     createDate? : Date,
     updateDate?: Date,
-    status : string,
-    roleId : number 
+    status? : string,
+    roleID? : number ,
+    departmentId? : number 
 }
 
 export default User

@@ -1,4 +1,4 @@
-import { Layout, Button, Table, Tag, Modal, Form, Input } from "antd";
+import { Layout, Button, Table, Tag, Input } from "antd";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import UserType from "../types/userType";
@@ -6,20 +6,15 @@ import { useGetListUserByRoleQuery } from "../services/user.service";
 const { Content } = Layout;
 
 const Manager = () => {
-  const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [searchText, setSearchText] = useState<string>("");
   const navigate = useNavigate();
   const { data = [] } = useGetListUserByRoleQuery({
-    pageNumber: 1,
-    pageSize: 5,
+    pageNumber: -1,
+    pageSize: -1,
     role: "Manager",
   });
   console.log(data);
-  const [form] = Form.useForm();
-  const handleAddCancel = () => {
-    setIsAddModalVisible(false);
-    form.resetFields();
-  };
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchText(e.target.value);
   };
@@ -63,10 +58,11 @@ const Manager = () => {
       title: "Vai trò",
       dataIndex: "role",
       key: "role",
-      render: (text: string | null) => {
-        // const displayedRole = role || "Quản lý";
-        // let color = displayedRole === "Active" ? "green" : "volcano";
-        return <Tag color="red">{text.roleName}</Tag>;
+      render: (role: { roleName: string; status: string } | null) => {
+        const displayedRole = role ? role.roleName : "Quản lý"; // Use roleName if role is not null
+        const color = role && role.status === "Active" ? "green" : "volcano"; // Check status for color
+
+        return <Tag color={color}>{displayedRole}</Tag>; // Use displayedRole for the tag
       },
     },
     {
