@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import UserType from "../types/userType";
 import {
-  useGetListStaffByDepartmentManagerQuery,
+  useGetListUsersByDepartmentIdQuery,
   useGetListUserByRoleQuery,
 } from "../services/user.service";
 const { Content } = Layout;
@@ -18,8 +18,8 @@ const Staff = () => {
   const [data, setData] = useState<UserType[]>([]);
 
   // Fetch data based on user role
-  const staffQuery = useGetListStaffByDepartmentManagerQuery(
-    { pageNumber: 1, pageSize: 5, id: userId },
+  const staffQuery = useGetListUsersByDepartmentIdQuery(
+    { pageNumber: 1, pageSize: 5, departmentId: userId },
     { skip: userRole !== "DepartmentManager" } // Skip if not Department Manager
   );
 

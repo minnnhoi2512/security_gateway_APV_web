@@ -1,146 +1,141 @@
-import { Layout, Button, Table, Tag, message, Input } from "antd";
 import { useState } from "react";
+import { Button, Table, Input, Tag, Space } from "antd";
+import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-
-const { Content } = Layout;
-
-interface CardDataType {
-  key: string;
-  IDCard: string;
-  createDate: string;
-  lastCancelDate: string;
-  cardType: string;
-  status: string;
-}
+import moment from "moment-timezone";
+import { Content } from "antd/es/layout/layout";
+import QRCardType from "../types/QRCardType";
+import { useGetListQRCardQuery } from "../services/QRCard.service";
 
 const CardManager = () => {
-  const [searchText, setSearchText] = useState<string>("");
   const navigate = useNavigate();
-  const [data, setData] = useState<CardDataType[]>([
-    {
-      key: "1",
-      IDCard: "123456789",
-      createDate: "2022-01-01",
-      lastCancelDate: "2022-06-01",
-      cardType: "Gold",
-      status: "Active",
-    },
-    {
-      key: "2",
-      IDCard: "987654321",
-      createDate: "2021-12-01",
-      lastCancelDate: "2023-03-15",
-      cardType: "Platinum",
-      status: "Inactive",
-    },
-    {
-      key: "3",
-      IDCard: "111222333",
-      createDate: "2023-02-20",
-      lastCancelDate: "2023-07-10",
-      cardType: "Silver",
-      status: "Active",
-    },
-  ]);
+  const [searchText, setSearchText] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(5);
 
-  const handleDeleteCard = (key: string) => {
-    const updatedData = data.filter((card) => card.key !== key);
-    setData(updatedData);
-    message.success("Xóa thẻ thành công!");
-  };
+  // Fetching data using the query
+  const { data, isLoading, error } = useGetListQRCardQuery({
+    pageNumber: currentPage,
+    pageSize,
+  });
+
+  const qrCards = data?.qrCards || data || [];
+
+  const filteredData = qrCards.filter((card: QRCardType) =>
+    Object.values(card)
+      .join(" ")
+      .toLowerCase()
+      .includes(searchText.toLowerCase())
+  );
+
+  const columns = [
+    {
+      title: "Mã Thẻ",
+      dataIndex: "qrCardId",
+      key: "qrCardId",
+      sorter: (a: QRCardType, b: QRCardType) => a.qrCardId - b.qrCardId,
+    },
+    {
+      title: "Mã Xác Thực",
+      dataIndex: "cardVerification",
+      key: "cardVerification",
+      sorter: (a: QRCardType, b: QRCardType) =>
+        a.cardVerification.localeCompare(b.cardVerification),
+    },
+    {
+      title: "Ngày Tạo",
+      dataIndex: "createDate",
+      key: "createDate",
+      sorter: (a: QRCardType, b: QRCardType) =>
+        new Date(a.createDate || "").getTime() - new Date(b.createDate || "").getTime(),
+      render: (date: Date | undefined) =>
+        date
+          ? moment.tz(date, "Asia/Ho_Chi_Minh").format("DD/MM/YYYY")
+          : "",
+    },
+    {
+      title: "Ngày Hủy Lần Cuối",
+      dataIndex: "lastCancelDate",
+      key: "lastCancelDate",
+      sorter: (a: QRCardType, b: QRCardType) =>
+        new Date(a.lastCancelDate || "").getTime() - new Date(b.lastCancelDate || "").getTime(),
+      render: (date: Date | undefined) =>
+        date
+          ? moment.tz(date, "Asia/Ho_Chi_Minh").format("DD/MM/YYYY")
+          : "",
+    },
+    {
+      title: "Loại Thẻ",
+      dataIndex: "qrCardTypename",
+      key: "qrCardTypename",
+      sorter: (a: QRCardType, b: QRCardType) =>
+        (a.qrCardTypename || "").localeCompare(b.qrCardTypename || ""),
+    },
+    {
+      title: "Trạng Thái",
+      dataIndex: "qrCardStatusName",
+      key: "qrCardStatusName",
+      render: (status: string | undefined) => {
+        const color = status === "Active" ? "green" : "volcano";
+        return <Tag color={color}>{status}</Tag>;
+      },
+      sorter: false,
+    },
+  ];
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchText(e.target.value);
   };
 
-  const filteredData = data.filter((card) =>
-    card.IDCard.toLowerCase().includes(searchText.toLowerCase())
-  );
-
-  const columns = [
-    {
-      title: "IDCard",
-      dataIndex: "IDCard",
-      key: "IDCard",
-    },
-    {
-      title: "Ngày tạo",
-      dataIndex: "createDate",
-      key: "createDate",
-    },
-    {
-      title: "Ngày hủy lần cuối",
-      dataIndex: "lastCancelDate",
-      key: "lastCancelDate",
-    },
-    {
-      title: "Loại thẻ",
-      dataIndex: "cardType",
-      key: "cardType",
-    },
-    {
-      title: "Trạng thái",
-      dataIndex: "status",
-      key: "status",
-      render: (status: string) => {
-        let color = status === "Active" ? "green" : "volcano";
-        return <Tag color={color}>{status}</Tag>;
-      },
-    },
-    {
-      title: "Hành động",
-      key: "action",
-      render: (_: any, record: CardDataType) => (
-        <>
-          <Button
-            type="primary"
-            className="mr-2"
-            onClick={() =>
-              navigate("/detailCard", {
-                state: record, // Pass the entire card object
-              })
-            }
-          >
-            Chỉnh sửa
-          </Button>
-          <Button
-            type="primary"
-            danger
-            onClick={() => handleDeleteCard(record.key)}
-          >
-            Xóa
-          </Button>
-        </>
-      ),
-    },
-  ];
+  const handleTableChange = (pagination: any) => {
+    setCurrentPage(pagination.current || 1);
+    setPageSize(pagination.pageSize || 5);
+  };
 
   return (
-    <Layout className="min-h-screen">
-      <Layout>
-        <Content className="p-6">
-          <div className="flex justify-center mb-4">
-            <h1 className="text-green-500 text-2xl font-bold">Quản lý thẻ</h1>
-          </div>
-          <Button
-            type="primary"
-            className="mb-4 bg-blue-500 hover:bg-blue-600"
-            onClick={() => navigate("/createCard")}
-          >
-            Tạo mới thẻ
-          </Button>
+    <Content className="p-6">
+      <div className="flex justify-center mb-4">
+        <h1 className="text-green-500 text-2xl font-bold">Quản lý thẻ</h1>
+      </div>
+      <Space style={{ marginBottom: 16, display: "flex", justifyContent: "space-between" }}>
+        <Input
+          placeholder="Tìm kiếm theo từ khóa (Mã Thẻ, Mã Xác Thực, ...)"
+          prefix={<SearchOutlined />}
+          value={searchText}
+          onChange={handleSearchChange}
+          style={{ marginBottom: 16, width: 300, borderColor: "#1890ff", borderRadius: 5 }}
+        />
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => navigate("/createCard")}
+          style={{ borderRadius: 5 }}
+        >
+          Tạo mới thẻ
+        </Button>
+      </Space>
 
-          <Input
-            placeholder="Tìm kiếm theo ID thẻ"
-            value={searchText}
-            onChange={handleSearchChange}
-            style={{ marginBottom: 16, width: 300 }}
-          />
-
-          <Table columns={columns} dataSource={filteredData} pagination={false} />
-        </Content>
-      </Layout>
-    </Layout>
+      {error ? (
+        <p>Đã xảy ra lỗi khi tải dữ liệu!</p>
+      ) : (
+        <Table
+          columns={columns}
+          dataSource={filteredData}
+          pagination={{
+            current: currentPage,
+            pageSize,
+            total: data?.total || 0,
+            showSizeChanger: true,
+            pageSizeOptions: ["5", "10", "20"],
+            size: "small",
+          }}
+          onChange={handleTableChange}
+          loading={isLoading}
+          rowKey="qrCardId"
+          bordered
+        />
+      )}
+    </Content>
   );
 };
 

@@ -17,7 +17,7 @@ const initVisitor: Visitor = {
 
 const initVisitDetail: VisitDetail = {
   visitDetailId: 0,
-  visitId: undefined, // Optional field
+  visitId: undefined,
   expectedStartDate: new Date(),
   expectedEndDate: new Date(),
   expectedStartTime: "",

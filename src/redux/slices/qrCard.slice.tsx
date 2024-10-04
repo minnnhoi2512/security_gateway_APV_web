@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
-import QRCardType from "../../types/QRCardType";
+import QRCard from "../../types/QRCardType";
 
-const initialState: QRCardType = {
+const initialState: QRCard = {
     qrCardId: 0,
     cardVerification: "",
     createDate: new Date(),

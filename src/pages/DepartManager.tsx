@@ -1,157 +1,360 @@
-import { Layout, Button, Table, Tag, Modal, Form, Input } from "antd";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import UserType from "../types/userType";
-import { useGetListUserByRoleQuery } from "../services/user.service";
-const { Content } = Layout;
+import { Button, Table, Input, Tag, Space, Modal, Form, notification } from "antd";
+import { SearchOutlined, PlusOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
+import moment from "moment-timezone";
+import { Content } from "antd/es/layout/layout";
+import {
+  useGetListDepartmentsQuery,
+  useCreateDepartmentMutation,
+  useUpdateDepartmentMutation,
+  useDeleteDepartmentMutation
+} from "../services/department.service";
+import { useGetListUsersByDepartmentIdQuery } from "../services/user.service";
 
-const DepartmenManager = () => {
-  const [isAddModalVisible, setIsAddModalVisible] = useState(false);
+const { confirm } = Modal;
+
+const DepartManager = () => {
   const [searchText, setSearchText] = useState<string>("");
-  const navigate = useNavigate();
-  const { data = [] } = useGetListUserByRoleQuery({
-    pageNumber: 1,
-    pageSize: 5,
-    role: "DepartmenManager",
-  });
-  console.log(data);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(5);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [isUserListModalVisible, setIsUserListModalVisible] = useState(false);
+  const [selectedDepartmentId, setSelectedDepartmentId] = useState<number | null>(null);
   const [form] = Form.useForm();
-  const handleAddCancel = () => {
-    setIsAddModalVisible(false);
-    form.resetFields();
-  };
+  const [editingDepartment, setEditingDepartment] = useState<any>(null);
 
-  // const handleAddUser = () => {
-  //   form.validateFields().then((values) => {
-  //     const newUser: DataType = {
-  //       key: (data.length + 1).toString(),
-  //       name: values.name,
-  //       department: values.department,
-  //       status: values.status,
-  //       role: values.role,
-  //       avatar: "/api/placeholder/32/32", // Default avatar
-  //     };
-  //     setData([newUser, ...data]);
-  //     message.success("Thêm người dùng thành công!");
-  //     setIsAddModalVisible(false);
-  //     form.resetFields();
-  //   });
-  // };
+  const [createDepartment, { isLoading: isCreating }] = useCreateDepartmentMutation();
+  const [updateDepartment, { isLoading: isUpdating }] = useUpdateDepartmentMutation();
+  const [deleteDepartment] = useDeleteDepartmentMutation();
 
-  // const handleDeleteUser = (key: string) => {
-  //   const updatedData = data.filter((user) => user.key !== key);
-  //   setData(updatedData);
-  //   message.success("Xóa người dùng thành công!");
-  // };
+  const { data, isLoading, error } = useGetListDepartmentsQuery({
+    pageNumber: currentPage,
+    pageSize,
+  });
 
-  // Handle search input change
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchText(e.target.value);
-  };
+  const departments = data ? data : [];
+  const totalDepartments = data ? data.length : 0;
 
-  // Filter the data based on search text
-  const filteredData = data.filter((user: UserType) =>
-    user.fullName.toLowerCase().includes(searchText.toLowerCase())
+
+  const {
+    data: userListData,
+    isLoading: isUserListLoading,
+    error: userListError
+  } = useGetListUsersByDepartmentIdQuery(
+    { departmentId: selectedDepartmentId!, pageNumber: 1, pageSize: 10 }, 
+    { skip: selectedDepartmentId === null } 
+  );
+
+  const filteredData = departments.filter((dept: any) =>
+    dept.departmentName.toLowerCase().includes(searchText.toLowerCase())
   );
 
   const columns = [
     {
-      title: "Ảnh",
-      dataIndex: "image",
-      key: "image",
-      render: (image: string) => (
-        <img src={image} alt="avatar" style={{ width: 32, height: 32 }} />
-      ),
+      title: "ID Phòng Ban",
+      dataIndex: "departmentId",
+      key: "departmentId",
     },
     {
-      title: "Tên",
-      dataIndex: "fullName",
-      key: "fullName",
-      sorter: (a: UserType, b: UserType) =>
-        a.fullName.localeCompare(b.fullName),
+      title: "Tên Phòng Ban",
+      dataIndex: "departmentName",
+      key: "departmentName",
+      sorter: (a: any, b: any) => a.departmentName.localeCompare(b.departmentName),
     },
     {
-      title: "Số điện thoại",
-      dataIndex: "phoneNumber",
-      key: "phoneNumber",
+      title: "Mô Tả",
+      dataIndex: "description",
+      key: "description",
     },
     {
-      title: "Trạng thái",
-      dataIndex: "status",
-      key: "status",
-      render: (status: string) => {
-        let color = status === "Active" ? "green" : "volcano";
-        return <Tag color={color}>{status}</Tag>;
-      },
+      title: "Ngày Tạo",
+      dataIndex: "createDate",
+      key: "createDate",
+      sorter: (a: any, b: any) =>
+        new Date(a.createDate || "").getTime() - new Date(b.createDate || "").getTime(),
+      render: (date: string) =>
+        date ? moment.tz(date, "Asia/Ho_Chi_Minh").format("DD/MM/YYYY") : "",
     },
     {
-      title: "Vai trò",
-      dataIndex: "role",
-      key: "role",
-      render: (role: string | null) => {
-        const displayedRole = role || "Trợ lý phòng ban";
-        let color = displayedRole === "Active" ? "green" : "volcano";
-        return <Tag color={color}>{displayedRole}</Tag>;
-      },
+      title: "Cấp Độ",
+      dataIndex: "acceptLevel",
+      key: "acceptLevel",
+      sorter: (a: any, b: any) => a.acceptLevel - b.acceptLevel,
+      render: (acceptLevel: number) => <Tag color="blue">{acceptLevel}</Tag>,
     },
     {
       title: "Hành động",
-      key: "action",
-      render: (_: any, record: UserType) => (
-        <>
+      key: "actions",
+      render: (_: any, record: any) => (
+        <Space>
           <Button
             type="primary"
-            className="mr-2"
-            onClick={() =>
-              navigate("/detailUser", {
-                state: record,
-              })
-            }
+            onClick={() => openEditModal(record)}
+            style={{ borderRadius: 5 }}
           >
             Chỉnh sửa
           </Button>
-          <Button type="primary" danger onClick={() => console.log("haha")}>
+          <Button
+            type="default"
+            onClick={() => viewUserList(record.departmentId)}
+            style={{ borderRadius: 5 }}
+          >
+            Xem chi tiết
+          </Button>
+          <Button
+            type="primary"
+            danger
+            onClick={() => showDeleteConfirm(record.departmentId)}
+            style={{ borderRadius: 5 }}
+          >
             Xóa
           </Button>
-        </>
+        </Space>
       ),
     },
   ];
 
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchText(e.target.value);
+  };
+
+  const handleTableChange = (pagination: any) => {
+    setCurrentPage(pagination.current || 1);
+    setPageSize(pagination.pageSize || 5);
+  };
+
+  const showModal = () => {
+    setIsModalVisible(true);
+  };
+
+  const handleOk = async () => {
+    try {
+      const values = await form.validateFields();
+      await createDepartment(values).unwrap();
+      setIsModalVisible(false);
+      form.resetFields();
+      notification.success({
+        message: "Thành công",
+        description: "Phòng ban đã được tạo mới thành công.",
+      });
+    } catch (error) {
+      notification.error({
+        message: "Thất bại",
+        description: "Tạo mới phòng ban thất bại, vui lòng thử lại.",
+      });
+      console.error("Failed to create department:", error);
+    }
+  };
+
+  const handleCancel = () => {
+    setIsModalVisible(false);
+    setIsEditModalVisible(false);
+    form.resetFields();
+  };
+
+  const openEditModal = (department: any) => {
+    setEditingDepartment(department);
+    form.setFieldsValue({
+      departmentName: department.departmentName,
+      description: department.description,
+      acceptLevel: department.acceptLevel,
+    });
+    setIsEditModalVisible(true);
+  };
+
+  const handleUpdate = async () => {
+    try {
+      const values = await form.validateFields();
+      await updateDepartment({ id: editingDepartment.departmentId, ...values }).unwrap();
+      setIsEditModalVisible(false);
+      form.resetFields();
+      notification.success({
+        message: "Thành công",
+        description: "Cập nhật phòng ban thành công.",
+      });
+    } catch (error) {
+      notification.error({
+        message: "Thất bại",
+        description: "Cập nhật phòng ban thất bại, vui lòng thử lại.",
+      });
+      console.error("Failed to update department:", error);
+    }
+  };
+
+  const showDeleteConfirm = (departmentId: number) => {
+    confirm({
+      title: "Bạn có chắc chắn muốn xóa phòng ban này?",
+      icon: <ExclamationCircleOutlined />,
+      content: "Việc xóa phòng ban sẽ không thể hoàn tác.",
+      okText: "Xóa",
+      okType: "danger",
+      cancelText: "Hủy",
+      onOk: async () => {
+        try {
+          await deleteDepartment({ id: departmentId }).unwrap();
+          notification.success({
+            message: `Xóa phòng ban thành công!`,
+          });
+        } catch (error) {
+          notification.error({
+            message: "Xóa phòng ban thất bại, vui lòng thử lại.",
+          });
+          console.error("Failed to delete department:", error);
+        }
+      },
+      onCancel() {
+        console.log("Hủy xóa");
+      },
+    });
+  };
+
+  const viewUserList = (departmentId: number) => {
+    setSelectedDepartmentId(departmentId);
+    setIsUserListModalVisible(true);
+  };
+
   return (
-    <Layout className="min-h-screen">
-      <Layout>
-        <Content className="p-6">
-          <div className="flex justify-center mb-4">
-            <h1 className="text-green-500 text-2xl font-bold">
-              Danh sách trợ lý phòng ban
-            </h1>
-          </div>
-          <Button
-            type="primary"
-            className="mb-4 bg-blue-500 hover:bg-blue-600"
-            onClick={() => navigate("/createUser")}
+    <Content className="p-6">
+      <div className="flex justify-center mb-4">
+        <h1 className="text-green-500 text-2xl font-bold">Quản lý phòng ban</h1>
+      </div>
+      <Space style={{ marginBottom: 16, display: "flex", justifyContent: "space-between" }}>
+        <Input
+          placeholder="Tìm kiếm theo tên phòng ban"
+          prefix={<SearchOutlined />}
+          value={searchText}
+          onChange={handleSearchChange}
+          style={{ marginBottom: 16, width: 300, borderColor: "#1890ff", borderRadius: 5 }}
+        />
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={showModal}
+          style={{ borderRadius: 5 }}
+        >
+          Tạo mới phòng ban
+        </Button>
+      </Space>
+
+
+      <Modal
+        title="Tạo mới phòng ban"
+        open={isModalVisible}
+        onOk={handleOk}
+        confirmLoading={isCreating}
+        onCancel={handleCancel}
+        okText="Tạo mới"
+        cancelText="Hủy"
+      >
+        <Form form={form} layout="vertical">
+          <Form.Item
+            label="Tên Phòng Ban"
+            name="departmentName"
+            rules={[{ required: true, message: "Vui lòng nhập tên phòng ban!" }]}
           >
-            Tạo mới người dùng
-          </Button>
+            <Input placeholder="Nhập tên phòng ban" />
+          </Form.Item>
+          <Form.Item
+            label="Mô Tả"
+            name="description"
+            rules={[{ required: true, message: "Vui lòng nhập mô tả!" }]}
+          >
+            <Input placeholder="Nhập mô tả" />
+          </Form.Item>
+          <Form.Item
+            label="Cấp Độ"
+            name="acceptLevel"
+            rules={[{ required: true, message: "Vui lòng nhập cấp độ!" }]}
+          >
+            <Input type="number" placeholder="Nhập cấp độ" />
+          </Form.Item>
+        </Form>
+      </Modal>
 
-          <Input
-            placeholder="Tìm kiếm theo tên"
-            value={searchText}
-            onChange={handleSearchChange}
-            style={{ marginBottom: 16, width: 300 }}
-          />
 
+      <Modal
+        title="Cập nhật phòng ban"
+        open={isEditModalVisible}
+        onOk={handleUpdate}
+        confirmLoading={isUpdating}
+        onCancel={handleCancel}
+        okText="Cập nhật"
+        cancelText="Hủy"
+      >
+        <Form form={form} layout="vertical">
+          <Form.Item
+            label="Tên Phòng Ban"
+            name="departmentName"
+            rules={[{ required: true, message: "Vui lòng nhập tên phòng ban!" }]}
+          >
+            <Input placeholder="Nhập tên phòng ban" />
+          </Form.Item>
+          <Form.Item
+            label="Mô Tả"
+            name="description"
+            rules={[{ required: true, message: "Vui lòng nhập mô tả!" }]}
+          >
+            <Input placeholder="Nhập mô tả" />
+          </Form.Item>
+          <Form.Item
+            label="Cấp Độ"
+            name="acceptLevel"
+            rules={[{ required: true, message: "Vui lòng nhập cấp độ!" }]}
+          >
+            <Input type="number" placeholder="Nhập cấp độ" />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        title="Danh sách người dùng"
+        open={isUserListModalVisible}
+        onCancel={() => setIsUserListModalVisible(false)}
+        footer={null}
+        width={800}
+      >
+        {userListError ? (
+          <p>Đã xảy ra lỗi khi tải danh sách người dùng!</p>
+        ) : (
           <Table
-            columns={columns}
-            dataSource={filteredData}
-            pagination={false}
-            rowKey={"userId"}
+            columns={[
+              { title: "Tên đầy đủ", dataIndex: "fullName", key: "fullName" },
+              { title: "Email", dataIndex: "email", key: "email" },
+              { title: "Số điện thoại", dataIndex: "phoneNumber", key: "phoneNumber" },
+              { title: "Vai trò", dataIndex: ["role", "roleName"], key: "roleName" },
+              { title: "Trạng thái", dataIndex: "status", key: "status" }
+            ]}
+            dataSource={userListData}
+            loading={isUserListLoading}
+            pagination={{ pageSize: 5 }}
+            rowKey="userId"
           />
-        </Content>
-      </Layout>
-    </Layout>
+        )}
+      </Modal>
+
+      {error ? (
+        <p>Đã xảy ra lỗi khi tải dữ liệu!</p>
+      ) : (
+        <Table
+          columns={columns}
+          dataSource={filteredData}
+          pagination={{
+            current: currentPage,
+            pageSize,
+            total: totalDepartments,
+            showSizeChanger: true,
+            pageSizeOptions: ["5", "10", "20"],
+            size: "small",
+          }}
+          onChange={handleTableChange}
+          loading={isLoading}
+          rowKey="departmentId"
+          bordered
+        />
+      )}
+    </Content>
   );
 };
 
-export default DepartmenManager;
+export default DepartManager;
