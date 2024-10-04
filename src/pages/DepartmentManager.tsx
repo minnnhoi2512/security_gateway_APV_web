@@ -10,8 +10,8 @@ const DepartmentManager = () => {
   const [searchText, setSearchText] = useState<string>("");
   const navigate = useNavigate();
   const { data = [] } = useGetListUserByRoleQuery({
-    pageNumber: 1,
-    pageSize: 5,
+    pageNumber: -1,
+    pageSize: -1,
     role: "DepartmentManager",
   });
   console.log(data);
