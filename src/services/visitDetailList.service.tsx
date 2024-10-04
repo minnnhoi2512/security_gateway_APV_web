@@ -1,10 +1,21 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import baseAPI from "../api/baseAPI";
 import VisitDetailList from "../types/visitDetailListType";
+import { getToken } from "../utils/jwtToken";
 
 export const visitDetailListAPI = createApi({
   reducerPath: "visitDetailListAPI",
-  baseQuery: fetchBaseQuery({ baseUrl: `${baseAPI}/api/Visit/` }),
+  baseQuery: fetchBaseQuery({
+    baseUrl: `${baseAPI}/api/Visit/`,
+    prepareHeaders: (headers) => {
+      const token = getToken();
+      if (token) {
+        headers.set("Authorization", `Bearer ${token}`);
+      }
+      headers.set("Content-Type", "application/json"); // Default content type
+      return headers;
+    },
+  }),
   endpoints: (builder) => ({
     getListDetailVisit: builder.query<any, { visitId: number | null }>({
       query: ({ visitId }) => {
@@ -16,7 +27,8 @@ export const visitDetailListAPI = createApi({
     }),
     createNewListDetailVisit: builder.mutation<
       VisitDetailList,
-      { newVisitDetailList: VisitDetailList }>({
+      { newVisitDetailList: VisitDetailList }
+    >({
       query: ({ newVisitDetailList }) => {
         return {
           url: `CreateVisit`,

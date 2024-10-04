@@ -16,7 +16,8 @@ const DepartmentManager = () => {
   const [userIdToDelete, setUserIdToDelete] = useState<number | null>(null); // State to store user ID for deletion
   const navigate = useNavigate();
 
-  const { data = [] } = useGetListUserByRoleQuery({
+  // Fetch user list and include `refetch` function
+  const { data = [], refetch } = useGetListUserByRoleQuery({
     pageNumber: -1,
     pageSize: -1,
     role: "DepartmentManager",
@@ -104,8 +105,9 @@ const DepartmentManager = () => {
       try {
         await deleteUser(userIdToDelete).unwrap(); // Call the delete mutation
         message.success("Xóa người dùng thành công");
+        refetch(); // Refetch the user list after successful deletion
       } catch (error) {
-        message.error(`Xóa người dùng thất bại`);
+        message.error("Xóa người dùng thất bại");
       } finally {
         setIsModalVisible(false); // Close the modal
         setUserIdToDelete(null); // Reset the user ID

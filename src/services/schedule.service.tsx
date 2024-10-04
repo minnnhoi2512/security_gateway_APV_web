@@ -1,10 +1,22 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import Schedule from "../types/scheduleType";
 import baseAPI from "../api/baseAPI";
+import { getToken } from "../utils/jwtToken";
+
 
 export const scheduleAPI = createApi({
   reducerPath: "scheduleAPI",
-  baseQuery: fetchBaseQuery({ baseUrl: `${baseAPI}/api/Schedule/` }),
+  baseQuery: fetchBaseQuery({
+    baseUrl: `${baseAPI}/api/Schedule/`,
+    prepareHeaders: (headers) => {
+      const token = getToken();
+      if (token) {
+        headers.set("Authorization", `Bearer ${token}`);
+      }
+      headers.set("Content-Type", "application/json"); // Default content type
+      return headers;
+    },
+  }),
   endpoints: (builder) => ({
     getListSchedule: builder.query<
       any,
@@ -64,7 +76,7 @@ export const scheduleAPI = createApi({
   }),
 });
 
-// Export the auto-generated hook for the query
+// Export the auto-generated hooks for the queries and mutations
 export const {
   useGetListScheduleQuery,
   useGetDetailScheduleQuery,

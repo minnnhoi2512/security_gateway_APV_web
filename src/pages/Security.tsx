@@ -9,7 +9,7 @@ const { Content } = Layout;
 const Security = () => {
   const [searchText, setSearchText] = useState<string>("");
   const navigate = useNavigate();
-  const { data = [] } = useGetListUserByRoleQuery({
+  const { data = [], refetch } = useGetListUserByRoleQuery({
     pageNumber: -1,
     pageSize: -1,
     role: "Security",
@@ -107,7 +107,7 @@ const Security = () => {
         message.success("Xóa người dùng thành công");
         setIsModalVisible(false); // Close the modal
         setUserIdToDelete(null); // Reset the user ID
-        // Optionally, refresh the data after deletion
+        refetch(); // Refetch the data after deletion
       } catch (error) {
         message.error(`Xóa người dùng thất bại`);
       }

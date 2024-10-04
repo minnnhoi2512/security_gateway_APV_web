@@ -36,7 +36,6 @@ const DepartManager = () => {
   const departments = data ? data : [];
   const totalDepartments = data ? data.length : 0;
 
-
   const {
     data: userListData,
     isLoading: isUserListLoading,
@@ -237,7 +236,6 @@ const DepartManager = () => {
         </Button>
       </Space>
 
-
       <Modal
         title="Tạo mới phòng ban"
         open={isModalVisible}
@@ -267,14 +265,13 @@ const DepartManager = () => {
             name="acceptLevel"
             rules={[{ required: true, message: "Vui lòng nhập cấp độ!" }]}
           >
-            <Input type="number" placeholder="Nhập cấp độ" />
+            <Input placeholder="Nhập cấp độ" />
           </Form.Item>
         </Form>
       </Modal>
 
-
       <Modal
-        title="Cập nhật phòng ban"
+        title="Chỉnh sửa phòng ban"
         open={isEditModalVisible}
         onOk={handleUpdate}
         confirmLoading={isUpdating}
@@ -302,57 +299,48 @@ const DepartManager = () => {
             name="acceptLevel"
             rules={[{ required: true, message: "Vui lòng nhập cấp độ!" }]}
           >
-            <Input type="number" placeholder="Nhập cấp độ" />
+            <Input placeholder="Nhập cấp độ" />
           </Form.Item>
         </Form>
       </Modal>
 
+      <Table
+        columns={columns}
+        dataSource={filteredData}
+        rowKey={(record) => record.departmentId}
+        loading={isLoading}
+        pagination={{
+          current: currentPage,
+          pageSize,
+          total: totalDepartments,
+          showSizeChanger: true,
+          pageSizeOptions: ["5", "10", "20", "50"],
+        }}
+        onChange={handleTableChange}
+      />
+
       <Modal
-        title="Danh sách người dùng"
+        title="Danh sách nhân viên"
         open={isUserListModalVisible}
         onCancel={() => setIsUserListModalVisible(false)}
         footer={null}
-        width={800}
       >
-        {userListError ? (
-          <p>Đã xảy ra lỗi khi tải danh sách người dùng!</p>
+        {isUserListLoading ? (
+          <p>Đang tải...</p>
+        ) : userListError ? (
+          <p>Đã xảy ra lỗi khi tải danh sách người dùng.</p>
         ) : (
           <Table
-            columns={[
-              { title: "Tên đầy đủ", dataIndex: "fullName", key: "fullName" },
-              { title: "Email", dataIndex: "email", key: "email" },
-              { title: "Số điện thoại", dataIndex: "phoneNumber", key: "phoneNumber" },
-              { title: "Vai trò", dataIndex: ["role", "roleName"], key: "roleName" },
-              { title: "Trạng thái", dataIndex: "status", key: "status" }
-            ]}
             dataSource={userListData}
-            loading={isUserListLoading}
-            pagination={{ pageSize: 5 }}
-            rowKey="userId"
+            columns={[
+              { title: "ID Người dùng", dataIndex: "userId", key: "userId" },
+              { title: "Tên người dùng", dataIndex: "userName", key: "userName" },
+              { title: "Email", dataIndex: "email", key: "email" },
+            ]}
+            pagination={false}
           />
         )}
       </Modal>
-
-      {error ? (
-        <p>Đã xảy ra lỗi khi tải dữ liệu!</p>
-      ) : (
-        <Table
-          columns={columns}
-          dataSource={filteredData}
-          pagination={{
-            current: currentPage,
-            pageSize,
-            total: totalDepartments,
-            showSizeChanger: true,
-            pageSizeOptions: ["5", "10", "20"],
-            size: "small",
-          }}
-          onChange={handleTableChange}
-          loading={isLoading}
-          rowKey="departmentId"
-          bordered
-        />
-      )}
     </Content>
   );
 };

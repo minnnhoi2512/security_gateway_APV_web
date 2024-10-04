@@ -1,10 +1,24 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import baseAPI from "../api/baseAPI";
 import User from "../types/userType";
+import { getToken } from "../utils/jwtToken";
 
 export const userAPI = createApi({
   reducerPath: "userAPI",
-  baseQuery: fetchBaseQuery({ baseUrl: `${baseAPI}/api/User` }),
+  baseQuery: fetchBaseQuery({
+    baseUrl: `${baseAPI}/api/User`,
+    prepareHeaders: (headers, { endpoint }) => {
+      // Add the token for all requests except the 'loginUser' mutation
+      if (endpoint !== 'loginUser') {
+        const token = getToken();
+        if (token) {
+          headers.set("Authorization", `Bearer ${token}`);
+        }
+      }
+      headers.set("Content-Type", "application/json"); // Default content type
+      return headers;
+    },
+  }),
   endpoints: (builder) => ({
     loginUser: builder.mutation({
       query: (body: { username: string; password: string }) => {
@@ -38,7 +52,6 @@ export const userAPI = createApi({
       query: ({ departmentId, pageNumber, pageSize }) => {
         return {
           url: `Department/${departmentId}`,
-          // url: `/Staff/DepartmentManager/${id}`,
           method: "GET",
           params: {
             pageNumber,
@@ -54,7 +67,6 @@ export const userAPI = createApi({
       query: ({ departmentManagerId, pageNumber, pageSize }) => {
         return {
           url: `Staff/DepartmentManager/${departmentManagerId}`,
-          // url: `/Staff/DepartmentManager/${id}`,
           method: "GET",
           params: {
             pageNumber,

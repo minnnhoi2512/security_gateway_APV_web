@@ -21,23 +21,29 @@ const Staff = () => {
   const [userIdToDelete, setUserIdToDelete] = useState<number | null>(null); // State to store user ID for deletion
 
   // Fetch data based on user role
-  const staffQuery = useGetListStaffByDepartmentManagerQuery(
+  const {
+    data: staffData,
+    refetch: refetchStaffData,
+  } = useGetListStaffByDepartmentManagerQuery(
     { pageNumber: -1, pageSize: -1, departmentManagerId: userId },
     { skip: userRole !== "DepartmentManager" } // Skip if not Department Manager
   );
 
-  const userQuery = useGetListUserByRoleQuery(
+  const {
+    data: userData,
+    refetch: refetchUserData,
+  } = useGetListUserByRoleQuery(
     { pageNumber: -1, pageSize: -1, role: "Staff" },
     { skip: userRole === "DepartmentManager" } // Skip if Department Manager
   );
 
   useEffect(() => {
-    if (staffQuery.data) {
-      setData(staffQuery.data);
-    } else if (userQuery.data) {
-      setData(userQuery.data);
+    if (staffData) {
+      setData(staffData);
+    } else if (userData) {
+      setData(userData);
     }
-  }, [staffQuery.data, userQuery.data]);
+  }, [staffData, userData]);
 
   // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -58,11 +64,15 @@ const Staff = () => {
         message.success("Xóa người dùng thành công");
         setIsModalVisible(false); // Close the modal
         setUserIdToDelete(null); // Reset the user ID
-        // Optionally, refresh the data after deletion
-        const updatedData = data.filter(user => user.userId !== userIdToDelete);
-        setData(updatedData);
+        
+        // Refetch the data after deletion based on the user role
+        if (userRole === "DepartmentManager") {
+          refetchStaffData();
+        } else {
+          refetchUserData();
+        }
       } catch (error) {
-        message.error(`Xóa người dùng thất bại`);
+        message.error("Xóa người dùng thất bại");
       }
     }
   };

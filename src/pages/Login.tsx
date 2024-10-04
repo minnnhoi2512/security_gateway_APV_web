@@ -42,7 +42,7 @@ function Login() {
         toast.error('Người dùng này không có quyền truy cập vào hệ thống');
         return; // Stop further actions
       }
-
+      console.log(decodedToken)
       // Save the token and other details in localStorage
       localStorage.setItem('jwtToken', jwtToken);
       localStorage.setItem('userRole', decodedToken.role);
