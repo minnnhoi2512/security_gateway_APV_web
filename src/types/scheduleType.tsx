@@ -7,8 +7,13 @@ type Schedule = {
   description: string;
   status: boolean;
   duration?: number;
-  scheduleTypeId?: number;
-  createById? : number;
+  scheduleType?: {
+    description?: string;
+    scheduleTypeId?: number;
+    scheduleTypeName?: string;
+    status?: boolean;
+  };
+  createById?: number;
 };
 
 export default Schedule;

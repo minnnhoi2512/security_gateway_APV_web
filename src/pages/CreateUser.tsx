@@ -1,17 +1,23 @@
 import React, { useState } from "react";
-import { Layout, Button, Form, Input, message, Upload } from "antd";
-import { useNavigate } from "react-router-dom";
+import { Layout, Button, Form, Input, message, Upload, Select } from "antd";
+import { useNavigate, useLocation } from "react-router-dom"; // Import useLocation
 import { UploadOutlined } from "@ant-design/icons";
 import { v4 as uuidv4 } from "uuid"; // Import uuid
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"; // Import getDownloadURL
 import { imageDB } from "../api/firebase"; // Adjust the path as necessary
 import UserType from "../types/userType"; // Ensure this type is defined
 import { useCreateNewUserMutation } from "../services/user.service";
+import { useGetListDepartmentsQuery } from "../services/department.service";
+import DepartmentType from "../types/departmentType";
 
 const { Content } = Layout;
 
 const CreateUser: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation(); // Get the location
+  const roleId = location.state?.roleId; // Access roleId from state
+  // console.log(roleId); // Log the roleId for debugging
+
   const [form] = Form.useForm();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -19,12 +25,16 @@ const CreateUser: React.FC = () => {
   const [fullName, setFullName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [faceImg, setFaceImg] = useState<File[]>([]);
+  const [departmentId, setDepartmentId] = useState<number | undefined>(undefined); // State for selected department
   const [createNewUser] = useCreateNewUserMutation(); // Destructure the mutation
+  const { data: listDepartment } = useGetListDepartmentsQuery({
+    pageNumber: -1,
+    pageSize: -1,
+  }); // Destructure the mutation
 
   const handleCreateUser = async () => {
     try {
       await form.validateFields();
-
       // Upload images to Firebase Storage
       const faceImgPromises = faceImg.map((file) => {
         const uniqueFileName = `${uuidv4()}`; // Use uuid for unique filename
@@ -33,7 +43,6 @@ const CreateUser: React.FC = () => {
           return getDownloadURL(snapshot.ref); // Get the download URL after upload
         });
       });
-
       // Wait for all uploads to complete and get URLs
       const faceImgUrls = await Promise.all(faceImgPromises);
       const user: UserType = {
@@ -43,21 +52,18 @@ const CreateUser: React.FC = () => {
         email: email,
         phoneNumber: phoneNumber,
         image: faceImgUrls[0], // Assuming you want to store the first uploaded image
-        roleID: 1, // Replace with actual role ID
-        departmentId: 1, // Replace with actual department ID
+        roleID: roleId, // Use the roleId from the state
+        departmentId: roleId === 3 || roleId === 4 ? departmentId : undefined, // Set departmentId based on roleId
       };
-
       // Call the mutation to create the user
       await createNewUser(user).unwrap(); // Use unwrap to handle the promise correctly
-
       message.success("Tạo người dùng thành công!");
       setFaceImg([]); // Clear the uploaded images
       form.resetFields(); // Reset form fields
       navigate(-1); // Go back after successful creation
     } catch (error) {
       console.error("Failed to create user:", error);
-      // Check if the error has a message or status and display it
-      const errorMessage = "Tạo người dùng thất bại!"; // Default message if none
+      const errorMessage = "Tạo người dùng thất bại!";
       message.error(errorMessage); // Show error message
     }
   };
@@ -69,7 +75,9 @@ const CreateUser: React.FC = () => {
   return (
     <Layout className="min-h-screen">
       <Content className="p-6">
-        <h1 className="text-green-500 text-2xl font-bold">Tạo người dùng mới</h1>
+        <h1 className="text-green-500 text-2xl font-bold">
+          Tạo người dùng mới
+        </h1>
         <Form form={form} layout="vertical">
           <Form.Item
             name="fullName"
@@ -123,6 +131,24 @@ const CreateUser: React.FC = () => {
               onChange={(e) => setPhoneNumber(e.target.value)}
             />
           </Form.Item>
+          {roleId === 3 || roleId === 4 ? (
+            <Form.Item
+              name="departmentId"
+              label="Chọn phòng ban"
+              rules={[{ required: true, message: "Vui lòng chọn phòng ban" }]}
+            >
+              <Select
+                placeholder="Chọn phòng ban"
+                onChange={(value) => setDepartmentId(value)}
+              >
+                {listDepartment?.map((department: DepartmentType) => (
+                  <Select.Option key={department.departmentId} value={department.departmentId}>
+                    {department.departmentName}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+          ) : null}
           <Form.Item label="Ảnh đại diện">
             <Upload
               beforeUpload={(file) => {

@@ -1,6 +1,8 @@
 type VisitList = {
   visitId: number;
-  dateRegister: Date;
+  createTime: Date;
+  expectedStartTime: Date;
+  expectedEndTime: Date;
   visitName: string;
   visitQuantity: number;
   description: string;

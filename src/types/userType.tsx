@@ -1,3 +1,5 @@
+import Role from "./roleType"
+
 type User = {
     userId?: number,
     userName : string,
@@ -10,7 +12,8 @@ type User = {
     updateDate?: Date,
     status? : string,
     roleID? : number ,
-    departmentId? : number 
+    departmentId? : number ,
+    role? : Role
 }
 
 export default User

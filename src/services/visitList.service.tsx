@@ -8,7 +8,7 @@ export const visitListAPI = createApi({
     getListVisit: builder.query<any, { pageNumber: number; pageSize: number }>({
       query: ({ pageNumber, pageSize }) => {
         return {
-          url: "GetAllPaging",
+          url: "",
           method: "GET",
           params: {
             pageNumber,

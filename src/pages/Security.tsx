@@ -1,8 +1,9 @@
-import { Layout, Button, Table, Tag, Input } from "antd";
+import { Layout, Button, Table, Tag, Input, Modal, message } from "antd";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import UserType from "../types/userType";
-import { useGetListUserByRoleQuery } from "../services/user.service";
+import { useGetListUserByRoleQuery, useDeleteUserMutation } from "../services/user.service";
+
 const { Content } = Layout;
 
 const Security = () => {
@@ -13,30 +14,10 @@ const Security = () => {
     pageSize: -1,
     role: "Security",
   });
-  console.log(data);
 
-  // const handleAddUser = () => {
-  //   form.validateFields().then((values) => {
-  //     const newUser: DataType = {
-  //       key: (data.length + 1).toString(),
-  //       name: values.name,
-  //       department: values.department,
-  //       status: values.status,
-  //       role: values.role,
-  //       avatar: "/api/placeholder/32/32", // Default avatar
-  //     };
-  //     setData([newUser, ...data]);
-  //     message.success("Thêm người dùng thành công!");
-  //     setIsAddModalVisible(false);
-  //     form.resetFields();
-  //   });
-  // };
-
-  // const handleDeleteUser = (key: string) => {
-  //   const updatedData = data.filter((user) => user.key !== key);
-  //   setData(updatedData);
-  //   message.success("Xóa người dùng thành công!");
-  // };
+  const [isModalVisible, setIsModalVisible] = useState(false); // State for modal visibility
+  const [userIdToDelete, setUserIdToDelete] = useState<number | null>(null); // State to store user ID for deletion
+  const [deleteUser] = useDeleteUserMutation(); // Hook for deleting user
 
   // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -85,7 +66,6 @@ const Security = () => {
       render: (role: { roleName: string; status: string } | null) => {
         const displayedRole = role ? role.roleName : "Bảo vệ"; // Use roleName if role is not null
         const color = role && role.status === "Active" ? "green" : "volcano"; // Check status for color
-
         return <Tag color={color}>{displayedRole}</Tag>; // Use displayedRole for the tag
       },
     },
@@ -105,13 +85,34 @@ const Security = () => {
           >
             Chỉnh sửa
           </Button>
-          <Button type="primary" danger onClick={() => console.log("haha")}>
+          <Button
+            type="primary"
+            danger
+            onClick={() => {
+              setUserIdToDelete(record.userId || null); // Set the user ID to delete
+              setIsModalVisible(true); // Show the confirmation modal
+            }}
+          >
             Xóa
           </Button>
         </>
       ),
     },
   ];
+
+  const handleDeleteUser = async () => {
+    if (userIdToDelete) {
+      try {
+        await deleteUser(userIdToDelete).unwrap(); // Call the delete mutation
+        message.success("Xóa người dùng thành công");
+        setIsModalVisible(false); // Close the modal
+        setUserIdToDelete(null); // Reset the user ID
+        // Optionally, refresh the data after deletion
+      } catch (error) {
+        message.error(`Xóa người dùng thất bại`);
+      }
+    }
+  };
 
   return (
     <Layout className="min-h-screen">
@@ -125,24 +126,32 @@ const Security = () => {
           <Button
             type="primary"
             className="mb-4 bg-blue-500 hover:bg-blue-600"
-            onClick={() => navigate("/createUser")}
+            onClick={() => navigate("/createUser", { state: { roleId: 5 } })}
           >
             Tạo mới người dùng
           </Button>
-
           <Input
             placeholder="Tìm kiếm theo tên"
             value={searchText}
             onChange={handleSearchChange}
             style={{ marginBottom: 16, width: 300 }}
           />
-
           <Table
             columns={columns}
             dataSource={filteredData}
             pagination={false}
             rowKey={"userId"}
           />
+          <Modal
+            title="Xác nhận xóa"
+            visible={isModalVisible}
+            onOk={handleDeleteUser}
+            onCancel={() => setIsModalVisible(false)}
+            okText="Xóa"
+            cancelText="Hủy"
+          >
+            <p>Bạn có chắc chắn muốn xóa người dùng này?</p>
+          </Modal>
         </Content>
       </Layout>
     </Layout>

@@ -6,10 +6,10 @@ export const visitDetailListAPI = createApi({
   reducerPath: "visitDetailListAPI",
   baseQuery: fetchBaseQuery({ baseUrl: `${baseAPI}/api/Visit/` }),
   endpoints: (builder) => ({
-    getListDetailVisit: builder.query<any, { visitId: number }>({
+    getListDetailVisit: builder.query<any, { visitId: number | null }>({
       query: ({ visitId }) => {
         return {
-          url: `GetVisitDetailByVisitId/${visitId}`,
+          url: `VisitDetail/${visitId}`,
           method: "GET",
         };
       },

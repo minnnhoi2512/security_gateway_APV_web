@@ -172,7 +172,7 @@ const ScheduleManager = () => {
   ];
 
   const initialValues = {
-    scheduleTypeId: 2,
+    scheduleTypeId: 3,
     createById: parseInt(userId, 10),
     status: true,
     scheduleName: "",
@@ -236,7 +236,7 @@ const ScheduleManager = () => {
                   { required: true, message: "Vui lòng nhập ngày thực hiện!" },
                 ]}
               >
-                <Input placeholder="Nhập ngày (vd: 1,31)" />
+                <Input />
               </Form.Item>
               <Form.Item
                 label="Thời gian kéo dài (ngày)"
@@ -277,9 +277,9 @@ const ScheduleManager = () => {
                 ]}
               >
                 <Select placeholder="Chọn loại dự án">
-                  <Option value={1}>Loại 1</Option>
-                  <Option value={2}>Loại 2</Option>
-                  <Option value={3}>Loại 3</Option>
+                  <Option value={1}>Lịch trình theo tuần</Option>
+                  <Option value={2}>Lịch trình theo tháng</Option>
+                  <Option value={3}>Lịch trình cho khách</Option>
                 </Select>
               </Form.Item>
               <Form.Item
