@@ -58,7 +58,7 @@ export const userAPI = createApi({
     updateUser: builder.mutation({
       query: ({ User, idUser }: { User: User; idUser: number }) => {
         return {
-          url: `${idUser}`,
+          url: `/${idUser}`,
           method: "PUT", 
           body: User, 
         };
@@ -67,7 +67,7 @@ export const userAPI = createApi({
     deleteUser: builder.mutation({
       query: (idUser: number) => {
         return {
-          url: `${idUser}`,
+          url: `/${idUser}`,
           method: "DELETE",
         };
       },
