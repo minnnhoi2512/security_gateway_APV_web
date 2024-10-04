@@ -12,12 +12,13 @@ import Chat from "../pages/Chat";
 import Login from "../pages/Login";
 import CalendarPage from "../pages/Calendar";
 import Security from "../pages/Security";
-import DepartmentManager from "../pages/DepartManager";
+import DepartManager from "../pages/DepartManager";
+import DepartmentManager from "../pages/DepartmentManager";
 import DetailUser from "../pages/DetailUser";
 import CreateUser from "../pages/CreateUser";
 import CreateNewVisitList from "../pages/CreateNewVisitList";
-// import CreateNewGuest from "../pages/CreateNewGuest";
 import CardManager from "../pages/CardManager";
+import CreateQRCard from "../pages/CreateQRCard";
 import GateManager from "../pages/GateManager";
 import Notification from "../pages/NotificationTest";
 import Staff from "../pages/Staff";
@@ -41,6 +42,15 @@ const ContentRouter = () => {
         element={
           <LayoutPage>
             <Manager />
+          </LayoutPage>
+        }
+      />
+      <Route
+        index
+        path="/departManager"
+        element={
+          <LayoutPage>
+            <DepartManager />
           </LayoutPage>
         }
       />
@@ -149,6 +159,14 @@ const ContentRouter = () => {
         element={
           <LayoutPage>
             <CardManager />
+          </LayoutPage>
+        }
+      />
+      <Route
+        path="/createCard"
+        element={
+          <LayoutPage>
+            <CreateQRCard />
           </LayoutPage>
         }
       />

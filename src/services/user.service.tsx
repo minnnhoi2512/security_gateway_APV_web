@@ -14,13 +14,10 @@ export const userAPI = createApi({
         };
       },
     }),
-    getListUserByRole: builder.query<
-      any,
-      { pageNumber: number; pageSize: number; role: string }
-    >({
+    getListUserByRole: builder.query<any, { pageNumber: number; pageSize: number; role: string }>({
       query: ({ pageNumber, pageSize, role }) => {
         return {
-          url: "GetAllUserPaging",
+          url: "",
           method: "GET",
           params: {
             pageNumber,
@@ -30,7 +27,19 @@ export const userAPI = createApi({
         };
       },
     }),
+    getListUsersByDepartmentId: builder.query<any, { departmentId: number, pageNumber: number; pageSize: number }>({
+      query: ({ departmentId, pageNumber, pageSize }) => {
+        return {
+          url: `Department/${departmentId}`,
+          method: "GET",
+          params: {
+            pageNumber,
+            pageSize,
+          },
+        };
+      },
+    }),
   }),
 });
 
-export const { useLoginUserMutation,useGetListUserByRoleQuery } = userAPI;
+export const { useLoginUserMutation,useGetListUserByRoleQuery, useGetListUsersByDepartmentIdQuery } = userAPI;

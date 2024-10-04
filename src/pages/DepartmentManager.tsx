@@ -1,30 +1,25 @@
-import { Layout, Button, Table, Tag, Modal, Form, Input } from "antd";
+import { Layout, Button, Table, Tag, Input } from "antd"; 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import UserType from "../types/userType";
 import { useGetListUserByRoleQuery } from "../services/user.service";
+
 const { Content } = Layout;
 
-const Manager = () => {
-  const [isAddModalVisible, setIsAddModalVisible] = useState(false);
+const DepartmentManager = () => {
   const [searchText, setSearchText] = useState<string>("");
   const navigate = useNavigate();
   const { data = [] } = useGetListUserByRoleQuery({
     pageNumber: 1,
     pageSize: 5,
-    role: "Manager",
+    role: "DepartmentManager",
   });
   console.log(data);
-  const [form] = Form.useForm();
-  const handleAddCancel = () => {
-    setIsAddModalVisible(false);
-    form.resetFields();
-  };
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchText(e.target.value);
   };
 
-  // Filter the data based on search text
   const filteredData = data.filter((user: UserType) =>
     user.fullName.toLowerCase().includes(searchText.toLowerCase())
   );
@@ -55,7 +50,7 @@ const Manager = () => {
       dataIndex: "status",
       key: "status",
       render: (status: string) => {
-        let color = status === "Active" ? "green" : "volcano";
+        const color = status === "Active" ? "green" : "volcano";
         return <Tag color={color}>{status}</Tag>;
       },
     },
@@ -63,10 +58,8 @@ const Manager = () => {
       title: "Vai trò",
       dataIndex: "role",
       key: "role",
-      render: (text: string | null) => {
-        // const displayedRole = role || "Quản lý";
-        // let color = displayedRole === "Active" ? "green" : "volcano";
-        return <Tag color="red">{text.roleName}</Tag>;
+      render: (role: any) => {
+        return <Tag color="red">{role?.roleName || "Trợ lý phòng ban"}</Tag>;
       },
     },
     {
@@ -79,13 +72,13 @@ const Manager = () => {
             className="mr-2"
             onClick={() =>
               navigate("/detailUser", {
-                state: record,
+                state: record, // Pass the user record for the detail view
               })
             }
           >
             Chỉnh sửa
           </Button>
-          <Button type="primary" danger onClick={() => console.log("haha")}>
+          <Button type="primary" danger onClick={() => console.log("Xóa người dùng")}>
             Xóa
           </Button>
         </>
@@ -99,9 +92,10 @@ const Manager = () => {
         <Content className="p-6">
           <div className="flex justify-center mb-4">
             <h1 className="text-green-500 text-2xl font-bold">
-              Danh sách quản lý
+              Danh sách trợ lý phòng ban
             </h1>
           </div>
+
           <Button
             type="primary"
             className="mb-4 bg-blue-500 hover:bg-blue-600"
@@ -129,4 +123,4 @@ const Manager = () => {
   );
 };
 
-export default Manager;
+export default DepartmentManager;

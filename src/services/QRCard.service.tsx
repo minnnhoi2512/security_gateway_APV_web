@@ -6,19 +6,26 @@ export const qrCardAPI = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: `${baseAPI}/api/QRCode/` }),
   endpoints: (builder) => ({
     getListQRCard: builder.query<any, { pageNumber: number; pageSize: number }>({
-      query: ({ pageNumber, pageSize }) => {
-        return {
-          url: "GetAllQrCardPaging",
-          method: "GET",
-          params: {
-            pageNumber,
-            pageSize,
-          },
-        };
-      },
+      query: ({ pageNumber, pageSize }) => ({
+        url: "GetAllQrCardPaging",
+        method: "GET",
+        params: { pageNumber, pageSize },
+      }),
+    }),
+    createQRCard: builder.mutation<void, string>({
+      query: (cardGuid) => ({
+        url: `CreateQRCard?cardGuid=${cardGuid}`,
+        method: "POST",
+      }),
+    }),
+    generateQRCard: builder.mutation<void, string>({
+      query: (cardGuid) => ({
+        url: `GenerateQrCar?cardGuid=${cardGuid}`,
+        method: "POST",
+      }),
     }),
   }),
 });
 
-// Export the auto-generated hook for the query
-export const { useGetListQRCardQuery } = qrCardAPI;
+
+export const { useGetListQRCardQuery, useCreateQRCardMutation, useGenerateQRCardMutation } = qrCardAPI;

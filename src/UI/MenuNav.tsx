@@ -43,6 +43,11 @@ const MenuNav = () => {
       label: 'Trợ lý phòng ban',
     },
     {
+      key: 'departManager',
+      icon: <UserOutlined />,
+      label: 'Phòng ban',
+    },
+    {
       key: 'security',
       icon: <UserOutlined />,
       label: 'Bảo vệ',
