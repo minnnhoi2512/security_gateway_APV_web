@@ -87,7 +87,7 @@ const ContentRouter = () => {
       />
       <Route
         index
-        path="/detailUser"
+        path="/detailUser/:id"
         element={
           <LayoutPage>
             <DetailUser />
@@ -159,7 +159,7 @@ const ContentRouter = () => {
       />
       <Route
         index
-        path="/detailSchedule"
+        path="/detailSchedule/:id"
         element={
           <LayoutPage>
             <DetailSchedule  />

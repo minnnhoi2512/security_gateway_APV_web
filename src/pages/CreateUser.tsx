@@ -16,7 +16,6 @@ const CreateUser: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation(); // Get the location
   const roleId = location.state?.roleId; // Access roleId from state
-  // console.log(roleId); // Log the roleId for debugging
 
   const [form] = Form.useForm();
   const [username, setUsername] = useState("");
@@ -26,19 +25,36 @@ const CreateUser: React.FC = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [faceImg, setFaceImg] = useState<File[]>([]);
   const [departmentId, setDepartmentId] = useState<number | undefined>(undefined); // State for selected department
+
   const [createNewUser] = useCreateNewUserMutation(); // Destructure the mutation
+
+  // Determine role based on roleId
+  let role = "";
+  if (roleId === 2) {
+    role = "Manager";
+  } else if (roleId === 3) {
+    role = "DepartmentManager";
+  } else if (roleId === 4) {
+    role = "Staff";
+  } else if (roleId === 5) {
+    role = "Security";
+  }
+
   const { data: listDepartment } = useGetListDepartmentsQuery({
     pageNumber: -1,
     pageSize: -1,
-  }); // Destructure the mutation
+  });
+
   const { refetch: refetchUserList } = useGetListUserByRoleQuery({
     pageNumber: -1,
     pageSize: -1,
-    role: "DepartmentManager",
+    role: role, // Use the dynamically set role
   });
+
   const handleCreateUser = async () => {
     try {
       await form.validateFields();
+
       // Upload images to Firebase Storage
       const faceImgPromises = faceImg.map((file) => {
         const uniqueFileName = `${uuidv4()}`; // Use uuid for unique filename
@@ -47,8 +63,13 @@ const CreateUser: React.FC = () => {
           return getDownloadURL(snapshot.ref); // Get the download URL after upload
         });
       });
+
       // Wait for all uploads to complete and get URLs
       const faceImgUrls = await Promise.all(faceImgPromises);
+
+      // Determine departmentId based on roleId
+      const assignedDepartmentId = roleId === 2 ? 20 : roleId === 5 ? 19 : departmentId;
+
       const user: UserType = {
         userName: username,
         password: password,
@@ -57,8 +78,9 @@ const CreateUser: React.FC = () => {
         phoneNumber: phoneNumber,
         image: faceImgUrls[0], // Assuming you want to store the first uploaded image
         roleID: roleId, // Use the roleId from the state
-        departmentId: roleId === 3 || roleId === 4 ? departmentId : undefined, // Set departmentId based on roleId
+        departmentId: assignedDepartmentId, // Set departmentId based on roleId
       };
+
       // Call the mutation to create the user
       await createNewUser(user).unwrap(); // Use unwrap to handle the promise correctly
       message.success("Tạo người dùng thành công!");
@@ -80,9 +102,7 @@ const CreateUser: React.FC = () => {
   return (
     <Layout className="min-h-screen">
       <Content className="p-6">
-        <h1 className="text-green-500 text-2xl font-bold">
-          Tạo người dùng mới
-        </h1>
+        <h1 className="text-green-500 text-2xl font-bold">Tạo người dùng mới</h1>
         <Form form={form} layout="vertical">
           <Form.Item
             name="fullName"

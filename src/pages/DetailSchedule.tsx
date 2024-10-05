@@ -1,21 +1,33 @@
-import { Form, Input, Button, Select, message } from "antd";
+import { Form, Input, Button, Select, message, Spin } from "antd";
 import { useEffect, useState } from "react";
-import { useUpdateScheduleMutation, useGetListScheduleQuery } from "../services/schedule.service";
-import { useLocation, useNavigate } from "react-router-dom";
+import {
+  useUpdateScheduleMutation,
+  useGetListScheduleQuery,
+  useGetDetailScheduleQuery,
+} from "../services/schedule.service";
+import { useNavigate, useParams } from "react-router-dom";
 
 const { Option } = Select;
 
 const DetailSchedule = () => {
   const [form] = Form.useForm();
   const [updateSchedule, { isLoading }] = useUpdateScheduleMutation();
-  const location = useLocation();
-  const selectedSchedule = location.state?.selectedSchedule; // Read schedule from route state
+  const { id } = useParams();
+  const scheduleId = Number(id);
+
   const { refetch: refetchScheduleList } = useGetListScheduleQuery({
     pageNumber: -1,
     pageSize: -1,
   });
   const navigate = useNavigate();
-  
+  const {
+    data: scheduleData,
+    isLoading: isFetchingSchedule,
+    isError,
+  } = useGetDetailScheduleQuery({
+    idSchedule: scheduleId,
+  });
+
   // Define day options
   const dayOptions = [
     { label: "Monday", value: 1 },
@@ -31,46 +43,56 @@ const DetailSchedule = () => {
   const [isProcessMonth, setIsProcessMonth] = useState(false);
 
   useEffect(() => {
-    if (selectedSchedule) {
+    if (scheduleData) {
       form.setFieldsValue({
-        ...selectedSchedule,
-        status: selectedSchedule.status.toString(),
-        scheduleTypeName: selectedSchedule.scheduleType?.scheduleTypeName, // Show schedule type name
-        scheduleTypeId: selectedSchedule.scheduleTypeId,
-        daysOfSchedule: selectedSchedule.daysOfSchedule?.split(',').map(Number) || [], // Initialize with existing selected days
+        ...scheduleData,
+        status: scheduleData.status.toString(),
+        scheduleTypeName: scheduleData.scheduleType?.scheduleTypeName,
+        daysOfSchedule:
+          scheduleData.daysOfSchedule?.split(",").map(Number) || [],
       });
 
       // Determine the type of schedule and set flags
-      if (selectedSchedule.scheduleType?.scheduleTypeName === "ProcessWeek") {
+      if (scheduleData.scheduleType?.scheduleTypeName === "ProcessWeek") {
         setIsProcessWeek(true);
         setIsProcessMonth(false);
-      } else if (selectedSchedule.scheduleType?.scheduleTypeName === "ProcessMonth") {
+      } else if (
+        scheduleData.scheduleType?.scheduleTypeName === "ProcessMonth"
+      ) {
         setIsProcessMonth(true);
         setIsProcessWeek(false);
       }
     }
-  }, [selectedSchedule, form]);
+  }, [scheduleData, form]);
 
   const handleFinish = async (values: any) => {
+    console.log(scheduleData)
     try {
       const parsedValues = {
-        ...values,
+        ...scheduleData,
         duration: Number(values.duration),
+        createById : scheduleData.createBy.userId,
+        scheduleTypeId : scheduleData.scheduleType.scheduleTypeId,
         status: values.status === "true",
-        daysOfSchedule: values.daysOfSchedule.join(','), // Convert array to comma-separated string
-      };    
+        daysOfSchedule: values.daysOfSchedule.join(","),
+      };
 
       await updateSchedule({
         schedule: parsedValues,
-        idSchedule: selectedSchedule.scheduleId,
+        idSchedule: scheduleId, // use scheduleId instead of detailSchedule.scheduleId
       }).unwrap();
       message.success("Dự án đã được cập nhật thành công!");
       await refetchScheduleList();
       navigate(-1);
-    } catch (error) {
+    } catch (error) { 
+      console.log(error)
       message.error("Đã xảy ra lỗi khi cập nhật dự án.");
     }
   };
+
+  // Handle loading and error states
+  if (isFetchingSchedule) return <Spin tip="Loading schedule details..." />;
+  if (isError) return <div>Error loading schedule details.</div>;
 
   return (
     <Form form={form} layout="vertical" onFinish={handleFinish}>
@@ -81,11 +103,13 @@ const DetailSchedule = () => {
       >
         <Input placeholder="Nhập tiêu đề dự án" />
       </Form.Item>
-    
+
       <Form.Item
         label="Thời gian kéo dài (ngày)"
         name="duration"
-        rules={[{ required: true, message: "Vui lòng nhập thời gian kéo dài!" }]}
+        rules={[
+          { required: true, message: "Vui lòng nhập thời gian kéo dài!" },
+        ]}
       >
         <Input type="number" placeholder="Nhập số ngày" />
       </Form.Item>
@@ -119,7 +143,9 @@ const DetailSchedule = () => {
         <Form.Item
           label="Ngày trong tuần"
           name="daysOfSchedule"
-          rules={[{ required: true, message: "Vui lòng chọn ngày trong tuần!" }]}
+          rules={[
+            { required: true, message: "Vui lòng chọn ngày trong tuần!" },
+          ]}
         >
           <Select mode="multiple" placeholder="Chọn ngày trong tuần">
             {dayOptions.map((day) => (
@@ -133,7 +159,9 @@ const DetailSchedule = () => {
         <Form.Item
           label="Ngày trong tháng"
           name="daysOfSchedule"
-          rules={[{ required: true, message: "Vui lòng chọn ngày trong tháng!" }]}
+          rules={[
+            { required: true, message: "Vui lòng chọn ngày trong tháng!" },
+          ]}
         >
           <Select mode="multiple" placeholder="Chọn ngày trong tháng">
             {Array.from({ length: 31 }, (_, index) => (

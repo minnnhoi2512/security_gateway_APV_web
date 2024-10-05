@@ -6,6 +6,7 @@ import {
   Button,
   message,
   InputNumber,
+  Select,
 } from "antd";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -15,6 +16,8 @@ import VisitDetail from "../types/visitDetailType";
 import Visitor from "../types/visitorType";
 import { useCreateNewListDetailVisitMutation } from "../services/visitDetailList.service";
 import * as XLSX from "xlsx"; // Import the xlsx library
+import { useGetListScheduleQuery } from "../services/schedule.service";
+import Schedule from "../types/scheduleType";
 
 interface FormValues {
   title: string;
@@ -23,6 +26,7 @@ interface FormValues {
   expectedTimeOut: Moment;
   area: string;
   visitQuantity: number;
+  scheduleId: number; // Add scheduleId to FormValues
   [key: string]: any; // Dynamic fields for visitors
 }
 
@@ -34,17 +38,19 @@ const CreateNewVisitList: React.FC = () => {
   const userId = userIdString ? parseInt(userIdString, 10) : null; // Parse it as an integer, default to null if not found
   const [createNewListDetailVisit] = useCreateNewListDetailVisitMutation();
 
+  // Fetch schedules using the query
+  const { data: schedules, isLoading: loadingSchedules } =
+    useGetListScheduleQuery({ pageNumber: -1, pageSize: -1 });
+  console.log(schedules);
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-
     const reader = new FileReader();
     reader.onload = (e) => {
       const data = new Uint8Array(e.target?.result as ArrayBuffer);
       const workbook = XLSX.read(data, { type: "array" });
       const worksheet = workbook.Sheets[workbook.SheetNames[0]];
       const jsonData = XLSX.utils.sheet_to_json(worksheet);
-
       // Assuming the JSON data contains fields like visitorName, companyName, phoneNumber, and credentialsCard
       const visitors: Visitor[] = jsonData.map((row: any) => ({
         visitorName: row.visitorName,
@@ -56,10 +62,8 @@ const CreateNewVisitList: React.FC = () => {
         status: true,
         credentialCardTypeId: 0, // Adjust if needed
       }));
-
       // Clear the form before setting new fields
       form.resetFields();
-
       // Update the form with the imported visitor data
       visitors.forEach((visitor, index) => {
         form.setFieldsValue({
@@ -70,9 +74,7 @@ const CreateNewVisitList: React.FC = () => {
         });
       });
       setVisitCount(visitors.length);
-    
     };
-
     reader.readAsArrayBuffer(file);
   };
 
@@ -92,41 +94,36 @@ const CreateNewVisitList: React.FC = () => {
       .then(async (values) => {
         const visitDetails: VisitDetail[] = Array.from({
           length: visitCount,
-        }).map((_, index) => {
-          const newVisitor: Visitor = {
-            visitorName: values[`visitorName${index}`],
-            companyName: values[`companyName${index}`],
-            phoneNumber: values[`phoneNumber${index}`],
-            createdDate: new Date(),
-            updatedDate: new Date(),
-            credentialsCard: values[`credentialsCard${index}`],
-            status: true,
-            credentialCardTypeId: 0, // Adjust if needed
-          };
+        }).map((_) => {
+          // const newVisitor: Visitor = {
+          //   visitorName: values[`visitorName${index}`],
+          //   companyName: values[`companyName${index}`],
+          //   phoneNumber: values[`phoneNumber${index}`],
+          //   createdDate: new Date(),
+          //   updatedDate: new Date(),
+          //   credentialsCard: values[`credentialsCard${index}`],
+          //   status: true,
+          //   credentialCardTypeId: 0, // Adjust if needed
+          // };
           return {
-            description: values.title,
-            expectedTimeIn: values.time
+            expectedStartHour: values.time
               ? moment(values.time).format("HH:mm:ss")
               : "07:00:00",
-            expectedTimeOut: values.expectedTimeOut
+            expectedEndHour: values.expectedTimeOut
               ? moment(values.expectedTimeOut).format("HH:mm:ss")
               : "12:00:00",
-            status: true,
-            visitor: newVisitor,
+            visitorId: 0, // You may want to replace this with the actual visitor ID if available
           };
         });
-
         const visitData: VisitDetailList = {
-          visitQuantity: visitCount,
-          acceptLevel: 2,
           visitName: values.title,
+          visitQuantity: visitCount,
+          expectedStartTime: new Date(), // Combine date and time for expectedStartTime
           createById: userId || 0,
-          updateById: userId || 0,
-          scheduleId : 0,
-          visitDetailOfNewVisitor: visitDetails,
-          visitDetailOfOldVisitor: [],
+          description: values.title,
+          scheduleId: values.scheduleId || 0, // Use the selected scheduleId
+          visitDetail: visitDetails,
         };
-
         try {
           await createNewListDetailVisit({
             newVisitDetailList: visitData,
@@ -175,12 +172,26 @@ const CreateNewVisitList: React.FC = () => {
         >
           <TimePicker format="HH:mm" />
         </Form.Item>
+        {/* Schedule selection */}
+        <Form.Item
+          name="scheduleId"
+          label="Chọn lịch"
+          rules={[{ required: true, message: "Vui lòng chọn lịch" }]}
+        >
+          <Select loading={loadingSchedules} placeholder="Chọn lịch">
+            {schedules?.map((schedule : Schedule) => (
+              <Select.Option key={schedule.scheduleId} value={schedule.scheduleId}>
+                {schedule.scheduleName}{" "}
+                {/* Adjust this to the correct property for display */}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
         {/* Number of visitors */}
         <Form.Item
           name="visitQuantity"
           label="Số lượng khách"
           rules={[{ required: true, message: "Vui lòng nhập số lượng khách" }]}
-          
         >
           <InputNumber
             min={1}

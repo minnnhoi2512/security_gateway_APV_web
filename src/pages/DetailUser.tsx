@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import { Layout, Button, Form, Input, message, Select, Upload } from "antd";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { UploadOutlined } from "@ant-design/icons";
-import { useUpdateUserMutation } from "../services/user.service";
+import {
+  useUpdateUserMutation,
+  useGetDetailUserQuery,
+} from "../services/user.service";
 import User from "../types/userType";
 import { v4 as uuidv4 } from "uuid"; // Import uuid for unique file names
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"; // Import Firebase functions
@@ -13,15 +16,21 @@ const { Option } = Select;
 
 const DetailUser: React.FC = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const userData: User = location.state ; // Ensure userData is of type User
-
+  const { id } = useParams(); // Extract id from route parameters
+  const userId = Number(id); // Parse id to a number
   const [form] = Form.useForm();
-  const [status, setStatus] = useState<string | null>(userData.status || null);
-  const [imgFace, setImgFace] = useState<string | null>(userData.image || null); // Initialize with existing image
+  const [status, setStatus] = useState<string | null>(null);
+  const [imgFace, setImgFace] = useState<string | null>(null); // Initialize with existing image
   const [faceImg, setFaceImg] = useState<File[]>([]); // State to hold uploaded image files
   const [updateUser] = useUpdateUserMutation(); // Hook for updating user
 
+  // Fetch user details using the userId
+  const { data: userData, isLoading, isError } = useGetDetailUserQuery(userId);
+
+  // Handle loading and error states
+  if (isLoading) return <div>Loading...</div>;
+  if (isError) return <div>Error loading user details.</div>;
+  console.log(userData);
   const handleUpdateStatus = async () => {
     try {
       // Prepare an array of promises for uploading images
@@ -39,12 +48,17 @@ const DetailUser: React.FC = () => {
       // Prepare the updated user data
       const updatedUser: User = {
         ...userData,
+        userName: userData.userName,
+        // departmentId : userData.
         status: status || undefined,
-        image: faceImgUrls[0] || userData.image // Use the new image if uploaded, or keep the old one
+        image: faceImgUrls[0] || userData.image, // Use the new image if uploaded, or keep the old one
       };
 
       // Call the mutation with the user ID and updated user data
-      await updateUser({ idUser: userData.userId || null, User: updatedUser }).unwrap();
+      await updateUser({
+        idUser: userData.userId || null,
+        User: updatedUser,
+      }).unwrap();
       message.success(`Cập nhật thành công`);
       navigate(-1);
     } catch (error) {
@@ -60,13 +74,16 @@ const DetailUser: React.FC = () => {
     const fileList = info.fileList;
     setFaceImg(fileList.map((file: any) => file.originFileObj)); // Store the uploaded file(s)
     const newUploadedImage = URL.createObjectURL(fileList[0]?.originFileObj);
+    console.log(imgFace);
     setImgFace(newUploadedImage); // Preview the uploaded image
   };
 
   return (
     <Layout className="min-h-screen">
       <Content className="p-6">
-        <h1 className="text-green-500 text-2xl font-bold">Chi tiết người dùng</h1>
+        <h1 className="text-green-500 text-2xl font-bold">
+          Chi tiết người dùng
+        </h1>
         <Form form={form} layout="vertical" initialValues={userData}>
           <Form.Item name="fullName" label="Tên">
             <Input value={userData.fullName} readOnly />
@@ -80,7 +97,7 @@ const DetailUser: React.FC = () => {
           <Form.Item label="Cập nhật trạng thái">
             <Form.Item name="status" noStyle>
               <Select
-                value={status}
+                value={userData.status}
                 onChange={(value) => setStatus(value)}
                 style={{ width: "100%" }}
               >
@@ -98,9 +115,9 @@ const DetailUser: React.FC = () => {
             >
               <Button icon={<UploadOutlined />}>Tải lên hình ảnh mặt</Button>
             </Upload>
-            {imgFace && (
+            {userData.image && (
               <img
-                src={imgFace}
+                src={userData.image}
                 alt="User Face"
                 className="w-16 h-16 rounded-full mt-2"
               />

@@ -122,7 +122,7 @@ const Staff = () => {
             type="primary"
             className="mr-2"
             onClick={() =>
-              navigate("/detailUser", {
+              navigate(`/detailUser/${record.userId}`, {
                 state: record,
               })
             }

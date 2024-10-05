@@ -84,7 +84,7 @@ const CustomerVisit = () => {
       dataIndex: "schedule",
       key: "schedule",
       render: (text) => (
-        <span style={{ fontSize: "14px", color: "#000" }}>{text}</span>
+        <span style={{ fontSize: "14px", color: "#000" }}>{text.scheduleName}</span>
       ),
     },
     {

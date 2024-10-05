@@ -101,6 +101,14 @@ export const userAPI = createApi({
         };
       },
     }),
+    getDetailUser: builder.query({
+      query: (idUser: number) => {
+        return {
+          url: `/${idUser}`,
+          method: "GET",
+        };
+      },
+    }),
   }),
 });
 
@@ -112,4 +120,5 @@ export const {
   useUpdateUserMutation,
   useDeleteUserMutation,
   useGetListUsersByDepartmentIdQuery,
+  useGetDetailUserQuery
 } = userAPI;

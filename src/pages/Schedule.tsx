@@ -30,7 +30,7 @@ const ScheduleManager = () => {
   };
 
   const handleEditSchedule = (record: ScheduleType) => {
-    navigate("/detailSchedule", { state: { selectedSchedule: record } });
+    navigate(`/detailSchedule/${record.scheduleId}`, { state: { selectedSchedule: record } });
   };
 
   const handleDeleteSchedule = (scheduleId: number) => {

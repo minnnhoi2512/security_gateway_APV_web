@@ -1,7 +1,7 @@
 type Schedule = {
   scheduleId?: number;
   scheduleName: string;
-  daysOfProcess?: string;
+  daysOfSchedule?: string;
   createTime: Date;
   updateTime: Date;
   description: string;
@@ -14,6 +14,9 @@ type Schedule = {
     status?: boolean;
   };
   createById?: number;
+  createBy?: {
+    userId?: number;
+  };
 };
 
 export default Schedule;
