@@ -1,21 +1,28 @@
-import { Layout, Button, Table, Tag, Input } from "antd"; 
+import { Layout, Button, Table, Tag, Input, Modal, message } from "antd";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import UserType from "../types/userType";
-import { useGetListUserByRoleQuery } from "../services/user.service";
+import {
+  useGetListUserByRoleQuery,
+  useDeleteUserMutation,
+} from "../services/user.service";
 
 const { Content } = Layout;
 
 const DepartmentManager = () => {
   const [searchText, setSearchText] = useState<string>("");
+  const [deleteUser] = useDeleteUserMutation(); // Hook for deleting user
+  const [isModalVisible, setIsModalVisible] = useState(false); // State to control modal visibility
+  const [userIdToDelete, setUserIdToDelete] = useState<number | null>(null); // State to store user ID for deletion
   const navigate = useNavigate();
-  const { data = [] } = useGetListUserByRoleQuery({
+
+  // Fetch user list and include `refetch` function
+  const { data = [], refetch } = useGetListUserByRoleQuery({
     pageNumber: -1,
     pageSize: -1,
     role: "DepartmentManager",
   });
   console.log(data);
-
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchText(e.target.value);
   };
@@ -46,6 +53,18 @@ const DepartmentManager = () => {
       key: "phoneNumber",
     },
     {
+      title: "Phòng ban", // The title of the column, displayed in the table header
+      dataIndex: "department", // The key used to access the data for this column from the data source
+      key: "department", // A unique key for this column, used for React's reconciliation process
+      render: (
+        text: any // A custom render function that defines how the data should be displayed
+      ) => (
+        <span style={{ fontSize: "14px", color: "#000" }}>
+          {text.departmentName}
+        </span>
+      ),
+    },
+    {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
@@ -71,20 +90,42 @@ const DepartmentManager = () => {
             type="primary"
             className="mr-2"
             onClick={() =>
-              navigate("/detailUser", {
-                state: record, // Pass the user record for the detail view
+              navigate(`/detailUser/${record.userId}`, {
+                state: record, // Pass the entire user record to the DetailUser component
               })
             }
           >
             Chỉnh sửa
           </Button>
-          <Button type="primary" danger onClick={() => console.log("Xóa người dùng")}>
+          <Button
+            type="primary"
+            danger
+            onClick={() => {
+              setUserIdToDelete(record.userId || null); // Set the user ID to delete
+              setIsModalVisible(true); // Show the confirmation modal
+            }}
+          >
             Xóa
           </Button>
         </>
       ),
     },
   ];
+
+  const handleDeleteUser = async () => {
+    if (userIdToDelete) {
+      try {
+        await deleteUser(userIdToDelete).unwrap(); // Call the delete mutation
+        message.success("Xóa người dùng thành công");
+        refetch(); // Refetch the user list after successful deletion
+      } catch (error) {
+        message.error("Xóa người dùng thất bại");
+      } finally {
+        setIsModalVisible(false); // Close the modal
+        setUserIdToDelete(null); // Reset the user ID
+      }
+    }
+  };
 
   return (
     <Layout className="min-h-screen">
@@ -95,28 +136,37 @@ const DepartmentManager = () => {
               Danh sách trợ lý phòng ban
             </h1>
           </div>
-
           <Button
             type="primary"
             className="mb-4 bg-blue-500 hover:bg-blue-600"
-            onClick={() => navigate("/createUser")}
+            onClick={() => navigate("/createUser", { state: { roleId: 3 } })}
           >
             Tạo mới người dùng
           </Button>
-
           <Input
             placeholder="Tìm kiếm theo tên"
             value={searchText}
             onChange={handleSearchChange}
             style={{ marginBottom: 16, width: 300 }}
           />
-
           <Table
             columns={columns}
             dataSource={filteredData}
-            pagination={false}
+            pagination={{
+              total: filteredData?.length, // Assuming totalCount is provided in the response
+            }}
             rowKey={"userId"}
           />
+          <Modal
+            title="Xác nhận xóa"
+            visible={isModalVisible}
+            onOk={handleDeleteUser}
+            onCancel={() => setIsModalVisible(false)}
+            okText="Xóa"
+            cancelText="Hủy"
+          >
+            <p>Bạn có chắc chắn muốn xóa người dùng này?</p>
+          </Modal>
         </Content>
       </Layout>
     </Layout>

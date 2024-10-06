@@ -35,8 +35,8 @@ function Login() {
 
       // Decode the token
       const decodedToken: any = jwtDecode(jwtToken);
-      console.log(decodedToken);
-
+      // console.log(decodedToken);
+      // console.log(result);
       // Check if the role is 'Security' and prevent access
       if (decodedToken.role === 'Security') {
         toast.error('Người dùng này không có quyền truy cập vào hệ thống');
@@ -48,6 +48,7 @@ function Login() {
       localStorage.setItem('userRole', decodedToken.role);
       localStorage.setItem('userId', result.userId);
       localStorage.setItem('userName', result.userName);
+      localStorage.setItem('departmentId', decodedToken.departmentId);
 
       // Success toast notification
       toast.success('Đăng nhập thành công!');

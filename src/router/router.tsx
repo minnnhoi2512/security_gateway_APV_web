@@ -24,6 +24,8 @@ import Notification from "../pages/NotificationTest";
 import Staff from "../pages/Staff";
 import ChatRoom from "../pages/ChatRoom";
 import VisitorManager from "../pages/VisitorManager";
+import CreateNewSchedule from "../pages/CreateNewSchedule";
+import DetailSchedule from "../pages/DetailSchedule";
 
 
 const ContentRouter = () => {
@@ -86,7 +88,7 @@ const ContentRouter = () => {
       />
       <Route
         index
-        path="/detailUser"
+        path="/detailUser/:id"
         element={
           <LayoutPage>
             <DetailUser />
@@ -171,6 +173,24 @@ const ContentRouter = () => {
         element={
           <LayoutPage>
             <Schedule />
+          </LayoutPage>
+        }
+      />
+      <Route
+        index
+        path="/detailSchedule/:id"
+        element={
+          <LayoutPage>
+            <DetailSchedule  />
+          </LayoutPage>
+        }
+      />
+       <Route
+        index
+        path="/createNewSchedule"
+        element={
+          <LayoutPage>
+            <CreateNewSchedule />
           </LayoutPage>
         }
       />
