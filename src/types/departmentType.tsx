@@ -1,10 +1,10 @@
 type DepartmentType = {
-    departmentId: number;
-    departmentName: string;
-    description: string;
+    departmentId?: number;
+    departmentName?: string;
+    description?: string;
     createDate?: Date;
     updatedDate?: Date;
-    acceptLevel: number;
+    acceptLevel?: number;
   };
   
   export default DepartmentType;

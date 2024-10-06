@@ -58,6 +58,11 @@ const MenuNav = () => {
       label: 'Danh sách khách',
     },
     {
+      key: 'visitorManager',
+      icon: <UserOutlined />,
+      label: 'Danh sách nhóm khách',
+    },
+    {
       key: 'staff',
       icon: <UserOutlined />,
       label: 'Danh sách nhân viên',
