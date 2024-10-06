@@ -6,6 +6,7 @@ import { setupListeners } from "@reduxjs/toolkit/query";
 import { scheduleAPI } from "../services/schedule.service";
 import { qrCardAPI } from "../services/QRCard.service";
 import { departmentAPI } from "../services/department.service";
+import { visitorAPI } from "../services/visitor.service";
 
 export const store = configureStore({
   reducer: {
@@ -15,6 +16,7 @@ export const store = configureStore({
     [scheduleAPI.reducerPath]: scheduleAPI.reducer,
     [qrCardAPI.reducerPath]: qrCardAPI.reducer,
     [departmentAPI.reducerPath]: departmentAPI.reducer,
+    [visitorAPI.reducerPath]: visitorAPI.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
@@ -23,7 +25,8 @@ export const store = configureStore({
       .concat(visitDetailListAPI.middleware)
       .concat(qrCardAPI.middleware)
       .concat(scheduleAPI.middleware)
-      .concat(departmentAPI.middleware),
+      .concat(departmentAPI.middleware)
+      .concat(visitorAPI.middleware),
 });
 
 // Define RootState and AppDispatch types

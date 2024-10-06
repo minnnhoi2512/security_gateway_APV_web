@@ -23,6 +23,7 @@ import GateManager from "../pages/GateManager";
 import Notification from "../pages/NotificationTest";
 import Staff from "../pages/Staff";
 import ChatRoom from "../pages/ChatRoom";
+import VisitorManager from "../pages/VisitorManager";
 
 
 const ContentRouter = () => {
@@ -107,6 +108,24 @@ const ContentRouter = () => {
         element={
           <LayoutPage>
             <CustomerVisit />
+          </LayoutPage>
+        }
+      />
+            <Route
+        index
+        path="/departmentManager"
+        element={
+          <LayoutPage>
+            <DepartmentManager />
+          </LayoutPage>
+        }
+      />
+      <Route
+        index
+        path="/visitorManager"
+        element={
+          <LayoutPage>
+            <VisitorManager />
           </LayoutPage>
         }
       />
