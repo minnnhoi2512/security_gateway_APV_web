@@ -138,10 +138,11 @@ const MenuNav = () => {
     } else if (userRole === "Manager") {
       return ![
         "dashboard",
-        "departmentManager",
         "security",
         "project",
         "history",
+        "manager",
+        "staff",
       ].includes(item.key);
     }
     return true; // Include all items for other roles

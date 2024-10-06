@@ -18,7 +18,7 @@ const ScheduleManager = () => {
     pageNumber: -1,
     pageSize: -1,
   });
-  console.log(data);
+
   const [deleteSchedule] = useDeleteScheduleMutation();
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -75,6 +75,12 @@ const ScheduleManager = () => {
       dataIndex: "description",
       key: "description",
       render: (text: any) => <div className="flex items-center">{text}</div>,
+    },
+    {
+      title: "Loại",
+      dataIndex: "scheduleType",
+      key: "scheduleType",
+      render: (text: any) => <div className="flex items-center">{text.scheduleTypeName}</div>,
     },
     {
       title: "Trạng thái",

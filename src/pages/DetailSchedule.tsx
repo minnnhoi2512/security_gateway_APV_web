@@ -14,7 +14,6 @@ const DetailSchedule = () => {
   const [updateSchedule, { isLoading }] = useUpdateScheduleMutation();
   const { id } = useParams();
   const scheduleId = Number(id);
-
   const { refetch: refetchScheduleList } = useGetListScheduleQuery({
     pageNumber: -1,
     pageSize: -1,
@@ -41,6 +40,7 @@ const DetailSchedule = () => {
 
   const [isProcessWeek, setIsProcessWeek] = useState(false);
   const [isProcessMonth, setIsProcessMonth] = useState(false);
+  const [isVisitDaily, setIsVisitDaily] = useState(false); // New state to track VisitDaily
 
   useEffect(() => {
     if (scheduleData) {
@@ -53,39 +53,41 @@ const DetailSchedule = () => {
       });
 
       // Determine the type of schedule and set flags
-      if (scheduleData.scheduleType?.scheduleTypeName === "ProcessWeek") {
+      const scheduleTypeName = scheduleData.scheduleType?.scheduleTypeName;
+      if (scheduleTypeName === "ProcessWeek") {
         setIsProcessWeek(true);
         setIsProcessMonth(false);
-      } else if (
-        scheduleData.scheduleType?.scheduleTypeName === "ProcessMonth"
-      ) {
+        setIsVisitDaily(false);
+      } else if (scheduleTypeName === "ProcessMonth") {
         setIsProcessMonth(true);
         setIsProcessWeek(false);
+        setIsVisitDaily(false);
+      } else if (scheduleTypeName === "VisitDaily") {
+        setIsVisitDaily(true);
+        setIsProcessWeek(false);
+        setIsProcessMonth(false);
       }
     }
   }, [scheduleData, form]);
 
   const handleFinish = async (values: any) => {
-    console.log(scheduleData)
     try {
       const parsedValues = {
         ...scheduleData,
         duration: Number(values.duration),
-        createById : scheduleData.createBy.userId,
-        scheduleTypeId : scheduleData.scheduleType.scheduleTypeId,
+        createById: scheduleData.createBy.userId,
+        scheduleTypeId: scheduleData.scheduleType.scheduleTypeId,
         status: values.status === "true",
         daysOfSchedule: values.daysOfSchedule.join(","),
       };
-
       await updateSchedule({
         schedule: parsedValues,
-        idSchedule: scheduleId, // use scheduleId instead of detailSchedule.scheduleId
+        idSchedule: scheduleId,
       }).unwrap();
       message.success("Dự án đã được cập nhật thành công!");
       await refetchScheduleList();
       navigate(-1);
-    } catch (error) { 
-      console.log(error)
+    } catch (error) {
       message.error("Đã xảy ra lỗi khi cập nhật dự án.");
     }
   };
@@ -104,15 +106,18 @@ const DetailSchedule = () => {
         <Input placeholder="Nhập tiêu đề dự án" />
       </Form.Item>
 
-      <Form.Item
-        label="Thời gian kéo dài (ngày)"
-        name="duration"
-        rules={[
-          { required: true, message: "Vui lòng nhập thời gian kéo dài!" },
-        ]}
-      >
-        <Input type="number" placeholder="Nhập số ngày" />
-      </Form.Item>
+      {/* Conditionally render duration field */}
+      {!isVisitDaily && (
+        <Form.Item
+          label="Thời gian kéo dài (ngày)"
+          name="duration"
+          rules={[
+            { required: true, message: "Vui lòng nhập thời gian kéo dài!" },
+          ]}
+        >
+          <Input type="number" placeholder="Nhập số ngày" />
+        </Form.Item>
+      )}
 
       <Form.Item
         label="Miêu tả"
@@ -171,15 +176,7 @@ const DetailSchedule = () => {
             ))}
           </Select>
         </Form.Item>
-      ) : (
-        <Form.Item
-          label="Ngày thực hiện"
-          name="daysOfSchedule"
-          rules={[{ required: true, message: "Vui lòng nhập ngày thực hiện!" }]}
-        >
-          <Input placeholder="Nhập ngày thực hiện" />
-        </Form.Item>
-      )}
+      ) : null /* Do not render daysOfSchedule for VisitDaily */ }
 
       <Form.Item>
         <Button type="primary" htmlType="submit" loading={isLoading}>

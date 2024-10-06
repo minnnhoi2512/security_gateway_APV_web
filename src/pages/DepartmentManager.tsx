@@ -53,6 +53,18 @@ const DepartmentManager = () => {
       key: "phoneNumber",
     },
     {
+      title: "Phòng ban", // The title of the column, displayed in the table header
+      dataIndex: "department", // The key used to access the data for this column from the data source
+      key: "department", // A unique key for this column, used for React's reconciliation process
+      render: (
+        text: any // A custom render function that defines how the data should be displayed
+      ) => (
+        <span style={{ fontSize: "14px", color: "#000" }}>
+          {text.departmentName}
+        </span>
+      ),
+    },
+    {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
@@ -140,7 +152,9 @@ const DepartmentManager = () => {
           <Table
             columns={columns}
             dataSource={filteredData}
-            pagination={false}
+            pagination={{
+              total: filteredData?.length, // Assuming totalCount is provided in the response
+            }}
             rowKey={"userId"}
           />
           <Modal

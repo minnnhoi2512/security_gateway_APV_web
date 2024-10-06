@@ -21,17 +21,15 @@ const CreateNewSchedule: React.FC = () => {
     pageNumber: -1,
     pageSize: -1,
   });
-
-  // State to track steps and other required data
+  
   const [currentStep, setCurrentStep] = useState(0);
-  const [selectedScheduleType, setSelectedScheduleType] = useState<
-    number | null
-  >(null);
+  const [selectedScheduleType, setSelectedScheduleType] = useState<number | null>(null);
   const [isProcessWeek, setIsProcessWeek] = useState(false);
   const [isProcessMonth, setIsProcessMonth] = useState(false);
+  const [isVisitDaily, setIsVisitDaily] = useState(false);
   const [duration, setDuration] = useState<number>(0);
   const [daysOfSchedule, setDaysOfSchedule] = useState<string>("");
-  // Days options for selecting schedule
+
   const dayOptions = [
     { label: "Monday", value: 1 },
     { label: "Tuesday", value: 2 },
@@ -44,75 +42,81 @@ const CreateNewSchedule: React.FC = () => {
 
   const handleScheduleTypeChange = (value: number) => {
     const selectedType = data?.find((type) => type.scheduleTypeId === value);
-
     if (selectedType) {
       setSelectedScheduleType(value);
+      if (value === 3) { // Assuming 3 is the ID for VisitDaily
+        setDuration(1);
+        setDaysOfSchedule("1");
+      }
       setIsProcessWeek(selectedType.scheduleTypeName === "ProcessWeek");
       setIsProcessMonth(selectedType.scheduleTypeName === "ProcessMonth");
+      setIsVisitDaily(selectedType.scheduleTypeName === "VisitDaily");
+
+      // If the selected type is VisitDaily, skip to step 2
+      if (selectedType.scheduleTypeName === "VisitDaily") {
+        setCurrentStep(2);
+      } else {
+        setCurrentStep(0); // Reset to step 0 for other types
+      }
     }
   };
+
   const handleDurationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = Number(e.target.value); // Get the value from the input
-    // You can perform any logic here, like setting state or logging
+    const value = Number(e.target.value);
     setDuration(value);
-    // console.log("Duration changed:", value);
-    // If you want to do something else with this value, you can add your logic here.
   };
+
   const handleDaysOfScheduleChange = (value: number[]) => {
-    console.log(value);
-
-    // Convert the array of numbers into a comma-separated string
-    const dayString = value.join(","); // Joining the array into a string
-
-    // Update the state with the formatted string
-    setDaysOfSchedule(dayString); // Set the state with the string representation
-    // console.log("Days of Schedule changed:", dayString); // Log the string representation
+    const dayString = value.join(",");
+    setDaysOfSchedule(dayString);
   };
+
   const next = async () => {
     try {
-      // Validate fields for the current step
-      if (currentStep === 0) {
-        // Validate scheduleTypeId and duration fields
-        await form.validateFields(["scheduleTypeId", "duration"]);
-      } else if (currentStep === 1) {
-        // Validate daysOfSchedule field
-        await form.validateFields(["daysOfSchedule"]);
+      if (currentStep === 0 && isVisitDaily) {
+        setCurrentStep(2); // Go to step 2 if VisitDaily
+      } else {
+        if (currentStep === 0) {
+          await form.validateFields(["scheduleTypeId", "duration"]);
+        } else if (currentStep === 1) {
+          await form.validateFields(["daysOfSchedule"]);
+        }
+        setCurrentStep(currentStep + 1);
       }
-
-      // Move to the next step if validation passes
-      setCurrentStep(currentStep + 1);
     } catch (error) {
-      // Handle validation error (e.g., show a message)
       console.error("Validation failed:", error);
     }
   };
-  const prev = () => setCurrentStep(currentStep - 1);
+
+  const prev = () => {
+    if (currentStep === 2 && isVisitDaily) {
+      setCurrentStep(0); // Go back to step 0 if VisitDaily
+    } else {
+      setCurrentStep(currentStep - 1); // Otherwise, go to the previous step
+    }
+  };
 
   const handleFinish = async (values: ScheduleType) => {
-    console.log(values);
     try {
       const parsedValues: any = {
         ...values,
-        duration: duration, // Ensure duration is a number
+        duration: duration,
         status: true,
         createById: parseInt(userId || "0", 10),
         daysOfSchedule: daysOfSchedule,
-        scheduleTypeId: selectedScheduleType, // Ensure scheduleTypeId is included
+        scheduleTypeId: selectedScheduleType,
       };
-
-      // Log parsed values for debugging
-      console.log(parsedValues);
-
       await createNewSchedule(parsedValues).unwrap();
       message.success("Dự án đã được tạo thành công!");
       await refetchScheduleList();
       navigate(-1);
       form.resetFields();
     } catch (error) {
-      console.error("Error creating new schedule:", error); // Log the error for debugging
+      console.error("Error creating new schedule:", error);
       message.error("Đã xảy ra lỗi khi tạo dự án.");
     }
   };
+
   return (
     <>
       <Steps current={currentStep}>
@@ -120,7 +124,6 @@ const CreateNewSchedule: React.FC = () => {
         <Step title="Chọn ngày thực hiện" />
         <Step title="Nhập thông tin dự án" />
       </Steps>
-
       <Form form={form} layout="vertical" onFinish={handleFinish}>
         {currentStep === 0 && (
           <>
@@ -145,22 +148,26 @@ const CreateNewSchedule: React.FC = () => {
                 ))}
               </Select>
             </Form.Item>
-            <Form.Item
-              label="Thời gian kéo dài (ngày)"
-              name="duration"
-              rules={[
-                { required: true, message: "Vui lòng nhập thời gian kéo dài!" },
-              ]}
-            >
-              <Input
-                onChange={handleDurationChange} // Call the function correctly
-                type="number"
-                placeholder="Nhập số ngày"
-              />
-            </Form.Item>
+            {/* Conditionally render duration field */}
+            {!isVisitDaily && (
+              <Form.Item
+                label="Thời gian kéo dài (ngày)"
+                name="duration"
+                rules={[
+                  { required: true, message: "Vui lòng nhập thời gian kéo dài!" },
+                ]}
+              >
+                <Input
+                  type="number"
+                  placeholder="Nhập số ngày"
+                  disabled={isVisitDaily}
+                  value={isVisitDaily ? 1 : undefined}
+                  onChange={!isVisitDaily ? handleDurationChange : undefined}
+                />
+              </Form.Item>
+            )}
           </>
         )}
-
         {currentStep === 1 && (
           <Form.Item
             label={
@@ -182,7 +189,7 @@ const CreateNewSchedule: React.FC = () => {
               <Select
                 mode="multiple"
                 placeholder="Chọn ngày trong tuần"
-                onChange={handleDaysOfScheduleChange} // Add the onChange handler here
+                onChange={handleDaysOfScheduleChange}
               >
                 {dayOptions.map((day) => (
                   <Option key={day.value} value={day.value}>
@@ -194,7 +201,7 @@ const CreateNewSchedule: React.FC = () => {
               <Select
                 mode="multiple"
                 placeholder="Chọn ngày trong tháng"
-                onChange={handleDaysOfScheduleChange} // Add the onChange handler here
+                onChange={handleDaysOfScheduleChange}
               >
                 {Array.from({ length: 31 }, (_, index) => (
                   <Option key={index + 1} value={index + 1}>
@@ -202,12 +209,9 @@ const CreateNewSchedule: React.FC = () => {
                   </Option>
                 ))}
               </Select>
-            ) : (
-              <Input
-                placeholder="Nhập ngày thực hiện"
-                onChange={() => handleDaysOfScheduleChange} // Handle input change
-              />
-            )}
+            ) : isVisitDaily ? (
+              <Input disabled value={"1"} placeholder="Nhập ngày thực hiện" />
+            ) : null}
           </Form.Item>
         )}
         {currentStep === 2 && (
@@ -228,7 +232,6 @@ const CreateNewSchedule: React.FC = () => {
             </Form.Item>
           </>
         )}
-
         <Form.Item>
           {currentStep > 0 && (
             <Button style={{ marginRight: 8 }} onClick={prev}>

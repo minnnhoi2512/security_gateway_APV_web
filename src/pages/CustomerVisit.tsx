@@ -20,7 +20,7 @@ const CustomerVisit = () => {
   });
   // Mapping visit types to corresponding tags with colors
 
-  console.log(data);
+  // console.log(data);
   const columns: TableProps<VisitListType>["columns"] = [
     {
       title: "Tiêu đề",

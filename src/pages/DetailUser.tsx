@@ -19,7 +19,6 @@ const DetailUser: React.FC = () => {
   const { id } = useParams(); // Extract id from route parameters
   const userId = Number(id); // Parse id to a number
   const [form] = Form.useForm();
-  const [status, setStatus] = useState<string | null>(null);
   const [imgFace, setImgFace] = useState<string | null>(null); // Initialize with existing image
   const [faceImg, setFaceImg] = useState<File[]>([]); // State to hold uploaded image files
   const [updateUser] = useUpdateUserMutation(); // Hook for updating user
@@ -30,7 +29,7 @@ const DetailUser: React.FC = () => {
   // Handle loading and error states
   if (isLoading) return <div>Loading...</div>;
   if (isError) return <div>Error loading user details.</div>;
-  console.log(userData);
+
   const handleUpdateStatus = async () => {
     try {
       // Prepare an array of promises for uploading images
@@ -48,9 +47,11 @@ const DetailUser: React.FC = () => {
       // Prepare the updated user data
       const updatedUser: User = {
         ...userData,
-        userName: userData.userName,
-        // departmentId : userData.
-        status: status || undefined,
+        fullName: form.getFieldValue("fullName"), // Get updated fullName from form
+        email: form.getFieldValue("email"), // Get updated email from form
+        departmentId: userData.department.departmentId,
+        // phoneNumber : userData.phoneNumber,
+        status: form.getFieldValue("status") || userData.status, // Get updated status from form
         image: faceImgUrls[0] || userData.image, // Use the new image if uploaded, or keep the old one
       };
 
@@ -59,6 +60,7 @@ const DetailUser: React.FC = () => {
         idUser: userData.userId || null,
         User: updatedUser,
       }).unwrap();
+
       message.success(`Cập nhật thành công`);
       navigate(-1);
     } catch (error) {
@@ -74,7 +76,6 @@ const DetailUser: React.FC = () => {
     const fileList = info.fileList;
     setFaceImg(fileList.map((file: any) => file.originFileObj)); // Store the uploaded file(s)
     const newUploadedImage = URL.createObjectURL(fileList[0]?.originFileObj);
-    console.log(imgFace);
     setImgFace(newUploadedImage); // Preview the uploaded image
   };
 
@@ -85,26 +86,24 @@ const DetailUser: React.FC = () => {
           Chi tiết người dùng
         </h1>
         <Form form={form} layout="vertical" initialValues={userData}>
-          <Form.Item name="fullName" label="Tên">
-            <Input value={userData.fullName} readOnly />
+          <Form.Item name="fullName" label="Tên" rules={[{ required: true, message: 'Vui lòng nhập tên!' }]}>
+            <Input />
           </Form.Item>
-          <Form.Item name="email" label="Email">
-            <Input value={userData.email} readOnly />
+          <Form.Item name="email" label="Email" rules={[{ required: true, message: 'Vui lòng nhập email!' }]}>
+            <Input />
           </Form.Item>
           <Form.Item label="Vai trò">
             <Input disabled value={userData.role?.roleName} />
           </Form.Item>
-          <Form.Item label="Cập nhật trạng thái">
-            <Form.Item name="status" noStyle>
-              <Select
-                value={userData.status}
-                onChange={(value) => setStatus(value)}
-                style={{ width: "100%" }}
-              >
-                <Option value="Active">Active</Option>
-                <Option value="Inactive">Inactive</Option>
-              </Select>
-            </Form.Item>
+          <Form.Item name="status" label="Cập nhật trạng thái">
+            <Select
+              defaultValue={userData.status}
+              onChange={(value) => form.setFieldsValue({ status: value })} // Update form value
+              style={{ width: "100%" }}
+            >
+              <Option value="Active">Active</Option>
+              <Option value="Inactive">Inactive</Option>
+            </Select>
           </Form.Item>
           <Form.Item label="Hình ảnh mặt">
             <Upload
@@ -119,6 +118,13 @@ const DetailUser: React.FC = () => {
               <img
                 src={userData.image}
                 alt="User Face"
+                className="w-16 h-16 rounded-full mt-2"
+              />
+            )}
+            {imgFace && (
+              <img
+                src={imgFace}
+                alt="Uploaded Face"
                 className="w-16 h-16 rounded-full mt-2"
               />
             )}

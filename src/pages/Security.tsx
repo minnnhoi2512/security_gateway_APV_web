@@ -139,7 +139,9 @@ const Security = () => {
           <Table
             columns={columns}
             dataSource={filteredData}
-            pagination={false}
+            pagination={{
+              total: data?.totalCount, // Assuming totalCount is provided in the response
+            }}
             rowKey={"userId"}
           />
           <Modal

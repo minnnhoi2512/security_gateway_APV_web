@@ -138,7 +138,9 @@ const Manager = () => {
           <Table
             columns={columns}
             dataSource={filteredData}
-            pagination={false}
+            pagination={{
+              total: filteredData?.length, // Assuming totalCount is provided in the response
+            }}
             rowKey={"userId"}
           />
           <Modal

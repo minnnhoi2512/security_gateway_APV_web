@@ -39,6 +39,7 @@ const Staff = () => {
     } else if (userData) {
       setData(userData);
     }
+    // console.log(data);
   }, [staffData, userData]);
 
   // Handle search input change
@@ -93,6 +94,17 @@ const Staff = () => {
       title: "Số điện thoại",
       dataIndex: "phoneNumber",
       key: "phoneNumber",
+    },
+    {
+      title: "Phòng ban", // The title of the column, displayed in the table header
+      dataIndex: "department", // The key used to access the data for this column from the data source
+      key: "department", // A unique key for this column, used for React's reconciliation process
+      render: (text: any) => (
+        <span style={{ fontSize: "14px", color: "#000" }}>
+          {text ? text.departmentName : "Không có phòng ban"}{" "}
+          {/* Conditional rendering to handle null/undefined */}
+        </span>
+      ),
     },
     {
       title: "Trạng thái",
@@ -169,7 +181,9 @@ const Staff = () => {
           <Table
             columns={columns}
             dataSource={filteredData}
-            pagination={false}
+            pagination={{
+              total: filteredData?.length, // Assuming totalCount is provided in the response
+            }}
             rowKey={"userId"}
           />
           <Modal
