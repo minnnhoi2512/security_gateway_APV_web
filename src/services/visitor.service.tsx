@@ -73,6 +73,12 @@ export const visitorAPI = createApi({
         method: "DELETE",
       }),
     }),
+    getVisitorByCredentialCard: builder.query<void, { CredentialCard: number }>({
+      query: ({ CredentialCard }) => ({
+        url: `/CredentialCard/${CredentialCard}`,
+        method: "GET",
+      }),
+    }),
   }),
 });
 
@@ -80,5 +86,6 @@ export const {
   useGetAllVisitorsQuery, 
   useCreateVisitorMutation, 
   useUpdateVisitorMutation, 
-  useDeleteVisitorMutation 
+  useDeleteVisitorMutation,
+  useGetVisitorByCredentialCardQuery
 } = visitorAPI;
