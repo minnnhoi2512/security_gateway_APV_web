@@ -12,6 +12,7 @@ export const visitorAPI = createApi({
         params: { pageNumber, pageSize },
       }),
     }),
+    
     createVisitor: builder.mutation<void, { 
       visitorName: string; 
       companyName: string; 
@@ -22,22 +23,27 @@ export const visitorAPI = createApi({
     }>({
       query: (newVisitor) => {
         const formData = new FormData();
-        formData.append("visitorName", newVisitor.visitorName);
-        formData.append("companyName", newVisitor.companyName);
-        formData.append("phoneNumber", newVisitor.phoneNumber);
-        formData.append("credentialsCard", newVisitor.credentialsCard);
-        formData.append("credentialCardTypeId", newVisitor.credentialCardTypeId.toString());
-        console.log("Selected file: ", newVisitor.visitorCredentialImageFromRequest);
-        formData.append("visitorCredentialImageFromRequest", newVisitor.visitorCredentialImageFromRequest, newVisitor.visitorCredentialImageFromRequest.name);
+        formData.append("VisitorName", newVisitor.visitorName);
+        formData.append("CompanyName", newVisitor.companyName);
+        formData.append("PhoneNumber", newVisitor.phoneNumber);
+        formData.append("CredentialsCard", newVisitor.credentialsCard);
+        formData.append("CredentialCardTypeId", newVisitor.credentialCardTypeId.toString());
+
+        // Đảm bảo file tồn tại
+        if (newVisitor.visitorCredentialImageFromRequest) {
+          formData.append("VisitorCredentialImageFromRequest", newVisitor.visitorCredentialImageFromRequest, newVisitor.visitorCredentialImageFromRequest.name);
+        } else {
+          console.error("Không có file hình ảnh nào được chọn.");
+        }
 
         return {
           url: "/",
           method: "POST",
-          data: formData,
-          headers: {"Content-Type": "multipart/form-data"},
+          body: formData,
         };
       },
     }),
+
     updateVisitor: builder.mutation<void, { 
       id: number; 
       visitorName: string; 
@@ -49,17 +55,22 @@ export const visitorAPI = createApi({
     }>({
       query: ({ id, ...updatedVisitor }) => {
         const formData = new FormData();
-        formData.append("visitorName", updatedVisitor.visitorName);
-        formData.append("companyName", updatedVisitor.companyName);
-        formData.append("phoneNumber", updatedVisitor.phoneNumber);
-        formData.append("credentialsCard", updatedVisitor.credentialsCard);
-        formData.append("credentialCardTypeId", updatedVisitor.credentialCardTypeId.toString());
-
-        // Nếu có hình ảnh, thêm vào `FormData`
+    
+        formData.append("VisitorName", updatedVisitor.visitorName);
+        formData.append("CompanyName", updatedVisitor.companyName);
+        formData.append("PhoneNumber", updatedVisitor.phoneNumber);
+        formData.append("CredentialsCard", updatedVisitor.credentialsCard);
+        formData.append("CredentialCardTypeId", updatedVisitor.credentialCardTypeId.toString());
+    
+        // Handle file upload, but check if the file exists
         if (updatedVisitor.visitorCredentialImageFromRequest) {
-          formData.append("visitorCredentialImageFromRequest", updatedVisitor.visitorCredentialImageFromRequest);
+          formData.append(
+            "VisitorCredentialImageFromRequest",
+            updatedVisitor.visitorCredentialImageFromRequest,
+            updatedVisitor.visitorCredentialImageFromRequest.name
+          );
         }
-
+    
         return {
           url: `/${id}`,
           method: "PUT",
@@ -67,6 +78,7 @@ export const visitorAPI = createApi({
         };
       },
     }),
+    
     deleteVisitor: builder.mutation<void, { id: number }>({
       query: ({ id }) => ({
         url: `${id}`,
