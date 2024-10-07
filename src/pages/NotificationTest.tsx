@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { generateToken, message} from "../api/firebase";
+import { generateToken, message } from "../api/firebase";
 import { toast } from "react-toastify"; // Import toast
 import { onMessage } from "firebase/messaging";
 
@@ -9,17 +9,15 @@ const NotificationTest: React.FC = () => {
   useEffect(() => {
     // Generate token for the device
     generateToken();
-    // setNotification("")
+    setNotification({ title: "ok", body: "not ok" });
     // Set up the notification listener
     const unsubscribe = onMessage(message, (payload) => {
-      console.log(payload)
+      console.log(payload);
       toast(payload.notification?.body);
     });
-    console.log(unsubscribe)
+    console.log(unsubscribe);
     // Cleanup function to handle unsubscription
-    return () => {
-      
-    };
+    return () => {};
   }, []);
 
   return (

@@ -1,122 +1,64 @@
-import React, { useState } from "react";
-import { Layout, Table, Button, Row, Col, Tag, Input } from "antd";
-import { useNavigate } from "react-router-dom";
-import { CalendarOutlined, TeamOutlined, SearchOutlined } from "@ant-design/icons";
+import React from "react";
+import { Layout, Table, Button, Row, Col, Input, Tag, Spin } from "antd";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import {
+  CalendarOutlined,
+  TeamOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
 import moment from "moment-timezone";
+import { useGetListDetailVisitQuery } from "../services/visitDetailList.service";
 
 const { Content } = Layout;
 const { Search } = Input;
 
-interface Visitor {
-  visitorName: string;
-  companyName: string;
-}
-
-interface VisitDetail {
-  visitor: Visitor;
-  expectedStartDate: string;
-  expectedEndDate: string;
-  expectedStartTime: string;
-  expectedEndTime: string;
-  status: string;
-}
-
-// Generate More Fake Data for Pagination
-const generateFakeData = (count: number): VisitDetail[] => {
-  const statuses = ["Còn hiệu lực", "Hết hiệu lực", "Hủy"];
-  const companies = ["Công ty A", "Công ty B", "Công ty C"];
-  const names = ["Nguyễn Văn A", "Trần Thị B", "Lê Văn C"];
-  const data: VisitDetail[] = [];
-
-  for (let i = 0; i < count; i++) {
-    data.push({
-      visitor: {
-        visitorName: `${names[i % names.length]} ${i}`,
-        companyName: companies[i % companies.length],
-      },
-      expectedStartDate: `2024-09-${25 + (i % 5)}T08:00:00Z`,
-      expectedEndDate: `2024-09-${25 + (i % 5)}T17:00:00Z`,
-      expectedStartTime: "08:00:00",
-      expectedEndTime: "17:00:00",
-      status: statuses[i % statuses.length],
-    });
-  }
-
-  return data;
-};
-
-const fakeData = {
-  dateRegister: "2024-09-25T12:00:00Z",
-  daysOfProcess: "Monday, Tuesday",
-  visitType: "ProcessWeek",
-  visitQuantity: 2,
-  visitDetail: generateFakeData(30), // Generates 30 items for pagination demonstration
-};
-
 const DetailCustomerVisit: React.FC = () => {
   const navigate = useNavigate(); // For navigating back
-
-  const [searchText, setSearchText] = useState<string>(""); // State for search input
-  const [currentPage, setCurrentPage] = useState<number>(1); // State for pagination
-  const [pageSize, setPageSize] = useState<number>(5); // State for items per page
-
+  const { id } = useParams<{ id: string }>(); // Extract id from params
+  const visitId: number | null = id ? parseInt(id, 10) : null; // Convert id to a number
+  const location = useLocation(); // Get the location
+  const visit = location.state.record;
+  // Fetch data using the id from params
+  const { data = [], isLoading } = useGetListDetailVisitQuery({
+    visitId: visitId,
+  });
+  // console.log("Visit : ", visit);
+  // console.log(data);
   // Format date to DD/MM/YYYY
-  const formatDate = (date: string) => moment.tz(date, "Asia/Ho_Chi_Minh").format("DD/MM/YYYY");
-
+  const formatDate = (date: string) =>
+    moment.tz(date, "Asia/Ho_Chi_Minh").format("DD/MM/YYYY");
   // Format time to HH:mm
-  const formatTime = (time: string) => moment(time, "HH:mm:ss").format("HH:mm");
-
-  // Filter data by search input
-  const filteredData = fakeData.visitDetail.filter((item: VisitDetail) =>
-    item.visitor.visitorName.toLowerCase().includes(searchText.toLowerCase())
-  );
-
-  const statusTags: Record<string, JSX.Element> = {
-    "Còn hiệu lực": <Tag color="green">Còn hiệu lực</Tag>,
-    "Hết hiệu lực": <Tag color="red">Hết hiệu lực</Tag>,
-    "Hủy": <Tag color="volcano">Hủy</Tag>,
-  };
 
   const columns = [
     {
       title: "Họ và tên",
       dataIndex: ["visitor", "visitorName"],
       key: "visitorName",
-      sorter: (a: VisitDetail, b: VisitDetail) => a.visitor.visitorName.localeCompare(b.visitor.visitorName),
     },
     {
       title: "Công ty",
       dataIndex: ["visitor", "companyName"],
       key: "companyName",
-      sorter: (a: VisitDetail, b: VisitDetail) => a.visitor.companyName.localeCompare(b.visitor.companyName),
     },
     {
-      title: "Ngày dự kiến bắt đầu",
-      dataIndex: "expectedStartDate",
-      key: "expectedStartDate",
-      render: (text: string) => <span>{formatDate(text)}</span>,
-      sorter: (a: VisitDetail, b: VisitDetail) => new Date(a.expectedStartDate).getTime() - new Date(b.expectedStartDate).getTime(),
+      title: "Giờ vào dự kiến",
+      dataIndex: "expectedStartHour",
+      key: "expectedStartHour",
     },
     {
-      title: "Ngày dự kiến kết thúc",
-      dataIndex: "expectedEndDate",
-      key: "expectedEndDate",
-      render: (text: string) => <span>{formatDate(text)}</span>,
-      sorter: (a: VisitDetail, b: VisitDetail) => new Date(a.expectedEndDate).getTime() - new Date(b.expectedEndDate).getTime(),
-    },
-    {
-      title: "Thời gian ra - vào",
-      key: "expectedTime",
-      render: (record: VisitDetail) => (
-        <span>
-          {formatTime(record.expectedStartTime)} - {formatTime(record.expectedEndTime)}
-        </span>
-      ),
+      title: "Giờ ra dự kiến",
+      dataIndex: "expectedEndHour",
+      key: "expectedEndHour",
     },
     {
       title: "Trạng thái",
       key: "status",
-      render: (record: VisitDetail) => statusTags[record.status] || <Tag color="default">{record.status}</Tag>,
+      dataIndex: "status",
+      render: (status : boolean) => (
+        <Tag color={status ? "green" : "volcano"}>
+          {status ? "Còn hiệu lực" : "Hết hiệu lực"}
+        </Tag>
+      ),
     },
     {
       title: "Hành động",
@@ -132,6 +74,16 @@ const DetailCustomerVisit: React.FC = () => {
     },
   ];
 
+  if (isLoading) {
+    return (
+      <Layout className="min-h-screen">
+        <Content className="p-6 flex justify-center items-center h-screen">
+          <Spin size="large" /> {/* Use Ant Design's Spin component for loading */}
+        </Content>
+      </Layout>
+    );
+  }
+
   return (
     <Layout className="min-h-screen">
       <Content className="p-6">
@@ -145,9 +97,14 @@ const DetailCustomerVisit: React.FC = () => {
               <CalendarOutlined className="text-blue-500 text-2xl mt-1" />
               <div>
                 <p className="text-sm text-gray-600">Ngày đăng ký:</p>
-                <p className="text-base font-semibold text-gray-800">{formatDate(fakeData.dateRegister)}</p>
+                <p className="text-base font-semibold text-gray-800">
+                  {formatDate(visit.createTime)}
+                </p>
                 <p className="text-sm text-gray-600">Lịch di chuyển:</p>
-                <p className="text-base font-semibold text-gray-800">{fakeData.daysOfProcess}</p>
+                <p className="text-base font-semibold text-gray-800">
+                  {formatDate(visit.expectedStartTime)} -{" "}
+                  {formatDate(visit.expectedEndTime)}
+                </p>
               </div>
             </div>
           </Col>
@@ -156,9 +113,15 @@ const DetailCustomerVisit: React.FC = () => {
               <TeamOutlined className="text-blue-500 text-2xl mt-1" />
               <div>
                 <p className="text-sm text-gray-600">Loại chuyến thăm:</p>
-                <p className="text-base font-semibold text-gray-800">{fakeData.visitType}</p>
-                <p className="text-sm text-gray-600">Số lượng người tham gia:</p>
-                <p className="text-base font-semibold text-gray-800">{fakeData.visitQuantity}</p>
+                <p className="text-base font-semibold text-gray-800">
+                  {data.visitType}
+                </p>
+                <p className="text-sm text-gray-600">
+                  Số lượng người tham gia:
+                </p>
+                <p className="text-base font-semibold text-gray-800">
+                  {visit.visitQuantity}
+                </p>
               </div>
             </div>
           </Col>
@@ -167,12 +130,11 @@ const DetailCustomerVisit: React.FC = () => {
         <div className="mb-4">
           <Search
             placeholder="Tìm kiếm theo họ và tên"
-            onChange={(e) => setSearchText(e.target.value)}
             style={{
               width: 300,
-              borderRadius: '5px',
-              border: 'none', // Removed border for a cleaner look
-              boxShadow: '0 0 5px rgba(0, 0, 0, 0.1)', // Optional shadow for subtle depth
+              borderRadius: "5px",
+              border: "none", // Removed border for a cleaner look
+              boxShadow: "0 0 5px rgba(0, 0, 0, 0.1)", // Optional shadow for subtle depth
             }}
             enterButton={<SearchOutlined />}
             size="large"
@@ -181,15 +143,8 @@ const DetailCustomerVisit: React.FC = () => {
         </div>
         <Table
           columns={columns}
-          dataSource={filteredData}
+          dataSource={data}
           pagination={{
-            current: currentPage,
-            pageSize: pageSize,
-            total: filteredData.length,
-            onChange: (page, size) => {
-              setCurrentPage(page);
-              setPageSize(size || 5);
-            },
             showSizeChanger: true,
             pageSizeOptions: ["5", "10", "20"],
           }}

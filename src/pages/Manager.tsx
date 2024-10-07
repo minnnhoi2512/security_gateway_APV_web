@@ -1,25 +1,24 @@
-import { Layout, Button, Table, Tag, Modal, Form, Input } from "antd";
+import { Layout, Button, Table, Tag, Input, Modal, message } from "antd";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import UserType from "../types/userType";
-import { useGetListUserByRoleQuery } from "../services/user.service";
+import { useGetListUserByRoleQuery, useDeleteUserMutation } from "../services/user.service";
+
 const { Content } = Layout;
 
 const Manager = () => {
-  const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [searchText, setSearchText] = useState<string>("");
   const navigate = useNavigate();
-  const { data = [] } = useGetListUserByRoleQuery({
-    pageNumber: 1,
-    pageSize: 5,
+  const { data = [], refetch } = useGetListUserByRoleQuery({
+    pageNumber: -1,
+    pageSize: -1,
     role: "Manager",
   });
-  console.log(data);
-  const [form] = Form.useForm();
-  const handleAddCancel = () => {
-    setIsAddModalVisible(false);
-    form.resetFields();
-  };
+
+  const [isModalVisible, setIsModalVisible] = useState(false); // State for modal visibility
+  const [userIdToDelete, setUserIdToDelete] = useState<number | null>(null); // State to store user ID for deletion
+  const [deleteUser] = useDeleteUserMutation(); // Hook for deleting user
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchText(e.target.value);
   };
@@ -63,10 +62,10 @@ const Manager = () => {
       title: "Vai trò",
       dataIndex: "role",
       key: "role",
-      render: (text: string | null) => {
-        // const displayedRole = role || "Quản lý";
-        // let color = displayedRole === "Active" ? "green" : "volcano";
-        return <Tag color="red">{text.roleName}</Tag>;
+      render: (role: { roleName: string; status: string } | null) => {
+        const displayedRole = role ? role.roleName : "Quản lý"; // Use roleName if role is not null
+        const color = role && role.status === "Active" ? "green" : "volcano"; // Check status for color
+        return <Tag color={color}>{displayedRole}</Tag>; // Use displayedRole for the tag
       },
     },
     {
@@ -78,20 +77,41 @@ const Manager = () => {
             type="primary"
             className="mr-2"
             onClick={() =>
-              navigate("/detailUser", {
+              navigate(`/detailUser/${record.userId}`, {
                 state: record,
               })
             }
           >
             Chỉnh sửa
           </Button>
-          <Button type="primary" danger onClick={() => console.log("haha")}>
+          <Button
+            type="primary"
+            danger
+            onClick={() => {
+              setUserIdToDelete(record.userId || null); // Set the user ID to delete
+              setIsModalVisible(true); // Show the confirmation modal
+            }}
+          >
             Xóa
           </Button>
         </>
       ),
     },
   ];
+
+  const handleDeleteUser = async () => {
+    if (userIdToDelete) {
+      try {
+        await deleteUser(userIdToDelete).unwrap(); // Call the delete mutation
+        message.success("Xóa người dùng thành công");
+        setIsModalVisible(false); // Close the modal
+        setUserIdToDelete(null); // Reset the user ID
+        refetch(); // Refetch the data after deletion
+      } catch (error) {
+        message.error(`Xóa người dùng thất bại`);
+      }
+    }
+  };
 
   return (
     <Layout className="min-h-screen">
@@ -105,24 +125,34 @@ const Manager = () => {
           <Button
             type="primary"
             className="mb-4 bg-blue-500 hover:bg-blue-600"
-            onClick={() => navigate("/createUser")}
+            onClick={() => navigate("/createUser", { state: { roleId: 2 } })}
           >
             Tạo mới người dùng
           </Button>
-
           <Input
             placeholder="Tìm kiếm theo tên"
             value={searchText}
             onChange={handleSearchChange}
             style={{ marginBottom: 16, width: 300 }}
           />
-
           <Table
             columns={columns}
             dataSource={filteredData}
-            pagination={false}
+            pagination={{
+              total: filteredData?.length, // Assuming totalCount is provided in the response
+            }}
             rowKey={"userId"}
           />
+          <Modal
+            title="Xác nhận xóa"
+            visible={isModalVisible}
+            onOk={handleDeleteUser}
+            onCancel={() => setIsModalVisible(false)}
+            okText="Xóa"
+            cancelText="Hủy"
+          >
+            <p>Bạn có chắc chắn muốn xóa người dùng này?</p>
+          </Modal>
         </Content>
       </Layout>
     </Layout>

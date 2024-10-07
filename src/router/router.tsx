@@ -3,7 +3,7 @@ import LayoutPage from "../pages/Layout";
 import Dashboard from "../pages/Dashboard";
 import CustomerVisit from "../pages/CustomerVisit";
 import DetailCustomerVisit from "../pages/DetailCustomerVisit";
-import Project from "../pages/Process";
+import Schedule from "../pages/Schedule";
 import Manager from "../pages/Manager";
 import DetailProject from "../pages/DetailProject";
 import HistoryDetail from "../pages/HistoryDetail";
@@ -24,6 +24,9 @@ import Notification from "../pages/NotificationTest";
 import Staff from "../pages/Staff";
 import ChatRoom from "../pages/ChatRoom";
 import VisitorManager from "../pages/VisitorManager";
+import CreateNewSchedule from "../pages/CreateNewSchedule";
+import DetailSchedule from "../pages/DetailSchedule";
+
 
 const ContentRouter = () => {
   return (
@@ -73,7 +76,8 @@ const ContentRouter = () => {
           </LayoutPage>
         }
       />
-       <Route
+    
+      <Route
         index
         path="/staff"
         element={
@@ -84,7 +88,7 @@ const ContentRouter = () => {
       />
       <Route
         index
-        path="/detailUser"
+        path="/detailUser/:id"
         element={
           <LayoutPage>
             <DetailUser />
@@ -154,7 +158,7 @@ const ContentRouter = () => {
           </LayoutPage>
         }
       />
-       <Route
+      <Route
         index
         path="/notification-test"
         element={
@@ -165,10 +169,28 @@ const ContentRouter = () => {
       />
       <Route
         index
-        path="/process"
+        path="/schedule"
         element={
           <LayoutPage>
-            <Project />
+            <Schedule />
+          </LayoutPage>
+        }
+      />
+      <Route
+        index
+        path="/detailSchedule/:id"
+        element={
+          <LayoutPage>
+            <DetailSchedule  />
+          </LayoutPage>
+        }
+      />
+       <Route
+        index
+        path="/createNewSchedule"
+        element={
+          <LayoutPage>
+            <CreateNewSchedule />
           </LayoutPage>
         }
       />
@@ -243,7 +265,7 @@ const ContentRouter = () => {
           </LayoutPage>
         }
       />
-       <Route
+      <Route
         index
         path="/chat/:id"
         element={

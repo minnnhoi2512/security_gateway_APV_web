@@ -2,264 +2,361 @@ import {
   Form,
   Input,
   DatePicker,
-  TimePicker,
+  InputNumber,
+  Select,
+  Steps,
   Button,
   message,
-  InputNumber,
+  Checkbox,
+  Row,
+  Col,
+  Table,
+  TimePicker,
 } from "antd";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import moment, { Moment } from "moment";
-import VisitDetailList from "../types/visitDetailListType";
-import VisitDetail from "../types/visitDetailType";
-import Visitor from "../types/visitorType";
-import { useCreateNewListDetailVisitMutation } from "../services/visitDetailList.service";
-import * as XLSX from "xlsx"; // Import the xlsx library
+// import { useCreateNewListDetailVisitMutation } from "../services/visitDetailList.service";
+import { useGetListScheduleQuery } from "../services/schedule.service";
+import Schedule from "../types/scheduleType";
+import { Dayjs } from "dayjs";
+const { Step } = Steps;
 
 interface FormValues {
   title: string;
-  date: Moment;
-  time: Moment;
-  expectedTimeOut: Moment;
-  area: string;
+  date: Dayjs; // Changed Moment to Dayjs
   visitQuantity: number;
-  [key: string]: any; // Dynamic fields for visitors
+  scheduleId: number;
+  scheduleType: number;
+  visitName: string;
+  expectedStartTime: Dayjs; // Changed Moment to Dayjs
+  expectedEndTime: Dayjs; // Changed Moment to Dayjs
+  description: string;
+  daysOfSchedule: number[] | null;
+  [key: string]: any;
 }
 
 const CreateNewVisitList: React.FC = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm<FormValues>();
-  const [visitCount, setVisitCount] = useState<number>(1); // Default to 1 visitor
-  const userIdString = localStorage.getItem("userId"); // Retrieve user ID as a string
-  const userId = userIdString ? parseInt(userIdString, 10) : null; // Parse it as an integer, default to null if not found
-  const [createNewListDetailVisit] = useCreateNewListDetailVisitMutation();
+  const [currentStep, setCurrentStep] = useState<number>(0);
+  const [selectedScheduleType, setSelectedScheduleType] = useState<
+    number | null
+  >(null);
+  const [daysOfSchedule, setDaysOfSchedule] = useState<number[] | null>(null);
+  const { data: schedules, isLoading: loadingSchedules } =
+    useGetListScheduleQuery({ pageNumber: -1, pageSize: -1 });
+  // const [createNewListDetailVisit] = useCreateNewListDetailVisitMutation();
+  const [selectedVisitors, setSelectedVisitors] = useState<
+    { startHour: Dayjs; endHour: Dayjs; visitorId: number }[]
+  >([]); // Track selected visitors' time slots
+  const filteredSchedules = schedules?.filter(
+    (schedule: Schedule) =>
+      schedule.scheduleType?.scheduleTypeId === selectedScheduleType
+  );
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const data = new Uint8Array(e.target?.result as ArrayBuffer);
-      const workbook = XLSX.read(data, { type: "array" });
-      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet);
-
-      // Assuming the JSON data contains fields like visitorName, companyName, phoneNumber, and credentialsCard
-      const visitors: Visitor[] = jsonData.map((row: any) => ({
-        visitorName: row.visitorName,
-        companyName: row.companyName,
-        phoneNumber: row.phoneNumber,
-        credentialsCard: row.credentialsCard,
-        createdDate: new Date(),
-        updatedDate: new Date(),
-        status: true,
-        credentialCardTypeId: 0, // Adjust if needed
-      }));
-
-      // Clear the form before setting new fields
-      form.resetFields();
-
-      // Update the form with the imported visitor data
-      visitors.forEach((visitor, index) => {
-        form.setFieldsValue({
-          [`visitorName${index}`]: visitor.visitorName,
-          [`companyName${index}`]: visitor.companyName,
-          [`phoneNumber${index}`]: visitor.phoneNumber,
-          [`credentialsCard${index}`]: visitor.credentialsCard,
-        });
-      });
-      setVisitCount(visitors.length);
-    
-    };
-
-    reader.readAsArrayBuffer(file);
+  // Handle form submission
+  const handleSubmit = async () => {
+    try {
+      await form.validateFields();
+      // const formData = form.getFieldsValue();
+      // Here you can submit your data (formData) to the server
+      message.success("Lịch hẹn đã được tạo thành công!");
+      navigate("/some-route");
+    } catch (error) {
+      message.error("Vui lòng kiểm tra thông tin đã nhập.");
+    }
   };
 
-  const handleDeleteVisitor = (index: number) => {
-    // Clear the visitor fields for the specified index
-    form.setFieldsValue({
-      [`visitorName${index}`]: "",
-      [`companyName${index}`]: "",
-      [`phoneNumber${index}`]: "",
-      [`credentialsCard${index}`]: "",
-    });
-  };
-
-  const handleSubmit = () => {
+  // Handle next step
+  const next = () => {
     form
       .validateFields()
-      .then(async (values) => {
-        const visitDetails: VisitDetail[] = Array.from({
-          length: visitCount,
-        }).map((_, index) => {
-          const newVisitor: Visitor = {
-            visitorName: values[`visitorName${index}`],
-            companyName: values[`companyName${index}`],
-            phoneNumber: values[`phoneNumber${index}`],
-            createdDate: new Date(),
-            updatedDate: new Date(),
-            credentialsCard: values[`credentialsCard${index}`],
-            status: true,
-            credentialCardTypeId: 0, // Adjust if needed
-          };
-          return {
-            description: values.title,
-            expectedTimeIn: values.time
-              ? moment(values.time).format("HH:mm:ss")
-              : "07:00:00",
-            expectedTimeOut: values.expectedTimeOut
-              ? moment(values.expectedTimeOut).format("HH:mm:ss")
-              : "12:00:00",
-            status: true,
-            visitor: newVisitor,
-          };
-        });
+      .then(() => setCurrentStep(currentStep + 1))
+      .catch(() =>
+        message.error("Vui lòng điền đủ thông tin trước khi tiếp tục.")
+      );
+  };
 
-        const visitData: VisitDetailList = {
-          visitQuantity: visitCount,
-          acceptLevel: 2,
-          visitName: values.title,
-          createById: userId || 0,
-          updateById: userId || 0,
-          visitDetailOfNewVisitor: visitDetails,
-          visitDetailOfOldVisitor: [],
-        };
+  // Handle previous step
+  const prev = () => {
+    setCurrentStep(currentStep - 1);
+  };
 
-        try {
-          await createNewListDetailVisit({
-            newVisitDetailList: visitData,
-          }).unwrap();
-          message.success("Lịch hẹn đã được tạo thành công!");
-          navigate(-1);
-        } catch (error) {
-          console.error("Failed to create visit:", error);
-          message.error("Đã có lỗi xảy ra khi tạo lịch hẹn.");
-        }
-      })
-      .catch((errorInfo) => {
-        console.error("Failed to validate fields:", errorInfo);
+  // Handle scheduleId change
+  const handleScheduleChange = (scheduleId: number) => {
+    const selectedSchedule = schedules?.find(
+      (schedule: Schedule) => schedule.scheduleId === scheduleId
+    );
+    if (selectedSchedule) {
+      setDaysOfSchedule(selectedSchedule.daysOfSchedule); // Ensure this is an array of numbers
+    }
+  };
+
+  // Handle schedule type change
+  const handleScheduleTypeChange = (value: number) => {
+    setSelectedScheduleType(value);
+    setDaysOfSchedule(null); // Reset daysOfSchedule on schedule type change
+    form.setFieldsValue({ scheduleId: undefined }); // Reset scheduleId and expectedEndTime in the form
+  };
+
+  // Calculate expectedEndTime based on expectedStartTime and duration
+  const handleStartTimeChange = (date: Dayjs) => {
+    const selectedSchedule = schedules?.find(
+      (schedule: Schedule) =>
+        schedule.scheduleId === form.getFieldValue("scheduleId")
+    );
+    if (selectedSchedule && date) {
+      const duration = selectedSchedule.duration; // Ensure duration is defined in your schedule type
+      const endTime = date.add(duration, "day"); // Adjust duration based on your needs
+      form.setFieldsValue({
+        expectedStartTime: date,
+        expectedEndTime: endTime, // Update expectedEndTime when expectedStartTime changes
       });
+    } else {
+      form.setFieldsValue({
+        expectedStartTime: date,
+        expectedEndTime: undefined,
+      }); // Reset expectedEndTime if no schedule is selected
+    }
+  };
+
+  const handleVisitorChange = (
+    visitorId: number,
+    startHour: Dayjs,
+    endHour: Dayjs
+  ) => {
+    const updatedSelection = [...selectedVisitors];
+    const index = updatedSelection.findIndex((v) => v.visitorId === visitorId);
+    if (index > -1) {
+      // If already selected, update the time
+      updatedSelection[index] = { startHour, endHour, visitorId };
+    } else {
+      // Add new selection
+      updatedSelection.push({ startHour, endHour, visitorId });
+    }
+    setSelectedVisitors(updatedSelection);
+  };
+
+  const renderVisitorsTable = () => {
+    const visitQuantity = form.getFieldValue("visitQuantity");
+
+    const columns = [
+      {
+        title: "Visitor Name",
+        dataIndex: "name",
+        key: "name",
+      },
+      {
+        title: "Start Hour",
+        dataIndex: "startHour",
+        key: "startHour",
+        render: (record: any) => (
+          <TimePicker
+            onChange={(date) =>
+              handleVisitorChange(record.id, date!, record.expectedEndHour)
+            }
+          />
+        ),
+      },
+      {
+        title: "End Hour",
+        dataIndex: "endHour",
+        key: "endHour",
+        render: (record: any) => (
+          <TimePicker
+            onChange={(date) =>
+              handleVisitorChange(record.id, record.expectedStartHour, date!)
+            }
+          />
+        ),
+      },
+    ];
+
+    // Create an array of visitors based on visitQuantity
+    const visitorsData = Array.from({ length: visitQuantity }, (_, index) => ({
+      id: index + 1,
+      name: `Visitor ${index + 1}`,
+    }));
+
+    return <Table dataSource={visitorsData} columns={columns} rowKey="id" />;
+  };
+
+  // Render checkboxes for daysOfSchedule
+  const renderDaysOfSchedule = () => {
+    if (selectedScheduleType === 1) {
+      // Process Week
+      const weekDays = [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday",
+      ];
+      return (
+        <Row gutter={[16, 16]}>
+          {weekDays.map((day, index) => (
+            <Col key={index} span={3}>
+              <Form.Item>
+                <Checkbox
+                  checked={daysOfSchedule?.includes(index + 1)}
+                  disabled
+                >
+                  {day}
+                </Checkbox>
+              </Form.Item>
+            </Col>
+          ))}
+        </Row>
+      );
+    } else if (selectedScheduleType === 2) {
+      // Process Month
+      return (
+        <Row gutter={[16, 16]}>
+          {Array.from({ length: 31 }, (_, index) => (
+            <Col key={index} span={3}>
+              <Form.Item>
+                <Checkbox
+                  checked={daysOfSchedule?.includes(index + 1)}
+                  disabled
+                >
+                  Ngày {index + 1}
+                </Checkbox>
+              </Form.Item>
+            </Col>
+          ))}
+        </Row>
+      );
+    }
+    return null;
   };
 
   return (
     <div className="p-6">
       <h1 className="text-green-500 text-2xl font-bold">Tạo mới lịch hẹn</h1>
+      <Steps current={currentStep}>
+        <Step title="Loại lịch" />
+        <Step title="Thông tin lịch thăm" />
+        <Step title="Xác nhận" />
+      </Steps>
+
       <Form form={form} layout="vertical">
-        <Form.Item
-          name="title"
-          label="Tiêu đề"
-          rules={[{ required: true, message: "Vui lòng nhập tiêu đề" }]}
-        >
-          <Input />
-        </Form.Item>
-        <Form.Item
-          name="date"
-          label="Ngày"
-          rules={[{ required: true, message: "Vui lòng chọn ngày" }]}
-        >
-          <DatePicker format="DD/MM/YYYY" />
-        </Form.Item>
-        <Form.Item
-          name="time"
-          label="Thời gian vào"
-          rules={[{ required: true, message: "Vui lòng chọn thời gian vào" }]}
-        >
-          <TimePicker format="HH:mm" />
-        </Form.Item>
-        <Form.Item
-          name="expectedTimeOut"
-          label="Thời gian ra"
-          rules={[{ required: true, message: "Vui lòng chọn thời gian ra" }]}
-        >
-          <TimePicker format="HH:mm" />
-        </Form.Item>
-        {/* Number of visitors */}
-        <Form.Item
-          name="visitQuantity"
-          label="Số lượng khách"
-          rules={[{ required: true, message: "Vui lòng nhập số lượng khách" }]}
-          
-        >
-          <InputNumber
-            min={1}
-            defaultValue={visitCount}
-            value={visitCount}
-            onChange={(value) => {
-              setVisitCount(value ?? 1);
-              form.setFieldsValue({ visitQuantity: value ?? 1 }); // Update form's visitQuantity field
-            }}
-          />
-        </Form.Item>
-        {/* File upload for visitor details */}
-        <Form.Item label="Nhập thông tin khách từ file Excel">
-          <Input type="file" accept=".xlsx, .xls" onChange={handleFileUpload} />
-        </Form.Item>
-        {/* Visitor details form fields - dynamically rendered based on visitCount */}
-        <h2 className="text-xl font-bold mt-4">Thông tin khách</h2>
-        {Array.from({ length: visitCount }).map((_, index) => (
-          <div key={index} className="visitor-section">
-            <h3 className="text-lg font-semibold mt-2">Khách {index + 1}</h3>
+        {currentStep === 0 && (
+          <>
             <Form.Item
-              name={`visitorName${index}`}
-              label="Tên khách"
-              rules={[
-                {
-                  required: true,
-                  message: `Vui lòng nhập tên khách ${index + 1}`,
-                },
-              ]}
+              name="scheduleType"
+              label="Loại lịch"
+              rules={[{ required: true, message: "Vui lòng chọn loại lịch" }]}
             >
-              <Input />
+              <Select
+                placeholder="Chọn loại lịch"
+                onChange={handleScheduleTypeChange}
+              >
+                <Select.Option value={3}>Lịch trình hàng ngày</Select.Option>
+                <Select.Option value={1}>Lịch trình tuần</Select.Option>
+                <Select.Option value={2}>Lịch trình tháng</Select.Option>
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              name="scheduleId"
+              label="Chọn lịch"
+              rules={[{ required: true, message: "Vui lòng chọn lịch" }]}
+            >
+              <Select
+                loading={loadingSchedules}
+                placeholder="Chọn lịch"
+                onChange={handleScheduleChange}
+              >
+                {filteredSchedules?.map((schedule: Schedule) => (
+                  <Select.Option
+                    key={schedule.scheduleId}
+                    value={schedule.scheduleId}
+                  >
+                    {schedule.scheduleName}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            {/* Conditionally render checkboxes based on daysOfSchedule */}
+            {daysOfSchedule !== null && renderDaysOfSchedule()}
+          </>
+        )}
+
+        {currentStep === 1 && (
+          <>
+            <Form.Item
+              name="title"
+              label="Tiêu đề"
+              rules={[{ required: true, message: "Vui lòng nhập tiêu đề" }]}
+            >
+              <Input placeholder="Nhập tiêu đề" />
             </Form.Item>
             <Form.Item
-              name={`companyName${index}`}
-              label="Tên công ty"
+              name="visitQuantity"
+              label="Số lượng khách"
               rules={[
-                {
-                  required: true,
-                  message: `Vui lòng nhập tên công ty khách ${index + 1}`,
-                },
+                { required: true, message: "Vui lòng nhập số lượng khách" },
               ]}
             >
-              <Input />
+              <InputNumber min={1} max={10} />
             </Form.Item>
+
             <Form.Item
-              name={`phoneNumber${index}`}
-              label="Số điện thoại"
-              rules={[
-                {
-                  required: true,
-                  message: `Vui lòng nhập số điện thoại khách ${index + 1}`,
-                },
-              ]}
+              name="expectedStartTime"
+              label="Thời gian bắt đầu"
+              rules={[{ required: true, message: "Vui lòng chọn thời gian" }]}
             >
-              <Input />
+              <DatePicker onChange={handleStartTimeChange} />
             </Form.Item>
+
             <Form.Item
-              name={`credentialsCard${index}`}
-              label="CCCD"
-              rules={[
-                {
-                  required: true,
-                  message: `Vui lòng nhập CCCD khách ${index + 1}`,
-                },
-              ]}
+              name="expectedEndTime"
+              label="Thời gian kết thúc"
+              rules={[{ required: true, message: "Vui lòng chọn thời gian" }]}
             >
-              <Input />
+              <DatePicker disabled />
             </Form.Item>
-            {/* Delete button for visitor */}
-            <Button type="dashed" onClick={() => handleDeleteVisitor(index)}>
-              Xóa thông tin khách
-            </Button>
-          </div>
-        ))}
-        <Form.Item>
+
+            <Form.Item
+              name="description"
+              label="Mô tả"
+              rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}
+            >
+              <Input.TextArea placeholder="Nhập mô tả" />
+            </Form.Item>
+
+            {/* Render visitors table */}
+          </>
+        )}
+
+        {currentStep === 2 && <div>{renderVisitorsTable()}</div>}
+      </Form>
+      <div className="mt-4">
+        {currentStep > 0 && (
+          <Button onClick={prev} style={{ marginRight: 8 }}>
+            Quay lại
+          </Button>
+        )}
+        {currentStep < 2 && (
+          <Button type="primary" onClick={next}>
+            Tiếp theo
+          </Button>
+        )}
+        {currentStep === 2 && (
           <Button type="primary" onClick={handleSubmit}>
             Tạo lịch hẹn
           </Button>
-        </Form.Item>
-      </Form>
+        )}
+        <Button
+          onClick={() => navigate("/customerVisit")}
+          style={{ marginLeft: 8 }}
+        >
+          Hủy
+        </Button>
+      </div>
     </div>
   );
 };

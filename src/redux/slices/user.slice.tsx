@@ -4,7 +4,7 @@ import UserType from "../../types/userType";
 
 const initialState: UserType = {
   userId: 0,
-  username: "",
+  userName: "",
   password: "",
   fullName: "",
   email: "",
@@ -13,7 +13,7 @@ const initialState: UserType = {
   createDate: new Date(),
   updateDate: new Date(),
   status: "",
-  roleId: 0,
+  roleID: 0,
 };
 
 const userSlice = createSlice({
