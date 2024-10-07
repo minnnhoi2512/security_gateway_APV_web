@@ -13,21 +13,20 @@ const initVisitor: Visitor = {
   updatedDate: new Date(),
   credentialsCard: "",
   credentialCardTypeId: 0,
+  status : "",
 };
 
 const initVisitDetail: VisitDetail = {
   visitDetailId: 0,
   visitId: undefined,
-  expectedStartDate: new Date(),
-  expectedEndDate: new Date(),
-  expectedStartTime: "",
-  expectedEndTime: "",
+  expectedEndHour: "",
+  expectedStartHour: "",
   status: true,
   visitor: initVisitor,
 };
 const initialState: visitDetailListType = {
-  dateRegister: new Date(),
   visitQuantity: 0,
+  scheduleId: 0,
   visitType: "",
   daysOfProcess: "",
   visitDetail: [initVisitDetail],

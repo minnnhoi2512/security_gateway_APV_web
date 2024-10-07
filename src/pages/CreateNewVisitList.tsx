@@ -12,6 +12,7 @@ import {
   Col,
   Table,
   TimePicker,
+  Modal,
 } from "antd";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -19,6 +20,8 @@ import { useNavigate } from "react-router-dom";
 import { useGetListScheduleQuery } from "../services/schedule.service";
 import Schedule from "../types/scheduleType";
 import { Dayjs } from "dayjs";
+import { useGetVisitorByCredentialCardQuery } from "../services/visitor.service";
+import { useCreateNewListDetailVisitMutation } from "../services/visitDetailList.service";
 const { Step } = Steps;
 
 interface FormValues {
@@ -38,31 +41,66 @@ interface FormValues {
 const CreateNewVisitList: React.FC = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm<FormValues>();
+  const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
   const [currentStep, setCurrentStep] = useState<number>(0);
+  const userId = Number(localStorage.getItem("userId"));
   const [selectedScheduleType, setSelectedScheduleType] = useState<
     number | null
   >(null);
   const [daysOfSchedule, setDaysOfSchedule] = useState<number[] | null>(null);
+  const [credentialCard, setCredentialCard] = useState<string>(""); // Track input value for search
+  const [searchResult, setSearchResult] = useState<any>(null); // Store search result
   const { data: schedules, isLoading: loadingSchedules } =
     useGetListScheduleQuery({ pageNumber: -1, pageSize: -1 });
-  // const [createNewListDetailVisit] = useCreateNewListDetailVisitMutation();
+  const [createNewListDetailVisit] = useCreateNewListDetailVisitMutation();
   const [selectedVisitors, setSelectedVisitors] = useState<
-    { startHour: Dayjs; endHour: Dayjs; visitorId: number }[]
+    {
+      startHour: string;
+      endHour: string;
+      visitorId: number;
+      visitorName: string;
+      credentialsCard: string;
+    }[]
   >([]); // Track selected visitors' time slots
   const filteredSchedules = schedules?.filter(
     (schedule: Schedule) =>
       schedule.scheduleType?.scheduleTypeId === selectedScheduleType
   );
-
+  const { refetch: refetchVisitor } = useGetVisitorByCredentialCardQuery(
+    { CredentialCard: credentialCard },
+    { skip: credentialCard === "" }
+  );
   // Handle form submission
   const handleSubmit = async () => {
     try {
+      console.log(selectedVisitors);
       await form.validateFields();
-      // const formData = form.getFieldsValue();
-      // Here you can submit your data (formData) to the server
+      const formData = form.getFieldsValue(true); // or form.getFieldsValue({ all: true });
+      // console.log(formData);
+      const requestData = {
+        visitName: formData.title,
+        visitQuantity: Number(formData.visitQuantity),
+        expectedStartTime: formData.expectedStartTime
+          ? formData.expectedStartTime.toDate()
+          : null,
+        expectedEndTime: formData.expectedEndTime
+          ? formData.expectedEndTime.toDate()
+          : null,
+        createById: userId, // Replace with dynamic userId if available
+        description: formData.description,
+        scheduleId: formData.scheduleId,
+        visitDetail: selectedVisitors.map((visitor) => ({
+          expectedStartHour: visitor.startHour,
+          expectedEndHour: visitor.endHour,
+          visitorId: visitor.visitorId,
+        })),
+      };
+      // console.log(requestData);
+      await createNewListDetailVisit({ newVisitDetailList: requestData });
       message.success("Lịch hẹn đã được tạo thành công!");
-      navigate("/some-route");
+      navigate("/customerVisit");
     } catch (error) {
+      console.log(error);
       message.error("Vui lòng kiểm tra thông tin đã nhập.");
     }
   };
@@ -119,41 +157,98 @@ const CreateNewVisitList: React.FC = () => {
       }); // Reset expectedEndTime if no schedule is selected
     }
   };
-
-  const handleVisitorChange = (
-    visitorId: number,
-    startHour: Dayjs,
-    endHour: Dayjs
+  const handleAddVisitor = () => {
+    setCredentialCard("");
+    setSearchResult(null);
+    setIsModalVisible(true);
+  };
+  const getHourString = (
+    value: any,
+    nameValue: string,
+    index: any,
+    record: any
   ) => {
-    const updatedSelection = [...selectedVisitors];
-    const index = updatedSelection.findIndex((v) => v.visitorId === visitorId);
-    if (index > -1) {
-      // If already selected, update the time
-      updatedSelection[index] = { startHour, endHour, visitorId };
-    } else {
-      // Add new selection
-      updatedSelection.push({ startHour, endHour, visitorId });
+    console.log(record);
+    // console.log("index : ", index);
+    if (nameValue === "startHour") {
+      selectedVisitors[index] = {
+        ...selectedVisitors[index],
+        startHour: value,
+      };
+      // console.log(selectedVisitors[index]);
+    } else if (nameValue === "endHour") {
+      selectedVisitors[index] = {
+        ...selectedVisitors[index],
+        endHour: value,
+      };
     }
-    setSelectedVisitors(updatedSelection);
   };
 
+  const handleSearch = async () => {
+    if (!credentialCard) {
+      message.error("Please enter a valid Credential Card number.");
+      return;
+    }
+    try {
+      const { data } = await refetchVisitor();
+      // console.log(data);
+      if (data) {
+        setSearchResult(data); // Update search result if visitor is found
+        message.success("Visitor found!");
+      } else {
+        setSearchResult(null); // No result found
+        message.error("No visitor found with this CredentialCard.");
+      }
+    } catch (error) {
+      message.error("An error occurred while searching for the visitor.");
+    }
+  };
+  const handleSelectVisitor = (visitor: any) => {
+    const updatedVisitors = [...selectedVisitors];
+    // console.log(visitor);
+    const index = updatedVisitors.findIndex(
+      (v) => v.visitorId === visitor.visitorId
+    );
+    // console.log(index);
+    if (index > -1) {
+      // If already selected, update the visitor
+      updatedVisitors[index] = visitor;
+    } else {
+      // Add new visitor
+      updatedVisitors.push(visitor);
+    }
+    // console.log(updatedVisitors);
+    setSelectedVisitors(updatedVisitors);
+    setIsModalVisible(false);
+  };
   const renderVisitorsTable = () => {
     const visitQuantity = form.getFieldValue("visitQuantity");
 
     const columns = [
       {
         title: "Visitor Name",
-        dataIndex: "name",
-        key: "name",
+        dataIndex: "visitorName",
+        key: "visitorName",
+      },
+      {
+        title: "Mã căn cước",
+        dataIndex: "credentialsCard",
+        key: "credentialsCard",
       },
       {
         title: "Start Hour",
         dataIndex: "startHour",
         key: "startHour",
-        render: (record: any) => (
+        render: (_: any, record: any, index: any) => (
           <TimePicker
-            onChange={(date) =>
-              handleVisitorChange(record.id, date!, record.expectedEndHour)
+            format="HH:mm:ss"
+            onChange={(time) =>
+              getHourString(
+                time?.format("HH:mm:ss"),
+                "startHour",
+                index,
+                record
+              )
             }
           />
         ),
@@ -162,21 +257,36 @@ const CreateNewVisitList: React.FC = () => {
         title: "End Hour",
         dataIndex: "endHour",
         key: "endHour",
-        render: (record: any) => (
+        render: (_: any, record: any, index: any) => (
           <TimePicker
-            onChange={(date) =>
-              handleVisitorChange(record.id, record.expectedStartHour, date!)
+            format="HH:mm:ss"
+            onChange={(time) =>
+              getHourString(time?.format("HH:mm:ss"), "endHour", index, record)
             }
           />
+        ),
+      },
+      {
+        title: "Hành động",
+        dataIndex: "action",
+        key: "action",
+        render: (_: any) => (
+          <Button onClick={handleAddVisitor}>Thêm thông tin</Button> // Opens the modal
         ),
       },
     ];
 
     // Create an array of visitors based on visitQuantity
-    const visitorsData = Array.from({ length: visitQuantity }, (_, index) => ({
-      id: index + 1,
-      name: `Visitor ${index + 1}`,
-    }));
+    const visitorsData = Array.from({ length: visitQuantity }, (_, index) => {
+      const visitor = selectedVisitors[index];
+      return {
+        id: index + 1,
+        visitorName: visitor?.visitorName || `Visitor ${index + 1}`,
+        startHour: visitor?.startHour,
+        endHour: visitor?.endHour,
+        credentialsCard: visitor?.credentialsCard,
+      };
+    });
 
     return <Table dataSource={visitorsData} columns={columns} rowKey="id" />;
   };
@@ -202,8 +312,17 @@ const CreateNewVisitList: React.FC = () => {
                 <Checkbox
                   checked={daysOfSchedule?.includes(index + 1)}
                   disabled
+                  className={
+                    daysOfSchedule?.includes(index + 1) ? "bg-orange-200" : ""
+                  }
                 >
-                  {day}
+                  <span
+                    className={
+                      daysOfSchedule?.includes(index + 1) ? "font-bold" : ""
+                    }
+                  >
+                    {day}
+                  </span>
                 </Checkbox>
               </Form.Item>
             </Col>
@@ -220,8 +339,17 @@ const CreateNewVisitList: React.FC = () => {
                 <Checkbox
                   checked={daysOfSchedule?.includes(index + 1)}
                   disabled
+                  className={
+                    daysOfSchedule?.includes(index + 1) ? "bg-orange-200" : ""
+                  }
                 >
-                  Ngày {index + 1}
+                  <span
+                    className={
+                      daysOfSchedule?.includes(index + 1) ? "font-bold" : ""
+                    }
+                  >
+                    Ngày {index + 1}
+                  </span>
                 </Checkbox>
               </Form.Item>
             </Col>
@@ -238,7 +366,7 @@ const CreateNewVisitList: React.FC = () => {
       <Steps current={currentStep}>
         <Step title="Loại lịch" />
         <Step title="Thông tin lịch thăm" />
-        <Step title="Xác nhận" />
+        <Step title="Thông tin khách đến thăm" />
       </Steps>
 
       <Form form={form} layout="vertical">
@@ -301,7 +429,7 @@ const CreateNewVisitList: React.FC = () => {
                 { required: true, message: "Vui lòng nhập số lượng khách" },
               ]}
             >
-              <InputNumber min={1} max={10} />
+              <InputNumber min={1} max={20} />
             </Form.Item>
 
             <Form.Item
@@ -332,7 +460,77 @@ const CreateNewVisitList: React.FC = () => {
           </>
         )}
 
-        {currentStep === 2 && <div>{renderVisitorsTable()}</div>}
+        {currentStep === 2 && (
+          <div>
+            {renderVisitorsTable()}
+            {/* Modal for adding new visitor */}
+            <Modal
+              title="Thêm thông tin khách thăm"
+              visible={isModalVisible}
+              footer={null}
+              onCancel={() => setIsModalVisible(false)}
+            >
+              <Form layout="vertical">
+                <Form.Item label="Nhập mã Căn cước (CredentialCard)">
+                  <Input
+                    value={credentialCard}
+                    onChange={(e) => setCredentialCard(e.target.value)}
+                    placeholder="Nhập mã căn cước"
+                  />
+                </Form.Item>
+                <Button onClick={handleSearch}>Tìm kiếm khách thăm</Button>
+                {searchResult && (
+                  <Table
+                    columns={[
+                      {
+                        title: "Tên khách thăm",
+                        dataIndex: "visitorName",
+                        key: "visitorName",
+                      },
+                      {
+                        title: "Tên công ty",
+                        dataIndex: "companyName",
+                        key: "companyName",
+                      },
+                      {
+                        title: "Mã căn cước",
+                        dataIndex: "credentialsCard",
+                        key: "credentialsCard",
+                      },
+                      {
+                        title: "Trạng thái",
+                        dataIndex: "status",
+                        key: "status",
+                      },
+                      {
+                        title: "Hành động",
+                        dataIndex: "action",
+                        key: "action",
+                        render: (_: any, record: any) => (
+                          <div>
+                            <Button onClick={() => handleSelectVisitor(record)}>
+                              Chọn
+                            </Button>
+                          </div>
+                        ),
+                      },
+                    ]}
+                    dataSource={[searchResult]}
+                    pagination={false}
+                  />
+                )}
+                {!searchResult && (
+                  <Button
+                    type="dashed"
+                    onClick={() => navigate("/createVisitor")}
+                  >
+                    Tạo khách thăm mới
+                  </Button>
+                )}
+              </Form>
+            </Modal>
+          </div>
+        )}
       </Form>
       <div className="mt-4">
         {currentStep > 0 && (

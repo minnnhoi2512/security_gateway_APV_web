@@ -6,20 +6,50 @@ import { useNavigate } from "react-router-dom";
 import moment from "moment-timezone";
 import { Content } from "antd/es/layout/layout";
 import VisitListType from "../types/visitListType";
-import { useGetListVisitQuery } from "../services/visitList.service";
+import {
+  useGetListVisitByCreatedIdQuery,
+  useGetListVisitByDepartmentManagerIdQuery,
+  useGetListVisitQuery,
+} from "../services/visitList.service";
 
 const CustomerVisit = () => {
   const userRole = localStorage.getItem("userRole");
+  const userId = Number(localStorage.getItem("userId"));
   const navigate = useNavigate();
   const [searchText, setSearchText] = useState<string>("");
 
   // Fetching data using the query
-  const { data, isLoading } = useGetListVisitQuery({
-    pageNumber: -1,
-    pageSize: -1,
-  });
-  // Mapping visit types to corresponding tags with colors
 
+  // Mapping visit types to corresponding tags with colors
+  let data;
+
+  if (userRole === "Staff") {
+    // Fetch visits created by the Staff member
+    const { data: staffData } = useGetListVisitByCreatedIdQuery({
+      pageNumber: -1,
+      pageSize: -1,
+      createdById: userId,
+    });
+    data = staffData; // Assign the fetched data to the variable
+    // setIsLoading(false);
+  } else if (userRole === "DepartmentManager") {
+    // Fetch visits for the Department Manager
+    const { data: managerData } = useGetListVisitByDepartmentManagerIdQuery({
+      pageNumber: -1,
+      pageSize: -1,
+      DepartmentManagerId: userId,
+    });
+    data = managerData; // Assign the fetched data to the variable
+    // setIsLoading(false);
+  } else {
+    // Fetch all visits
+    const { data: allData } = useGetListVisitQuery({
+      pageNumber: -1,
+      pageSize: -1,
+    });
+    data = allData; // Assign the fetched data to the variable
+    // setIsLoading(false);
+  }
   // console.log(data);
   const columns: TableProps<VisitListType>["columns"] = [
     {
@@ -84,7 +114,9 @@ const CustomerVisit = () => {
       dataIndex: "schedule",
       key: "schedule",
       render: (text) => (
-        <span style={{ fontSize: "14px", color: "#000" }}>{text.scheduleName}</span>
+        <span style={{ fontSize: "14px", color: "#000" }}>
+          {text.scheduleName}
+        </span>
       ),
     },
     {
@@ -164,7 +196,6 @@ const CustomerVisit = () => {
           hideOnSinglePage: false,
           size: "small",
         }}
-        loading={isLoading}
         rowKey="visitId"
         bordered
       />

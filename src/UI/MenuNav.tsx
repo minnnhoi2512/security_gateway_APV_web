@@ -47,7 +47,7 @@ const MenuNav = () => {
     {
       key: "departmentManager",
       icon: <UserOutlined />,
-      label: "Trợ lý phòng ban",
+      label: "Quản lý phòng ban",
     },
     {
       key: "departManager",
@@ -143,7 +143,6 @@ const MenuNav = () => {
     } else if (userRole === "Manager") {
       return ![
         "dashboard",
-        "security",
         "project",
         "history",
         "manager",

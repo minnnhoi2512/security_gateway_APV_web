@@ -1,4 +1,4 @@
-import { Layout, Button, Table, Tag, Input, Modal, message } from "antd";
+import { Layout, Button, Table, Tag, Input, Modal, message, Spin } from "antd";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import UserType from "../types/userType";
@@ -9,12 +9,11 @@ const { Content } = Layout;
 const Manager = () => {
   const [searchText, setSearchText] = useState<string>("");
   const navigate = useNavigate();
-  const { data = [], refetch } = useGetListUserByRoleQuery({
+  const { data = [], refetch, isLoading } = useGetListUserByRoleQuery({
     pageNumber: -1,
     pageSize: -1,
     role: "Manager",
   });
-
   const [isModalVisible, setIsModalVisible] = useState(false); // State for modal visibility
   const [userIdToDelete, setUserIdToDelete] = useState<number | null>(null); // State to store user ID for deletion
   const [deleteUser] = useDeleteUserMutation(); // Hook for deleting user
@@ -135,14 +134,20 @@ const Manager = () => {
             onChange={handleSearchChange}
             style={{ marginBottom: 16, width: 300 }}
           />
-          <Table
-            columns={columns}
-            dataSource={filteredData}
-            pagination={{
-              total: filteredData?.length, // Assuming totalCount is provided in the response
-            }}
-            rowKey={"userId"}
-          />
+          {isLoading ? ( // Show loading spinner if data is loading
+            <div className="flex justify-center">
+              <Spin size="large" />
+            </div>
+          ) : (
+            <Table
+              columns={columns}
+              dataSource={filteredData}
+              pagination={{
+                total: filteredData?.length, // Assuming totalCount is provided in the response
+              }}
+              rowKey={"userId"}
+            />
+          )}
           <Modal
             title="Xác nhận xóa"
             visible={isModalVisible}

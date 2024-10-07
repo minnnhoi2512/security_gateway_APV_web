@@ -15,13 +15,13 @@ const CreateNewSchedule: React.FC = () => {
   const [form] = Form.useForm();
   const [createNewSchedule, { isLoading }] = useCreateNewScheduleMutation();
   const userId = localStorage.getItem("userId");
+  const userRole = localStorage.getItem("userRole");
   const navigate = useNavigate();
   const { data } = useGetListScheduleTypeQuery();
   const { refetch: refetchScheduleList } = useGetListScheduleQuery({
     pageNumber: -1,
     pageSize: -1,
   });
-  
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedScheduleType, setSelectedScheduleType] = useState<number | null>(null);
   const [isProcessWeek, setIsProcessWeek] = useState(false);
@@ -40,8 +40,12 @@ const CreateNewSchedule: React.FC = () => {
     { label: "Sunday", value: 7 },
   ];
 
+  const filteredScheduleTypes = userRole === "Admin"
+    ? data // Admin can see all types
+    : data?.filter(type => type.scheduleTypeName !== "VisitDaily"); // Non-admins cannot see VisitDaily
+
   const handleScheduleTypeChange = (value: number) => {
-    const selectedType = data?.find((type) => type.scheduleTypeId === value);
+    const selectedType = filteredScheduleTypes?.find((type) => type.scheduleTypeId === value);
     if (selectedType) {
       setSelectedScheduleType(value);
       if (value === 3) { // Assuming 3 is the ID for VisitDaily
@@ -51,7 +55,6 @@ const CreateNewSchedule: React.FC = () => {
       setIsProcessWeek(selectedType.scheduleTypeName === "ProcessWeek");
       setIsProcessMonth(selectedType.scheduleTypeName === "ProcessMonth");
       setIsVisitDaily(selectedType.scheduleTypeName === "VisitDaily");
-
       // If the selected type is VisitDaily, skip to step 2
       if (selectedType.scheduleTypeName === "VisitDaily") {
         setCurrentStep(2);
@@ -138,7 +141,7 @@ const CreateNewSchedule: React.FC = () => {
                 placeholder="Chọn loại lịch trình"
                 onChange={handleScheduleTypeChange}
               >
-                {data?.map((scheduleType) => (
+                {filteredScheduleTypes?.map((scheduleType) => (
                   <Option
                     key={scheduleType.scheduleTypeId}
                     value={scheduleType.scheduleTypeId}

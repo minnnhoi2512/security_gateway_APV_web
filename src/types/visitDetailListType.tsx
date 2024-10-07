@@ -1,8 +1,8 @@
 import VisitDetail from "./visitDetailType";
 
 type VisitDetailList = {
-  expectedStartTime?: Date;
-  expectedEndTime?: Date;
+  expectedStartTime?: Date | null;
+  expectedEndTime?: Date | null;
   acceptLevel?: number;
   visitName?: string;
   description?: string;

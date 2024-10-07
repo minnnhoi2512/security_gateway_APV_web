@@ -5,6 +5,7 @@ import { UploadOutlined } from "@ant-design/icons";
 import {
   useUpdateUserMutation,
   useGetDetailUserQuery,
+  useGetListUserByRoleQuery,
 } from "../services/user.service";
 import User from "../types/userType";
 import { v4 as uuidv4 } from "uuid"; // Import uuid for unique file names
@@ -25,11 +26,14 @@ const DetailUser: React.FC = () => {
 
   // Fetch user details using the userId
   const { data: userData, isLoading, isError } = useGetDetailUserQuery(userId);
-
   // Handle loading and error states
   if (isLoading) return <div>Loading...</div>;
   if (isError) return <div>Error loading user details.</div>;
-
+  const { refetch: refetchUserList } = useGetListUserByRoleQuery({
+    pageNumber: -1,
+    pageSize: -1,
+    role: userData.role.roleName, // Use the dynamically set role
+  });
   const handleUpdateStatus = async () => {
     try {
       // Prepare an array of promises for uploading images
@@ -43,14 +47,14 @@ const DetailUser: React.FC = () => {
 
       // Wait for all uploads to complete and get URLs
       const faceImgUrls = await Promise.all(faceImgPromises);
-
+      console.log(userData);
       // Prepare the updated user data
       const updatedUser: User = {
         ...userData,
         fullName: form.getFieldValue("fullName"), // Get updated fullName from form
         email: form.getFieldValue("email"), // Get updated email from form
         departmentId: userData.department.departmentId,
-        // phoneNumber : userData.phoneNumber,
+        roleID: userData.role.roleId,
         status: form.getFieldValue("status") || userData.status, // Get updated status from form
         image: faceImgUrls[0] || userData.image, // Use the new image if uploaded, or keep the old one
       };
@@ -60,7 +64,7 @@ const DetailUser: React.FC = () => {
         idUser: userData.userId || null,
         User: updatedUser,
       }).unwrap();
-
+      await refetchUserList();
       message.success(`Cập nhật thành công`);
       navigate(-1);
     } catch (error) {
@@ -86,10 +90,18 @@ const DetailUser: React.FC = () => {
           Chi tiết người dùng
         </h1>
         <Form form={form} layout="vertical" initialValues={userData}>
-          <Form.Item name="fullName" label="Tên" rules={[{ required: true, message: 'Vui lòng nhập tên!' }]}>
+          <Form.Item
+            name="fullName"
+            label="Tên"
+            rules={[{ required: true, message: "Vui lòng nhập tên!" }]}
+          >
             <Input />
           </Form.Item>
-          <Form.Item name="email" label="Email" rules={[{ required: true, message: 'Vui lòng nhập email!' }]}>
+          <Form.Item
+            name="email"
+            label="Email"
+            rules={[{ required: true, message: "Vui lòng nhập email!" }]}
+          >
             <Input />
           </Form.Item>
           <Form.Item label="Vai trò">

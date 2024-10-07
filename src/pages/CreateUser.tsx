@@ -174,32 +174,33 @@ const CreateUser: React.FC = () => {
               onChange={(e) => setPhoneNumber(e.target.value)}
             />
           </Form.Item>
-          {userRole !== "DepartmentManager" && ( // Only show this Form.Item if userRole is NOT "DepartmentManager"
-            <Form.Item
-              name="departmentId"
-              label="Chọn phòng ban"
-              rules={[{ required: true, message: "Vui lòng chọn phòng ban" }]}
-            >
-              <Select
-                placeholder="Chọn phòng ban"
-                onChange={(value) => setDepartmentId(value)}
-                defaultValue={
-                  userRole === "DepartmentManager"
-                    ? departmentId_local
-                    : undefined
-                } // Set default value if userRole is DepartmentManager
+          {userRole !== "Manager" &&
+            userRole !== "Admin" && ( // Only show this Form.Item if userRole is NOT "DepartmentManager"
+              <Form.Item
+                name="departmentId"
+                label="Chọn phòng ban"
+                rules={[{ required: true, message: "Vui lòng chọn phòng ban" }]}
               >
-                {listDepartment?.map((department: DepartmentType) => (
-                  <Select.Option
-                    key={department.departmentId}
-                    value={department.departmentId}
-                  >
-                    {department.departmentName}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-          )}
+                <Select
+                  placeholder="Chọn phòng ban"
+                  onChange={(value) => setDepartmentId(value)}
+                  defaultValue={
+                    userRole === "DepartmentManager"
+                      ? departmentId_local
+                      : undefined
+                  } // Set default value if userRole is DepartmentManager
+                >
+                  {listDepartment?.map((department: DepartmentType) => (
+                    <Select.Option
+                      key={department.departmentId}
+                      value={department.departmentId}
+                    >
+                      {department.departmentName}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            )}
           <Form.Item label="Ảnh đại diện">
             <Upload
               beforeUpload={(file) => {

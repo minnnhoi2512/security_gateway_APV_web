@@ -28,8 +28,42 @@ export const visitListAPI = createApi({
         };
       },
     }),
+    getListVisitByCreatedId: builder.query<
+      any,
+      { createdById: number; pageNumber: number; pageSize: number }
+    >({
+      query: ({ createdById, pageNumber, pageSize }) => {
+        return {
+          url: `CreateBy/${createdById}`,
+          method: "GET",
+          params: {
+            pageNumber,
+            pageSize,
+          },
+        };
+      },
+    }),
+    getListVisitByDepartmentManagerId: builder.query<
+      any,
+      { DepartmentManagerId: number; pageNumber: number; pageSize: number }
+    >({
+      query: ({ DepartmentManagerId, pageNumber, pageSize }) => {
+        return {
+          url: `DepartmentManagerId/${DepartmentManagerId}`,
+          method: "GET",
+          params: {
+            pageNumber,
+            pageSize,
+          },
+        };
+      },
+    }),
   }),
 });
 
 // Export the auto-generated hook for the query
-export const { useGetListVisitQuery } = visitListAPI;
+export const {
+  useGetListVisitQuery,
+  useGetListVisitByCreatedIdQuery,
+  useGetListVisitByDepartmentManagerIdQuery,
+} = visitListAPI;
