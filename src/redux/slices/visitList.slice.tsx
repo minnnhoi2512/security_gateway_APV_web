@@ -4,7 +4,6 @@ import visitListType from "../../types/visitListType";
 
 const initialState: visitListType = {
     visitId: 0,
-    dateRegister: new Date(), // Current date
     visitName: "",
     visitQuantity: 0,
     description: "",

@@ -19,38 +19,35 @@ const CustomerVisit = () => {
   const [searchText, setSearchText] = useState<string>("");
 
   // Fetching data using the query
-
-  // Mapping visit types to corresponding tags with colors
-  let data;
+  let { data, isLoading } = { data: [], isLoading: true }; // Default values
 
   if (userRole === "Staff") {
-    // Fetch visits created by the Staff member
-    const { data: staffData } = useGetListVisitByCreatedIdQuery({
-      pageNumber: -1,
-      pageSize: -1,
-      createdById: userId,
-    });
-    data = staffData; // Assign the fetched data to the variable
-    // setIsLoading(false);
+    const { data: staffData, isLoading: staffLoading } =
+      useGetListVisitByCreatedIdQuery({
+        pageNumber: -1,
+        pageSize: -1,
+        createdById: userId,
+      });
+    data = staffData;
+    isLoading = staffLoading;
   } else if (userRole === "DepartmentManager") {
-    // Fetch visits for the Department Manager
-    const { data: managerData } = useGetListVisitByDepartmentManagerIdQuery({
-      pageNumber: -1,
-      pageSize: -1,
-      DepartmentManagerId: userId,
-    });
-    data = managerData; // Assign the fetched data to the variable
-    // setIsLoading(false);
+    const { data: managerData, isLoading: managerLoading } =
+      useGetListVisitByDepartmentManagerIdQuery({
+        pageNumber: -1,
+        pageSize: -1,
+        DepartmentManagerId: userId,
+      });
+    data = managerData;
+    isLoading = managerLoading;
   } else {
-    // Fetch all visits
-    const { data: allData } = useGetListVisitQuery({
+    const { data: allData, isLoading: allLoading } = useGetListVisitQuery({
       pageNumber: -1,
       pageSize: -1,
     });
-    data = allData; // Assign the fetched data to the variable
-    // setIsLoading(false);
+    data = allData;
+    isLoading = allLoading;
   }
-  // console.log(data);
+  console.log(data);
   const columns: TableProps<VisitListType>["columns"] = [
     {
       title: "Tiêu đề",
@@ -190,13 +187,14 @@ const CustomerVisit = () => {
         columns={columns}
         dataSource={data || []} // Fallback to an empty array if data is undefined
         pagination={{
-          total: data?.total || 0, // Assuming data contains total count
+          total: data?.length, // Assuming data contains total count
           showSizeChanger: true,
           pageSizeOptions: ["5", "10", "20"],
           hideOnSinglePage: false,
           size: "small",
         }}
         rowKey="visitId"
+        loading={isLoading}
         bordered
       />
     </Content>

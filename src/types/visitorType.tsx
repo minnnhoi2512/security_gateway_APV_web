@@ -6,9 +6,9 @@ type Visitor = {
     visitorCredentialImage?: string,
     createdDate? : Date,
     updatedDate?: Date,
-    status : string,
+    status? : string,
     credentialsCard? : string,
-    credentialCardTypeId: number,
+    credentialCardTypeId?: number,
     visitorCredentialImageFromRequest?: File;
 }
 

@@ -9,7 +9,9 @@ const { Content } = Layout;
 const Manager = () => {
   const [searchText, setSearchText] = useState<string>("");
   const navigate = useNavigate();
-  const { data = [], refetch } = useGetListUserByRoleQuery({
+  
+  // Fetch data for users with the role of "Manager"
+  const { data = [], refetch, isLoading } = useGetListUserByRoleQuery({
     pageNumber: -1,
     pageSize: -1,
     role: "Manager",
@@ -19,6 +21,7 @@ const Manager = () => {
   const [userIdToDelete, setUserIdToDelete] = useState<number | null>(null); // State to store user ID for deletion
   const [deleteUser] = useDeleteUserMutation(); // Hook for deleting user
 
+  // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchText(e.target.value);
   };
@@ -139,8 +142,12 @@ const Manager = () => {
             columns={columns}
             dataSource={filteredData}
             pagination={{
-              total: filteredData?.length, // Assuming totalCount is provided in the response
+              total: filteredData.length, // Assuming totalCount is provided in the response
+              showSizeChanger: true,
+              pageSizeOptions: ["5", "10", "20"],
+              size: "small",
             }}
+            loading={isLoading} // Use the loading state from the query
             rowKey={"userId"}
           />
           <Modal

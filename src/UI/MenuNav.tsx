@@ -139,6 +139,8 @@ const MenuNav = () => {
         "departManager",
         "project",
         "history",
+        "card",
+        "gate",
       ].includes(item.key);
     } else if (userRole === "Manager") {
       return ![

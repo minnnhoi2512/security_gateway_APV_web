@@ -9,7 +9,9 @@ const { Content } = Layout;
 const Security = () => {
   const [searchText, setSearchText] = useState<string>("");
   const navigate = useNavigate();
-  const { data = [], refetch } = useGetListUserByRoleQuery({
+
+  // Fetch data for users with the role of "Security"
+  const { data = [], refetch, isLoading } = useGetListUserByRoleQuery({
     pageNumber: -1,
     pageSize: -1,
     role: "Security",
@@ -140,8 +142,12 @@ const Security = () => {
             columns={columns}
             dataSource={filteredData}
             pagination={{
-              total: data?.totalCount, // Assuming totalCount is provided in the response
+              total: data?.length, // Assuming totalCount is provided in the response
+              showSizeChanger: true,
+              pageSizeOptions: ["5", "10", "20"],
+              size: "small",
             }}
+            loading={isLoading} // Use the loading state from the query
             rowKey={"userId"}
           />
           <Modal

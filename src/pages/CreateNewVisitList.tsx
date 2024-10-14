@@ -49,7 +49,9 @@ const CreateNewVisitList: React.FC = () => {
   >(null);
   const [daysOfSchedule, setDaysOfSchedule] = useState<number[] | null>(null);
   const [credentialCard, setCredentialCard] = useState<string>(""); // Track input value for search
-  const [searchResult, setSearchResult] = useState<any>(null); // Store search result
+  const [searchResults, setSearchResults] = useState<any[]>([]); // Store all search results
+  const [searchTriggered, setSearchTriggered] = useState(false);
+
   const { data: schedules, isLoading: loadingSchedules } =
     useGetListScheduleQuery({ pageNumber: -1, pageSize: -1 });
   const [createNewListDetailVisit] = useCreateNewListDetailVisitMutation();
@@ -66,10 +68,15 @@ const CreateNewVisitList: React.FC = () => {
     (schedule: Schedule) =>
       schedule.scheduleType?.scheduleTypeId === selectedScheduleType
   );
-  const { refetch: refetchVisitor } = useGetVisitorByCredentialCardQuery(
+  const { refetch: visitorData } = useGetVisitorByCredentialCardQuery(
     { CredentialCard: credentialCard },
-    { skip: credentialCard === "" }
+    { skip: credentialCard === "" } // Skip if not triggered or empty
   );
+  const handleClearVisitor = (index: number) => {
+    const updatedVisitors = [...selectedVisitors];
+    updatedVisitors.splice(index, 1); // Remove the visitor at the specified index
+    setSelectedVisitors(updatedVisitors);
+  };
   // Handle form submission
   const handleSubmit = async () => {
     try {
@@ -158,51 +165,63 @@ const CreateNewVisitList: React.FC = () => {
     }
   };
   const handleAddVisitor = () => {
-    setCredentialCard("");
-    setSearchResult(null);
     setIsModalVisible(true);
   };
-  const getHourString = (
-    value: any,
-    nameValue: string,
-    index: any,
-    record: any
-  ) => {
-    console.log(record);
+  const getHourString = (value: any, nameValue: string, index: any) => {
     // console.log("index : ", index);
     if (nameValue === "startHour") {
       selectedVisitors[index] = {
         ...selectedVisitors[index],
         startHour: value,
       };
-      // console.log(selectedVisitors[index]);
     } else if (nameValue === "endHour") {
       selectedVisitors[index] = {
         ...selectedVisitors[index],
         endHour: value,
       };
     }
+    console.log(selectedVisitors[index]);
   };
 
   const handleSearch = async () => {
+    // setCredentialCard(searchString);
+    const results: any = [];
+
     if (!credentialCard) {
       message.error("Please enter a valid Credential Card number.");
       return;
+    } else {
+      setSearchTriggered(true);
     }
+    // console.log(searchResults[0].credentialCard);
+    // console.log(credentialCard);
+    // Check if the credentialCard has already been searched
+    const isAlreadySearched = searchResults.some(
+      (result) => result.credentialsCard === credentialCard
+    );
+    if (isAlreadySearched) {
+      message.warning("This visitor has already been searched.");
+      return;
+    }
+
     try {
-      const { data } = await refetchVisitor();
-      // console.log(data);
+      const { data } = await visitorData();
       if (data) {
-        setSearchResult(data); // Update search result if visitor is found
+        results.push(data);
         message.success("Visitor found!");
       } else {
-        setSearchResult(null); // No result found
         message.error("No visitor found with this CredentialCard.");
       }
     } catch (error) {
       message.error("An error occurred while searching for the visitor.");
     }
+
+    // Update the search results only if new data is found
+    if (results.length > 0) {
+      setSearchResults((prevResults) => [...prevResults, ...results]);
+    }
   };
+
   const handleSelectVisitor = (visitor: any) => {
     const updatedVisitors = [...selectedVisitors];
     // console.log(visitor);
@@ -219,7 +238,6 @@ const CreateNewVisitList: React.FC = () => {
     }
     // console.log(updatedVisitors);
     setSelectedVisitors(updatedVisitors);
-    setIsModalVisible(false);
   };
   const renderVisitorsTable = () => {
     const visitQuantity = form.getFieldValue("visitQuantity");
@@ -243,12 +261,7 @@ const CreateNewVisitList: React.FC = () => {
           <TimePicker
             format="HH:mm:ss"
             onChange={(time) =>
-              getHourString(
-                time?.format("HH:mm:ss"),
-                "startHour",
-                index,
-                record
-              )
+              getHourString(time?.format("HH:mm:ss"), "startHour", index)
             }
           />
         ),
@@ -261,7 +274,7 @@ const CreateNewVisitList: React.FC = () => {
           <TimePicker
             format="HH:mm:ss"
             onChange={(time) =>
-              getHourString(time?.format("HH:mm:ss"), "endHour", index, record)
+              getHourString(time?.format("HH:mm:ss"), "endHour", index)
             }
           />
         ),
@@ -270,8 +283,10 @@ const CreateNewVisitList: React.FC = () => {
         title: "Hành động",
         dataIndex: "action",
         key: "action",
-        render: (_: any) => (
-          <Button onClick={handleAddVisitor}>Thêm thông tin</Button> // Opens the modal
+        render: (_: any, record: any, index: any) => (
+          <Button onClick={() => handleClearVisitor(index)} danger>
+            Xóa
+          </Button>
         ),
       },
     ];
@@ -462,6 +477,12 @@ const CreateNewVisitList: React.FC = () => {
 
         {currentStep === 2 && (
           <div>
+            <Button
+              className="my-5 bg-green-500 text-white font-bold py-2 px-4 rounded hover:bg-green-600 transition duration-200"
+              onClick={handleAddVisitor}
+            >
+              Thêm thông tin
+            </Button>
             {renderVisitorsTable()}
             {/* Modal for adding new visitor */}
             <Modal
@@ -474,12 +495,13 @@ const CreateNewVisitList: React.FC = () => {
                 <Form.Item label="Nhập mã Căn cước (CredentialCard)">
                   <Input
                     value={credentialCard}
-                    onChange={(e) => setCredentialCard(e.target.value)}
+                    onChange={(e) => setCredentialCard(e.target.value)} // This only updates the state, no API call
                     placeholder="Nhập mã căn cước"
                   />
                 </Form.Item>
-                <Button onClick={handleSearch}>Tìm kiếm khách thăm</Button>
-                {searchResult && (
+                <Button onClick={handleSearch}>Tìm kiếm khách thăm</Button>{" "}
+                {/* This triggers the API call only on click */}
+                {searchResults && (
                   <Table
                     columns={[
                       {
@@ -515,17 +537,9 @@ const CreateNewVisitList: React.FC = () => {
                         ),
                       },
                     ]}
-                    dataSource={[searchResult]}
+                    dataSource={searchResults}
                     pagination={false}
                   />
-                )}
-                {!searchResult && (
-                  <Button
-                    type="dashed"
-                    onClick={() => navigate("/createVisitor")}
-                  >
-                    Tạo khách thăm mới
-                  </Button>
                 )}
               </Form>
             </Modal>

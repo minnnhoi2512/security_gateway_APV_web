@@ -13,7 +13,6 @@ const { Content } = Layout;
 const Staff = () => {
   const userRole = localStorage.getItem("userRole");
   const userId = Number(localStorage.getItem("userId"));
-
   const [searchText, setSearchText] = useState<string>("");
   const navigate = useNavigate();
   const [data, setData] = useState<UserType[]>([]);
@@ -21,17 +20,26 @@ const Staff = () => {
   const [userIdToDelete, setUserIdToDelete] = useState<number | null>(null); // State to store user ID for deletion
 
   // Fetch data based on user role
-  const { data: staffData, refetch: refetchStaffData } =
-    useGetListStaffByDepartmentManagerQuery(
-      { pageNumber: -1, pageSize: -1, departmentManagerId: userId },
-      { skip: userRole !== "DepartmentManager" } // Skip if not Department Manager
-    );
+  const {
+    data: staffData,
+    refetch: refetchStaffData,
+    isLoading: isLoadingStaff,
+  } = useGetListStaffByDepartmentManagerQuery(
+    { pageNumber: -1, pageSize: -1, departmentManagerId: userId },
+    { skip: userRole !== "DepartmentManager" } // Skip if not Department Manager
+  );
 
-  const { data: userData, refetch: refetchUserData } =
-    useGetListUserByRoleQuery(
-      { pageNumber: -1, pageSize: -1, role: "Staff" },
-      { skip: userRole === "DepartmentManager" } // Skip if Department Manager
-    );
+  const {
+    data: userData,
+    refetch: refetchUserData,
+    isLoading: isLoadingUser,
+  } = useGetListUserByRoleQuery(
+    { pageNumber: -1, pageSize: -1, role: "Staff" },
+    { skip: userRole === "DepartmentManager" } // Skip if Department Manager
+  );
+
+  // Combine loading states
+  const isLoading = isLoadingStaff || isLoadingUser;
 
   useEffect(() => {
     if (staffData) {
@@ -39,7 +47,6 @@ const Staff = () => {
     } else if (userData) {
       setData(userData);
     }
-    // console.log(data);
   }, [staffData, userData]);
 
   // Handle search input change
@@ -61,7 +68,6 @@ const Staff = () => {
         message.success("Xóa người dùng thành công");
         setIsModalVisible(false); // Close the modal
         setUserIdToDelete(null); // Reset the user ID
-
         // Refetch the data after deletion based on the user role
         if (userRole === "DepartmentManager") {
           refetchStaffData();
@@ -96,13 +102,12 @@ const Staff = () => {
       key: "phoneNumber",
     },
     {
-      title: "Phòng ban", // The title of the column, displayed in the table header
-      dataIndex: "department", // The key used to access the data for this column from the data source
-      key: "department", // A unique key for this column, used for React's reconciliation process
+      title: "Phòng ban",
+      dataIndex: "department",
+      key: "department",
       render: (text: any) => (
         <span style={{ fontSize: "14px", color: "#000" }}>
-          {text ? text.departmentName : "Không có phòng ban"}{" "}
-          {/* Conditional rendering to handle null/undefined */}
+          {text ? text.departmentName : "Không có phòng ban"}
         </span>
       ),
     },
@@ -120,9 +125,9 @@ const Staff = () => {
       dataIndex: "role",
       key: "role",
       render: (role: { roleName: string; status: string } | null) => {
-        const displayedRole = role ? role.roleName : "Nhân viên"; // Use roleName if role is not null
-        const color = role && role.status === "Active" ? "green" : "volcano"; // Check status for color
-        return <Tag color={color}>{displayedRole}</Tag>; // Use displayedRole for the tag
+        const displayedRole = role ? role.roleName : "Nhân viên";
+        const color = role && role.status === "Active" ? "green" : "volcano";
+        return <Tag color={color}>{displayedRole}</Tag>;
       },
     },
     {
@@ -182,8 +187,13 @@ const Staff = () => {
             columns={columns}
             dataSource={filteredData}
             pagination={{
-              total: filteredData?.length, // Assuming totalCount is provided in the response
+              total: filteredData?.length, // Assuming data contains total count
+              showSizeChanger: true,
+              pageSizeOptions: ["5", "10", "20"],
+              hideOnSinglePage: false,
+              size: "small",
             }}
+            loading={isLoading} // Use the combined loading state
             rowKey={"userId"}
           />
           <Modal

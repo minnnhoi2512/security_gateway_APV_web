@@ -6,15 +6,18 @@ import {
 } from "../services/schedule.service";
 import ScheduleType from "../types/scheduleType";
 import { useNavigate } from "react-router-dom";
+
 const { Content } = Layout;
 
 const ScheduleManager = () => {
   const [searchText, setSearchText] = useState<string>("");
   const userId = localStorage.getItem("userId");
   const navigate = useNavigate();
-  if (userId === null) return;
 
-  const { data, refetch } = useGetListScheduleQuery({
+  if (userId === null) return null; // Return null if userId is not found
+
+  // Fetching data using the query
+  const { data, refetch, isLoading } = useGetListScheduleQuery({
     pageNumber: -1,
     pageSize: -1,
   });
@@ -30,7 +33,9 @@ const ScheduleManager = () => {
   };
 
   const handleEditSchedule = (record: ScheduleType) => {
-    navigate(`/detailSchedule/${record.scheduleId}`, { state: { selectedSchedule: record } });
+    navigate(`/detailSchedule/${record.scheduleId}`, {
+      state: { selectedSchedule: record },
+    });
   };
 
   const handleDeleteSchedule = (scheduleId: number) => {
@@ -80,7 +85,9 @@ const ScheduleManager = () => {
       title: "Loại",
       dataIndex: "scheduleType",
       key: "scheduleType",
-      render: (text: any) => <div className="flex items-center">{text.scheduleTypeName}</div>,
+      render: (text: any) => (
+        <div className="flex items-center">{text.scheduleTypeName}</div>
+      ),
     },
     {
       title: "Trạng thái",
@@ -138,12 +145,18 @@ const ScheduleManager = () => {
             onChange={handleSearchChange}
             style={{ marginBottom: 16, width: 300 }}
           />
+
           <Table
             columns={columns}
-            dataSource={data} // Assuming data contains schedules
+            dataSource={data || []} // Fallback to an empty array if data is undefined
             pagination={{
-              total: data?.totalCount, // Assuming totalCount is provided in the response
+              total: data?.totalCount || 0, // Assuming totalCount is provided in the response
+              showSizeChanger: true,
+              pageSizeOptions: ["5", "10", "20"],
+              size: "small",
             }}
+            rowKey="scheduleId"
+            loading={isLoading}
           />
         </Content>
       </Layout>

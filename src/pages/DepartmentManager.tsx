@@ -16,13 +16,13 @@ const DepartmentManager = () => {
   const [userIdToDelete, setUserIdToDelete] = useState<number | null>(null); // State to store user ID for deletion
   const navigate = useNavigate();
 
-  // Fetch user list and include `refetch` function
-  const { data = [], refetch } = useGetListUserByRoleQuery({
+  // Fetch user list and include `refetch` function and loading state
+  const { data = [], refetch, isLoading } = useGetListUserByRoleQuery({
     pageNumber: -1,
     pageSize: -1,
     role: "DepartmentManager",
   });
-  console.log(data);
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchText(e.target.value);
   };
@@ -53,12 +53,10 @@ const DepartmentManager = () => {
       key: "phoneNumber",
     },
     {
-      title: "Phòng ban", // The title of the column, displayed in the table header
-      dataIndex: "department", // The key used to access the data for this column from the data source
-      key: "department", // A unique key for this column, used for React's reconciliation process
-      render: (
-        text: any // A custom render function that defines how the data should be displayed
-      ) => (
+      title: "Phòng ban",
+      dataIndex: "department",
+      key: "department",
+      render: (text: any) => (
         <span style={{ fontSize: "14px", color: "#000" }}>
           {text.departmentName}
         </span>
@@ -91,7 +89,7 @@ const DepartmentManager = () => {
             className="mr-2"
             onClick={() =>
               navigate(`/detailUser/${record.userId}`, {
-                state: record, // Pass the entire user record to the DetailUser component
+                state: record,
               })
             }
           >
@@ -153,8 +151,12 @@ const DepartmentManager = () => {
             columns={columns}
             dataSource={filteredData}
             pagination={{
-              total: filteredData?.length, // Assuming totalCount is provided in the response
+              total: filteredData.length, // Assuming totalCount is provided in the response
+              showSizeChanger: true,
+              pageSizeOptions: ["5", "10", "20"],
+              size: "small",
             }}
+            loading={isLoading} // Use the loading state from the query
             rowKey={"userId"}
           />
           <Modal

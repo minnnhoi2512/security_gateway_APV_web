@@ -109,7 +109,7 @@ export const visitorAPI = createApi({
         method: "DELETE",
       }),
     }),
-    getVisitorByCredentialCard: builder.query<void, { CredentialCard: string }>(
+    getVisitorByCredentialCard: builder.query<any, { CredentialCard: string }>(
       {
         query: ({ CredentialCard }) => ({
           url: `/CredentialCard/${CredentialCard}`,
