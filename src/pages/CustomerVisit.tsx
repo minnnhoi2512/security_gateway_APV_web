@@ -54,9 +54,9 @@ const CustomerVisit = () => {
       dataIndex: "visitName",
       key: "visitName",
       filteredValue: searchText ? [searchText] : null,
-      onFilter: (value, record) =>
+      onFilter: (value: any, record: any) =>
         record.visitName.toLowerCase().includes(value.toString().toLowerCase()),
-      sorter: (a, b) => a.visitName.localeCompare(b.visitName),
+      sorter: (a: any, b: any) => a.visitName.localeCompare(b.visitName),
       render: (text) => (
         <span style={{ fontSize: "14px", color: "#000" }}>{text}</span>
       ),
@@ -67,7 +67,7 @@ const CustomerVisit = () => {
       key: "expectedStartTime",
       render: (date: Date) =>
         moment.tz(date, "Asia/Ho_Chi_Minh").format("DD/MM/YYYY HH:mm:ss"), // Include time
-      sorter: (a, b) =>
+      sorter: (a: any, b: any) =>
         new Date(a.expectedStartTime).getTime() -
         new Date(b.expectedStartTime).getTime(),
     },
@@ -77,7 +77,7 @@ const CustomerVisit = () => {
       key: "expectedEndTime",
       render: (date: Date) =>
         moment.tz(date, "Asia/Ho_Chi_Minh").format("DD/MM/YYYY HH:mm:ss"), // Include time
-      sorter: (a, b) =>
+      sorter: (a: any, b: any) =>
         new Date(a.expectedEndTime).getTime() -
         new Date(b.expectedEndTime).getTime(),
     },
@@ -85,7 +85,7 @@ const CustomerVisit = () => {
       title: "Số lượng (Người)",
       dataIndex: "visitQuantity",
       key: "visitQuantity",
-      sorter: (a, b) => a.visitQuantity - b.visitQuantity,
+      sorter: (a: any, b: any) => a.visitQuantity - b.visitQuantity,
       render: (text) => (
         <span style={{ fontSize: "14px", color: "#000" }}>{text}</span>
       ),

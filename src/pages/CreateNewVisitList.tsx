@@ -3,25 +3,25 @@ import {
   Input,
   DatePicker,
   InputNumber,
-  Select,
   Steps,
   Button,
   message,
-  Checkbox,
-  Row,
-  Col,
   Table,
   TimePicker,
   Modal,
 } from "antd";
-import { useState } from "react";
+import { Editor } from "react-draft-wysiwyg";
+import "react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 // import { useCreateNewListDetailVisitMutation } from "../services/visitDetailList.service";
-import { useGetListScheduleQuery } from "../services/schedule.service";
-import Schedule from "../types/scheduleType";
 import { Dayjs } from "dayjs";
 import { useGetVisitorByCredentialCardQuery } from "../services/visitor.service";
 import { useCreateNewListDetailVisitMutation } from "../services/visitDetailList.service";
+import moment from "moment";
+import { EditorState } from "draft-js";
+import { useDebounce } from "use-debounce";
+import { useQueryClient } from 'react-query';
 const { Step } = Steps;
 
 interface FormValues {
@@ -44,17 +44,17 @@ const CreateNewVisitList: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
   const [currentStep, setCurrentStep] = useState<number>(0);
   const userId = Number(localStorage.getItem("userId"));
-  const [selectedScheduleType, setSelectedScheduleType] = useState<
-    number | null
-  >(null);
-  const [daysOfSchedule, setDaysOfSchedule] = useState<number[] | null>(null);
   const [credentialCard, setCredentialCard] = useState<string>(""); // Track input value for search
-  const [searchResults, setSearchResults] = useState<any[]>([]); // Store all search results
   const [searchTriggered, setSearchTriggered] = useState(false);
-
-  const { data: schedules, isLoading: loadingSchedules } =
-    useGetListScheduleQuery({ pageNumber: -1, pageSize: -1 });
+  const [editorState, setEditorState] = useState(EditorState.createEmpty());
+  const [currentVisitorIndex, setCurrentVisitorIndex] = useState<number | null>(
+    null
+  ); // Track which visitor is being edited
+  const [debouncedCredentialCard] = useDebounce(credentialCard, 300); // 300ms debounce
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [visitor, setVisitor] = useState<any>();
   const [createNewListDetailVisit] = useCreateNewListDetailVisitMutation();
+  const [isFetching, setIsFetching] = useState(false); 
   const [selectedVisitors, setSelectedVisitors] = useState<
     {
       startHour: string;
@@ -63,21 +63,25 @@ const CreateNewVisitList: React.FC = () => {
       visitorName: string;
       credentialsCard: string;
     }[]
-  >([]); // Track selected visitors' time slots
-  const filteredSchedules = schedules?.filter(
-    (schedule: Schedule) =>
-      schedule.scheduleType?.scheduleTypeId === selectedScheduleType
-  );
-  const { refetch: visitorData } = useGetVisitorByCredentialCardQuery(
+  >([]);
+  const queryClient = useQueryClient(); // Get the query client instance
+  const {
+    refetch: visitorData,
+    data,
+    isSuccess,
+    isError,
+  } = useGetVisitorByCredentialCardQuery(
     { CredentialCard: credentialCard },
-    { skip: credentialCard === "" } // Skip if not triggered or empty
+    { skip: credentialCard.length !== 12 }
   );
+  const onEditorStateChange = (newState: EditorState) => {
+    setEditorState(newState);
+  };
   const handleClearVisitor = (index: number) => {
     const updatedVisitors = [...selectedVisitors];
     updatedVisitors.splice(index, 1); // Remove the visitor at the specified index
     setSelectedVisitors(updatedVisitors);
   };
-  // Handle form submission
   const handleSubmit = async () => {
     try {
       console.log(selectedVisitors);
@@ -90,12 +94,12 @@ const CreateNewVisitList: React.FC = () => {
         expectedStartTime: formData.expectedStartTime
           ? formData.expectedStartTime.toDate()
           : null,
-        expectedEndTime: formData.expectedEndTime
-          ? formData.expectedEndTime.toDate()
+        expectedEndTime: formData.expectedStartTime
+          ? formData.expectedStartTime.toDate()
           : null,
         createById: userId, // Replace with dynamic userId if available
         description: formData.description,
-        scheduleId: formData.scheduleId,
+        scheduleId: 6,
         visitDetail: selectedVisitors.map((visitor) => ({
           expectedStartHour: visitor.startHour,
           expectedEndHour: visitor.endHour,
@@ -126,44 +130,71 @@ const CreateNewVisitList: React.FC = () => {
   const prev = () => {
     setCurrentStep(currentStep - 1);
   };
-
-  // Handle scheduleId change
-  const handleScheduleChange = (scheduleId: number) => {
-    const selectedSchedule = schedules?.find(
-      (schedule: Schedule) => schedule.scheduleId === scheduleId
+  const handleSelectVisitor = (visitor: any) => {
+    const updatedVisitors = [...selectedVisitors];
+    // console.log(visitor);
+    const index = updatedVisitors.findIndex(
+      (v) => v.visitorId === visitor.visitorId
     );
-    if (selectedSchedule) {
-      setDaysOfSchedule(selectedSchedule.daysOfSchedule); // Ensure this is an array of numbers
-    }
-  };
-
-  // Handle schedule type change
-  const handleScheduleTypeChange = (value: number) => {
-    setSelectedScheduleType(value);
-    setDaysOfSchedule(null); // Reset daysOfSchedule on schedule type change
-    form.setFieldsValue({ scheduleId: undefined }); // Reset scheduleId and expectedEndTime in the form
-  };
-
-  // Calculate expectedEndTime based on expectedStartTime and duration
-  const handleStartTimeChange = (date: Dayjs) => {
-    const selectedSchedule = schedules?.find(
-      (schedule: Schedule) =>
-        schedule.scheduleId === form.getFieldValue("scheduleId")
-    );
-    if (selectedSchedule && date) {
-      const duration = selectedSchedule.duration; // Ensure duration is defined in your schedule type
-      const endTime = date.add(duration, "day"); // Adjust duration based on your needs
-      form.setFieldsValue({
-        expectedStartTime: date,
-        expectedEndTime: endTime, // Update expectedEndTime when expectedStartTime changes
-      });
+    // console.log(index);
+    if (index > -1) {
+      // If already selected, update the visitor
+      updatedVisitors[index] = visitor;
     } else {
+      // Add new visitor
+      updatedVisitors.push(visitor);
+    }
+    // console.log(updatedVisitors);
+    setSelectedVisitors(updatedVisitors);
+  };
+  const handleStartTimeChange = (date: Dayjs) => {
+    if (date) {
       form.setFieldsValue({
         expectedStartTime: date,
-        expectedEndTime: undefined,
-      }); // Reset expectedEndTime if no schedule is selected
+      });
     }
   };
+  useEffect(() => {
+    if (isSuccess && data) {
+      // Check for a specific condition in your data
+      if (data.message) {
+        // Handle specific error returned from your API
+        message.error(data.message); // Assuming data.error holds the error message
+        setIsFetching(false); // Reset fetching state
+        return;
+      }
+  
+      setSearchResults((prevResults) => {
+        const isDuplicate = prevResults.some(
+          (visitor) => visitor.credentialsCard === data.credentialsCard
+        );
+  
+        if (!isDuplicate) {
+          return [...prevResults, data]; // Append new data
+        } else {
+          // Only show the message if it's a duplicate
+          message.info("Wrong"); // Assuming data.error holds the error message
+          return prevResults; // Return existing results to avoid duplicates
+        }
+      });
+      setIsFetching(false); // Reset fetching state
+    } else if (isError) {
+      message.error("Khách đến thăm không có trong hệ thống!");
+      setIsFetching(false); // Reset fetching state
+    }
+    setCredentialCard("");
+  }, [isSuccess, data, isError]);
+  const handleInputChange = (e: any) => {
+    const value = e.target.value;
+    setCredentialCard(value); // Update the credential card state
+
+    // Clear the cache data for visitorData when input changes
+    if (value.length === 12) {
+      value.length = 0;
+      visitorData(); // Call the API to fetch visitor data
+    }
+  };
+
   const handleAddVisitor = () => {
     setIsModalVisible(true);
   };
@@ -183,62 +214,6 @@ const CreateNewVisitList: React.FC = () => {
     console.log(selectedVisitors[index]);
   };
 
-  const handleSearch = async () => {
-    // setCredentialCard(searchString);
-    const results: any = [];
-
-    if (!credentialCard) {
-      message.error("Please enter a valid Credential Card number.");
-      return;
-    } else {
-      setSearchTriggered(true);
-    }
-    // console.log(searchResults[0].credentialCard);
-    // console.log(credentialCard);
-    // Check if the credentialCard has already been searched
-    const isAlreadySearched = searchResults.some(
-      (result) => result.credentialsCard === credentialCard
-    );
-    if (isAlreadySearched) {
-      message.warning("This visitor has already been searched.");
-      return;
-    }
-
-    try {
-      const { data } = await visitorData();
-      if (data) {
-        results.push(data);
-        message.success("Visitor found!");
-      } else {
-        message.error("No visitor found with this CredentialCard.");
-      }
-    } catch (error) {
-      message.error("An error occurred while searching for the visitor.");
-    }
-
-    // Update the search results only if new data is found
-    if (results.length > 0) {
-      setSearchResults((prevResults) => [...prevResults, ...results]);
-    }
-  };
-
-  const handleSelectVisitor = (visitor: any) => {
-    const updatedVisitors = [...selectedVisitors];
-    // console.log(visitor);
-    const index = updatedVisitors.findIndex(
-      (v) => v.visitorId === visitor.visitorId
-    );
-    // console.log(index);
-    if (index > -1) {
-      // If already selected, update the visitor
-      updatedVisitors[index] = visitor;
-    } else {
-      // Add new visitor
-      updatedVisitors.push(visitor);
-    }
-    // console.log(updatedVisitors);
-    setSelectedVisitors(updatedVisitors);
-  };
   const renderVisitorsTable = () => {
     const visitQuantity = form.getFieldValue("visitQuantity");
 
@@ -284,9 +259,15 @@ const CreateNewVisitList: React.FC = () => {
         dataIndex: "action",
         key: "action",
         render: (_: any, record: any, index: any) => (
-          <Button onClick={() => handleClearVisitor(index)} danger>
-            Xóa
-          </Button>
+          <div>
+            <Button
+              onClick={() => handleClearVisitor(index)}
+              danger
+              style={{ marginRight: "8px" }} // Optional: add some margin for spacing
+            >
+              Xóa
+            </Button>
+          </div>
         ),
       },
     ];
@@ -306,129 +287,16 @@ const CreateNewVisitList: React.FC = () => {
     return <Table dataSource={visitorsData} columns={columns} rowKey="id" />;
   };
 
-  // Render checkboxes for daysOfSchedule
-  const renderDaysOfSchedule = () => {
-    if (selectedScheduleType === 1) {
-      // Process Week
-      const weekDays = [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-        "Sunday",
-      ];
-      return (
-        <Row gutter={[16, 16]}>
-          {weekDays.map((day, index) => (
-            <Col key={index} span={3}>
-              <Form.Item>
-                <Checkbox
-                  checked={daysOfSchedule?.includes(index + 1)}
-                  disabled
-                  className={
-                    daysOfSchedule?.includes(index + 1) ? "bg-orange-200" : ""
-                  }
-                >
-                  <span
-                    className={
-                      daysOfSchedule?.includes(index + 1) ? "font-bold" : ""
-                    }
-                  >
-                    {day}
-                  </span>
-                </Checkbox>
-              </Form.Item>
-            </Col>
-          ))}
-        </Row>
-      );
-    } else if (selectedScheduleType === 2) {
-      // Process Month
-      return (
-        <Row gutter={[16, 16]}>
-          {Array.from({ length: 31 }, (_, index) => (
-            <Col key={index} span={3}>
-              <Form.Item>
-                <Checkbox
-                  checked={daysOfSchedule?.includes(index + 1)}
-                  disabled
-                  className={
-                    daysOfSchedule?.includes(index + 1) ? "bg-orange-200" : ""
-                  }
-                >
-                  <span
-                    className={
-                      daysOfSchedule?.includes(index + 1) ? "font-bold" : ""
-                    }
-                  >
-                    Ngày {index + 1}
-                  </span>
-                </Checkbox>
-              </Form.Item>
-            </Col>
-          ))}
-        </Row>
-      );
-    }
-    return null;
-  };
-
   return (
     <div className="p-6">
       <h1 className="text-green-500 text-2xl font-bold">Tạo mới lịch hẹn</h1>
       <Steps current={currentStep}>
-        <Step title="Loại lịch" />
         <Step title="Thông tin lịch thăm" />
         <Step title="Thông tin khách đến thăm" />
       </Steps>
 
       <Form form={form} layout="vertical">
         {currentStep === 0 && (
-          <>
-            <Form.Item
-              name="scheduleType"
-              label="Loại lịch"
-              rules={[{ required: true, message: "Vui lòng chọn loại lịch" }]}
-            >
-              <Select
-                placeholder="Chọn loại lịch"
-                onChange={handleScheduleTypeChange}
-              >
-                <Select.Option value={3}>Lịch trình hàng ngày</Select.Option>
-                <Select.Option value={1}>Lịch trình tuần</Select.Option>
-                <Select.Option value={2}>Lịch trình tháng</Select.Option>
-              </Select>
-            </Form.Item>
-
-            <Form.Item
-              name="scheduleId"
-              label="Chọn lịch"
-              rules={[{ required: true, message: "Vui lòng chọn lịch" }]}
-            >
-              <Select
-                loading={loadingSchedules}
-                placeholder="Chọn lịch"
-                onChange={handleScheduleChange}
-              >
-                {filteredSchedules?.map((schedule: Schedule) => (
-                  <Select.Option
-                    key={schedule.scheduleId}
-                    value={schedule.scheduleId}
-                  >
-                    {schedule.scheduleName}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-
-            {/* Conditionally render checkboxes based on daysOfSchedule */}
-            {daysOfSchedule !== null && renderDaysOfSchedule()}
-          </>
-        )}
-
-        {currentStep === 1 && (
           <>
             <Form.Item
               name="title"
@@ -442,41 +310,71 @@ const CreateNewVisitList: React.FC = () => {
               label="Số lượng khách"
               rules={[
                 { required: true, message: "Vui lòng nhập số lượng khách" },
+                {
+                  validator: (_, value) => {
+                    if (value <= 0 && value != null) {
+                      return Promise.reject("Số lượng khách phải lớn hơn 0");
+                    }
+                    if (value > 20) {
+                      return Promise.reject(
+                        "Số lượng khách không được vượt quá 20"
+                      );
+                    }
+                    return Promise.resolve();
+                  },
+                },
               ]}
             >
-              <InputNumber min={1} max={20} />
+              <InputNumber />
             </Form.Item>
 
             <Form.Item
               name="expectedStartTime"
-              label="Thời gian bắt đầu"
+              label="Ngày đến thăm"
               rules={[{ required: true, message: "Vui lòng chọn thời gian" }]}
             >
-              <DatePicker onChange={handleStartTimeChange} />
+              <DatePicker
+                onChange={handleStartTimeChange}
+                disabledDate={(current) =>
+                  current && current < moment().startOf("day")
+                }
+              />
             </Form.Item>
-
-            <Form.Item
-              name="expectedEndTime"
-              label="Thời gian kết thúc"
-              rules={[{ required: true, message: "Vui lòng chọn thời gian" }]}
-            >
-              <DatePicker disabled />
-            </Form.Item>
-
             <Form.Item
               name="description"
               label="Mô tả"
               rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}
             >
-              <Input.TextArea placeholder="Nhập mô tả" />
+              <Editor
+                editorState={editorState}
+                toolbarClassName="border border-gray-300 bg-gray-100 rounded-t-md p-2"
+                wrapperClassName="border border-gray-300 rounded-md shadow-sm"
+                editorClassName="p-4 min-h-[200px] bg-white rounded-b-md"
+                onEditorStateChange={onEditorStateChange}
+              />
             </Form.Item>
-
-            {/* Render visitors table */}
           </>
         )}
-
-        {currentStep === 2 && (
+        <Modal
+          title="Thêm thông tin khách thăm"
+          visible={isModalVisible}
+          footer
+          onCancel={() => setIsModalVisible(false)}
+        >
+          <Form layout="vertical">
+            <Form.Item label="Nhập mã Căn cước công dân">
+              <Input
+                value={credentialCard}
+                onChange={handleInputChange} // Use the updated change handler
+                placeholder="Nhập mã căn cước"
+              />
+            </Form.Item>
+            {/* Add any additional fields if needed */}
+          </Form>
+        </Modal>
+        {currentStep === 1 && (
           <div>
+            {" "}
             <Button
               className="my-5 bg-green-500 text-white font-bold py-2 px-4 rounded hover:bg-green-600 transition duration-200"
               onClick={handleAddVisitor}
@@ -499,9 +397,8 @@ const CreateNewVisitList: React.FC = () => {
                     placeholder="Nhập mã căn cước"
                   />
                 </Form.Item>
-                <Button onClick={handleSearch}>Tìm kiếm khách thăm</Button>{" "}
                 {/* This triggers the API call only on click */}
-                {searchResults && (
+                {searchResults.length > 0 && (
                   <Table
                     columns={[
                       {
@@ -552,12 +449,12 @@ const CreateNewVisitList: React.FC = () => {
             Quay lại
           </Button>
         )}
-        {currentStep < 2 && (
+        {currentStep < 1 && (
           <Button type="primary" onClick={next}>
             Tiếp theo
           </Button>
         )}
-        {currentStep === 2 && (
+        {currentStep === 1 && (
           <Button type="primary" onClick={handleSubmit}>
             Tạo lịch hẹn
           </Button>
