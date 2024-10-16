@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button, Input, Form, notification } from "antd";
-import { useCreateQRCardMutation, useGenerateQRCardMutation, useGetListQRCardQuery } from "../services/QRCard.service";
+import { useCreateQRCardMutation, useGenerateQRCardMutation, useGetListQRCardQuery } from "../services/qrCard.service";
 import { useNavigate } from "react-router-dom";
 import QRCardType from "../types/QRCardType";
 

@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-import ScheduleType from "../../types/scheduleType";
+import ScheduleType from "../../types/ScheduleType";
 
 const initialState: ScheduleType = {
   scheduleId: 0, // Default number for ID (you can choose a better default)

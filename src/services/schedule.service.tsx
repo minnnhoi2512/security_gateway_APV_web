@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import Schedule from "../types/scheduleType";
+import Schedule from "../types/ScheduleType";
 import baseAPI from "../api/baseAPI";
 import { getToken } from "../utils/jwtToken";
 

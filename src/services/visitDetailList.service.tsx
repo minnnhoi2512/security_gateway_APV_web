@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import baseAPI from "../api/baseAPI";
-import VisitDetailList from "../types/visitDetailListType";
+import VisitDetailList from "../types/VisitDetailListType";
 import { getToken } from "../utils/jwtToken";
 
 export const visitDetailListAPI = createApi({

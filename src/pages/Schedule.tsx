@@ -4,7 +4,7 @@ import {
   useGetListScheduleQuery,
   useDeleteScheduleMutation,
 } from "../services/schedule.service";
-import ScheduleType from "../types/scheduleType";
+import ScheduleType from "../types/ScheduleType";
 import { useNavigate } from "react-router-dom";
 
 const { Content } = Layout;
