@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Button, Table, Input, Space } from "antd";
+import { useEffect, useState } from "react";
+import { Button, Table, Input, Space, Tag, Spin } from "antd";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
 import { TableProps } from "antd";
 import { useNavigate } from "react-router-dom";
@@ -17,37 +17,54 @@ const CustomerVisit = () => {
   const userId = Number(localStorage.getItem("userId"));
   const navigate = useNavigate();
   const [searchText, setSearchText] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<string>("Active");
 
   // Fetching data using the query
-  let { data, isLoading } = { data: [], isLoading: true }; // Default values
+  let data = [];
+  let isLoading = true;
+  let refetch;
 
   if (userRole === "Staff") {
-    const { data: staffData, isLoading: staffLoading } =
-      useGetListVisitByCreatedIdQuery({
-        pageNumber: -1,
-        pageSize: -1,
-        createdById: userId,
-      });
-    data = staffData;
-    isLoading = staffLoading;
-  } else if (userRole === "DepartmentManager") {
-    const { data: managerData, isLoading: managerLoading } =
-      useGetListVisitByDepartmentManagerIdQuery({
-        pageNumber: -1,
-        pageSize: -1,
-        DepartmentManagerId: userId,
-      });
-    data = managerData;
-    isLoading = managerLoading;
-  } else {
-    const { data: allData, isLoading: allLoading } = useGetListVisitQuery({
+    const {
+      data: staffData,
+      isLoading: staffLoading,
+      refetch: refetchStaff,
+    } = useGetListVisitByCreatedIdQuery({
       pageNumber: -1,
       pageSize: -1,
+      createdById: userId,
+    });
+    data = staffData;
+    isLoading = staffLoading;
+    refetch = refetchStaff;
+  } else if (userRole === "DepartmentManager") {
+    const {
+      data: managerData,
+      isLoading: managerLoading,
+      refetch: refetchManager,
+    } = useGetListVisitByDepartmentManagerIdQuery({
+      pageNumber: -1,
+      pageSize: -1,
+      DepartmentManagerId: userId,
+    });
+    data = managerData;
+    isLoading = managerLoading;
+    refetch = refetchManager;
+  } else {
+    const {
+      data: allData,
+      isLoading: allLoading,
+      refetch: refetchAll,
+    } = useGetListVisitQuery({
+      pageNumber: -1,
+      pageSize: -1,
+      status: statusFilter,
     });
     data = allData;
     isLoading = allLoading;
+    refetch = refetchAll;
   }
-  console.log(data);
+
   const columns: TableProps<VisitListType>["columns"] = [
     {
       title: "Tiêu đề",
@@ -91,20 +108,27 @@ const CustomerVisit = () => {
       ),
     },
     {
-      title: "Miêu tả",
-      dataIndex: "description",
-      key: "description",
-      render: (text) => (
-        <span style={{ fontSize: "14px", color: "#000" }}>{text}</span>
-      ),
-    },
-    {
       title: "Trạng thái",
       dataIndex: "visitStatus",
       key: "visitStatus",
-      render: (text) => (
-        <span style={{ fontSize: "14px", color: "#000" }}>{text}</span>
-      ),
+      render: (text) => {
+        let color = "";
+        let displayText = "";
+
+        if (text === "Active") {
+          color = "green";
+          displayText = "Còn hiệu lực";
+        } else if (text === "Pending") {
+          color = "yellow";
+          displayText = "Đang đợi";
+        }
+
+        return (
+          <Tag color={color} style={{ fontSize: "14px" }}>
+            {displayText}
+          </Tag>
+        );
+      },
     },
     {
       title: "Loại",
@@ -146,6 +170,16 @@ const CustomerVisit = () => {
     setSearchText(e.target.value);
   };
 
+  const handleStatusChange = (status: string) => {
+    setStatusFilter(status);
+    refetch(); // Automatically refetch the data when status changes
+    // console.log(data)
+  };
+
+  useEffect(() => {
+    refetch();
+  }, [statusFilter]);
+
   return (
     <Content className="p-6">
       <div className="flex justify-center mb-4">
@@ -183,20 +217,35 @@ const CustomerVisit = () => {
           </Button>
         )}
       </Space>
-      <Table
-        columns={columns}
-        dataSource={data || []} // Fallback to an empty array if data is undefined
-        pagination={{
-          total: data?.length, // Assuming data contains total count
-          showSizeChanger: true,
-          pageSizeOptions: ["5", "10", "20"],
-          hideOnSinglePage: false,
-          size: "small",
-        }}
-        rowKey="visitId"
-        loading={isLoading}
-        bordered
-      />
+      <Space style={{ marginBottom: 16, display: "flex" }}>
+        <Button
+          type={statusFilter === "Active" ? "primary" : "default"}
+          onClick={() => handleStatusChange("Active")}
+        >
+          Còn hiệu lực
+        </Button>
+        <Button
+          type={statusFilter === "Pending" ? "primary" : "default"}
+          onClick={() => handleStatusChange("Pending")}
+        >
+          Đang đợi
+        </Button>
+      </Space>
+      <Spin spinning={isLoading}>
+        <Table
+          columns={columns}
+          dataSource={data}
+          pagination={{
+            total: data?.length,
+            showSizeChanger: true,
+            pageSizeOptions: ["5", "10", "20"],
+            hideOnSinglePage: false,
+            size: "small",
+          }}
+          rowKey="visitId"
+          bordered
+        />
+      </Spin>
     </Content>
   );
 };
