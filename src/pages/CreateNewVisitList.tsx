@@ -9,30 +9,31 @@ import {
   Table,
   TimePicker,
   Modal,
+  Image,
+  Tag,
 } from "antd";
 import { Editor } from "react-draft-wysiwyg";
 import "react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-// import { useCreateNewListDetailVisitMutation } from "../services/visitDetailList.service";
-import { Dayjs } from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 import { useGetVisitorByCredentialCardQuery } from "../services/visitor.service";
 import { useCreateNewListDetailVisitMutation } from "../services/visitDetailList.service";
 import moment from "moment";
-import { EditorState } from "draft-js";
+import { EditorState, convertToRaw } from "draft-js";
 import { useDebounce } from "use-debounce";
-import { useQueryClient } from 'react-query';
+import { stateToHTML } from "draft-js-export-html";
 const { Step } = Steps;
 
 interface FormValues {
   title: string;
-  date: Dayjs; // Changed Moment to Dayjs
+  date: Dayjs;
   visitQuantity: number;
   scheduleId: number;
   scheduleType: number;
   visitName: string;
-  expectedStartTime: Dayjs; // Changed Moment to Dayjs
-  expectedEndTime: Dayjs; // Changed Moment to Dayjs
+  expectedStartTime: Dayjs;
+  expectedEndTime: Dayjs;
   description: string;
   daysOfSchedule: number[] | null;
   [key: string]: any;
@@ -44,17 +45,8 @@ const CreateNewVisitList: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
   const [currentStep, setCurrentStep] = useState<number>(0);
   const userId = Number(localStorage.getItem("userId"));
-  const [credentialCard, setCredentialCard] = useState<string>(""); // Track input value for search
-  const [searchTriggered, setSearchTriggered] = useState(false);
-  const [editorState, setEditorState] = useState(EditorState.createEmpty());
-  const [currentVisitorIndex, setCurrentVisitorIndex] = useState<number | null>(
-    null
-  ); // Track which visitor is being edited
-  const [debouncedCredentialCard] = useDebounce(credentialCard, 300); // 300ms debounce
+  const [credentialCard, setCredentialCard] = useState<string>("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [visitor, setVisitor] = useState<any>();
-  const [createNewListDetailVisit] = useCreateNewListDetailVisitMutation();
-  const [isFetching, setIsFetching] = useState(false); 
   const [selectedVisitors, setSelectedVisitors] = useState<
     {
       startHour: string;
@@ -64,41 +56,142 @@ const CreateNewVisitList: React.FC = () => {
       credentialsCard: string;
     }[]
   >([]);
-  const queryClient = useQueryClient(); // Get the query client instance
-  const {
-    refetch: visitorData,
-    data,
-    isSuccess,
-    isError,
-  } = useGetVisitorByCredentialCardQuery(
-    { CredentialCard: credentialCard },
-    { skip: credentialCard.length !== 12 }
-  );
+  const [createNewListDetailVisit] = useCreateNewListDetailVisitMutation();
+  const [editorState, setEditorState] = useState(EditorState.createEmpty());
+  const [debouncedCredentialCard] = useDebounce(credentialCard, 300);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const { data: visitorData, isSuccess: isVisitorDataFetched } =
+    useGetVisitorByCredentialCardQuery(
+      { CredentialCard: debouncedCredentialCard },
+      { skip: debouncedCredentialCard.length !== 12 }
+    );
+  const [isLoading, setIsLoading] = useState(false);
+  const [startHourForAll, setStartHourForAll] = useState<string | null>(null);
+  const [endHourForAll, setEndHourForAll] = useState<string | null>(null);
+  const visitQuantity = form.getFieldValue("visitQuantity");
+  useEffect(() => {
+    // Clear the timeout on every input change
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    if (debouncedCredentialCard.length === 12) {
+      // setSearchResults([]);
+      setIsLoading(true); // Start loading
+      // Set a timeout to delay the search
+      console.log(visitorData);
+      timeoutRef.current = setTimeout(() => {
+        if (isVisitorDataFetched && visitorData) {
+          setSearchResults([visitorData]);
+          message.success("Đã tìm thấy khách này.");
+        } else if (!isVisitorDataFetched) {
+          setSearchResults([]);
+        }
+        setIsLoading(false); // Stop loading after fetching data
+      }, 3000); // Delay the search for 1000 milliseconds (1 second)
+    } else {
+      setSearchResults([]); // Clear results if input is less than 12 characters
+      setIsLoading(false); // Stop loading if input is invalid
+    }
+
+    // Cleanup function to clear the timeout when the component unmounts
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [isVisitorDataFetched, visitorData, debouncedCredentialCard]);
+  const handleCredentialCardChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const newValue = e.target.value;
+    setCredentialCard(newValue);
+    if (newValue.length === 0) {
+      setSearchResults([]); // Clear results if input is empty
+    }
+  };
   const onEditorStateChange = (newState: EditorState) => {
     setEditorState(newState);
   };
+
+  const getHourString = (value: any, nameValue: string, index: any) => {
+    const startHour = selectedVisitors[index]?.startHour; // Get the current startHour
+
+    if (nameValue === "startHour") {
+      selectedVisitors[index] = {
+        ...selectedVisitors[index],
+        startHour: value,
+        // Reset endHour if the startHour changes and is after the new endHour
+        endHour:
+          startHour && value > startHour ? selectedVisitors[index].endHour : "",
+      };
+    } else if (nameValue === "endHour") {
+      if (value <= startHour) {
+        // Optionally show a message to the user
+        message.warning("Giờ ra phải sau giờ vào!"); // Adjust the message to your needs
+        return; // Do not update endHour if it is not valid
+      }
+
+      selectedVisitors[index] = {
+        ...selectedVisitors[index],
+        endHour: value,
+      };
+    }
+
+    setSelectedVisitors([...selectedVisitors]); // Trigger a re-render
+  };
+
   const handleClearVisitor = (index: number) => {
+    if (selectedVisitors.length === 0) {
+      message.warning("Không có khách nào để xóa.");
+      return;
+    }
+
     const updatedVisitors = [...selectedVisitors];
-    updatedVisitors.splice(index, 1); // Remove the visitor at the specified index
+    if (!updatedVisitors[index]?.visitorName) {
+      message.warning("Khách này không có thông tin để xóa.");
+      return;
+    }
+
+    updatedVisitors.splice(index, 1);
     setSelectedVisitors(updatedVisitors);
   };
   const handleSubmit = async () => {
     try {
-      console.log(selectedVisitors);
+      const visitQuantity = form.getFieldValue("visitQuantity");
+      const rawContentState = convertToRaw(editorState.getCurrentContent());
+      // const htmlContent = stateToHTML(rawContentState);
+      // Check if the selected visitors count matches the required visit quantity
+      if (selectedVisitors.length < visitQuantity) {
+        message.warning("Cần nhập đủ số lượng khách!");
+        return; // Stop further execution
+      }
+
+      // Validate the form fields
       await form.validateFields();
-      const formData = form.getFieldsValue(true); // or form.getFieldsValue({ all: true });
-      // console.log(formData);
+
+      // Check if expectedStartHour and expectedEndHour are filled
+      const hasMissingHours = selectedVisitors.some(
+        (visitor) => !visitor.startHour || !visitor.endHour
+      );
+
+      if (hasMissingHours) {
+        message.warning("Vui lòng nhập đủ thông tin giờ ra và giờ vào!");
+        return; // Stop further execution
+      }
+
+      const formData = form.getFieldsValue(true);
       const requestData = {
         visitName: formData.title,
         visitQuantity: Number(formData.visitQuantity),
         expectedStartTime: formData.expectedStartTime
           ? formData.expectedStartTime.toDate()
           : null,
-        expectedEndTime: formData.expectedStartTime
-          ? formData.expectedStartTime.toDate()
+        expectedEndTime: formData.expectedEndTime
+          ? formData.expectedEndTime.toDate()
           : null,
-        createById: userId, // Replace with dynamic userId if available
-        description: formData.description,
+        createById: userId,
+        description: rawContentState,
         scheduleId: 6,
         visitDetail: selectedVisitors.map((visitor) => ({
           expectedStartHour: visitor.startHour,
@@ -106,17 +199,21 @@ const CreateNewVisitList: React.FC = () => {
           visitorId: visitor.visitorId,
         })),
       };
-      // console.log(requestData);
-      await createNewListDetailVisit({ newVisitDetailList: requestData });
-      message.success("Lịch hẹn đã được tạo thành công!");
-      navigate("/customerVisit");
+
+      try {
+        await createNewListDetailVisit({
+          newVisitDetailList: requestData,
+        }).unwrap(); // unwrapping for better error handling
+        message.success("Lịch hẹn đã được tạo thành công!");
+        navigate("/customerVisit");
+      } catch (error) {
+        message.error("Đã có lỗi xảy ra khi tạo lịch hẹn. Vui lòng thử lại.");
+      }
     } catch (error) {
-      console.log(error);
       message.error("Vui lòng kiểm tra thông tin đã nhập.");
     }
   };
 
-  // Handle next step
   const next = () => {
     form
       .validateFields()
@@ -126,100 +223,101 @@ const CreateNewVisitList: React.FC = () => {
       );
   };
 
-  // Handle previous step
   const prev = () => {
     setCurrentStep(currentStep - 1);
   };
+
   const handleSelectVisitor = (visitor: any) => {
-    const updatedVisitors = [...selectedVisitors];
-    // console.log(visitor);
-    const index = updatedVisitors.findIndex(
+    const isDuplicate = selectedVisitors.some(
       (v) => v.visitorId === visitor.visitorId
     );
-    // console.log(index);
-    if (index > -1) {
-      // If already selected, update the visitor
-      updatedVisitors[index] = visitor;
-    } else {
-      // Add new visitor
-      updatedVisitors.push(visitor);
-    }
-    // console.log(updatedVisitors);
-    setSelectedVisitors(updatedVisitors);
-  };
-  const handleStartTimeChange = (date: Dayjs) => {
-    if (date) {
-      form.setFieldsValue({
-        expectedStartTime: date,
-      });
-    }
-  };
-  useEffect(() => {
-    if (isSuccess && data) {
-      // Check for a specific condition in your data
-      if (data.message) {
-        // Handle specific error returned from your API
-        message.error(data.message); // Assuming data.error holds the error message
-        setIsFetching(false); // Reset fetching state
-        return;
-      }
-  
-      setSearchResults((prevResults) => {
-        const isDuplicate = prevResults.some(
-          (visitor) => visitor.credentialsCard === data.credentialsCard
-        );
-  
-        if (!isDuplicate) {
-          return [...prevResults, data]; // Append new data
-        } else {
-          // Only show the message if it's a duplicate
-          message.info("Wrong"); // Assuming data.error holds the error message
-          return prevResults; // Return existing results to avoid duplicates
-        }
-      });
-      setIsFetching(false); // Reset fetching state
-    } else if (isError) {
-      message.error("Khách đến thăm không có trong hệ thống!");
-      setIsFetching(false); // Reset fetching state
-    }
-    setCredentialCard("");
-  }, [isSuccess, data, isError]);
-  const handleInputChange = (e: any) => {
-    const value = e.target.value;
-    setCredentialCard(value); // Update the credential card state
 
-    // Clear the cache data for visitorData when input changes
-    if (value.length === 12) {
-      value.length = 0;
-      visitorData(); // Call the API to fetch visitor data
+    // Check if the visitor's status is "Unactive"
+    if (visitor.status === "Unactive") {
+      message.error("Không thể thêm khách trong sổ đen");
+      return;
     }
+
+    // Check if adding this visitor would exceed the limit
+    if (selectedVisitors.length >= visitQuantity) {
+      message.warning("Danh sách đã đầy, vui lòng kiểm tra lại thông tin.");
+      return;
+    }
+
+    if (isDuplicate) {
+      message.warning("Khách này đã được chọn.");
+      return;
+    }
+
+    const updatedVisitors = [...selectedVisitors, visitor];
+    setSelectedVisitors(updatedVisitors);
+    setSearchResults([]); // Clear search results after selecting
+    setCredentialCard(""); // Clear input after selection
   };
 
   const handleAddVisitor = () => {
     setIsModalVisible(true);
+    setCredentialCard("");
+    setSearchResults([]);
   };
-  const getHourString = (value: any, nameValue: string, index: any) => {
-    // console.log("index : ", index);
-    if (nameValue === "startHour") {
+  const handleStartHourChangeForAll = (time: any) => {
+    const startHour = time?.format("HH:mm:ss");
+    setStartHourForAll(startHour);
+
+    // Reset end hour when start hour changes
+    setEndHourForAll(null);
+
+    // Update startHour for all selected visitors and reset endHour
+    selectedVisitors.forEach((visitor, index) => {
       selectedVisitors[index] = {
-        ...selectedVisitors[index],
-        startHour: value,
+        ...visitor,
+        startHour: startHour,
+        endHour: "",
       };
-    } else if (nameValue === "endHour") {
-      selectedVisitors[index] = {
-        ...selectedVisitors[index],
-        endHour: value,
-      };
+    });
+    setSelectedVisitors([...selectedVisitors]); // Trigger a re-render
+  };
+
+  const handleEndHourChangeForAll = (time: any) => {
+    let endHour = time?.format("HH:mm:ss");
+    const isEndHourValid = dayjs(endHour, "HH:mm:ss").isAfter(
+      dayjs(selectedVisitors[0]?.startHour, "HH:mm:ss") // Ensure startHour is valid
+    );
+    console.log(endHour);
+    // If endHour is not valid, clear it and show a warning
+    if (!isEndHourValid && endHour !== null && endHour !== undefined) {
+      message.warning("Giờ ra phải sau giờ vào!");
+      setEndHourForAll(null);
+      const updatedVisitors = selectedVisitors.map((visitor) => ({
+        ...visitor,
+        endHour: "",
+      }));
+      setSelectedVisitors(updatedVisitors);
+      return;
     }
-    console.log(selectedVisitors[index]);
+
+    // Set endHour for all visitors
+    setEndHourForAll(endHour);
+    const updatedVisitors = selectedVisitors.map((visitor) => ({
+      ...visitor,
+      endHour: endHour,
+    }));
+    setSelectedVisitors(updatedVisitors); // Trigger a re-render
   };
 
   const renderVisitorsTable = () => {
     const visitQuantity = form.getFieldValue("visitQuantity");
-
     const columns = [
       {
-        title: "Visitor Name",
+        title: "Số thứ tự",
+        dataIndex: "index",
+        key: "index",
+        render: (_: any, record: any, index: number) => (
+          <span className="justify-center items-center">{index + 1}</span> // Display the index starting from 1
+        ),
+      },
+      {
+        title: "Tên khách",
         dataIndex: "visitorName",
         key: "visitorName",
       },
@@ -229,62 +327,71 @@ const CreateNewVisitList: React.FC = () => {
         key: "credentialsCard",
       },
       {
-        title: "Start Hour",
+        title: "Giờ vào",
         dataIndex: "startHour",
         key: "startHour",
-        render: (_: any, record: any, index: any) => (
-          <TimePicker
-            format="HH:mm:ss"
-            onChange={(time) =>
-              getHourString(time?.format("HH:mm:ss"), "startHour", index)
-            }
-          />
-        ),
+        render: (_: any, record: any, index: any) =>
+          selectedVisitors[index]?.visitorName ? (
+            <TimePicker
+              format="HH:mm:ss"
+              value={
+                record.startHour ? dayjs(record.startHour, "HH:mm:ss") : null
+              } // Display the current startHour
+              onChange={(time) =>
+                getHourString(time?.format("HH:mm:ss"), "startHour", index)
+              }
+            />
+          ) : null,
       },
       {
-        title: "End Hour",
+        title: "Giờ ra",
         dataIndex: "endHour",
         key: "endHour",
-        render: (_: any, record: any, index: any) => (
-          <TimePicker
-            format="HH:mm:ss"
-            onChange={(time) =>
-              getHourString(time?.format("HH:mm:ss"), "endHour", index)
-            }
-          />
-        ),
+        render: (_: any, record: any, index: any) =>
+          selectedVisitors[index]?.visitorName ? (
+            <TimePicker
+              format="HH:mm:ss"
+              value={record.endHour ? dayjs(record.endHour, "HH:mm:ss") : null} // Display the current endHour
+              onChange={(time) =>
+                getHourString(time?.format("HH:mm:ss"), "endHour", index)
+              }
+            />
+          ) : null,
       },
       {
         title: "Hành động",
         dataIndex: "action",
         key: "action",
-        render: (_: any, record: any, index: any) => (
-          <div>
-            <Button
-              onClick={() => handleClearVisitor(index)}
-              danger
-              style={{ marginRight: "8px" }} // Optional: add some margin for spacing
-            >
-              Xóa
+        render: (_: any, record: any, index: any) => {
+          // Show the button only if visitor data is present
+          return selectedVisitors[index]?.visitorName ? (
+            <Button onClick={() => handleClearVisitor(index)} danger>
+              Xóa thông tin
             </Button>
-          </div>
-        ),
+          ) : null;
+        },
       },
     ];
 
-    // Create an array of visitors based on visitQuantity
     const visitorsData = Array.from({ length: visitQuantity }, (_, index) => {
       const visitor = selectedVisitors[index];
       return {
         id: index + 1,
-        visitorName: visitor?.visitorName || `Visitor ${index + 1}`,
+        visitorName: visitor?.visitorName,
         startHour: visitor?.startHour,
         endHour: visitor?.endHour,
         credentialsCard: visitor?.credentialsCard,
       };
     });
 
-    return <Table dataSource={visitorsData} columns={columns} rowKey="id" />;
+    return (
+      <>
+        {selectedVisitors.length === 0 && (
+          <p style={{ color: "red" }}>Chưa có khách nào được chọn!</p>
+        )}
+        <Table dataSource={visitorsData} columns={columns} rowKey="id" />
+      </>
+    );
   };
 
   return (
@@ -334,7 +441,6 @@ const CreateNewVisitList: React.FC = () => {
               rules={[{ required: true, message: "Vui lòng chọn thời gian" }]}
             >
               <DatePicker
-                onChange={handleStartTimeChange}
                 disabledDate={(current) =>
                   current && current < moment().startOf("day")
                 }
@@ -347,108 +453,60 @@ const CreateNewVisitList: React.FC = () => {
             >
               <Editor
                 editorState={editorState}
-                toolbarClassName="border border-gray-300 bg-gray-100 rounded-t-md p-2"
-                wrapperClassName="border border-gray-300 rounded-md shadow-sm"
-                editorClassName="p-4 min-h-[200px] bg-white rounded-b-md"
                 onEditorStateChange={onEditorStateChange}
+                toolbarClassName="flex justify-between px-2"
+                wrapperClassName="border border-gray-300 rounded-lg"
+                editorClassName="p-4 h-40 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </Form.Item>
           </>
         )}
-        <Modal
-          title="Thêm thông tin khách thăm"
-          visible={isModalVisible}
-          footer
-          onCancel={() => setIsModalVisible(false)}
-        >
-          <Form layout="vertical">
-            <Form.Item label="Nhập mã Căn cước công dân">
-              <Input
-                value={credentialCard}
-                onChange={handleInputChange} // Use the updated change handler
-                placeholder="Nhập mã căn cước"
-              />
-            </Form.Item>
-            {/* Add any additional fields if needed */}
-          </Form>
-        </Modal>
         {currentStep === 1 && (
-          <div>
-            {" "}
-            <Button
-              className="my-5 bg-green-500 text-white font-bold py-2 px-4 rounded hover:bg-green-600 transition duration-200"
-              onClick={handleAddVisitor}
-            >
-              Thêm thông tin
+          <>
+            <Button type="primary" onClick={handleAddVisitor}>
+              Thêm khách
             </Button>
+            {selectedVisitors.length === visitQuantity && (
+              <div className="flex flex-col mt-4">
+                <h3 className="text-lg font-semibold mb-2">
+                  {" "}
+                  {/* Add margin-bottom for spacing */}
+                  Chọn giờ cho tất cả khách:
+                </h3>
+                <div className="flex space-x-4">
+                  {" "}
+                  {/* Flex container for TimePickers */}
+                  <TimePicker
+                    format="HH:mm:ss"
+                    placeholder="Giờ vào"
+                    value={
+                      startHourForAll
+                        ? dayjs(startHourForAll, "HH:mm:ss")
+                        : null
+                    }
+                    className="w-full"
+                    onChange={handleStartHourChangeForAll}
+                  />
+                  <TimePicker
+                    format="HH:mm:ss"
+                    placeholder="Giờ ra"
+                    value={
+                      endHourForAll ? dayjs(endHourForAll, "HH:mm:ss") : null
+                    }
+                    className="w-full"
+                    onChange={handleEndHourChangeForAll}
+                  />
+                </div>
+              </div>
+            )}
             {renderVisitorsTable()}
-            {/* Modal for adding new visitor */}
-            <Modal
-              title="Thêm thông tin khách thăm"
-              visible={isModalVisible}
-              footer={null}
-              onCancel={() => setIsModalVisible(false)}
-            >
-              <Form layout="vertical">
-                <Form.Item label="Nhập mã Căn cước (CredentialCard)">
-                  <Input
-                    value={credentialCard}
-                    onChange={(e) => setCredentialCard(e.target.value)} // This only updates the state, no API call
-                    placeholder="Nhập mã căn cước"
-                  />
-                </Form.Item>
-                {/* This triggers the API call only on click */}
-                {searchResults.length > 0 && (
-                  <Table
-                    columns={[
-                      {
-                        title: "Tên khách thăm",
-                        dataIndex: "visitorName",
-                        key: "visitorName",
-                      },
-                      {
-                        title: "Tên công ty",
-                        dataIndex: "companyName",
-                        key: "companyName",
-                      },
-                      {
-                        title: "Mã căn cước",
-                        dataIndex: "credentialsCard",
-                        key: "credentialsCard",
-                      },
-                      {
-                        title: "Trạng thái",
-                        dataIndex: "status",
-                        key: "status",
-                      },
-                      {
-                        title: "Hành động",
-                        dataIndex: "action",
-                        key: "action",
-                        render: (_: any, record: any) => (
-                          <div>
-                            <Button onClick={() => handleSelectVisitor(record)}>
-                              Chọn
-                            </Button>
-                          </div>
-                        ),
-                      },
-                    ]}
-                    dataSource={searchResults}
-                    pagination={false}
-                  />
-                )}
-              </Form>
-            </Modal>
-          </div>
+          </>
         )}
       </Form>
-      <div className="mt-4">
-        {currentStep > 0 && (
-          <Button onClick={prev} style={{ marginRight: 8 }}>
-            Quay lại
-          </Button>
-        )}
+
+      <div className="flex justify-between mt-4">
+        {currentStep == 0 && <Button onClick={() => navigate(-1)}>Hủy</Button>}
+        {currentStep > 0 && <Button onClick={prev}>Trở về</Button>}
         {currentStep < 1 && (
           <Button type="primary" onClick={next}>
             Tiếp theo
@@ -456,16 +514,95 @@ const CreateNewVisitList: React.FC = () => {
         )}
         {currentStep === 1 && (
           <Button type="primary" onClick={handleSubmit}>
-            Tạo lịch hẹn
+            Tạo mới
           </Button>
         )}
-        <Button
-          onClick={() => navigate("/customerVisit")}
-          style={{ marginLeft: 8 }}
-        >
-          Hủy
-        </Button>
       </div>
+
+      <Modal
+        title="Tìm kiếm khách "
+        visible={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        footer={null}
+      >
+        <Form.Item
+          validateStatus={credentialCard.length > 12 ? "error" : ""}
+          help={credentialCard.length > 12 ? "Không được vượt quá 12 số." : ""}
+        >
+          <Input
+            value={credentialCard}
+            onChange={handleCredentialCardChange} // Use the new handler
+            placeholder="Nhập mã căn cước hoặc giấy phép lái xe (12 số)"
+          />
+        </Form.Item>
+        <Table
+          dataSource={searchResults}
+          columns={[
+            {
+              title: "Ảnh căn cước",
+              dataIndex: "visitorCredentialImage",
+              key: "visitorCredentialImage",
+              render: (image: string) => {
+                // Check if the image string starts with 'data:image/jpeg;base64,'
+                const base64Image = image.startsWith("data:image/jpeg;base64,")
+                  ? image
+                  : `data:image/jpeg;base64,${image}`;
+
+                return (
+                  <Image
+                    src={base64Image}
+                    alt="Visitor Credential"
+                    width={50} // Set the width of the image
+                    height={50} // Set the height of the image
+                    preview={false} // Set to false if you don't want the preview functionality
+                    style={{ objectFit: "cover" }} // Maintain the aspect ratio
+                  />
+                );
+              },
+            },
+            {
+              title: "Tên khách",
+              dataIndex: "visitorName",
+              key: "visitorName",
+            },
+            {
+              title: "Mã căn cước",
+              dataIndex: "credentialsCard",
+              key: "credentialsCard",
+            },
+
+            {
+              title: "Trạng thái",
+              dataIndex: "status",
+              key: "status",
+              render: (status: string) => {
+                let color = "green"; // Default color for active status
+                let displayText = "Hợp lệ"; // Default display text for active status
+
+                // Check the status and update the color and displayText accordingly
+                if (status === "Unactive") {
+                  color = "red";
+                  displayText = "Sổ đen";
+                }
+
+                return <Tag color={color}>{displayText}</Tag>;
+              },
+            },
+            {
+              title: "Hành động",
+              dataIndex: "action",
+              key: "action",
+              render: (_, visitor) => (
+                <Button onClick={() => handleSelectVisitor(visitor)}>
+                  Chọn
+                </Button>
+              ),
+            },
+          ]}
+          rowKey="visitorId"
+          loading={isLoading}
+        />
+      </Modal>
     </div>
   );
 };

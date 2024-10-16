@@ -16,14 +16,15 @@ export const visitListAPI = createApi({
     },
   }),
   endpoints: (builder) => ({
-    getListVisit: builder.query<any, { pageNumber: number; pageSize: number }>({
-      query: ({ pageNumber, pageSize }) => {
+    getListVisit: builder.query<any, { pageNumber: number; pageSize: number,status : string }>({
+      query: ({ pageNumber, pageSize,status }) => {
         return {
-          url: "",
+          url: "/Status",
           method: "GET",
           params: {
             pageNumber,
             pageSize,
+            status,
           },
         };
       },
