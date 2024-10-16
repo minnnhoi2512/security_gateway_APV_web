@@ -95,7 +95,7 @@ export const visitorAPI = createApi({
             updatedVisitor.visitorCredentialImageFromRequest
           );
         }
-
+    
         return {
           url: `/${id}`,
           method: "PUT",
@@ -103,6 +103,7 @@ export const visitorAPI = createApi({
         };
       },
     }),
+    
     deleteVisitor: builder.mutation<void, { id: number }>({
       query: ({ id }) => ({
         url: `${id}`,

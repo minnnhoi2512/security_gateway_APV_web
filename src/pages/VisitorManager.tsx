@@ -21,6 +21,9 @@ const VisitorManager = () => {
   const [updateVisitor, { isLoading: isUpdating }] = useUpdateVisitorMutation();
   const [deleteVisitor] = useDeleteVisitorMutation();
 
+  // State to store base64 image for preview
+  const [imageBase64, setImageBase64] = useState<string | null>(null);
+
   const { data, isLoading: isLoadingData, error } = useGetAllVisitorsQuery({
     pageNumber: currentPage,
     pageSize,
@@ -128,6 +131,7 @@ const VisitorManager = () => {
     const file = e.target.files?.[0];
     if (file) {
       setFaceImg(file);
+      console.log("Form data: ", file);
     }
   };
 
@@ -136,7 +140,7 @@ const VisitorManager = () => {
       const values = await form.validateFields();
       const finalValues = {
         ...values,
-        visitorCredentialImageFromRequest: faceImg, 
+        visitorCredentialImageFromRequest: faceImg,
       };
 
       console.log("Form data: ", finalValues);
@@ -162,20 +166,27 @@ const VisitorManager = () => {
     setIsModalVisible(false);
     setIsEditModalVisible(false);
     form.resetFields();
-    setFaceImg(null); 
+    setFaceImg(null);
+    setImageBase64(null); // Reset the image preview when closing the modal
   };
 
   const openEditModal = (visitor: any) => {
+    console.log("Opening edit modal with visitor:", visitor);
     setEditingVisitor(visitor);
+    const visitorImage = visitor.visitorCredentialImage ? visitor.visitorCredentialImage : null;
+    
     form.setFieldsValue({
       visitorName: visitor.visitorName,
       companyName: visitor.companyName,
       phoneNumber: visitor.phoneNumber,
       credentialsCard: visitor.credentialsCard,
-      credentialCardTypeId: visitor.credentialCardTypeId,
-      visitorCredentialImage: visitor.visitorCredentialImage,
+      credentialCardTypeId: visitor.credentialCardTypeId ? visitor.credentialCardTypeId.toString() : "",
     });
-    setFaceImg(null); // Reset image for editing
+
+    if (visitorImage) {
+      setImageBase64(visitorImage); // Show base64 image in the modal
+    }
+
     setIsEditModalVisible(true);
   };
 
@@ -184,8 +195,9 @@ const VisitorManager = () => {
       const values = await form.validateFields();
       const finalValues = {
         ...values,
-        visitorCredentialImageFromRequest: faceImg, // Gửi file hình ảnh qua API
+        visitorCredentialImageFromRequest: faceImg,
       };
+
       await updateVisitor({ id: editingVisitor.visitorId, ...finalValues }).unwrap();
       setIsEditModalVisible(false);
       form.resetFields();
@@ -193,7 +205,7 @@ const VisitorManager = () => {
         message: "Thành công",
         description: "Cập nhật thông tin khách thành công.",
       });
-      setFaceImg(null); // Reset hình ảnh sau khi xử lý
+      setFaceImg(null);
     } catch (error) {
       console.error("Update visitor error:", error);
       notification.error({
@@ -213,7 +225,7 @@ const VisitorManager = () => {
       cancelText: "Hủy",
       onOk: async () => {
         try {
-          await deleteVisitor({ id: visitorId }).unwrap(); // Call deleteVisitor mutation
+          await deleteVisitor({ id: visitorId }).unwrap();
           notification.success({
             message: `Xóa khách thành công!`,
           });
@@ -270,6 +282,9 @@ const VisitorManager = () => {
           <Form.Item label="Thẻ nhận dạng" name="credentialsCard" rules={[{ required: true, message: "Vui lòng nhập mã thẻ!" }]}>
             <Input placeholder="Nhập mã thẻ" />
           </Form.Item>
+          <Form.Item label="Loại thẻ nhận dạng" name="credentialCardTypeId" rules={[{ required: true, message: "Vui lòng chọn loại thẻ!" }]}>
+            <Input placeholder="Chọn loại thẻ" />
+          </Form.Item>
           <Form.Item label="Hình ảnh thẻ" name="visitorCredentialImage" rules={[{ required: true, message: "Vui lòng nhập hình ảnh thẻ!" }]}>
             <Input type="file" accept="image/*" onChange={handleFileChange} />
           </Form.Item>
@@ -299,7 +314,14 @@ const VisitorManager = () => {
           <Form.Item label="Thẻ nhận dạng" name="credentialsCard" rules={[{ required: true, message: "Vui lòng nhập mã thẻ!" }]}>
             <Input placeholder="Nhập mã thẻ" />
           </Form.Item>
-          <Form.Item label="Hình ảnh thẻ" name="visitorCredentialImage" rules={[{ required: true, message: "Vui lòng nhập hình ảnh thẻ!" }]}>
+          <Form.Item label="Loại thẻ nhận dạng" name="credentialCardTypeId" rules={[{ required: true, message: "Vui lòng chọn loại thẻ!" }]}>
+            <Input placeholder="Chọn loại thẻ" />
+          </Form.Item>
+
+          {/* Show preview of the existing image */}
+          {imageBase64 && <img src={`data:image/jpeg;base64,${imageBase64}`} alt="Credential" style={{ width: "100px" }} />}
+
+          <Form.Item label="Hình ảnh thẻ">
             <Input type="file" accept="image/*" onChange={handleFileChange} />
           </Form.Item>
         </Form>
