@@ -20,9 +20,10 @@ import dayjs, { Dayjs } from "dayjs";
 import { useGetVisitorByCredentialCardQuery } from "../services/visitor.service";
 import { useCreateNewListDetailVisitMutation } from "../services/visitDetailList.service";
 import moment from "moment";
-import { EditorState, convertToRaw } from "draft-js";
+import { EditorState } from "draft-js";
 import { useDebounce } from "use-debounce";
 import { stateToHTML } from "draft-js-export-html";
+import CreateNewVisitor from "../form/CreateNewVisitor";
 const { Step } = Steps;
 
 interface FormValues {
@@ -54,6 +55,7 @@ const CreateNewVisitList: React.FC = () => {
       visitorId: number;
       visitorName: string;
       credentialsCard: string;
+      visitorCredentialImage: string;
     }[]
   >([]);
   const [createNewListDetailVisit] = useCreateNewListDetailVisitMutation();
@@ -69,6 +71,14 @@ const CreateNewVisitList: React.FC = () => {
   const [startHourForAll, setStartHourForAll] = useState<string | null>(null);
   const [endHourForAll, setEndHourForAll] = useState<string | null>(null);
   const visitQuantity = form.getFieldValue("visitQuantity");
+  const [showCreateVisitor, setShowCreateVisitor] = useState(false);
+  const handleAddNewVisitor = () => {
+    setShowCreateVisitor(true);
+  };
+
+  const handleCloseCreateVisitor = () => {
+    setShowCreateVisitor(false);
+  };
   useEffect(() => {
     // Clear the timeout on every input change
     if (timeoutRef.current) {
@@ -88,7 +98,7 @@ const CreateNewVisitList: React.FC = () => {
           setSearchResults([]);
         }
         setIsLoading(false); // Stop loading after fetching data
-      }, 3000); // Delay the search for 1000 milliseconds (1 second)
+      }, 1000); // Delay the search for 1000 milliseconds (1 second)
     } else {
       setSearchResults([]); // Clear results if input is less than 12 characters
       setIsLoading(false); // Stop loading if input is invalid
@@ -113,11 +123,44 @@ const CreateNewVisitList: React.FC = () => {
   const onEditorStateChange = (newState: EditorState) => {
     setEditorState(newState);
   };
+  const handleCancel = () => {
+    Modal.confirm({
+      title: "Bạn có muốn   hủy quá trình tạo mới lịch?",
+      content: "Hành động này sẽ xóa hết dữ liệu.",
+      okText: "Đồng ý",
+      cancelText: "Quay lại",
+      onOk() {
+        navigate(-1); // Navigate back
+      },
+    });
+  };
 
   const getHourString = (value: any, nameValue: string, index: any) => {
     const startHour = selectedVisitors[index]?.startHour; // Get the current startHour
+    const currentDate = new Date();
+    const expectedStartTime = form.getFieldValue("expectedStartTime");
+
+    // Check if expectedStartTime is today
+    const isToday =
+      expectedStartTime &&
+      new Date(expectedStartTime).toDateString() === currentDate.toDateString();
+
+    // Define the minimum start time if today (current time + 30 minutes)
+    const minStartHour = new Date(currentDate.getTime() + 30 * 60000);
 
     if (nameValue === "startHour") {
+      if (isToday) {
+        const [selectedHours, selectedMinutes] = value.split(":").map(Number);
+        const selectedTime = new Date();
+        selectedTime.setHours(selectedHours, selectedMinutes, 0, 0);
+
+        // Check if the selected start time is before the minimum allowed start time
+        if (selectedTime < minStartHour) {
+          message.warning("Giờ vào phải hơn hiện tại ít nhất 30 phút.");
+          return; // Prevent updating startHour if the condition fails
+        }
+      }
+
       selectedVisitors[index] = {
         ...selectedVisitors[index],
         startHour: value,
@@ -159,8 +202,9 @@ const CreateNewVisitList: React.FC = () => {
   const handleSubmit = async () => {
     try {
       const visitQuantity = form.getFieldValue("visitQuantity");
-      const rawContentState = convertToRaw(editorState.getCurrentContent());
-      // const htmlContent = stateToHTML(rawContentState);
+      const contentState = editorState.getCurrentContent();
+      const htmlContent = stateToHTML(contentState);
+      console.log(htmlContent);
       // Check if the selected visitors count matches the required visit quantity
       if (selectedVisitors.length < visitQuantity) {
         message.warning("Cần nhập đủ số lượng khách!");
@@ -187,11 +231,11 @@ const CreateNewVisitList: React.FC = () => {
         expectedStartTime: formData.expectedStartTime
           ? formData.expectedStartTime.toDate()
           : null,
-        expectedEndTime: formData.expectedEndTime
-          ? formData.expectedEndTime.toDate()
+        expectedEndTime: formData.expectedStartTime
+          ? formData.expectedStartTime.toDate()
           : null,
         createById: userId,
-        description: rawContentState,
+        description: htmlContent,
         scheduleId: 6,
         visitDetail: selectedVisitors.map((visitor) => ({
           expectedStartHour: visitor.startHour,
@@ -231,7 +275,7 @@ const CreateNewVisitList: React.FC = () => {
     const isDuplicate = selectedVisitors.some(
       (v) => v.visitorId === visitor.visitorId
     );
-
+    console.log(visitor);
     // Check if the visitor's status is "Unactive"
     if (visitor.status === "Unactive") {
       message.error("Không thể thêm khách trong sổ đen");
@@ -262,6 +306,29 @@ const CreateNewVisitList: React.FC = () => {
   };
   const handleStartHourChangeForAll = (time: any) => {
     const startHour = time?.format("HH:mm:ss");
+    const currentDate = new Date();
+    const expectedStartTime = form.getFieldValue("expectedStartTime");
+
+    // Check if expectedStartTime is today
+    const isToday =
+      expectedStartTime &&
+      new Date(expectedStartTime).toDateString() === currentDate.toDateString();
+
+    // Define the minimum start time if today (current time + 30 minutes)
+    const minStartHour = new Date(currentDate.getTime() + 30 * 60000);
+
+    if (isToday) {
+      const [selectedHours, selectedMinutes] = startHour.split(":").map(Number);
+      const selectedTime = new Date();
+      selectedTime.setHours(selectedHours, selectedMinutes, 0, 0);
+
+      // Check if the selected start time is before the minimum allowed start time
+      if (selectedTime < minStartHour) {
+        message.warning("Giờ vào phải hơn hiện tại ít nhất 30 phút.");
+        return; // Prevent updating startHour if the condition fails
+      }
+    }
+
     setStartHourForAll(startHour);
 
     // Reset end hour when start hour changes
@@ -315,6 +382,33 @@ const CreateNewVisitList: React.FC = () => {
         render: (_: any, record: any, index: number) => (
           <span className="justify-center items-center">{index + 1}</span> // Display the index starting from 1
         ),
+      },
+      {
+        title: "Ảnh căn cước",
+        dataIndex: "visitorCredentialImage",
+        key: "visitorCredentialImage",
+        render: (image: string) => {
+          // Check if the image string is null, empty, or starts with the base64 prefix
+          if (!image) {
+            return null; // or return a placeholder, e.g., <div>No Image</div>
+          }
+
+          // Ensure the image string is in base64 format
+          const base64Image = image.startsWith("data:image/jpeg;base64,")
+            ? image
+            : `data:image/jpeg;base64,${image}`;
+
+          return (
+            <Image
+              src={base64Image}
+              alt="Visitor Credential"
+              width={50} // Set the width of the image
+              height={50} // Set the height of the image
+              preview={false} // Set to false if you don't want the preview functionality
+              style={{ objectFit: "cover" }} // Maintain the aspect ratio
+            />
+          );
+        },
       },
       {
         title: "Tên khách",
@@ -381,6 +475,7 @@ const CreateNewVisitList: React.FC = () => {
         startHour: visitor?.startHour,
         endHour: visitor?.endHour,
         credentialsCard: visitor?.credentialsCard,
+        visitorCredentialImage: visitor?.visitorCredentialImage,
       };
     });
 
@@ -474,28 +569,40 @@ const CreateNewVisitList: React.FC = () => {
                   Chọn giờ cho tất cả khách:
                 </h3>
                 <div className="flex space-x-4">
-                  {" "}
                   {/* Flex container for TimePickers */}
-                  <TimePicker
-                    format="HH:mm:ss"
-                    placeholder="Giờ vào"
-                    value={
-                      startHourForAll
-                        ? dayjs(startHourForAll, "HH:mm:ss")
-                        : null
-                    }
-                    className="w-full"
-                    onChange={handleStartHourChangeForAll}
-                  />
-                  <TimePicker
-                    format="HH:mm:ss"
-                    placeholder="Giờ ra"
-                    value={
-                      endHourForAll ? dayjs(endHourForAll, "HH:mm:ss") : null
-                    }
-                    className="w-full"
-                    onChange={handleEndHourChangeForAll}
-                  />
+                  <div className="flex flex-col w-full">
+                    <label className="mb-1" htmlFor="startHour">
+                      Giờ vào
+                    </label>
+                    <TimePicker
+                      id="startHour" // Add id for accessibility
+                      format="HH:mm:ss"
+                      placeholder="Giờ vào"
+                      value={
+                        startHourForAll
+                          ? dayjs(startHourForAll, "HH:mm:ss")
+                          : null
+                      }
+                      className="w-full"
+                      onChange={handleStartHourChangeForAll}
+                    />
+                  </div>
+
+                  <div className="flex flex-col w-full">
+                    <label className="mb-1" htmlFor="endHour">
+                      Giờ ra
+                    </label>
+                    <TimePicker
+                      id="endHour" // Add id for accessibility
+                      format="HH:mm:ss"
+                      placeholder="Giờ ra"
+                      value={
+                        endHourForAll ? dayjs(endHourForAll, "HH:mm:ss") : null
+                      }
+                      className="w-full"
+                      onChange={handleEndHourChangeForAll}
+                    />
+                  </div>
                 </div>
               </div>
             )}
@@ -505,7 +612,7 @@ const CreateNewVisitList: React.FC = () => {
       </Form>
 
       <div className="flex justify-between mt-4">
-        {currentStep == 0 && <Button onClick={() => navigate(-1)}>Hủy</Button>}
+        {currentStep == 0 && <Button onClick={handleCancel}>Hủy</Button>}
         {currentStep > 0 && <Button onClick={prev}>Trở về</Button>}
         {currentStep < 1 && (
           <Button type="primary" onClick={next}>
@@ -520,7 +627,7 @@ const CreateNewVisitList: React.FC = () => {
       </div>
 
       <Modal
-        title="Tìm kiếm khách "
+        title="Tìm kiếm khách"
         visible={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         footer={null}
@@ -535,74 +642,86 @@ const CreateNewVisitList: React.FC = () => {
             placeholder="Nhập mã căn cước hoặc giấy phép lái xe (12 số)"
           />
         </Form.Item>
-        <Table
-          dataSource={searchResults}
-          columns={[
-            {
-              title: "Ảnh căn cước",
-              dataIndex: "visitorCredentialImage",
-              key: "visitorCredentialImage",
-              render: (image: string) => {
-                // Check if the image string starts with 'data:image/jpeg;base64,'
-                const base64Image = image.startsWith("data:image/jpeg;base64,")
-                  ? image
-                  : `data:image/jpeg;base64,${image}`;
 
-                return (
-                  <Image
-                    src={base64Image}
-                    alt="Visitor Credential"
-                    width={50} // Set the width of the image
-                    height={50} // Set the height of the image
-                    preview={false} // Set to false if you don't want the preview functionality
-                    style={{ objectFit: "cover" }} // Maintain the aspect ratio
-                  />
-                );
+        {searchResults.length > 0 ? (
+          <Table
+            dataSource={searchResults}
+            columns={[
+              {
+                title: "Ảnh căn cước",
+                dataIndex: "visitorCredentialImage",
+                key: "visitorCredentialImage",
+                render: (image: string) => {
+                  const base64Image = image.startsWith(
+                    "data:image/jpeg;base64,"
+                  )
+                    ? image
+                    : `data:image/jpeg;base64,${image}`;
+
+                  return (
+                    <Image
+                      src={base64Image}
+                      alt="Visitor Credential"
+                      width={50}
+                      height={50}
+                      preview={false}
+                      style={{ objectFit: "cover" }}
+                    />
+                  );
+                },
               },
-            },
-            {
-              title: "Tên khách",
-              dataIndex: "visitorName",
-              key: "visitorName",
-            },
-            {
-              title: "Mã căn cước",
-              dataIndex: "credentialsCard",
-              key: "credentialsCard",
-            },
-
-            {
-              title: "Trạng thái",
-              dataIndex: "status",
-              key: "status",
-              render: (status: string) => {
-                let color = "green"; // Default color for active status
-                let displayText = "Hợp lệ"; // Default display text for active status
-
-                // Check the status and update the color and displayText accordingly
-                if (status === "Unactive") {
-                  color = "red";
-                  displayText = "Sổ đen";
-                }
-
-                return <Tag color={color}>{displayText}</Tag>;
+              {
+                title: "Tên khách",
+                dataIndex: "visitorName",
+                key: "visitorName",
               },
-            },
-            {
-              title: "Hành động",
-              dataIndex: "action",
-              key: "action",
-              render: (_, visitor) => (
-                <Button onClick={() => handleSelectVisitor(visitor)}>
-                  Chọn
-                </Button>
-              ),
-            },
-          ]}
-          rowKey="visitorId"
-          loading={isLoading}
-        />
+              {
+                title: "Mã căn cước",
+                dataIndex: "credentialsCard",
+                key: "credentialsCard",
+              },
+              {
+                title: "Trạng thái",
+                dataIndex: "status",
+                key: "status",
+                render: (status: string) => {
+                  let color = status === "Unactive" ? "red" : "green";
+                  let displayText = status === "Unactive" ? "Sổ đen" : "Hợp lệ";
+
+                  return <Tag color={color}>{displayText}</Tag>;
+                },
+              },
+              {
+                title: "Hành động",
+                dataIndex: "action",
+                key: "action",
+                render: (_, visitor) => (
+                  <Button onClick={() => handleSelectVisitor(visitor)}>
+                    Chọn
+                  </Button>
+                ),
+              },
+            ]}
+            rowKey="visitorId"
+            loading={isLoading}
+            pagination={false}
+          />
+        ) : (
+          <div style={{ textAlign: "center", margin: "20px 0" }}>
+            <p>Không tìm thấy khách nào.</p>
+            <br></br>
+            <Button type="primary" onClick={handleAddNewVisitor}>
+              Thêm khách mới
+            </Button>
+          </div>
+        )}
       </Modal>
+      {showCreateVisitor && (
+        <CreateNewVisitor
+          isModalVisible={showCreateVisitor}
+          setIsModalVisible={handleCloseCreateVisitor}
+        />
+      )}
     </div>
   );
 };

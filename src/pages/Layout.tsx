@@ -14,12 +14,18 @@ const LayoutPage = ({ children }: Props) => {
   const {
     token: { colorBgContainer },
   } = theme.useToken();
-  const userName = localStorage.getItem('userName');
-  const userRole = localStorage.getItem('userRole');
+  const userName = localStorage.getItem("userName");
+  const userRole = localStorage.getItem("userRole");
   return (
     <div>
       <Layout className="min-h-screen">
-        <Sider theme={"light"} trigger={null} collapsible collapsed={collapsed}>
+        <Sider
+          theme={"light"}
+          trigger={null}
+          collapsible
+          collapsed={collapsed}
+          style={{ width: 500 }} // Set the desired width for the Sider
+        >
           {collapsed ? (
             <div className="flex justify-center items-center p-2">
               <img
@@ -66,7 +72,9 @@ const LayoutPage = ({ children }: Props) => {
                     {userName}
                   </h1>
                 </div>
-                <h2 className="text-[#C2C2C2] text-xs font-inter">{userRole}</h2>
+                <h2 className="text-[#C2C2C2] text-xs font-inter">
+                  {userRole}
+                </h2>
               </div>
             </div>
             <div className="border-b-[1.5px] border-[#D0D0D0] mt-2 w-[80%] ml-3"></div>

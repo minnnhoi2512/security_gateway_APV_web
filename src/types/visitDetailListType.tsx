@@ -5,7 +5,7 @@ type VisitDetailList = {
   expectedEndTime?: Date | null;
   acceptLevel?: number;
   visitName?: string;
-  description?: Draft.DraftModel.Encoding.RawDraftContentState;
+  description?: string;
   visitQuantity: number;
   scheduleId: number;
   visitType?: string;
