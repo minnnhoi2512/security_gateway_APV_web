@@ -79,6 +79,9 @@ const CreateNewVisitList: React.FC = () => {
   const handleCloseCreateVisitor = () => {
     setShowCreateVisitor(false);
   };
+  const handleVisitorCreated = (visitorData: any) => {
+    setSearchResults([visitorData]);
+  };
   useEffect(() => {
     // Clear the timeout on every input change
     if (timeoutRef.current) {
@@ -383,33 +386,33 @@ const CreateNewVisitList: React.FC = () => {
           <span className="justify-center items-center">{index + 1}</span> // Display the index starting from 1
         ),
       },
-      {
-        title: "Ảnh căn cước",
-        dataIndex: "visitorCredentialImage",
-        key: "visitorCredentialImage",
-        render: (image: string) => {
-          // Check if the image string is null, empty, or starts with the base64 prefix
-          if (!image) {
-            return null; // or return a placeholder, e.g., <div>No Image</div>
-          }
+      // {
+      //   title: "Ảnh căn cước",
+      //   dataIndex: "visitorCredentialImage",
+      //   key: "visitorCredentialImage",
+      //   render: (image: string) => {
+      //     // Check if the image string is null, empty, or starts with the base64 prefix
+      //     if (!image) {
+      //       return null; // or return a placeholder, e.g., <div>No Image</div>
+      //     }
 
-          // Ensure the image string is in base64 format
-          const base64Image = image.startsWith("data:image/jpeg;base64,")
-            ? image
-            : `data:image/jpeg;base64,${image}`;
+      //     // Ensure the image string is in base64 format
+      //     const base64Image = image.startsWith("data:image/jpeg;base64,")
+      //       ? image
+      //       : `data:image/jpeg;base64,${image}`;
 
-          return (
-            <Image
-              src={base64Image}
-              alt="Visitor Credential"
-              width={50} // Set the width of the image
-              height={50} // Set the height of the image
-              preview={false} // Set to false if you don't want the preview functionality
-              style={{ objectFit: "cover" }} // Maintain the aspect ratio
-            />
-          );
-        },
-      },
+      //     return (
+      //       <Image
+      //         src={base64Image}
+      //         alt="Visitor Credential"
+      //         width={50} // Set the width of the image
+      //         height={50} // Set the height of the image
+      //         preview={false} // Set to false if you don't want the preview functionality
+      //         style={{ objectFit: "cover" }} // Maintain the aspect ratio
+      //       />
+      //     );
+      //   },
+      // },
       {
         title: "Tên khách",
         dataIndex: "visitorName",
@@ -647,29 +650,29 @@ const CreateNewVisitList: React.FC = () => {
           <Table
             dataSource={searchResults}
             columns={[
-              {
-                title: "Ảnh căn cước",
-                dataIndex: "visitorCredentialImage",
-                key: "visitorCredentialImage",
-                render: (image: string) => {
-                  const base64Image = image.startsWith(
-                    "data:image/jpeg;base64,"
-                  )
-                    ? image
-                    : `data:image/jpeg;base64,${image}`;
+              // {
+              //   title: "Ảnh căn cước",
+              //   dataIndex: "visitorCredentialImage",
+              //   key: "visitorCredentialImage",
+              //   render: (image: string) => {
+              //     const base64Image = image.startsWith(
+              //       "data:image/jpeg;base64,"
+              //     )
+              //       ? image
+              //       : `data:image/jpeg;base64,${image}`;
 
-                  return (
-                    <Image
-                      src={base64Image}
-                      alt="Visitor Credential"
-                      width={50}
-                      height={50}
-                      preview={false}
-                      style={{ objectFit: "cover" }}
-                    />
-                  );
-                },
-              },
+              //     return (
+              //       <Image
+              //         src={base64Image}
+              //         alt="Visitor Credential"
+              //         width={50}
+              //         height={50}
+              //         preview={false}
+              //         style={{ objectFit: "cover" }}
+              //       />
+              //     );
+              //   },
+              // },
               {
                 title: "Tên khách",
                 dataIndex: "visitorName",
@@ -710,9 +713,11 @@ const CreateNewVisitList: React.FC = () => {
           <div style={{ textAlign: "center", margin: "20px 0" }}>
             <p>Không tìm thấy khách nào.</p>
             <br></br>
-            <Button type="primary" onClick={handleAddNewVisitor}>
-              Thêm khách mới
-            </Button>
+            {selectedVisitors.length < visitQuantity && (
+              <Button type="primary" onClick={handleAddNewVisitor}>
+                Thêm khách mới
+              </Button>
+            )}
           </div>
         )}
       </Modal>
@@ -720,6 +725,7 @@ const CreateNewVisitList: React.FC = () => {
         <CreateNewVisitor
           isModalVisible={showCreateVisitor}
           setIsModalVisible={handleCloseCreateVisitor}
+          onVisitorCreated={handleVisitorCreated}
         />
       )}
     </div>

@@ -1,19 +1,10 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import baseAPI from "../api/baseAPI";
-import { getToken } from "../utils/jwtToken";
 
 export const visitorAPI = createApi({
   reducerPath: "visitorAPI",
   baseQuery: fetchBaseQuery({
     baseUrl: `${baseAPI}/api/Visitor`,
-    prepareHeaders: (headers) => {
-      const token = getToken();
-      if (token) {
-        headers.set("Authorization", `Bearer ${token}`);
-      }
-      headers.set("Content-Type", "application/json"); // Default content type
-      return headers;
-    },
   }),
   endpoints: (builder) => ({
     getAllVisitors: builder.query<
@@ -37,34 +28,42 @@ export const visitorAPI = createApi({
         visitorCredentialImageFromRequest: File;
       }
     >({
-      query: (newVisitor) => {
+      query: ({
+        visitorName,
+        companyName,
+        phoneNumber,
+        credentialsCard,
+        credentialCardTypeId,
+        visitorCredentialImageFromRequest,
+      }) => {
         const formData = new FormData();
-        formData.append("visitorName", newVisitor.visitorName);
-        formData.append("companyName", newVisitor.companyName);
-        formData.append("phoneNumber", newVisitor.phoneNumber);
-        formData.append("credentialsCard", newVisitor.credentialsCard);
+        formData.append("VisitorName", visitorName);
+        formData.append("CompanyName", companyName);
+        formData.append("PhoneNumber", phoneNumber);
+        formData.append("CredentialsCard", credentialsCard);
         formData.append(
-          "credentialCardTypeId",
-          newVisitor.credentialCardTypeId.toString()
-        );
-        console.log(
-          "Selected file: ",
-          newVisitor.visitorCredentialImageFromRequest
+          "CredentialCardTypeId",
+          credentialCardTypeId.toString()
         );
         formData.append(
-          "visitorCredentialImageFromRequest",
-          newVisitor.visitorCredentialImageFromRequest,
-          newVisitor.visitorCredentialImageFromRequest.name
+          "VisitorCredentialImageFromRequest",
+          visitorCredentialImageFromRequest,
+          visitorCredentialImageFromRequest.name
         );
 
+        // Log all entries in FormData
+        // for (let [key, value] of formData.entries()) {
+        //   console.log(key, value);
+        // }
+
         return {
-          url: "/",
+          url: "/", // Ensure this matches the endpoint
           method: "POST",
-          data: formData,
-          headers: { "Content-Type": "multipart/form-data" },
+          body: formData,
         };
       },
     }),
+
     updateVisitor: builder.mutation<
       void,
       {
@@ -88,36 +87,35 @@ export const visitorAPI = createApi({
           updatedVisitor.credentialCardTypeId.toString()
         );
 
-        // Nếu có hình ảnh, thêm vào `FormData`
         if (updatedVisitor.visitorCredentialImageFromRequest) {
           formData.append(
             "visitorCredentialImageFromRequest",
             updatedVisitor.visitorCredentialImageFromRequest
           );
         }
-    
+
         return {
           url: `/${id}`,
           method: "PUT",
           body: formData,
         };
       },
+      extraOptions: {
+        skipDefaultHeaders: true,
+      },
     }),
-    
     deleteVisitor: builder.mutation<void, { id: number }>({
       query: ({ id }) => ({
         url: `${id}`,
         method: "DELETE",
       }),
     }),
-    getVisitorByCredentialCard: builder.query<any, { CredentialCard: string }>(
-      {
-        query: ({ CredentialCard }) => ({
-          url: `/CredentialCard/${CredentialCard}`,
-          method: "GET",
-        }),
-      }
-    ),
+    getVisitorByCredentialCard: builder.query<any, { CredentialCard: string }>({
+      query: ({ CredentialCard }) => ({
+        url: `/CredentialCard/${CredentialCard}`,
+        method: "GET",
+      }),
+    }),
   }),
 });
 
