@@ -80,6 +80,7 @@ const CreateNewVisitList: React.FC = () => {
     setShowCreateVisitor(false);
   };
   const handleVisitorCreated = (visitorData: any) => {
+    console.log(visitorData);
     setSearchResults([visitorData]);
   };
   useEffect(() => {
@@ -386,33 +387,33 @@ const CreateNewVisitList: React.FC = () => {
           <span className="justify-center items-center">{index + 1}</span> // Display the index starting from 1
         ),
       },
-      // {
-      //   title: "Ảnh căn cước",
-      //   dataIndex: "visitorCredentialImage",
-      //   key: "visitorCredentialImage",
-      //   render: (image: string) => {
-      //     // Check if the image string is null, empty, or starts with the base64 prefix
-      //     if (!image) {
-      //       return null; // or return a placeholder, e.g., <div>No Image</div>
-      //     }
+      {
+        title: "Ảnh căn cước",
+        dataIndex: "visitorCredentialImage",
+        key: "visitorCredentialImage",
+        render: (image: string) => {
+          // Check if the image string is null, empty, or starts with the base64 prefix
+          if (!image) {
+            return null; // or return a placeholder, e.g., <div>No Image</div>
+          }
 
-      //     // Ensure the image string is in base64 format
-      //     const base64Image = image.startsWith("data:image/jpeg;base64,")
-      //       ? image
-      //       : `data:image/jpeg;base64,${image}`;
+          // Ensure the image string is in base64 format
+          const base64Image = image.startsWith("data:image/jpeg;base64,")
+            ? image
+            : `data:image/jpeg;base64,${image}`;
 
-      //     return (
-      //       <Image
-      //         src={base64Image}
-      //         alt="Visitor Credential"
-      //         width={50} // Set the width of the image
-      //         height={50} // Set the height of the image
-      //         preview={false} // Set to false if you don't want the preview functionality
-      //         style={{ objectFit: "cover" }} // Maintain the aspect ratio
-      //       />
-      //     );
-      //   },
-      // },
+          return (
+            <Image
+              src={base64Image}
+              alt="Visitor Credential"
+              width={50} // Set the width of the image
+              height={50} // Set the height of the image
+              preview={false} // Set to false if you don't want the preview functionality
+              style={{ objectFit: "cover" }} // Maintain the aspect ratio
+            />
+          );
+        },
+      },
       {
         title: "Tên khách",
         dataIndex: "visitorName",
@@ -636,8 +637,8 @@ const CreateNewVisitList: React.FC = () => {
         footer={null}
       >
         <Form.Item
-          validateStatus={credentialCard.length > 12 ? "error" : ""}
-          help={credentialCard.length > 12 ? "Không được vượt quá 12 số." : ""}
+          validateStatus={credentialCard.length > 12  || (credentialCard.length < 12 && credentialCard.length > 0 ) ? "error" : ""}
+          help={credentialCard.length > 12 || (credentialCard.length < 12 && credentialCard.length > 0 )?  "Cần đúng 12 số." : ""}
         >
           <Input
             value={credentialCard}
@@ -650,29 +651,29 @@ const CreateNewVisitList: React.FC = () => {
           <Table
             dataSource={searchResults}
             columns={[
-              // {
-              //   title: "Ảnh căn cước",
-              //   dataIndex: "visitorCredentialImage",
-              //   key: "visitorCredentialImage",
-              //   render: (image: string) => {
-              //     const base64Image = image.startsWith(
-              //       "data:image/jpeg;base64,"
-              //     )
-              //       ? image
-              //       : `data:image/jpeg;base64,${image}`;
+              {
+                title: "Ảnh căn cước",
+                dataIndex: "visitorCredentialImage",
+                key: "visitorCredentialImage",
+                render: (image: string) => {
+                  const base64Image = image.startsWith(
+                    "data:image/jpeg;base64,"
+                  )
+                    ? image
+                    : `data:image/jpeg;base64,${image}`;
 
-              //     return (
-              //       <Image
-              //         src={base64Image}
-              //         alt="Visitor Credential"
-              //         width={50}
-              //         height={50}
-              //         preview={false}
-              //         style={{ objectFit: "cover" }}
-              //       />
-              //     );
-              //   },
-              // },
+                  return (
+                    <Image
+                      src={base64Image}
+                      alt="Visitor Credential"
+                      width={50}
+                      height={50}
+                      preview={false}
+                      style={{ objectFit: "cover" }}
+                    />
+                  );
+                },
+              },
               {
                 title: "Tên khách",
                 dataIndex: "visitorName",

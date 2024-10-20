@@ -11,6 +11,7 @@ import {
   useGetListVisitByDepartmentManagerIdQuery,
   useGetListVisitQuery,
 } from "../services/visitList.service";
+import CustomPagination from "../components/Pagination";
 
 const CustomerVisit = () => {
   const userRole = localStorage.getItem("userRole");
@@ -18,9 +19,11 @@ const CustomerVisit = () => {
   const navigate = useNavigate();
   const [searchText, setSearchText] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("Active");
-
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  let data: any = [];
+  const totalPages = Math.ceil(data.length / pageSize);
   // Fetching data using the query
-  let data = [];
   let isLoading = true;
   let refetch;
 
@@ -65,6 +68,17 @@ const CustomerVisit = () => {
     refetch = refetchAll;
   }
 
+  // const handlePageChange = (page: number, size: number) => {
+  //   setCurrentPage(page);
+  //   // Call your API with the new page number and size
+  //   refetch({ pageNumber: page, pageSize: size });
+  // };
+  // const handlePageSizeChange = (size: number) => {
+  //   setPageSize(size);
+  //   setCurrentPage(1); // Reset to the first page when page size changes
+  //   // Call your API with updated page size
+  //   refetch({ pageNumber: 1, pageSize: size });
+  // };
   const columns: TableProps<VisitListType>["columns"] = [
     {
       title: "Tiêu đề",
@@ -231,21 +245,28 @@ const CustomerVisit = () => {
           Đang đợi
         </Button>
       </Space>
-      <Spin spinning={isLoading}>
-        <Table
-          columns={columns}
-          dataSource={data}
-          pagination={{
-            total: data?.length,
-            showSizeChanger: true,
-            pageSizeOptions: ["5", "10", "20"],
-            hideOnSinglePage: false,
-            size: "small",
-          }}
-          rowKey="visitId"
-          bordered
-        />
-      </Spin>
+
+      <Table
+        columns={columns}
+        dataSource={data}
+        pagination={{
+          total: data?.length,
+          showSizeChanger: true,
+          pageSizeOptions: ["5", "10", "20"],
+          hideOnSinglePage: false,
+          size: "small",
+        }}
+        rowKey="visitId"
+        bordered
+        loading={isLoading}
+      />
+      {/* <CustomPagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        pageSize={pageSize}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
+      /> */}
     </Content>
   );
 };

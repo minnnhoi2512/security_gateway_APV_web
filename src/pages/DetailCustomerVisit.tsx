@@ -1,5 +1,5 @@
 import React from "react";
-import { Layout, Table, Button, Row, Col, Input, Tag, Spin } from "antd";
+import { Layout, Table, Button, Row, Col, Input, Tag } from "antd";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   CalendarOutlined,
@@ -74,15 +74,6 @@ const DetailCustomerVisit: React.FC = () => {
     },
   ];
 
-  if (isLoading) {
-    return (
-      <Layout className="min-h-screen">
-        <Content className="p-6 flex justify-center items-center h-screen">
-          <Spin size="large" /> {/* Use Ant Design's Spin component for loading */}
-        </Content>
-      </Layout>
-    );
-  }
 
   return (
     <Layout className="min-h-screen">
@@ -150,6 +141,7 @@ const DetailCustomerVisit: React.FC = () => {
           }}
           rowKey="visitorName"
           bordered
+          loading={isLoading}
         />
         {/* Back button */}
         <div className="mt-6">
