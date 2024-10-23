@@ -1,4 +1,4 @@
-// slices/departmentSlice.ts
+
 import { createSlice } from "@reduxjs/toolkit";
 import DepartmentType from "../../types/DepartmentType";
 
@@ -18,5 +18,5 @@ const departmentSlice = createSlice({
     },
 });
 
- const departmentReducer = departmentSlice.reducer;
+const departmentReducer = departmentSlice.reducer;
 export default departmentReducer;

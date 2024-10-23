@@ -1,9 +1,13 @@
 import {
+  HomeOutlined,
+  TeamOutlined,
+  ContactsOutlined,
+  SolutionOutlined,
+  FileTextOutlined,
   CalendarOutlined,
-  DashboardOutlined,
   HistoryOutlined,
-  UserOutlined,
-  WechatWorkOutlined,
+  MessageOutlined,
+  NotificationOutlined,
   LogoutOutlined,
 } from "@ant-design/icons";
 import { Menu } from "antd";
@@ -16,12 +20,12 @@ const MenuNav = () => {
   });
 
   const navigate = useNavigate();
-  const userRole = localStorage.getItem("userRole"); // Get userRole from localStorage
+  const userRole = localStorage.getItem("userRole"); 
+
   const handleMenuClick = ({ key }: { key: string }) => {
     if (key === "") {
-      // Handle logout logic (e.g., clear tokens, etc.)
       localStorage.clear();
-      navigate("/"); // Redirect to login on logout
+      navigate("/"); 
     } else {
       navigate(`/${key}`);
       setSelectedKey(key);
@@ -32,140 +36,71 @@ const MenuNav = () => {
     sessionStorage.setItem("selectedKey", selectedKey);
   }, [selectedKey]);
 
-  // Define all menu items
   const allMenuItems = [
-    {
-      key: "dashboard",
-      icon: <DashboardOutlined />,
-      label: "Thông tin chung",
-    },
-    {
-      key: "manager",
-      icon: <UserOutlined />,
-      label: "Quản lý",
-    },
-    {
-      key: "departmentManager",
-      icon: <UserOutlined />,
-      label: "Quản lý phòng ban",
-    },
-    {
-      key: "departManager",
-      icon: <UserOutlined />,
-      label: "Phòng ban",
-    },
-    {
-      key: "security",
-      icon: <UserOutlined />,
-      label: "Bảo vệ",
-    },
-    {
-      key: "customerVisit",
-      icon: <UserOutlined />,
-      label: "Danh sách khách có lịch hẹn",
-    },
-    {
-      key: 'visitorManager',
-      icon: <UserOutlined />,
-      label: 'Danh sách nhóm khách',
-    },
-    {
-      key: "staff",
-      icon: <UserOutlined />,
-      label: "Danh sách nhân viên",
-    },
-    {
-      key: "card",
-      icon: <UserOutlined />,
-      label: "Danh sách thẻ",
-    },
-    {
-      key: "gate",
-      icon: <UserOutlined />,
-      label: "Danh sách cổng",
-    },
-    {
-      key: "schedule",
-      icon: <UserOutlined />,
-      label: "Tiến trình hằng ngày",
-    },
-    {
-      key: "calendar",
-      icon: <CalendarOutlined />,
-      label: "Lịch trình",
-    },
-    {
-      key: "history",
-      icon: <HistoryOutlined />,
-      label: "Lịch sử",
-    },
-    {
-      key: "chat",
-      icon: <WechatWorkOutlined />,
-      label: "Nhắn tin",
-    },
-    {
-      key: "notification-test",
-      icon: <WechatWorkOutlined />,
-      label: "Thoong baos -test",
-    },
-    {
-      key: "",
-      icon: <LogoutOutlined />,
-      label: "Đăng xuất",
-    },
+    { key: "dashboard", icon: <HomeOutlined />, label: "Thông tin chung" },
+    { key: "visitorManager", icon: <TeamOutlined />, label: "Nhóm khách" },
+    { key: "customerVisit", icon: <ContactsOutlined />, label: "Danh sách khách" },
+    { key: "staff", icon: <SolutionOutlined />, label: "Danh sách nhân viên" },
+    { key: "schedule", icon: <FileTextOutlined />, label: "Tiến trình" },
+    { key: "calendar", icon: <CalendarOutlined />, label: "Lịch trình" },
+    { key: "history", icon: <HistoryOutlined />, label: "Lịch sử" },
+    { key: "chat", icon: <MessageOutlined />, label: "Nhắn tin" },
+    { key: "notification-test", icon: <NotificationOutlined />, label: "Thông báo - test" },
+    { key: "", icon: <LogoutOutlined />, label: "Đăng xuất" },
   ];
 
-  // Filter menu items based on the userRole
   const filteredMenuItems = allMenuItems.filter((item) => {
-    // Exclude certain items if the userRole is 'Security'
     if (userRole === "Security") {
-      return ![
-        "dashboard",
-        "manager",
-        "departmentManager",
-        "security",
-        "card",
-        "gate",
-        "project",
-        "history",
-      ].includes(item.key);
+      return !["dashboard", "manager", "departmentManager", "security", "card", "gate", "project", "history"].includes(item.key);
     } else if (userRole === "Staff" || userRole === "DepartmentManager") {
-      return ![
-        "dashboard",
-        "manager",
-        "security",
-        "departmentManager",
-        "departManager",
-        "project",
-        "history",
-        "card",
-        "gate",
-      ].includes(item.key);
+      return !["dashboard", "manager", "security", "departmentManager", "departManager", "project", "history", "card", "gate"].includes(item.key);
     } else if (userRole === "Manager") {
-      return ![
-        "dashboard",
-        "project",
-        "history",
-        "manager",
-        "staff",
-      ].includes(item.key);
+      return !["dashboard", "project", "history", "manager", "staff"].includes(item.key);
     }
-    return true; // Include all items for other roles
+    return true;
   });
 
+  const menuStyle = {
+    backgroundColor: "#34495e",
+    color: "#ffffff",
+  };
+
+  const menuItemStyle = {
+    transition: "background-color 0.3s ease-in-out",
+    fontSize: "16px",
+    borderRadius: "8px",
+  };
+  
+  const menuItemSelectedStyle = {
+    backgroundColor: "#5E84A2",
+    fontWeight: "600",
+  };
+
   return (
-    <div
-      style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
-    >
+    <div className="flex flex-col min-h-screen">
       <Menu
-        className="mt-[8%]"
-        theme="light"
+        theme="dark"
         mode="inline"
-        defaultSelectedKeys={["1"]}
+        selectedKeys={[selectedKey]}
         onClick={handleMenuClick}
-        items={filteredMenuItems} // Use filtered items based on userRole
-      />
+        style={menuStyle}
+      >
+        {filteredMenuItems.map((item) => (
+          <Menu.Item
+            key={item.key}
+            icon={item.icon}
+            style={{
+              ...menuItemStyle,
+              ...(selectedKey === item.key ? menuItemSelectedStyle : {}),
+            }}
+            className={`menu-item ${
+              selectedKey === item.key ? "selected" : ""
+            }`}
+          >
+            {item.label}
+          </Menu.Item>
+        ))}
+      </Menu>
     </div>
   );
 };

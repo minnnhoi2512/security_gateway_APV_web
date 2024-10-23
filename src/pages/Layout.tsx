@@ -1,110 +1,92 @@
 import React, { useState } from "react";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
-import "@fontsource/inter";
-
-import { Button, Layout, theme } from "antd";
+import { Button, Layout } from "antd";
+import "@fontsource/inter"; 
 import MenuNav from "../UI/MenuNav";
+
 type Props = {
   children: React.ReactNode;
 };
+
 const { Header, Sider, Content } = Layout;
 
 const LayoutPage = ({ children }: Props) => {
   const [collapsed, setCollapsed] = useState(false);
-  const {
-    token: { colorBgContainer },
-  } = theme.useToken();
-  const userName = localStorage.getItem('userName');
-  const userRole = localStorage.getItem('userRole');
+
+  const userName = localStorage.getItem("userName") || "User";
+  const userRole = localStorage.getItem("userRole") || "Role";
+
+  const sharedBackgroundColor = "#34495e"; // Đảm bảo màu nền nhất quán
+
   return (
-    <div>
-      <Layout className="min-h-screen">
-        <Sider theme={"light"} trigger={null} collapsible collapsed={collapsed}>
-          {collapsed ? (
-            <div className="flex justify-center items-center p-2">
+    <Layout style={{ minHeight: "100vh" }}>
+      <Sider
+        trigger={null}
+        collapsible
+        collapsed={collapsed}
+        width={240}
+        style={{ backgroundColor: sharedBackgroundColor }}
+      >
+        {/* Logo và chữ */}
+        <div className="flex flex-col items-center p-4">
+          <img
+            className="w-[50px] h-[50px] mb-2"
+            src="https://vietnetco.vn/wp-content/uploads/2020/04/Secure-Web-Gateway-01-1024x844.png"
+            alt="Logo"
+          />
+          {!collapsed && (
+            <div className="text-center">
+              <h1 className="text-white text-lg font-bold leading-tight">
+                SECURITY GATE
+              </h1>
+              <h2 className="text-white text-sm">APV</h2>
+            </div>
+          )}
+        </div>
+
+        {/* User thông tin */}
+        {!collapsed && (
+          <div className="px-4 py-2">
+            <div className="flex items-center mb-4">
               <img
-                className="w-[60px] h-[50px]"
-                src="https://vietnetco.vn/wp-content/uploads/2020/04/Secure-Web-Gateway-01-1024x844.png"
-                alt="Logo"
+                className="w-[40px] h-[40px] rounded-full"
+                src="https://thanhnien.mediacdn.vn/Uploaded/haoph/2021_10_21/jack-va-thien-an-5805.jpeg"
+                alt="User"
               />
-            </div>
-          ) : null}
-
-          {/* Content that will be shown when not collapsed */}
-          <div
-            className={`${
-              collapsed ? "hidden" : "block"
-            } transition-all duration-300`}
-          >
-            <div className="grid grid-cols-3 mt-6 p-1 justify-center gap-1">
-              <div className="col-span-1">
-                <img
-                  className="w-[60px] h-[50px]"
-                  src="https://vietnetco.vn/wp-content/uploads/2020/04/Secure-Web-Gateway-01-1024x844.png"
-                  alt="Secure Web Gateway"
-                />
-              </div>
-              <div className="col-span-2 mt-[6px]">
-                <h1 className="text-[#184DD1] font-bold font-inter">
-                  SECURITY GATE
-                </h1>
-                <h1 className="text-[#184DD1] font-bold font-inter">APV</h1>
+              <div className="ml-3">
+                <h1 className="text-sm font-medium text-white">{userName}</h1>
+                <h2 className="text-xs text-gray-300">{userRole}</h2>
               </div>
             </div>
-
-            <div className="flex items-center mt-4 p-1">
-              <div className="flex-shrink-0">
-                <img
-                  className="w-[30px] h-[30px] rounded-full ml-4"
-                  src="https://thanhnien.mediacdn.vn/Uploaded/haoph/2021_10_21/jack-va-thien-an-5805.jpeg"
-                  alt="Thien An"
-                />
-              </div>
-              <div className="ml-2">
-                <div>
-                  <h1 className="text-[#000000] text-sm font-inter">
-                    {userName}
-                  </h1>
-                </div>
-                <h2 className="text-[#C2C2C2] text-xs font-inter">{userRole}</h2>
-              </div>
-            </div>
-            <div className="border-b-[1.5px] border-[#D0D0D0] mt-2 w-[80%] ml-3"></div>
+            <div className="border-t border-gray-400"></div>
           </div>
-          <MenuNav />
-        </Sider>
-        <Layout>
-          <Header
-            className="h-[100px]"
-            style={{ background: colorBgContainer }}
-          >
-            <Button
-              className="justify-start"
-              type="text"
-              icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-              onClick={() => setCollapsed(!collapsed)}
-              style={{
-                fontSize: "14px",
-                width: 40,
-                height: 40,
-              }}
-            />
-          </Header>
-          <Content
-            className="m-3"
-            // style={{
-            //   margin: "24px 16px",
-            //   padding: 24,
-            //   minHeight: 280,
-            //   background: colorBgContainer,
-            //   borderRadius: borderRadiusLG,
-            // }}
-          >
-            {children}
-          </Content>
-        </Layout>
+        )}
+
+        <MenuNav />
+      </Sider>
+
+      <Layout>
+        <Header
+          className="flex items-center"
+          style={{
+            backgroundColor: sharedBackgroundColor,
+            paddingLeft: 20,
+          }}
+        >
+          <Button
+            type="text"
+            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+            onClick={() => setCollapsed(!collapsed)}
+            className="text-white"
+            style={{ fontSize: "18px" }}
+          />
+        </Header>
+
+        <Content className="m-6 p-6 bg-white rounded shadow min-h-[80vh]">
+          {children}
+        </Content>
       </Layout>
-    </div>
+    </Layout>
   );
 };
 

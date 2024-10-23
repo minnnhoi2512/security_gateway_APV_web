@@ -26,42 +26,33 @@ export const visitorAPI = createApi({
         params: { pageNumber, pageSize },
       }),
     }),
-    createVisitor: builder.mutation<
-      void,
-      {
-        visitorName: string;
-        companyName: string;
-        phoneNumber: string;
-        credentialsCard: string;
-        credentialCardTypeId: number;
-        visitorCredentialImageFromRequest: File;
-      }
-    >({
+   createVisitor: builder.mutation<void, { 
+      visitorName: string; 
+      companyName: string; 
+      phoneNumber: string; 
+      credentialsCard: string; 
+      credentialCardTypeId: number; 
+      visitorCredentialImageFromRequest: File 
+    }>({
       query: (newVisitor) => {
         const formData = new FormData();
-        formData.append("visitorName", newVisitor.visitorName);
-        formData.append("companyName", newVisitor.companyName);
-        formData.append("phoneNumber", newVisitor.phoneNumber);
-        formData.append("credentialsCard", newVisitor.credentialsCard);
-        formData.append(
-          "credentialCardTypeId",
-          newVisitor.credentialCardTypeId.toString()
-        );
-        console.log(
-          "Selected file: ",
-          newVisitor.visitorCredentialImageFromRequest
-        );
-        formData.append(
-          "visitorCredentialImageFromRequest",
-          newVisitor.visitorCredentialImageFromRequest,
-          newVisitor.visitorCredentialImageFromRequest.name
-        );
+        formData.append("VisitorName", newVisitor.visitorName);
+        formData.append("CompanyName", newVisitor.companyName);
+        formData.append("PhoneNumber", newVisitor.phoneNumber);
+        formData.append("CredentialsCard", newVisitor.credentialsCard);
+        formData.append("CredentialCardTypeId", newVisitor.credentialCardTypeId.toString());
+
+        // Đảm bảo file tồn tại
+        if (newVisitor.visitorCredentialImageFromRequest) {
+          formData.append("VisitorCredentialImageFromRequest", newVisitor.visitorCredentialImageFromRequest, newVisitor.visitorCredentialImageFromRequest.name);
+        } else {
+          console.error("Không có file hình ảnh nào được chọn.");
+        }
 
         return {
           url: "/",
           method: "POST",
-          data: formData,
-          headers: { "Content-Type": "multipart/form-data" },
+          body: formData,
         };
       },
     }),

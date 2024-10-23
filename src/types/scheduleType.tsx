@@ -7,15 +7,40 @@ type Schedule = {
   description: string;
   status: boolean;
   duration?: number;
+  title?: string;
+  note?: string;
+  deadlineTime: Date;
+  assignToId?: number;
+  assignFromId?: number;
+
   scheduleType?: {
     description?: string;
     scheduleTypeId?: number;
     scheduleTypeName?: string;
     status?: boolean;
   };
+
   createById?: number;
   createBy?: {
     userId?: number;
+    userName?: string; // Cần thêm nếu lấy thông tin người tạo
+    fullName?: string;
+    email?: string;
+    phoneNumber?: string;
+    image?: string;
+    createdDate?: Date;
+    updatedDate?: Date;
+    status?: string; // Trạng thái của người tạo
+  };
+
+  assignTo?: {
+    userId?: number;
+    userName?: string;
+  };
+
+  assignFrom?: {
+    userId?: number;
+    userName?: string;
   };
 };
 

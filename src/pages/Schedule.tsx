@@ -1,165 +1,285 @@
-import { Layout, Button, Table, Input, Tag, Modal, message } from "antd";
+import {
+  Layout,
+  Button,
+  Table,
+  Input,
+  Tag,
+  Modal,
+  Form,
+  Select,
+  DatePicker,
+  message,
+  Row,
+  Col,
+  Divider,
+} from "antd";
+import {
+  SearchOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  UserAddOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import moment from "moment";
+import type { ColumnsType } from "antd/es/table";
+
 import {
   useGetListScheduleQuery,
   useDeleteScheduleMutation,
+  useAssignScheduleMutation,
 } from "../services/schedule.service";
+import { useGetListUsersByDepartmentIdQuery } from "../services/user.service";
 import ScheduleType from "../types/ScheduleType";
-import { useNavigate } from "react-router-dom";
+import UserType from "../types/UserType";
 
 const { Content } = Layout;
+const { Option } = Select;
 
 const ScheduleManager = () => {
-  const [searchText, setSearchText] = useState<string>("");
-  const userId = localStorage.getItem("userId");
-  const navigate = useNavigate();
-
-  if (userId === null) return null; // Return null if userId is not found
-
-  // Fetching data using the query
-  const { data, refetch, isLoading } = useGetListScheduleQuery({
-    pageNumber: -1,
-    pageSize: -1,
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [assignData, setAssignData] = useState({
+    title: "",
+    description: "",
+    note: "",
+    deadlineTime: "",
+    scheduleId: 0,
+    assignToId: 0,
+    assignFromId: parseInt(localStorage.getItem("userId") || "0"),
   });
 
-  const [deleteSchedule] = useDeleteScheduleMutation();
+  const [departmentId] = useState<number>(1);
+  const [searchText, setSearchText] = useState<string>("");
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchText(e.target.value);
-  };
+  const navigate = useNavigate();
+  const { data: schedules, refetch, isLoading } = useGetListScheduleQuery({
+    pageNumber: 1,
+    pageSize: 10,
+  });
 
-  const handleCreateSchedule = () => {
-    navigate("/createNewSchedule");
-  };
-
-  const handleEditSchedule = (record: ScheduleType) => {
-    navigate(`/detailSchedule/${record.scheduleId}`, {
-      state: { selectedSchedule: record },
+  const { data: users = [], isLoading: usersLoading } =
+    useGetListUsersByDepartmentIdQuery({
+      departmentId,
+      pageNumber: 1,
+      pageSize: 10,
     });
-  };
+
+  const [deleteSchedule] = useDeleteScheduleMutation();
+  const [assignSchedule] = useAssignScheduleMutation();
 
   const handleDeleteSchedule = (scheduleId: number) => {
     Modal.confirm({
       title: "Xác nhận xóa",
       content: "Bạn có chắc chắn muốn xóa dự án này?",
       okText: "Có",
-      okType: "danger",
       cancelText: "Không",
+      okType: "danger",
       onOk: async () => {
         try {
           await deleteSchedule(scheduleId).unwrap();
           message.success("Dự án đã được xóa thành công!");
           refetch();
         } catch (error) {
-          message.error("Đã xảy ra lỗi khi xóa dự án.");
-          console.error(error);
+          message.error("Có lỗi xảy ra khi xóa dự án.");
         }
       },
     });
   };
 
-  const columns = [
+  const handleAssignUser = (scheduleId?: number) => {
+    if (!scheduleId) {
+      message.error("Lỗi: Không tìm thấy ID dự án.");
+      return;
+    }
+    setAssignData((prev) => ({ ...prev, scheduleId }));
+    setIsModalVisible(true);
+  };
+
+  const handleDateChange = (date: moment.Moment | null) => {
+    setAssignData((prev) => ({
+      ...prev,
+      deadlineTime: date ? date.toISOString() : "",
+    }));
+  };
+
+  const handleAssignSubmit = async () => {
+    try {
+      const payload = { ...assignData };
+      console.log("Payload gửi:", payload); // Kiểm tra payload
+      await assignSchedule(payload).unwrap();
+      message.success("Phân công thành công!");
+      setIsModalVisible(false);
+      refetch();
+    } catch (error) {
+      message.error("Có lỗi xảy ra khi phân công.");
+    }
+  };
+
+  const columns: ColumnsType<ScheduleType> = [
     {
       title: "Tiêu đề",
       dataIndex: "scheduleName",
       key: "scheduleName",
-      sorter: (a: ScheduleType, b: ScheduleType) =>
-        a.scheduleName.localeCompare(b.scheduleName),
-      render: (text: any) => <div className="flex items-center">{text}</div>,
+      align: "center",
+      sorter: (a, b) => a.scheduleName.localeCompare(b.scheduleName),
     },
     {
-      title: "Kéo dài",
+      title: "Kéo dài (ngày)",
       dataIndex: "duration",
       key: "duration",
-      render: (text: any) => (
-        <div className="flex items-center">{text} ngày</div>
-      ),
-    },
-    {
-      title: "Miêu tả",
-      dataIndex: "description",
-      key: "description",
-      render: (text: any) => <div className="flex items-center">{text}</div>,
+      align: "center",
+      sorter: (a, b) => (a.duration || 0) - (b.duration || 0),
+      render: (duration: number) => `${duration} ngày`,
     },
     {
       title: "Loại",
       dataIndex: "scheduleType",
       key: "scheduleType",
-      render: (text: any) => (
-        <div className="flex items-center">{text.scheduleTypeName}</div>
-      ),
+      align: "center",
+      render: (text) => text.scheduleTypeName,
     },
     {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
+      align: "center",
       render: (status: boolean) => (
-        <Tag color={status ? "green" : "red"}>
-          {status ? "Còn hiệu lực" : "Hết hiệu lực"}
-        </Tag>
+        <Tag color={status ? "green" : "red"}>{status ? "Còn hiệu lực" : "Hết hiệu lực"}</Tag>
       ),
     },
     {
       title: "Hành động",
       key: "action",
-      render: (_: any, record: ScheduleType) => (
-        <>
+      align: "center",
+      render: (_, record) => (
+        <div className="flex justify-center space-x-2">
           <Button
-            type="primary"
-            className="bg-green-500 hover:bg-green-600 mr-2"
-            onClick={() => handleEditSchedule(record)}
-          >
-            Chỉnh sửa
-          </Button>
+            type="text"
+            icon={<EditOutlined />}
+            className="text-green-600 hover:text-green-800"
+            onClick={() => navigate(`/detailSchedule/${record.scheduleId}`)}
+          />
           <Button
-            type="primary"
+            type="text"
             danger
-            onClick={() => handleDeleteSchedule(record.scheduleId || 0)}
-          >
-            Xóa
-          </Button>
-        </>
+            icon={<DeleteOutlined />}
+            onClick={() => handleDeleteSchedule(record.scheduleId!)}
+          />
+          <Button
+            type="text"
+            icon={<UserAddOutlined />}
+            className="text-blue-500 hover:text-blue-700"
+            onClick={() => handleAssignUser(record.scheduleId)}
+          />
+        </div>
       ),
     },
   ];
 
   return (
-    <Layout className="min-h-screen">
-      <Layout>
-        <Content className="p-6">
-          <div className="flex justify-center mb-4">
-            <h1 className="text-green-500 text-2xl font-bold">
-              Danh sách dự án công ty
-            </h1>
-          </div>
-          <Button
-            type="primary"
-            className="mb-4 bg-blue-500 hover:bg-blue-600"
-            onClick={handleCreateSchedule}
-          >
-            Tạo mới dự án
-          </Button>
-          <Input
-            placeholder="Tìm kiếm theo tiêu đề"
-            value={searchText}
-            onChange={handleSearchChange}
-            style={{ marginBottom: 16, width: 300 }}
-          />
+    <Layout className="min-h-screen bg-gray-50">
+      <Content className="p-8">
+        <h1 className="text-3xl font-bold text-green-600 text-center mb-4">
+          Danh sách Dự án Công ty
+        </h1>
+        <Row justify="space-between" align="middle" className="mb-4">
+          <Col>
+            <Input
+              placeholder="Tìm kiếm theo tiêu đề"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              prefix={<SearchOutlined />}
+              style={{ width: 300 }}
+            />
+          </Col>
+          <Col>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              className="bg-blue-500"
+              onClick={() => navigate("/createNewSchedule")}
+            >
+              Tạo mới dự án
+            </Button>
+          </Col>
+        </Row>
 
-          <Table
-            columns={columns}
-            dataSource={data || []} // Fallback to an empty array if data is undefined
-            pagination={{
-              total: data?.totalCount || 0, // Assuming totalCount is provided in the response
-              showSizeChanger: true,
-              pageSizeOptions: ["5", "10", "20"],
-              size: "small",
-            }}
-            rowKey="scheduleId"
-            loading={isLoading}
-          />
-        </Content>
-      </Layout>
+        <Divider />
+
+        <Table
+          columns={columns}
+          dataSource={schedules || []}
+          rowKey="scheduleId"
+          loading={isLoading}
+          pagination={{
+            total: schedules?.totalCount || 0,
+            showSizeChanger: true,
+            pageSizeOptions: ["5", "10", "20"],
+          }}
+          bordered
+          className="bg-white shadow-md rounded-lg"
+        />
+
+        <Modal
+          title="Phân công nhân viên"
+          visible={isModalVisible}
+          onCancel={() => setIsModalVisible(false)}
+          footer={[
+            <Button key="cancel" onClick={() => setIsModalVisible(false)}>
+              Hủy
+            </Button>,
+            <Button key="submit" type="primary" onClick={handleAssignSubmit}>
+              Phân công
+            </Button>,
+          ]}
+        >
+          <Form layout="vertical">
+            <Form.Item label="Tiêu đề">
+              <Input
+                value={assignData.title}
+                onChange={(e) => setAssignData((prev) => ({ ...prev, title: e.target.value }))}
+              />
+            </Form.Item>
+            <Form.Item label="Miêu tả">
+              <Input
+                value={assignData.description}
+                onChange={(e) =>
+                  setAssignData((prev) => ({ ...prev, description: e.target.value }))
+                }
+              />
+            </Form.Item>
+            <Form.Item label="Ghi chú">
+              <Input
+                value={assignData.note}
+                onChange={(e) => setAssignData((prev) => ({ ...prev, note: e.target.value }))}
+              />
+            </Form.Item>
+            <Form.Item label="Thời hạn">
+              <DatePicker
+                onChange={handleDateChange}
+                style={{ width: "100%" }}
+                format="DD/MM/YYYY"
+              />
+            </Form.Item>
+            <Form.Item label="Chọn nhân viên">
+              <Select
+                placeholder="Chọn nhân viên"
+                onChange={(value) =>
+                  setAssignData((prev) => ({ ...prev, assignToId: value }))
+                }
+                loading={usersLoading}
+              >
+                {users.map((user: UserType) => (
+                  <Option key={user.userId} value={user.userId}>
+                    {user.fullName}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+          </Form>
+        </Modal>
+      </Content>
     </Layout>
   );
 };
