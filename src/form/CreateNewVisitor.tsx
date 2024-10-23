@@ -1,6 +1,7 @@
 import { Modal, Form, Input, notification, Image, Select } from "antd";
 import { useState } from "react";
 import { useCreateVisitorMutation } from "../services/visitor.service";
+
 const { Option } = Select;
 
 interface CreateNewVisitorProps {
@@ -8,7 +9,6 @@ interface CreateNewVisitorProps {
   setIsModalVisible: (visible: boolean) => void;
   onVisitorCreated: (visitorData: any) => void;
 }
-
 const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
   isModalVisible,
   setIsModalVisible,
@@ -17,7 +17,10 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
   const [form] = Form.useForm();
   const [faceImg, setFaceImg] = useState<File | null>(null);
   const [createVisitor, { isLoading: isCreating }] = useCreateVisitorMutation();
-  const [credentialCardTypeId, setCredentialCardTypeId] = useState<number | null>(null);
+
+  const [credentialCardTypeId, setCredentialCardTypeId] = useState<
+    number | null
+  >(null);
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -40,7 +43,7 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
         visitorCredentialImageFromRequest: faceImg,
       };
 
-      // Destructure values correctly from finalValues when sending to createVisitor
+      // Send request to create a visitor
       const response = await createVisitor({
         companyName: finalValues.companyName,
         credentialCardTypeId: finalValues.credentialCardTypeId,
@@ -49,25 +52,30 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
         visitorCredentialImageFromRequest:
           finalValues.visitorCredentialImageFromRequest,
         visitorName: finalValues.visitorName,
-      }).unwrap();
-      onVisitorCreated(response); // Pass the response to the parent
-      // Hide modal and reset form after successful creation
+      }).unwrap(); // Use unwrap to handle the response directly
+
+      // On success
+      onVisitorCreated(response);
       setIsModalVisible(false);
       form.resetFields();
+      setFaceImg(null);
       notification.success({
         message: "Thành công",
         description: "Khách mới đã được tạo thành công.",
       });
-
-      // Clear image data
-      setFaceImg(null);
-    } catch (error) {
-      // Handle errors and display notification
-      console.error("Create visitor error:", error);
-      notification.error({
-        message: "Thất bại",
-        description: "Tạo khách mới thất bại, vui lòng thử lại.",
-      });
+    } catch (err: any) {
+      // This block catches errors from the mutation
+      let errorMessage = "";
+      // console.error("Create visitor error:", err.data.errors.CredentialsCard);
+      if (err.data.errors.CredentialsCard)
+        errorMessage = "Căn cước công dân đã tồn tại";
+      {
+        // Handle any other unexpected errors
+        notification.error({
+          message: "Lỗi trong quá trình tạo",
+          description: errorMessage,
+        });
+      }
     }
   };
 
@@ -131,23 +139,6 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
         </Form.Item>
 
         <Form.Item
-          label="Số thẻ"
-          name="credentialsCard"
-          rules={[
-            { required: true, message: "Vui lòng nhập số thẻ!" },
-            {
-              len: 12,
-              message: "Số thẻ phải có đúng 12 chữ số!",
-            },
-            {
-              pattern: /^\d{12}$/,
-              message: "Số thẻ chỉ được chứa các chữ số!",
-            },
-          ]}
-        >
-          <Input placeholder="Nhập mã thẻ" />
-        </Form.Item>
-        <Form.Item
           label="Loại nhận dạng"
           name="credentialCardTypeId"
           rules={[{ required: true, message: "Vui lòng chọn loại thẻ!" }]}
@@ -160,7 +151,25 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
             <Option value={1}>Giấy phép lái xe</Option>
           </Select>
         </Form.Item>
-
+        {credentialCardTypeId && (
+          <Form.Item
+            label="Số thẻ"
+            name="credentialsCard"
+            rules={[
+              { required: true, message: "Vui lòng nhập số thẻ!" },
+              {
+                len: 12,
+                message: "Số thẻ phải có đúng 12 chữ số!",
+              },
+              {
+                pattern: /^\d{12}$/,
+                message: "Số thẻ chỉ được chứa các chữ số!",
+              },
+            ]}
+          >
+            <Input placeholder="Nhập mã thẻ" />
+          </Form.Item>
+        )}
         {/* Conditionally render the file input based on credentialCardTypeId */}
         {credentialCardTypeId && (
           <Form.Item

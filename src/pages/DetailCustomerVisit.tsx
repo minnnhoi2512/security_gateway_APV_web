@@ -32,6 +32,11 @@ const DetailCustomerVisit: React.FC = () => {
 
   const columns = [
     {
+      title: "ID",
+      dataIndex: "visitDetailId",
+      key: "visitDetailId",
+    },
+    {
       title: "Họ và tên",
       dataIndex: ["visitor", "visitorName"],
       key: "visitorName",

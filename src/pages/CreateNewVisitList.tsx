@@ -11,6 +11,7 @@ import {
   Modal,
   Image,
   Tag,
+  notification,
 } from "antd";
 import { Editor } from "react-draft-wysiwyg";
 import "react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
@@ -79,12 +80,15 @@ const CreateNewVisitList: React.FC = () => {
   const [debouncedCredentialCard] = useDebounce(credentialCard, 300);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [selectedDate, setSelectedDate] = useState<Dayjs>();
-  const { data: visitorData, isSuccess: isVisitorDataFetched } =
-    useGetVisitorByCredentialCardQuery(
-      { CredentialCard: debouncedCredentialCard },
-      { skip: debouncedCredentialCard.length !== 12 }
-    );
-  const [isLoading, setIsLoading] = useState(false);
+  const {
+    data: visitorData,
+    isSuccess: isVisitorDataFetched,
+    isLoading,
+  } = useGetVisitorByCredentialCardQuery(
+    { CredentialCard: debouncedCredentialCard },
+    { skip: debouncedCredentialCard.length !== 12 }
+  );
+  // const [isLoading, setIsLoading] = useState(false);
   const [startHourForAll, setStartHourForAll] = useState<string | null>(null);
   const [endHourForAll, setEndHourForAll] = useState<string | null>(null);
   const visitQuantity = form.getFieldValue("visitQuantity");
@@ -109,9 +113,7 @@ const CreateNewVisitList: React.FC = () => {
 
     if (debouncedCredentialCard.length === 12) {
       // setSearchResults([]);
-      setIsLoading(true); // Start loading
-      // Set a timeout to delay the search
-      // console.log(visitorData);
+
       timeoutRef.current = setTimeout(() => {
         if (isVisitorDataFetched && visitorData) {
           setSearchResults([visitorData]);
@@ -119,11 +121,9 @@ const CreateNewVisitList: React.FC = () => {
         } else if (!isVisitorDataFetched) {
           setSearchResults([]);
         }
-        setIsLoading(false); // Stop loading after fetching data
       }, 1000); // Delay the search for 1000 milliseconds (1 second)
     } else {
       setSearchResults([]); // Clear results if input is less than 12 characters
-      setIsLoading(false); // Stop loading if input is invalid
     }
 
     // Cleanup function to clear the timeout when the component unmounts
@@ -145,6 +145,7 @@ const CreateNewVisitList: React.FC = () => {
   const onEditorStateChange = (newState: EditorState) => {
     setEditorState(newState);
   };
+
   const handleCancel = () => {
     Modal.confirm({
       title: "Bạn có muốn   hủy quá trình tạo mới lịch?",
@@ -280,7 +281,8 @@ const CreateNewVisitList: React.FC = () => {
         }).unwrap(); // unwrapping for better error handling
         message.success("Lịch hẹn đã được tạo thành công!");
         navigate("/customerVisit");
-      } catch (error) {
+      } catch (error: any) {
+        console.log(error.data.message);
         message.error("Đã có lỗi xảy ra khi tạo lịch hẹn. Vui lòng thử lại.");
       }
     } catch (error) {
@@ -506,9 +508,18 @@ const CreateNewVisitList: React.FC = () => {
             <TimePicker
               format="HH:mm:ss"
               value={record.endHour ? dayjs(record.endHour, "HH:mm:ss") : null} // Display the current endHour
-              onChange={(time) =>
-                getHourString(time?.format("HH:mm:ss"), "endHour", index)
-              }
+              onChange={(time) => {
+                // Check if startHour is selected
+                if (!record.startHour) {
+                  // Show toast notification
+                  notification.warning({
+                    message: "",
+                    description: "Vui lòng chọn giờ vào trước khi chọn giờ ra.",
+                  });
+                  return; // Prevent further action
+                }
+                getHourString(time?.format("HH:mm:ss"), "endHour", index);
+              }}
             />
           ) : null,
       },
@@ -609,7 +620,6 @@ const CreateNewVisitList: React.FC = () => {
             {(scheduleTypeName === "ProcessWeek" ||
               scheduleTypeName === "ProcessMonth") && (
               <>
-                <div>Kéo dài trong: {duration} ngày</div>
                 {selectedDate && ( // Render the button only if a date is selected
                   <Button
                     className="mx-2"
@@ -640,9 +650,11 @@ const CreateNewVisitList: React.FC = () => {
         )}
         {currentStep === 1 && (
           <>
-            <Button type="primary" onClick={handleAddVisitor}>
-              Thêm khách
-            </Button>
+            {selectedVisitors.length != visitQuantity && (
+              <Button type="primary" onClick={handleAddVisitor}>
+                Thêm khách
+              </Button>
+            )}
             {selectedVisitors.length === visitQuantity && (
               <div className="flex flex-col mt-4">
                 <h3 className="text-lg font-semibold mb-2">
