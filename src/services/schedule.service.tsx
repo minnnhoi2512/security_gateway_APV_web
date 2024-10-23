@@ -1,8 +1,7 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import Schedule from "../types/ScheduleType";
+import Schedule from "../types/scheduleType";
 import baseAPI from "../api/baseAPI";
 import { getToken } from "../utils/jwtToken";
-
 
 export const scheduleAPI = createApi({
   reducerPath: "scheduleAPI",
@@ -18,13 +17,19 @@ export const scheduleAPI = createApi({
     },
   }),
   endpoints: (builder) => ({
-    getDepartmentSchedules: builder.query<any, { departmenManagerId: number; pageNumber: number; pageSize: number }>({
+    getDepartmentSchedules: builder.query<
+      any,
+      { departmenManagerId: number; pageNumber: number; pageSize: number }
+    >({
       query: ({ departmenManagerId, pageNumber, pageSize }) => ({
         url: `DepartmenManager/${departmenManagerId}`,
         params: { pageNumber, pageSize },
       }),
     }),
-    getStaffSchedules: builder.query<any, { userId: number; pageNumber: number; pageSize: number }>({
+    getStaffSchedules: builder.query<
+      any,
+      { userId: number; pageNumber: number; pageSize: number }
+    >({
       query: ({ userId, pageNumber, pageSize }) => ({
         url: `ScheduleUser/Staff/${userId}`,
         params: { pageNumber, pageSize },
@@ -37,6 +42,21 @@ export const scheduleAPI = createApi({
       query: ({ pageNumber, pageSize }) => {
         return {
           url: ``,
+          method: "GET",
+          params: {
+            pageNumber,
+            pageSize,
+          },
+        };
+      },
+    }),
+    getListScheduleByStaff: builder.query<
+      any,
+      { staffId: number; pageNumber: number; pageSize: number }
+    >({
+      query: ({ pageNumber, pageSize, staffId }) => {
+        return {
+          url: `ScheduleUser/Staff/${staffId}`,
           method: "GET",
           params: {
             pageNumber,
@@ -85,15 +105,18 @@ export const scheduleAPI = createApi({
         };
       },
     }),
-    assignSchedule: builder.mutation<any, { 
-      title: string;
-      description: string;
-      note: string;
-      deadlineTime: string;
-      scheduleId: number;
-      assignToId: number;
-      assignFromId: number;
-    }>({
+    assignSchedule: builder.mutation<
+      any,
+      {
+        title: string;
+        description: string;
+        note: string;
+        deadlineTime: string;
+        scheduleId: number;
+        assignToId: number;
+        assignFromId: number;
+      }
+    >({
       query: (body) => ({
         url: "AssignSchedule",
         method: "POST",
@@ -113,4 +136,5 @@ export const {
   useUpdateScheduleMutation,
   useDeleteScheduleMutation,
   useAssignScheduleMutation,
+  useGetListScheduleByStaffQuery
 } = scheduleAPI;

@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import moment from "moment-timezone";
 import { Content } from "antd/es/layout/layout";
 import QRCardType from "../types/QRCardType";
-import { useGetListQRCardQuery } from "../services/qrCard.service";
+import { useGetListQRCardQuery } from "../services/QRCard.service";
 
 const CardManager = () => {
   const navigate = useNavigate();
@@ -33,7 +33,7 @@ const CardManager = () => {
       title: "Mã Thẻ",
       dataIndex: "qrCardId",
       key: "qrCardId",
-      sorter: (a: QRCardType, b: QRCardType) => a.qrCardId - b.qrCardId,
+      sorter: (a: QRCardType, b: QRCardType) => a.qrCardId - b.qrCardId
     },
     {
       title: "Mã Xác Thực",

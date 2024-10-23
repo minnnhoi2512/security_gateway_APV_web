@@ -46,7 +46,7 @@ const MenuNav = () => {
   const handleMenuClick = ({ key }: { key: string }) => {
     if (key === "") {
       localStorage.clear();
-      navigate("/"); 
+      navigate("/");
     } else {
       if (location.pathname === "/createNewVisitList") {
         setNextLocation(`/${key}`); // Store the next location
@@ -65,36 +65,46 @@ const MenuNav = () => {
   const allMenuItems = [
     { key: "dashboard", icon: <HomeOutlined />, label: "Thông tin chung" },
     { key: "visitorManager", icon: <TeamOutlined />, label: "Nhóm khách" },
-    { key: "customerVisit", icon: <ContactsOutlined />, label: "Danh sách khách" },
+    {
+      key: "customerVisit",
+      icon: <ContactsOutlined />,
+      label: "Danh sách khách",
+    },
     { key: "staff", icon: <SolutionOutlined />, label: "Danh sách nhân viên" },
     { key: "schedule", icon: <FileTextOutlined />, label: "Tiến trình" },
+    { key: "schedule-staff", icon: <FileTextOutlined />, label: "Tạo lịch tiến trình" },
     { key: "calendar", icon: <CalendarOutlined />, label: "Lịch trình" },
     { key: "history", icon: <HistoryOutlined />, label: "Lịch sử" },
     { key: "chat", icon: <MessageOutlined />, label: "Nhắn tin" },
-    { key: "notification-test", icon: <NotificationOutlined />, label: "Thông báo - test" },
+    {
+      key: "notification-test",
+      icon: <NotificationOutlined />,
+      label: "Thông báo - test",
+    },
     { key: "", icon: <LogoutOutlined />, label: "Đăng xuất" },
   ];
 
   const filteredMenuItems = allMenuItems.filter((item) => {
-    if (userRole === "Security") {
-      return ![
-        "dashboard",
-        "manager",
-        "departmentManager",
-        "security",
-        "card",
-        "gate",
-        "project",
-        "history",
-      ].includes(item.key);
-    } else if (userRole === "Staff" || userRole === "DepartmentManager") {
+    if (userRole === "Staff") {
       return ![
         "dashboard",
         "manager",
         "security",
         "departmentManager",
         "departManager",
-        "project",
+        "schedule",
+        "history",
+        "card",
+        "gate",
+      ].includes(item.key);
+    } else if (userRole === "DepartmentManager") {
+      return ![
+        "dashboard",
+        "manager",
+        "security",
+        "departmentManager",
+        "departManager",
+        "schedule-staff",
         "history",
         "card",
         "gate",
@@ -106,6 +116,7 @@ const MenuNav = () => {
         "history",
         "manager",
         "staff",
+        "schedule-staff",
       ].includes(item.key);
     }
     return true; // Include all items for other roles
@@ -144,7 +155,9 @@ const MenuNav = () => {
               ...menuItemStyle,
               ...(selectedKey === item.key ? menuItemSelectedStyle : {}),
             }}
-            className={`menu-item ${selectedKey === item.key ? "selected" : ""}`}
+            className={`menu-item ${
+              selectedKey === item.key ? "selected" : ""
+            }`}
           >
             {item.label}
           </Menu.Item>

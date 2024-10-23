@@ -4,7 +4,7 @@ import { visitListAPI } from "../services/visitList.service";
 import { visitDetailListAPI } from "../services/visitDetailList.service";
 import { setupListeners } from "@reduxjs/toolkit/query";
 import { scheduleAPI } from "../services/schedule.service";
-import { qrCardAPI } from "../services/qrCard.service";
+import { qrCardAPI } from "../services/QRCard.service";
 import { departmentAPI } from "../services/department.service";
 import { visitorAPI } from "../services/visitor.service";
 import { scheduleTypeAPI } from "../services/scheduleType.service";

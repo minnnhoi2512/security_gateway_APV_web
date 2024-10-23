@@ -1,17 +1,17 @@
 import { useEffect, useState } from "react";
-import { Button, Table, Input, Space, Tag, Spin } from "antd";
+import { Button, Table, Input, Space, Tag } from "antd";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
 import { TableProps } from "antd";
 import { useNavigate } from "react-router-dom";
 import moment from "moment-timezone";
 import { Content } from "antd/es/layout/layout";
-import VisitListType from "../types/VisitListType";
+import VisitListType from "../types/visitListType";
 import {
   useGetListVisitByCreatedIdQuery,
   useGetListVisitByDepartmentManagerIdQuery,
   useGetListVisitQuery,
 } from "../services/visitList.service";
-import CustomPagination from "../components/Pagination";
+
 
 const CustomerVisit = () => {
   const userRole = localStorage.getItem("userRole");
@@ -19,10 +19,9 @@ const CustomerVisit = () => {
   const navigate = useNavigate();
   const [searchText, setSearchText] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("Active");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+
   let data: any = [];
-  const totalPages = Math.ceil(data.length / pageSize);
+
   // Fetching data using the query
   let isLoading = true;
   let refetch;
@@ -67,18 +66,6 @@ const CustomerVisit = () => {
     isLoading = allLoading;
     refetch = refetchAll;
   }
-
-  // const handlePageChange = (page: number, size: number) => {
-  //   setCurrentPage(page);
-  //   // Call your API with the new page number and size
-  //   refetch({ pageNumber: page, pageSize: size });
-  // };
-  // const handlePageSizeChange = (size: number) => {
-  //   setPageSize(size);
-  //   setCurrentPage(1); // Reset to the first page when page size changes
-  //   // Call your API with updated page size
-  //   refetch({ pageNumber: 1, pageSize: size });
-  // };
   const columns: TableProps<VisitListType>["columns"] = [
     {
       title: "Tiêu đề",

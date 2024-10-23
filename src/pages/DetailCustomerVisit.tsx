@@ -22,8 +22,9 @@ const DetailCustomerVisit: React.FC = () => {
   const { data = [], isLoading } = useGetListDetailVisitQuery({
     visitId: visitId,
   });
+  
   // console.log("Visit : ", visit);
-  // console.log(data);
+  console.log(data);
   // Format date to DD/MM/YYYY
   const formatDate = (date: string) =>
     moment.tz(date, "Asia/Ho_Chi_Minh").format("DD/MM/YYYY");
@@ -139,7 +140,7 @@ const DetailCustomerVisit: React.FC = () => {
             showSizeChanger: true,
             pageSizeOptions: ["5", "10", "20"],
           }}
-          rowKey="visitorName"
+          rowKey="visitDetailId"
           bordered
           loading={isLoading}
         />

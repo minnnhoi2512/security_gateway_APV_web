@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import Schedule from "../../types/ScheduleType";
+import Schedule from "../../types/scheduleType";
 
 const initialState: Schedule = {
   scheduleId: 0,

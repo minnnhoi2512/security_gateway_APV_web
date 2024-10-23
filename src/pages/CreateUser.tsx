@@ -5,14 +5,14 @@ import { UploadOutlined } from "@ant-design/icons";
 import { v4 as uuidv4 } from "uuid"; // Import uuid
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"; // Import getDownloadURL
 import { imageDB } from "../api/firebase"; // Adjust the path as necessary
-import UserType from "../types/UserType"; // Ensure this type is defined
+import UserType from "../types/userType"; // Ensure this type is defined
 import {
   useCreateNewUserMutation,
   useGetListStaffByDepartmentManagerQuery,
   useGetListUserByRoleQuery,
 } from "../services/user.service";
 import { useGetListDepartmentsQuery } from "../services/department.service";
-import DepartmentType from "../types/DepartmentType";
+import DepartmentType from "../types/departmentType";
 
 const { Content } = Layout;
 

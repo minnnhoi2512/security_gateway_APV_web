@@ -26,6 +26,8 @@ import ChatRoom from "../pages/ChatRoom";
 import VisitorManager from "../pages/VisitorManager";
 import CreateNewSchedule from "../pages/CreateNewSchedule";
 import DetailSchedule from "../pages/DetailSchedule";
+import ScheduleStaff from "../pages/ScheduleStaff";
+import DetailScheduleStaff from "../pages/DetailScheduleStaff";
 
 
 const ContentRouter = () => {
@@ -83,6 +85,24 @@ const ContentRouter = () => {
         element={
           <LayoutPage>
             <Staff />
+          </LayoutPage>
+        }
+      />
+       <Route
+        index
+        path="/schedule-staff"
+        element={
+          <LayoutPage>
+            <ScheduleStaff />
+          </LayoutPage>
+        }
+      />
+       <Route
+        index
+        path="/detail-schedule-staff/:id"
+        element={
+          <LayoutPage>
+            <DetailScheduleStaff />
           </LayoutPage>
         }
       />

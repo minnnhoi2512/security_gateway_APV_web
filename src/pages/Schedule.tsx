@@ -31,8 +31,8 @@ import {
   useAssignScheduleMutation,
 } from "../services/schedule.service";
 import { useGetListUsersByDepartmentIdQuery } from "../services/user.service";
-import ScheduleType from "../types/ScheduleType";
-import UserType from "../types/UserType";
+import ScheduleType from "../types/scheduleType";
+import UserType from "../types/userType";
 
 const { Content } = Layout;
 const { Option } = Select;

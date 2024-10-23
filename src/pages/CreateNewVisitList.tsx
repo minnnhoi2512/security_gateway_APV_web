@@ -15,7 +15,7 @@ import {
 import { Editor } from "react-draft-wysiwyg";
 import "react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
 import { useEffect, useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import dayjs, { Dayjs } from "dayjs";
 import { useGetVisitorByCredentialCardQuery } from "../services/visitor.service";
 import { useCreateNewListDetailVisitMutation } from "../services/visitDetailList.service";
@@ -24,6 +24,8 @@ import { EditorState } from "draft-js";
 import { useDebounce } from "use-debounce";
 import { stateToHTML } from "draft-js-export-html";
 import CreateNewVisitor from "../form/CreateNewVisitor";
+import ReadOnlyWeekCalendar from "../components/ReadOnlyWeekCalendar";
+import ReadOnlyMonthCalendar from "../components/ReadOnlyMonthCalendar";
 const { Step } = Steps;
 
 interface FormValues {
@@ -42,6 +44,20 @@ interface FormValues {
 
 const CreateNewVisitList: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { state } = location;
+  // console.log(state.from.id);
+  let duration: number = 0;
+  let daysOfSchedule: string = "";
+  let scheduleTypeName: string = "";
+  try {
+    duration = state?.from?.schedule?.duration ?? undefined;
+    daysOfSchedule = state?.from?.schedule?.daysOfSchedule ?? undefined;
+    scheduleTypeName =
+      state?.from?.schedule?.scheduleType?.scheduleTypeName ?? undefined;
+  } catch (error) {
+    // console.error("Error accessing schedule properties:", error);
+  }
   const [form] = Form.useForm<FormValues>();
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
   const [currentStep, setCurrentStep] = useState<number>(0);
@@ -62,6 +78,7 @@ const CreateNewVisitList: React.FC = () => {
   const [editorState, setEditorState] = useState(EditorState.createEmpty());
   const [debouncedCredentialCard] = useDebounce(credentialCard, 300);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Dayjs>();
   const { data: visitorData, isSuccess: isVisitorDataFetched } =
     useGetVisitorByCredentialCardQuery(
       { CredentialCard: debouncedCredentialCard },
@@ -72,6 +89,7 @@ const CreateNewVisitList: React.FC = () => {
   const [endHourForAll, setEndHourForAll] = useState<string | null>(null);
   const visitQuantity = form.getFieldValue("visitQuantity");
   const [showCreateVisitor, setShowCreateVisitor] = useState(false);
+
   const handleAddNewVisitor = () => {
     setShowCreateVisitor(true);
   };
@@ -80,7 +98,7 @@ const CreateNewVisitList: React.FC = () => {
     setShowCreateVisitor(false);
   };
   const handleVisitorCreated = (visitorData: any) => {
-    console.log(visitorData);
+    // console.log(visitorData);
     setSearchResults([visitorData]);
   };
   useEffect(() => {
@@ -93,7 +111,7 @@ const CreateNewVisitList: React.FC = () => {
       // setSearchResults([]);
       setIsLoading(true); // Start loading
       // Set a timeout to delay the search
-      console.log(visitorData);
+      // console.log(visitorData);
       timeoutRef.current = setTimeout(() => {
         if (isVisitorDataFetched && visitorData) {
           setSearchResults([visitorData]);
@@ -208,7 +226,7 @@ const CreateNewVisitList: React.FC = () => {
       const visitQuantity = form.getFieldValue("visitQuantity");
       const contentState = editorState.getCurrentContent();
       const htmlContent = stateToHTML(contentState);
-      console.log(htmlContent);
+      // console.log(htmlContent);
       // Check if the selected visitors count matches the required visit quantity
       if (selectedVisitors.length < visitQuantity) {
         message.warning("Cần nhập đủ số lượng khách!");
@@ -247,7 +265,15 @@ const CreateNewVisitList: React.FC = () => {
           visitorId: visitor.visitorId,
         })),
       };
-
+      if (
+        scheduleTypeName === "ProcessWeek" ||
+        scheduleTypeName === "ProcessMonth"
+      ) {
+        requestData.expectedEndTime = formData.expectedStartTime
+          ? moment(formData.expectedStartTime).add(duration, "days").toDate() // Calculate the end time based on duration
+          : null;
+        requestData.scheduleId = state.from.id; // Update scheduleId to state.from.id
+      }
       try {
         await createNewListDetailVisit({
           newVisitDetailList: requestData,
@@ -274,12 +300,40 @@ const CreateNewVisitList: React.FC = () => {
   const prev = () => {
     setCurrentStep(currentStep - 1);
   };
+  const popUpReviewSchedule = (date: Dayjs) => {
+    let content;
+
+    if (scheduleTypeName === "ProcessWeek") {
+      content = (
+        <ReadOnlyWeekCalendar
+          daysOfSchedule={daysOfSchedule}
+          duration={duration}
+          selectedDate={date}
+        />
+      );
+    } else if (scheduleTypeName === "ProcessMonth") {
+      content = (
+        <ReadOnlyMonthCalendar
+          daysOfSchedule={daysOfSchedule}
+          duration={duration}
+          selectedDate={date}
+        />
+      );
+    }
+
+    // Open modal with the content
+    Modal.info({
+      title: "Xem trước lịch",
+      content: <div>{content}</div>,
+      width: 800,
+    });
+  };
 
   const handleSelectVisitor = (visitor: any) => {
     const isDuplicate = selectedVisitors.some(
       (v) => v.visitorId === visitor.visitorId
     );
-    console.log(visitor);
+    // console.log(visitor);
     // Check if the visitor's status is "Unactive"
     if (visitor.status === "Unactive") {
       message.error("Không thể thêm khách trong sổ đen");
@@ -354,7 +408,7 @@ const CreateNewVisitList: React.FC = () => {
     const isEndHourValid = dayjs(endHour, "HH:mm:ss").isAfter(
       dayjs(selectedVisitors[0]?.startHour, "HH:mm:ss") // Ensure startHour is valid
     );
-    console.log(endHour);
+    // console.log(endHour);
     // If endHour is not valid, clear it and show a warning
     if (!isEndHourValid && endHour !== null && endHour !== undefined) {
       message.warning("Giờ ra phải sau giờ vào!");
@@ -384,7 +438,9 @@ const CreateNewVisitList: React.FC = () => {
         dataIndex: "index",
         key: "index",
         render: (_: any, record: any, index: number) => (
-          <span className="justify-center items-center">{index + 1}</span> // Display the index starting from 1
+          <span id={record.id} className="justify-center items-center">
+            {index + 1}
+          </span> // Display the index starting from 1
         ),
       },
       {
@@ -463,7 +519,11 @@ const CreateNewVisitList: React.FC = () => {
         render: (_: any, record: any, index: any) => {
           // Show the button only if visitor data is present
           return selectedVisitors[index]?.visitorName ? (
-            <Button onClick={() => handleClearVisitor(index)} danger>
+            <Button
+              id={record.id}
+              onClick={() => handleClearVisitor(index)}
+              danger
+            >
               Xóa thông tin
             </Button>
           ) : null;
@@ -533,18 +593,36 @@ const CreateNewVisitList: React.FC = () => {
             >
               <InputNumber />
             </Form.Item>
-
             <Form.Item
               name="expectedStartTime"
               label="Ngày đến thăm"
               rules={[{ required: true, message: "Vui lòng chọn thời gian" }]}
             >
               <DatePicker
+                format={"DD/MM/YYYY"}
                 disabledDate={(current) =>
                   current && current < moment().startOf("day")
                 }
+                onChange={(date) => setSelectedDate(date)} // Set the selected date in state
               />
             </Form.Item>
+            {(scheduleTypeName === "ProcessWeek" ||
+              scheduleTypeName === "ProcessMonth") && (
+              <>
+                <div>Kéo dài trong: {duration} ngày</div>
+                {selectedDate && ( // Render the button only if a date is selected
+                  <Button
+                    className="mx-2"
+                    type="primary"
+                    onClick={() => {
+                      popUpReviewSchedule(selectedDate); // Pass the selected date
+                    }}
+                  >
+                    Xem trước lịch
+                  </Button>
+                )}
+              </>
+            )}
             <Form.Item
               name="description"
               label="Mô tả"
@@ -637,8 +715,18 @@ const CreateNewVisitList: React.FC = () => {
         footer={null}
       >
         <Form.Item
-          validateStatus={credentialCard.length > 12  || (credentialCard.length < 12 && credentialCard.length > 0 ) ? "error" : ""}
-          help={credentialCard.length > 12 || (credentialCard.length < 12 && credentialCard.length > 0 )?  "Cần đúng 12 số." : ""}
+          validateStatus={
+            credentialCard.length > 12 ||
+            (credentialCard.length < 12 && credentialCard.length > 0)
+              ? "error"
+              : ""
+          }
+          help={
+            credentialCard.length > 12 ||
+            (credentialCard.length < 12 && credentialCard.length > 0)
+              ? "Cần đúng 12 số."
+              : ""
+          }
         >
           <Input
             value={credentialCard}
