@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-import visitDetailListType from "../../types/visitDetailListType";
-import VisitDetail from "../../types/visitDetailType";
+import visitDetailListType from "../../types/VisitDetailListType";
+import VisitDetail from "../../types/VisitDetailType";
 import Visitor from "../../types/visitorType";
 
 const initVisitor: Visitor = {

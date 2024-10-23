@@ -1,20 +1,46 @@
 import { createSlice } from "@reduxjs/toolkit";
+import Schedule from "../../types/ScheduleType";
 
-import ScheduleType from "../../types/scheduleType";
-
-const initialState: ScheduleType = {
-  scheduleId: 0, // Default number for ID (you can choose a better default)
-  scheduleName: "", // Empty string for name
+const initialState: Schedule = {
+  scheduleId: 0,
+  scheduleName: "",
   daysOfSchedule: "",
-  createTime: new Date(), // Current date as default
-  updateTime: new Date(), // Current date as default
-  description: "", // Empty string for description
-  duration : 0,
-  status: false, // Default false for status
+  createTime: new Date(),
+  updateTime: new Date(),
+  description: "",
+  status: false,
+  duration: 0,
+  title: "",
+  note: "",
+  deadlineTime: new Date(),
+  assignToId: 0,
+  assignFromId: 0,
   createById: 0,
-  createBy : {
-    userId : 0,
-  }
+  createBy: {
+    userId: 0,
+    userName: "",
+    fullName: "",
+    email: "",
+    phoneNumber: "",
+    image: "",
+    createdDate: new Date(),
+    updatedDate: new Date(),
+    status: "Active",
+  },
+  assignTo: {
+    userId: 0,
+    userName: "",
+  },
+  assignFrom: {
+    userId: 0,
+    userName: "",
+  },
+  scheduleType: {
+    scheduleTypeId: 0,
+    scheduleTypeName: "",
+    description: "",
+    status: false,
+  },
 };
 
 const scheduleSlice = createSlice({

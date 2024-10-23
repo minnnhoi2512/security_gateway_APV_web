@@ -1,4 +1,4 @@
-import Role from "./roleType";
+import Role from "./RoleType";
 
 type User = {
   userId?: number;

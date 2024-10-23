@@ -1,4 +1,4 @@
-import VisitDetail from "./visitDetailType";
+import VisitDetail from "./VisitDetailType";
 
 type VisitDetailList = {
   expectedStartTime?: Date | null;

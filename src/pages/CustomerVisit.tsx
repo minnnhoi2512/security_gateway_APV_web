@@ -5,7 +5,7 @@ import { TableProps } from "antd";
 import { useNavigate } from "react-router-dom";
 import moment from "moment-timezone";
 import { Content } from "antd/es/layout/layout";
-import VisitListType from "../types/visitListType";
+import VisitListType from "../types/VisitListType";
 import {
   useGetListVisitByCreatedIdQuery,
   useGetListVisitByDepartmentManagerIdQuery,

@@ -17,44 +17,28 @@ export const visitorAPI = createApi({
         params: { pageNumber, pageSize },
       }),
     }),
-    createVisitor: builder.mutation<
-      void,
-      {
-        visitorName: string;
-        companyName: string;
-        phoneNumber: string;
-        credentialsCard: string;
-        credentialCardTypeId: number;
-        visitorCredentialImageFromRequest: File;
-      }
-    >({
-      query: ({
-        visitorName,
-        companyName,
-        phoneNumber,
-        credentialsCard,
-        credentialCardTypeId,
-        visitorCredentialImageFromRequest,
-      }) => {
+   createVisitor: builder.mutation<void, { 
+      visitorName: string; 
+      companyName: string; 
+      phoneNumber: string; 
+      credentialsCard: string; 
+      credentialCardTypeId: number; 
+      visitorCredentialImageFromRequest: File 
+    }>({
+      query: (newVisitor) => {
         const formData = new FormData();
-        formData.append("VisitorName", visitorName);
-        formData.append("CompanyName", companyName);
-        formData.append("PhoneNumber", phoneNumber);
-        formData.append("CredentialsCard", credentialsCard);
-        formData.append(
-          "CredentialCardTypeId",
-          credentialCardTypeId.toString()
-        );
-        formData.append(
-          "VisitorCredentialImageFromRequest",
-          visitorCredentialImageFromRequest,
-          visitorCredentialImageFromRequest.name
-        );
+        formData.append("VisitorName", newVisitor.visitorName);
+        formData.append("CompanyName", newVisitor.companyName);
+        formData.append("PhoneNumber", newVisitor.phoneNumber);
+        formData.append("CredentialsCard", newVisitor.credentialsCard);
+        formData.append("CredentialCardTypeId", newVisitor.credentialCardTypeId.toString());
 
-        // Log all entries in FormData
-        // for (let [key, value] of formData.entries()) {
-        //   console.log(key, value);
-        // }
+        // Đảm bảo file tồn tại
+        if (newVisitor.visitorCredentialImageFromRequest) {
+          formData.append("VisitorCredentialImageFromRequest", newVisitor.visitorCredentialImageFromRequest, newVisitor.visitorCredentialImageFromRequest.name);
+        } else {
+          console.error("Không có file hình ảnh nào được chọn.");
+        }
 
         return {
           url: "/", // Ensure this matches the endpoint

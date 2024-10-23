@@ -1,9 +1,13 @@
 import {
+  HomeOutlined,
+  TeamOutlined,
+  ContactsOutlined,
+  SolutionOutlined,
+  FileTextOutlined,
   CalendarOutlined,
-  DashboardOutlined,
   HistoryOutlined,
-  UserOutlined,
-  WechatWorkOutlined,
+  MessageOutlined,
+  NotificationOutlined,
   LogoutOutlined,
 } from "@ant-design/icons";
 import { Menu, Modal } from "antd";
@@ -41,9 +45,8 @@ const MenuNav = () => {
 
   const handleMenuClick = ({ key }: { key: string }) => {
     if (key === "") {
-      // Handle logout logic (e.g., clear tokens, etc.)
       localStorage.clear();
-      navigate("/"); // Redirect to login on logout
+      navigate("/"); 
     } else {
       if (location.pathname === "/createNewVisitList") {
         setNextLocation(`/${key}`); // Store the next location
@@ -59,91 +62,19 @@ const MenuNav = () => {
     sessionStorage.setItem("selectedKey", selectedKey);
   }, [selectedKey]);
 
-  // Define all menu items
   const allMenuItems = [
-    {
-      key: "dashboard",
-      icon: <DashboardOutlined />,
-      label: "Thông tin chung",
-    },
-    {
-      key: "manager",
-      icon: <UserOutlined />,
-      label: "Quản lý",
-    },
-    {
-      key: "departmentManager",
-      icon: <UserOutlined />,
-      label: "Quản lý phòng ban",
-    },
-    {
-      key: "departManager",
-      icon: <UserOutlined />,
-      label: "Phòng ban",
-    },
-    {
-      key: "security",
-      icon: <UserOutlined />,
-      label: "Bảo vệ",
-    },
-    {
-      key: "customerVisit",
-      icon: <UserOutlined />,
-      label: "Khách có lịch hẹn",
-    },
-    {
-      key: "visitorManager",
-      icon: <UserOutlined />,
-      label: "Nhóm khách",
-    },
-    {
-      key: "staff",
-      icon: <UserOutlined />,
-      label: "Nhân viên",
-    },
-    {
-      key: "card",
-      icon: <UserOutlined />,
-      label: "Thẻ",
-    },
-    {
-      key: "gate",
-      icon: <UserOutlined />,
-      label: "Cổng",
-    },
-    {
-      key: "schedule",
-      icon: <UserOutlined />,
-      label: "Tiến trình",
-    },
-    {
-      key: "calendar",
-      icon: <CalendarOutlined />,
-      label: "Lịch trình",
-    },
-    {
-      key: "history",
-      icon: <HistoryOutlined />,
-      label: "Lịch sử",
-    },
-    {
-      key: "chat",
-      icon: <WechatWorkOutlined />,
-      label: "Nhắn tin",
-    },
-    {
-      key: "notification-test",
-      icon: <WechatWorkOutlined />,
-      label: "Thông báo - test",
-    },
-    {
-      key: "",
-      icon: <LogoutOutlined />,
-      label: "Đăng xuất",
-    },
+    { key: "dashboard", icon: <HomeOutlined />, label: "Thông tin chung" },
+    { key: "visitorManager", icon: <TeamOutlined />, label: "Nhóm khách" },
+    { key: "customerVisit", icon: <ContactsOutlined />, label: "Danh sách khách" },
+    { key: "staff", icon: <SolutionOutlined />, label: "Danh sách nhân viên" },
+    { key: "schedule", icon: <FileTextOutlined />, label: "Tiến trình" },
+    { key: "calendar", icon: <CalendarOutlined />, label: "Lịch trình" },
+    { key: "history", icon: <HistoryOutlined />, label: "Lịch sử" },
+    { key: "chat", icon: <MessageOutlined />, label: "Nhắn tin" },
+    { key: "notification-test", icon: <NotificationOutlined />, label: "Thông báo - test" },
+    { key: "", icon: <LogoutOutlined />, label: "Đăng xuất" },
   ];
 
-  // Filter menu items based on the userRole
   const filteredMenuItems = allMenuItems.filter((item) => {
     if (userRole === "Security") {
       return ![
@@ -180,16 +111,45 @@ const MenuNav = () => {
     return true; // Include all items for other roles
   });
 
+  const menuStyle = {
+    backgroundColor: "#34495e",
+    color: "#ffffff",
+  };
+
+  const menuItemStyle = {
+    transition: "background-color 0.3s ease-in-out",
+    fontSize: "16px",
+    borderRadius: "8px",
+  };
+
+  const menuItemSelectedStyle = {
+    backgroundColor: "#5E84A2",
+    fontWeight: "600",
+  };
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+    <div className="flex flex-col min-h-screen">
       <Menu
-        className="mt-[10%]"
-        theme="light"
+        theme="dark"
         mode="inline"
-        selectedKeys={[selectedKey]} // Set selected keys based on the state
+        selectedKeys={[selectedKey]}
         onClick={handleMenuClick}
-        items={filteredMenuItems} // Use filtered items based on userRole
-      />
+        style={menuStyle}
+      >
+        {filteredMenuItems.map((item) => (
+          <Menu.Item
+            key={item.key}
+            icon={item.icon}
+            style={{
+              ...menuItemStyle,
+              ...(selectedKey === item.key ? menuItemSelectedStyle : {}),
+            }}
+            className={`menu-item ${selectedKey === item.key ? "selected" : ""}`}
+          >
+            {item.label}
+          </Menu.Item>
+        ))}
+      </Menu>
 
       <Modal
         title="Bạn có muốn hủy quá trình tạo mới lịch?"

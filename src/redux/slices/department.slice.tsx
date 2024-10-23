@@ -1,6 +1,6 @@
-// slices/departmentSlice.ts
+
 import { createSlice } from "@reduxjs/toolkit";
-import DepartmentType from "../../types/departmentType";
+import DepartmentType from "../../types/DepartmentType";
 
 const initialState: DepartmentType = {
     departmentId: 0,
@@ -18,5 +18,5 @@ const departmentSlice = createSlice({
     },
 });
 
- const departmentReducer = departmentSlice.reducer;
+const departmentReducer = departmentSlice.reducer;
 export default departmentReducer;
