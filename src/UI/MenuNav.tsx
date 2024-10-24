@@ -11,8 +11,10 @@ import {
   LogoutOutlined,
 } from "@ant-design/icons";
 import { Menu, Modal } from "antd";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import SignalR from '../utils/signalR';
+import { useDispatch, useSelector } from "react-redux";
 
 const MenuNav = () => {
   const navigate = useNavigate();
@@ -24,7 +26,8 @@ const MenuNav = () => {
   const [nextLocation, setNextLocation] = useState<string | null>(null);
 
   const userRole = localStorage.getItem("userRole"); // Get userRole from localStorage
-
+  const connection = useSelector<any>(s => s.hubConnection.connection) as React.MutableRefObject<signalR.HubConnection | null>
+  const dispatch = useDispatch();
   const handleCancel = () => {
     setIsModalVisible(true); // Show the confirmation modal
   };
@@ -45,6 +48,9 @@ const MenuNav = () => {
 
   const handleMenuClick = ({ key }: { key: string }) => {
     if (key === "") {
+      if(connection){
+        SignalR.DisconnectSignalR(connection,dispatch)
+      }
       localStorage.clear();
       navigate("/"); 
     } else {

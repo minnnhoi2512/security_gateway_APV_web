@@ -11,6 +11,7 @@ import { scheduleTypeAPI } from "../services/scheduleType.service";
 import filterTabReducer from "./slices/filterTab.slice";
 import { visitGrapqlAPI } from "../services/visitGraphql.service";
 import visitDetailListReducer from "./slices/visitDetailList.slice";
+import hubConnectionReducer from "./slices/hubConnection.slice";
 
 export const store = configureStore({
   reducer: {
@@ -24,7 +25,8 @@ export const store = configureStore({
     [scheduleTypeAPI.reducerPath]: scheduleTypeAPI.reducer,
     [visitGrapqlAPI.reducerPath] : visitGrapqlAPI.reducer,
     filterTabs: filterTabReducer,
-    visitDetailList : visitDetailListReducer
+    visitDetailList : visitDetailListReducer,
+    hubConnection : hubConnectionReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
