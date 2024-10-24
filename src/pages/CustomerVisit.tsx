@@ -12,6 +12,10 @@ import {
   useGetListVisitQuery,
 } from "../services/visitList.service";
 import CustomPagination from "../components/Pagination";
+import FilterVisit from "../components/FilterVisit";
+import { useDispatch, useSelector } from "react-redux";
+import { toggleStatusTab } from "../redux/slices/filterTab.slice";
+import VisitDetailList from "../types/VisitDetailListType";
 
 const CustomerVisit = () => {
   const userRole = localStorage.getItem("userRole");
@@ -23,6 +27,9 @@ const CustomerVisit = () => {
   const [pageSize, setPageSize] = useState(10);
   let data: any = [];
   const totalPages = Math.ceil(data.length / pageSize);
+  const dispatch = useDispatch();
+  const visit  = useSelector<any>(s => s.visitDetailList.data) as []
+  const isFiltering  = useSelector<any>(s => s.visitDetailList.isFiltering) as boolean
   // Fetching data using the query
   let isLoading = true;
   let refetch;
@@ -37,6 +44,7 @@ const CustomerVisit = () => {
       pageSize: -1,
       createdById: userId,
     });
+
     data = staffData;
     isLoading = staffLoading;
     refetch = refetchStaff;
@@ -67,7 +75,9 @@ const CustomerVisit = () => {
     isLoading = allLoading;
     refetch = refetchAll;
   }
-
+  if(isFiltering){
+    data = visit
+  }
   // const handlePageChange = (page: number, size: number) => {
   //   setCurrentPage(page);
   //   // Call your API with the new page number and size
@@ -189,7 +199,9 @@ const CustomerVisit = () => {
     refetch(); // Automatically refetch the data when status changes
     // console.log(data)
   };
-
+  const handleFilterTabs = () => {
+    dispatch(toggleStatusTab());
+  }
   useEffect(() => {
     refetch();
   }, [statusFilter]);
@@ -244,6 +256,12 @@ const CustomerVisit = () => {
         >
           Đang đợi
         </Button>
+        <Button
+          type={"default"}
+          onClick={handleFilterTabs}
+        >
+          Bộ lọc tìm kiếm
+        </Button>
       </Space>
 
       <Table
@@ -267,7 +285,9 @@ const CustomerVisit = () => {
         onPageChange={handlePageChange}
         onPageSizeChange={handlePageSizeChange}
       /> */}
+      <FilterVisit/>
     </Content>
+    
   );
 };
 

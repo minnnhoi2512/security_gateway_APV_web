@@ -8,6 +8,9 @@ import { qrCardAPI } from "../services/qrCard.service";
 import { departmentAPI } from "../services/department.service";
 import { visitorAPI } from "../services/visitor.service";
 import { scheduleTypeAPI } from "../services/scheduleType.service";
+import filterTabReducer from "./slices/filterTab.slice";
+import { visitGrapqlAPI } from "../services/visitGraphql.service";
+import visitDetailListReducer from "./slices/visitDetailList.slice";
 
 export const store = configureStore({
   reducer: {
@@ -19,9 +22,14 @@ export const store = configureStore({
     [departmentAPI.reducerPath]: departmentAPI.reducer,
     [visitorAPI.reducerPath]: visitorAPI.reducer,
     [scheduleTypeAPI.reducerPath]: scheduleTypeAPI.reducer,
+    [visitGrapqlAPI.reducerPath] : visitGrapqlAPI.reducer,
+    filterTabs: filterTabReducer,
+    visitDetailList : visitDetailListReducer
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware()
+    getDefaultMiddleware({
+      serializableCheck: false
+    })
       .concat(userAPI.middleware)
       .concat(visitListAPI.middleware)
       .concat(visitDetailListAPI.middleware)
@@ -30,7 +38,8 @@ export const store = configureStore({
       .concat(departmentAPI.middleware)
       .concat(visitorAPI.middleware)
       .concat(scheduleTypeAPI.middleware)
-      .concat(departmentAPI.middleware),
+      .concat(departmentAPI.middleware)
+      .concat(visitGrapqlAPI.middleware),
 });
 
 // Define RootState and AppDispatch types
