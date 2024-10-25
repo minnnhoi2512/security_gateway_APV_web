@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import LoginImg from "../assets/login-img.jpg";
 import { useNavigate } from "react-router-dom";
@@ -6,6 +6,9 @@ import { useLoginUserMutation } from "../services/user.service";
 import { jwtDecode } from "jwt-decode"; // Import jwt-decode
 import { toast } from "react-toastify"; // Import toast for notification
 import "react-toastify/dist/ReactToastify.css"; // Import toast styles
+import SetSignalR from '../utils/signalR';
+import UserConnectionHubType from '../types/userConnectionHubType';
+import { useDispatch } from 'react-redux';
 
 function Login() {
   const [rememberMe, setRememberMe] = useState(false);
@@ -13,6 +16,8 @@ function Login() {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
   const [loginUser, { isLoading }] = useLoginUserMutation();
+  const connection = useRef<signalR.HubConnection | null>(null);
+  const dispatch = useDispatch()
 
   // Check for existing token on component mount
   useEffect(() => {
@@ -52,7 +57,11 @@ function Login() {
 
       // Success toast notification
       toast.success("Đăng nhập thành công!");
-
+      const user : UserConnectionHubType = {
+        userId : result.userId,
+        role : decodedToken.role
+      }
+      await SetSignalR.SetSignalR(user, connection, dispatch);
       // Navigate to dashboard after successful login
       navigate("/dashboard");
     } catch (error) {
