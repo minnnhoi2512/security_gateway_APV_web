@@ -7,7 +7,7 @@ const { Option } = Select;
 interface CreateNewVisitorProps {
   isModalVisible: boolean;
   setIsModalVisible: (visible: boolean) => void;
-  onVisitorCreated: (visitorData: any) => void;
+  onVisitorCreated?: (visitorData: any) => void;
 }
 const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
   isModalVisible,
@@ -55,7 +55,7 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
       }).unwrap(); // Use unwrap to handle the response directly
 
       // On success
-      onVisitorCreated(response);
+      onVisitorCreated?.(response);
       setIsModalVisible(false);
       form.resetFields();
       setFaceImg(null);
