@@ -26,6 +26,7 @@ import ChatRoom from "../pages/ChatRoom";
 import VisitorManager from "../pages/VisitorManager";
 import CreateNewSchedule from "../pages/CreateNewSchedule";
 import DetailSchedule from "../pages/DetailSchedule";
+import Profile from "../pages/Profile";
 import { useEffect, useRef } from "react";
 import { useDispatch } from "react-redux";
 import SignalR from '../utils/signalR';
@@ -312,6 +313,13 @@ const ContentRouter = () => {
           </LayoutPage>
         }
       />
+      <Route
+        index
+        path="/profile/:idUser" 
+        element={
+          <LayoutPage>
+            <Profile />
+          </LayoutPage>} />
       <Route index path="/" element={<Login />} />
     </Routes>
   );
