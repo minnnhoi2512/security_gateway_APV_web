@@ -101,13 +101,11 @@ export const userAPI = createApi({
         };
       },
     }),
-    getDetailUser: builder.query({
-      query: (idUser: number) => {
-        return {
-          url: `/${idUser}`,
-          method: "GET",
-        };
-      },
+    getDetailUser: builder.query<any, number>({
+      query: (idUser) => ({
+        url: `/${idUser}`,
+        method: "GET",
+      }),
     }),
   }),
 });

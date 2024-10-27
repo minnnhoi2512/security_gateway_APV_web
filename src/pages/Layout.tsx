@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
 import { Button, Layout } from "antd";
+import { useNavigate } from "react-router-dom";
 import "@fontsource/inter"; 
 import MenuNav from "../UI/MenuNav";
 
@@ -12,11 +13,21 @@ const { Header, Sider, Content } = Layout;
 
 const LayoutPage = ({ children }: Props) => {
   const [collapsed, setCollapsed] = useState(false);
+  const navigate = useNavigate();
 
   const userName = localStorage.getItem("userName") || "User";
   const userRole = localStorage.getItem("userRole") || "Role";
+  const userId = localStorage.getItem("userId");
 
-  const sharedBackgroundColor = "#34495e"; // Đảm bảo màu nền nhất quán
+  const handleProfileClick = () => {
+    if (userId) {
+      navigate(`/profile/${userId}`);
+    }else {
+      console.error("User ID không tồn tại.");
+    }
+  };
+
+  const sharedBackgroundColor = "#34495e"; 
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -27,7 +38,6 @@ const LayoutPage = ({ children }: Props) => {
         width={240}
         style={{ backgroundColor: sharedBackgroundColor }}
       >
-        {/* Logo và chữ */}
         <div className="flex flex-col items-center p-4">
           <img
             className="w-[50px] h-[50px] mb-2"
@@ -44,10 +54,9 @@ const LayoutPage = ({ children }: Props) => {
           )}
         </div>
 
-        {/* User thông tin */}
         {!collapsed && (
           <div className="px-4 py-2">
-            <div className="flex items-center mb-4">
+            <div onClick={handleProfileClick} className="flex items-center mb-4 cursor-pointer">
               <img
                 className="w-[40px] h-[40px] rounded-full"
                 src="https://thanhnien.mediacdn.vn/Uploaded/haoph/2021_10_21/jack-va-thien-an-5805.jpeg"
