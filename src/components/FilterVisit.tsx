@@ -27,8 +27,10 @@ const FilterVisit: React.FC = () => {
     const [expectedEndTime, SetExpectedEndTime] = useState(moment.max());
     const visit = useSelector<any>(s => s.visitDetailList);
     const [visitQuantity, SetVisitQuantity] = useState([1,100]);
-    const [scheduleTypeId, SetScheduleTypeId] = useState([]);
-    const [visitStatus, SetVisitStatus] = useState<string[]>([]);
+    const [scheduleTypeId, SetScheduleTypeId] = useState([1,2,3,4]);
+    const [visitStatus, SetVisitStatus] = useState<string[]>(["Active", "Pending"]);
+    const [scheduleTypeIdDisplay, SetScheduleTypeIdDisplay] = useState<string[]>([]);
+    const [visitStatusDisplay, SetVisitStatusDisplay] = useState<string[]>();
     const [postGraphql] = useGetVisitGraphqlMutation()
     const dispatch = useDispatch();
     const handleFilterTabs = () =>{
@@ -37,6 +39,7 @@ const FilterVisit: React.FC = () => {
 
     const handleSubmitFilter =   () => {
         var body = MakeQuery(expectedStartTime.format(),expectedEndTime.format(),visitQuantity,scheduleTypeId as never,visitStatus);
+        console.log(body)
         const returned = postGraphql({
             query : body
         }).unwrap().then((payload) => {
@@ -46,8 +49,10 @@ const FilterVisit: React.FC = () => {
     const handleCancelFilter = () => {
         SetExpectedStartTime(moment());
         SetExpectedEndTime(moment());
-        SetScheduleTypeId([])
-        SetVisitStatus([])
+        SetScheduleTypeId([1,2,3,4])
+        SetScheduleTypeIdDisplay([])
+        SetVisitStatusDisplay([])
+        SetVisitStatus(["Active", "Pending"])
         dispatch(cancelFilter())
     }
     const handleStartDateChange : DatePickerProps['onChange'] = (date, dateString) => {
@@ -58,9 +63,11 @@ const FilterVisit: React.FC = () => {
     }
     const handleVisitScheduleType: GetProp<typeof Checkbox.Group, 'onChange'> = (checkedValues) => {
         SetScheduleTypeId(checkedValues as never)
+        SetScheduleTypeIdDisplay(checkedValues as never)
     };
     const handlevisitStatusType: GetProp<typeof Checkbox.Group, 'onChange'> = (checkedValues) => {
         SetVisitStatus(checkedValues as string[])
+        SetVisitStatusDisplay(checkedValues as string[])
     };
 
     function MakeQuery (
@@ -72,16 +79,21 @@ const FilterVisit: React.FC = () => {
             status += `"${element}",`;       
         });
         status += "]"
+        var schedule = "["
+        scheduleTypeId?.forEach(element => {
+            schedule += `${element},`;       
+        });
+        schedule += "]"
         var queryPlain = `
             query{
          visit(take: 100,skip: 0,
         where:  {
             expectedStartTime:  {
-        gte: "${expectedStartTime}"
+        gte: "${expectedStartTime?.toString().split("T")[0] + "T00:00:00+07:00"}"
             },
              and: [ {
              expectedEndTime:  {
-                lte: "${expectedEndTime}"
+                lte: "${expectedEndTime?.toString().split("T")[0] + "T23:59:59+07:00"}"
             }
             }],
             visitStatus:  {
@@ -91,6 +103,12 @@ const FilterVisit: React.FC = () => {
                 gte: ${visitQuantity[0]},
                 lte: ${visitQuantity[1]}
                 },
+            schedule:  
+            {
+                   scheduleTypeId:  {
+                      in: ${schedule}
+                   }
+                },    
                 }){
              items{
       visitId,
@@ -158,7 +176,7 @@ const FilterVisit: React.FC = () => {
             </div>
             <div className='p-5 grid border-b-2 border-b-gray-400 h-fit'>
             <h3 className='text-black text-xl pt-5 font-semibold'>Loại</h3>
-            <Checkbox.Group style={{ width: '100%', marginTop: "10px" }} value={scheduleTypeId} onChange={handleVisitScheduleType}>
+            <Checkbox.Group style={{ width: '100%', marginTop: "10px" }} value={scheduleTypeIdDisplay} onChange={handleVisitScheduleType}>
             <Row>
                 <Col span={8}>
         <           Checkbox value="1">Hằng Ngày</Checkbox>
@@ -177,7 +195,7 @@ const FilterVisit: React.FC = () => {
             </div>
             <div className='p-5 grid border-b-2 border-b-gray-400 h-fit'>
             <h3 className='text-black text-xl pt-5 font-semibold'>Trạng Thái</h3>
-            <Checkbox.Group style={{ width: '100%', marginTop: "10px" }} value={visitStatus} onChange={handlevisitStatusType}>
+            <Checkbox.Group style={{ width: '100%', marginTop: "10px" }}  value={visitStatusDisplay} onChange={handlevisitStatusType}>
             <Row>
             <Col span={8}>
                 <Checkbox value="Active">Còn hiệu lực</Checkbox>

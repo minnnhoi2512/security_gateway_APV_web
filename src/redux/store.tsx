@@ -12,6 +12,7 @@ import filterTabReducer from "./slices/filterTab.slice";
 import { visitGrapqlAPI } from "../services/visitGraphql.service";
 import visitDetailListReducer from "./slices/visitDetailList.slice";
 import hubConnectionReducer from "./slices/hubConnection.slice";
+import notificationReducer from "./slices/notification.slice";
 
 export const store = configureStore({
   reducer: {
@@ -26,7 +27,8 @@ export const store = configureStore({
     [visitGrapqlAPI.reducerPath] : visitGrapqlAPI.reducer,
     filterTabs: filterTabReducer,
     visitDetailList : visitDetailListReducer,
-    hubConnection : hubConnectionReducer
+    hubConnection : hubConnectionReducer,
+    notification : notificationReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

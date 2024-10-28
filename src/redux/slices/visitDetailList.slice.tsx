@@ -36,7 +36,7 @@ const visitDetailListSlice = createSlice({
   name: "visitDetailList",
   initialState: {
     data : [] as visitDetailListType[],
-    isFiltering : false
+    isFiltering : false,
   },
   reducers: {
     setListOfVisitList(state, action : PayloadAction<visitDetailListType[]>){

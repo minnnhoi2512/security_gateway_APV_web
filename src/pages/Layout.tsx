@@ -1,9 +1,15 @@
-import React, { useState } from "react";
-import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
-import { Button, Layout } from "antd";
+import React, { useEffect, useState } from "react";
+import { DownOutlined, MenuFoldOutlined, MenuUnfoldOutlined, SmileOutlined } from "@ant-design/icons";
+import { Avatar, Badge, Button, Dropdown, Layout, Space } from "antd";
 import { useNavigate } from "react-router-dom";
 import "@fontsource/inter"; 
 import MenuNav from "../UI/MenuNav";
+import { MenuProps } from "antd/lib";
+import { useDispatch, useSelector } from "react-redux";
+import NotificationType from "../types/notificationType";
+import { el } from "date-fns/locale";
+import { toast, ToastContainer } from "react-toastify";
+import { markAsRead, reloadNoti } from "../redux/slices/notification.slice";
 
 type Props = {
   children: React.ReactNode;
@@ -18,7 +24,7 @@ const LayoutPage = ({ children }: Props) => {
   const userName = localStorage.getItem("userName") || "User";
   const userRole = localStorage.getItem("userRole") || "Role";
   const userId = localStorage.getItem("userId");
-
+  const dispatch = useDispatch();
   const handleProfileClick = () => {
     if (userId) {
       navigate(`/profile/${userId}`);
@@ -26,11 +32,46 @@ const LayoutPage = ({ children }: Props) => {
       console.error("User ID không tồn tại.");
     }
   };
+  const notifications = useSelector<any>( s => s.notification.notification) as NotificationType[]
+  var notiCount = notifications?.filter(s => s.isRead == false)
+  var reload = useSelector<any>( s => s.notification.isnew) as boolean
+  useEffect(()=>{
+    if(notifications?.length > 0 && reload == true){
+      toast("Bạn có thông báo mới")
+    }
+    dispatch(reloadNoti())
+  },[notifications])
+  const items: MenuProps['items'] = [
+  ];
+  const handleReadNotification = (id : string, isRead : boolean) =>{
+    if(!isRead){
+      dispatch(markAsRead(id))
+    }
 
+  } 
+  if(notifications){
+    var reverseArray = [...notifications]
+    reverseArray.reverse().forEach((element, index )=> {
+      items.push({
+        key: index,
+        label: (
+          <div className="inline-flex">
+            <a style={{fontWeight: `${element.isRead == true ? "lighter": "bold"}
+              
+              `}} onClick={() => handleReadNotification(element.id, element.isRead)} rel="noopener noreferrer" href="#">
+            {element.title}
+            <p style={{fontWeight: "lighter"}}>{element.discription}</p>
+            </a>
+          </div>
+        ),
+      },)
+    });
+  }
   const sharedBackgroundColor = "#34495e"; 
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
+      <ToastContainer position="top-center" containerId="NotificationToast"  />
       <Sider
         trigger={null}
         collapsible
@@ -89,6 +130,17 @@ const LayoutPage = ({ children }: Props) => {
             className="text-white"
             style={{ fontSize: "18px" }}
           />
+          <div className="top-0 right-20 absolute ">
+          <Dropdown menu={{ items }} trigger={['click']} overlayClassName="pt-1">
+            <a onClick={(e) => e.preventDefault()}>
+            <Space>
+            <Badge count={notiCount?.length}>
+            <button><Avatar shape="circle" size="default" src="/src/assets/iconNoti.png"/></button>
+            </Badge>
+            </Space>
+            </a>
+          </Dropdown>
+          </div>
         </Header>
 
         <Content className="m-6 p-6 bg-white rounded shadow min-h-[80vh]">

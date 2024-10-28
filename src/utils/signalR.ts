@@ -3,6 +3,9 @@ import { Dispatch } from 'redux';
 // import { setNewNotificationReceived } from '../redux/slice/notificationSlice';
 import UserConnectionHubType from '../types/userConnectionHubType';
 import { clearConnection, setConnection } from '../redux/slices/hubConnection.slice';
+import NotificationType from '../types/notificationType';
+import { pushNotification } from '../redux/slices/notification.slice';
+import { Guid } from 'guid-ts';
 
 const SetSignalR = async (
   user : UserConnectionHubType,
@@ -24,7 +27,6 @@ const SetSignalR = async (
         console.log("Connected to NotificationHub " + connection.current?.connectionId);
         dispatch(setConnection(connection));
         connection.current?.on("ReceiveMessage", (title, message) => {
-          console.log("Nhận thông báo:", title, message);
         //   PushNotification.localNotification({
         //     channelId: "general_notifications",
         //     title: title,
@@ -32,17 +34,39 @@ const SetSignalR = async (
         //   });
         //   dispatch(setNewNotificationReceived(true)); // Đánh dấu có thông báo mới được nhận
         });
-        await connection.current?.invoke("JoinHub", user);
-
-        // connection.current?.on("ReceivedPersonalNotification", (title, message) => {
-        //   console.log("Nhận thông báo cá nhân:", title, message);
+        connection.current?.on("ReceiveNotification", (title, message, scheduleId) => {
         //   PushNotification.localNotification({
         //     channelId: "general_notifications",
         //     title: title,
         //     message: message,
         //   });
-        //   dispatch(setNewNotificationReceived(true)); // Đánh dấu có thông báo mới được nhận
-        // });
+          const notification : NotificationType ={
+            id : Guid.newGuid().toString(),
+            title : title,
+            discription : message,
+            isRead : false,
+            notiType : "AssignForStaff",
+            scheduleAssign : {
+              scheduleId : scheduleId
+            }
+          } 
+          const notiList = JSON.parse(localStorage.getItem("notification") as string) as NotificationType[]
+          if(notiList){
+            notiList.push(notification)
+            if(notiList?.length > 10){
+              notiList.shift()
+            }
+            localStorage.setItem("notification", JSON.stringify(notiList)) 
+            dispatch(pushNotification(notification));
+          }
+          else{
+            const newList : NotificationType[] = [notification]
+            localStorage.setItem("notification", JSON.stringify(newList)) 
+            dispatch(pushNotification(notification));
+          }
+          console.log(notiList)
+        });
+        await connection.current?.invoke("JoinHub", user);
       } catch (error) {
         console.error("SignalR Connection Error: ", error);
       }
