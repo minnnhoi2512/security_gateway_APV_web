@@ -86,7 +86,7 @@ const CreateNewSchedule: React.FC = () => {
   const handleDaysOfScheduleChange = (checkedValues: any) => {
     const dayString = checkedValues.join(",");
     setDaysOfSchedule(dayString);
-    console.log(daysOfSchedule);
+    // console.log(daysOfSchedule);
     setSelectedDays(checkedValues);
   };
 
@@ -130,7 +130,6 @@ const CreateNewSchedule: React.FC = () => {
       };
       await createNewSchedule(parsedValues).unwrap();
       message.success("Dự án đã được tạo thành công!");
-      // await refetchScheduleList();
       form.resetFields();
       navigate("/schedule");
     } catch (error) {

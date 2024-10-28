@@ -21,7 +21,7 @@ const ReadOnlyWeekCalendar: React.FC<ReadOnlyMonthCalendarProps> = ({
   const [highlightedDates, setHighlightedDates] = useState<string[]>([]);
   const [startDate, setStartDate] = useState<Dayjs | null>(null);
   const [endDate, setEndDate] = useState<Dayjs | null>(null);
-
+  console.log(daysOfSchedule);
   const months = [
     "tháng 1",
     "tháng 2",
