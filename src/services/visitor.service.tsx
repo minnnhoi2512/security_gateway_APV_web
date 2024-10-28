@@ -1,5 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import baseAPI from "../api/baseAPI";
+import Visitor from "../types/visitorType";
 
 export const visitorAPI = createApi({
   reducerPath: "visitorAPI",
@@ -17,29 +18,38 @@ export const visitorAPI = createApi({
         params: { pageNumber, pageSize },
       }),
     }),
-   createVisitor: builder.mutation<void, { 
-      visitorName: string; 
-      companyName: string; 
-      phoneNumber: string; 
-      credentialsCard: string; 
-      credentialCardTypeId: number; 
-      visitorCredentialImageFromRequest: File 
-    }>({
+    getVisitorById: builder.query<Visitor, { id: number }>({
+      query: ({ id }) => ({
+        url: `${id}`,
+        method: "GET",
+      }),
+    }),
+    createVisitor: builder.mutation<
+      void,
+      {
+        visitorName: string;
+        companyName: string;
+        phoneNumber: string;
+        credentialsCard: string;
+        credentialCardTypeId: number;
+        visitorCredentialImageFromRequest: string;
+      }
+    >({
       query: (newVisitor) => {
+        console.log(newVisitor.visitorCredentialImageFromRequest)
         const formData = new FormData();
-        formData.append("VisitorName", newVisitor.visitorName);
-        formData.append("CompanyName", newVisitor.companyName);
-        formData.append("PhoneNumber", newVisitor.phoneNumber);
-        formData.append("CredentialsCard", newVisitor.credentialsCard);
-        formData.append("CredentialCardTypeId", newVisitor.credentialCardTypeId.toString());
-
-        // Đảm bảo file tồn tại
-        if (newVisitor.visitorCredentialImageFromRequest) {
-          formData.append("VisitorCredentialImageFromRequest", newVisitor.visitorCredentialImageFromRequest, newVisitor.visitorCredentialImageFromRequest.name);
-        } else {
-          console.error("Không có file hình ảnh nào được chọn.");
-        }
-
+        formData.append("visitorName", newVisitor.visitorName);
+        formData.append("companyName", newVisitor.companyName);
+        formData.append("phoneNumber", newVisitor.phoneNumber);
+        formData.append("credentialsCard", newVisitor.credentialsCard);
+        formData.append(
+          "credentialCardTypeId",
+          newVisitor.credentialCardTypeId.toString()
+        );
+        formData.append(
+          "visitorCredentialImageFromRequest",
+          newVisitor.visitorCredentialImageFromRequest.toString()
+        );
         return {
           url: "/", // Ensure this matches the endpoint
           method: "POST",
@@ -57,7 +67,7 @@ export const visitorAPI = createApi({
         phoneNumber: string;
         credentialsCard: string;
         credentialCardTypeId: number;
-        visitorCredentialImageFromRequest?: File;
+        visitorCredentialImageFromRequest: string;
       }
     >({
       query: ({ id, ...updatedVisitor }) => {
@@ -70,13 +80,10 @@ export const visitorAPI = createApi({
           "credentialCardTypeId",
           updatedVisitor.credentialCardTypeId.toString()
         );
-
-        if (updatedVisitor.visitorCredentialImageFromRequest) {
-          formData.append(
-            "visitorCredentialImageFromRequest",
-            updatedVisitor.visitorCredentialImageFromRequest
-          );
-        }
+        formData.append(
+          "VisitorCredentialImageFromRequest",
+          updatedVisitor.visitorCredentialImageFromRequest.toString()
+        );
 
         return {
           url: `/${id}`,
@@ -109,4 +116,5 @@ export const {
   useUpdateVisitorMutation,
   useDeleteVisitorMutation,
   useGetVisitorByCredentialCardQuery,
+  useGetVisitorByIdQuery,
 } = visitorAPI;

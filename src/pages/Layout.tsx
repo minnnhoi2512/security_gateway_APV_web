@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
 import { Button, Layout } from "antd";
-import "@fontsource/inter"; 
+import "@fontsource/inter";
 import MenuNav from "../UI/MenuNav";
-
+import { useGetDetailUserQuery } from "../services/user.service";
+import DefaultUserImage from "../assets/default-user-image.png";
 type Props = {
   children: React.ReactNode;
 };
@@ -12,9 +13,24 @@ const { Header, Sider, Content } = Layout;
 
 const LayoutPage = ({ children }: Props) => {
   const [collapsed, setCollapsed] = useState(false);
+  const userId = Number(localStorage.getItem("userId"));
 
-  const userName = localStorage.getItem("userName");
-  const userRole = localStorage.getItem("userRole");
+  // Assuming getUserDetail is the type of the data returned from the query
+  const { data } = useGetDetailUserQuery(userId);
+  const getRoleDisplayName = (roleName: string) => {
+    switch (roleName) {
+      case "Staff":
+        return "Nhân viên";
+      case "DepartmentManager":
+        return "Quản lý phòng ban";
+      case "Manager":
+        return "Quản lý";
+      case "Admin":
+        return "ADMIN";
+      default:
+        return roleName;
+    }
+  };
   const sharedBackgroundColor = "#34495e";
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -48,12 +64,19 @@ const LayoutPage = ({ children }: Props) => {
             <div className="flex items-center mb-4">
               <img
                 className="w-[40px] h-[40px] rounded-full"
-                src="https://thanhnien.mediacdn.vn/Uploaded/haoph/2021_10_21/jack-va-thien-an-5805.jpeg"
+                src={data?.image || DefaultUserImage}
                 alt="User"
               />
               <div className="ml-3">
-                <h1 className="text-sm font-medium text-white">{userName}</h1>
-                <h2 className="text-xs text-gray-300">{userRole}</h2>
+                <h1 className="text-sm font-medium text-white">
+                  {data?.fullName}
+                </h1>
+                <h2 className="text-xs text-gray-300">
+                  {getRoleDisplayName(data?.role.roleName)}
+                </h2>
+                <h2 className="text-xs text-gray-300">
+                  {data?.department.departmentName}
+                </h2>
               </div>
             </div>
             <div className="border-t border-gray-400"></div>

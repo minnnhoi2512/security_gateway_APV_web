@@ -12,7 +12,9 @@ const initialState: Visitor = {
     updatedDate: new Date(),
     status : "",
     credentialsCard : "",
-    credentialCardTypeId: 0,
+    credentialCardType : {
+      credentialCardTypeId : 0,
+    }
 };
 
 const visitorSlice = createSlice({

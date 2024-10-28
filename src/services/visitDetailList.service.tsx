@@ -31,7 +31,19 @@ export const visitDetailListAPI = createApi({
     >({
       query: ({ newVisitDetailList }) => {
         return {
-          url: "",
+          url: "/Daily",
+          method: "POST",
+          body: newVisitDetailList, // Include the body in the request
+        };
+      },
+    }),
+    createNewScheduleVisit: builder.mutation<
+      VisitDetailList,
+      { newVisitDetailList: VisitDetailList }
+    >({
+      query: ({ newVisitDetailList }) => {
+        return {
+          url: "/",
           method: "POST",
           body: newVisitDetailList, // Include the body in the request
         };
@@ -44,4 +56,5 @@ export const visitDetailListAPI = createApi({
 export const {
   useGetListDetailVisitQuery,
   useCreateNewListDetailVisitMutation,
+  useCreateNewScheduleVisitMutation
 } = visitDetailListAPI;
