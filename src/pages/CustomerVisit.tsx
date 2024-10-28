@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button, Table, Input, Space, Tag, Spin } from "antd";
+import { Button, Table, Input, Space, Tag } from "antd";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
 import { TableProps } from "antd";
 import { useNavigate } from "react-router-dom";
@@ -11,6 +11,11 @@ import {
   useGetListVisitByDepartmentManagerIdQuery,
   useGetListVisitQuery,
 } from "../services/visitList.service";
+import CustomPagination from "../components/Pagination";
+import FilterVisit from "../components/FilterVisit";
+import { useDispatch, useSelector } from "react-redux";
+import { toggleStatusTab } from "../redux/slices/filterTab.slice";
+import VisitDetailList from "../types/VisitDetailListType";
 
 const CustomerVisit = () => {
   const userRole = localStorage.getItem("userRole");
@@ -19,8 +24,12 @@ const CustomerVisit = () => {
   const [searchText, setSearchText] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("Active");
 
+  let data: any = [];
+  // const totalPages = Math.ceil(data.length / pageSize);
+  const dispatch = useDispatch();
+  const visit  = useSelector<any>(s => s.visitDetailList.data) as []
+  const isFiltering  = useSelector<any>(s => s.visitDetailList.isFiltering) as boolean
   // Fetching data using the query
-  let data = [];
   let isLoading = true;
   let refetch;
 
@@ -34,6 +43,7 @@ const CustomerVisit = () => {
       pageSize: -1,
       createdById: userId,
     });
+
     data = staffData;
     isLoading = staffLoading;
     refetch = refetchStaff;
@@ -64,7 +74,20 @@ const CustomerVisit = () => {
     isLoading = allLoading;
     refetch = refetchAll;
   }
-
+  if(isFiltering){
+    data = visit
+  }
+  // const handlePageChange = (page: number, size: number) => {
+  //   setCurrentPage(page);
+  //   // Call your API with the new page number and size
+  //   refetch({ pageNumber: page, pageSize: size });
+  // };
+  // const handlePageSizeChange = (size: number) => {
+  //   setPageSize(size);
+  //   setCurrentPage(1); // Reset to the first page when page size changes
+  //   // Call your API with updated page size
+  //   refetch({ pageNumber: 1, pageSize: size });
+  // };
   const columns: TableProps<VisitListType>["columns"] = [
     {
       title: "Tiêu đề",
@@ -175,7 +198,9 @@ const CustomerVisit = () => {
     refetch(); // Automatically refetch the data when status changes
     // console.log(data)
   };
-
+  const handleFilterTabs = () => {
+    dispatch(toggleStatusTab());
+  }
   useEffect(() => {
     refetch();
   }, [statusFilter]);
@@ -230,23 +255,38 @@ const CustomerVisit = () => {
         >
           Đang đợi
         </Button>
+        <Button
+          type={"default"}
+          onClick={handleFilterTabs}
+        >
+          Bộ lọc tìm kiếm
+        </Button>
       </Space>
-      <Spin spinning={isLoading}>
-        <Table
-          columns={columns}
-          dataSource={data}
-          pagination={{
-            total: data?.length,
-            showSizeChanger: true,
-            pageSizeOptions: ["5", "10", "20"],
-            hideOnSinglePage: false,
-            size: "small",
-          }}
-          rowKey="visitId"
-          bordered
-        />
-      </Spin>
+
+      <Table
+        columns={columns}
+        dataSource={data}
+        pagination={{
+          total: data?.length,
+          showSizeChanger: true,
+          pageSizeOptions: ["5", "10", "20"],
+          hideOnSinglePage: false,
+          size: "small",
+        }}
+        rowKey="visitId"
+        bordered
+        loading={isLoading}
+      />
+      {/* <CustomPagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        pageSize={pageSize}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
+      /> */}
+      <FilterVisit/>
     </Content>
+    
   );
 };
 

@@ -3,7 +3,7 @@ import {
   useCreateNewScheduleMutation,
   useGetListScheduleQuery,
 } from "../services/schedule.service";
-import ScheduleType from "../types/ScheduleType";
+import ScheduleType from "../types/scheduleType";
 import { useNavigate } from "react-router-dom";
 import { useGetListScheduleTypeQuery } from "../services/scheduleType.service";
 import { useState } from "react";

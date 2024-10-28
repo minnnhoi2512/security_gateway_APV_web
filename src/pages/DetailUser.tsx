@@ -7,7 +7,7 @@ import {
   useGetDetailUserQuery,
   useGetListUserByRoleQuery,
 } from "../services/user.service";
-import User from "../types/UserType";
+import User from "../types/userType";
 import { v4 as uuidv4 } from "uuid"; // Import uuid for unique file names
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"; // Import Firebase functions
 import { imageDB } from "../api/firebase"; // Import your Firebase configuration

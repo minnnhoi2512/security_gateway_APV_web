@@ -1,19 +1,10 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import baseAPI from "../api/baseAPI";
-import { getToken } from "../utils/jwtToken";
 
 export const visitorAPI = createApi({
   reducerPath: "visitorAPI",
   baseQuery: fetchBaseQuery({
     baseUrl: `${baseAPI}/api/Visitor`,
-    prepareHeaders: (headers) => {
-      const token = getToken();
-      if (token) {
-        headers.set("Authorization", `Bearer ${token}`);
-      }
-      headers.set("Content-Type", "application/json"); // Default content type
-      return headers;
-    },
   }),
   endpoints: (builder) => ({
     getAllVisitors: builder.query<
@@ -50,12 +41,13 @@ export const visitorAPI = createApi({
         }
 
         return {
-          url: "/",
+          url: "/", // Ensure this matches the endpoint
           method: "POST",
           body: formData,
         };
       },
     }),
+
     updateVisitor: builder.mutation<
       void,
       {
@@ -79,36 +71,35 @@ export const visitorAPI = createApi({
           updatedVisitor.credentialCardTypeId.toString()
         );
 
-        // Nếu có hình ảnh, thêm vào `FormData`
         if (updatedVisitor.visitorCredentialImageFromRequest) {
           formData.append(
             "visitorCredentialImageFromRequest",
             updatedVisitor.visitorCredentialImageFromRequest
           );
         }
-    
+
         return {
           url: `/${id}`,
           method: "PUT",
           body: formData,
         };
       },
+      extraOptions: {
+        skipDefaultHeaders: true,
+      },
     }),
-    
     deleteVisitor: builder.mutation<void, { id: number }>({
       query: ({ id }) => ({
         url: `${id}`,
         method: "DELETE",
       }),
     }),
-    getVisitorByCredentialCard: builder.query<any, { CredentialCard: string }>(
-      {
-        query: ({ CredentialCard }) => ({
-          url: `/CredentialCard/${CredentialCard}`,
-          method: "GET",
-        }),
-      }
-    ),
+    getVisitorByCredentialCard: builder.query<any, { CredentialCard: string }>({
+      query: ({ CredentialCard }) => ({
+        url: `/CredentialCard/${CredentialCard}`,
+        method: "GET",
+      }),
+    }),
   }),
 });
 

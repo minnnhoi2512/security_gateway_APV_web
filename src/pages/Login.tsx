@@ -1,28 +1,33 @@
-import { useState, useEffect } from 'react';
-import { LockOutlined, UserOutlined } from '@ant-design/icons';
-import LoginImg from '../assets/login-img.jpeg';
-import { useNavigate } from 'react-router-dom';
-import { useLoginUserMutation } from '../services/user.service';
-import { jwtDecode } from 'jwt-decode'; // Import jwt-decode
-import { toast } from 'react-toastify'; // Import toast for notification
-import 'react-toastify/dist/ReactToastify.css'; // Import toast styles
+import { useState, useEffect, useRef } from "react";
+import { LockOutlined, UserOutlined } from "@ant-design/icons";
+import LoginImg from "../assets/login-img.jpg";
+import { useNavigate } from "react-router-dom";
+import { useLoginUserMutation } from "../services/user.service";
+import { jwtDecode } from "jwt-decode"; // Import jwt-decode
+import { toast } from "react-toastify"; // Import toast for notification
+import "react-toastify/dist/ReactToastify.css"; // Import toast styles
+import SetSignalR from '../utils/signalR';
+import UserConnectionHubType from '../types/userConnectionHubType';
+import { useDispatch } from 'react-redux';
 
 function Login() {
   const [rememberMe, setRememberMe] = useState(false);
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const navigate = useNavigate();
   const [loginUser, { isLoading }] = useLoginUserMutation();
+  const connection = useRef<signalR.HubConnection | null>(null);
+  const dispatch = useDispatch()
 
   // Check for existing token on component mount
   useEffect(() => {
-    const token = localStorage.getItem('jwtToken');
+    const token = localStorage.getItem("jwtToken");
     if (token) {
       // If a token exists, decode it and check the role
       const decodedToken: any = jwtDecode(token);
-      if (decodedToken.role !== 'Security') {
+      if (decodedToken.role !== "Security") {
         // If the role is not 'Security', redirect to dashboard
-        navigate('/dashboard');
+        navigate("/dashboard");
       }
     }
   }, [navigate]);
@@ -38,26 +43,30 @@ function Login() {
       // console.log(decodedToken);
       // console.log(result);
       // Check if the role is 'Security' and prevent access
-      if (decodedToken.role === 'Security') {
-        toast.error('Người dùng này không có quyền truy cập vào hệ thống');
+      if (decodedToken.role === "Security") {
+        toast.error("Người dùng này không có quyền truy cập vào hệ thống");
         return; // Stop further actions
       }
 
       // Save the token and other details in localStorage
-      localStorage.setItem('jwtToken', jwtToken);
-      localStorage.setItem('userRole', decodedToken.role);
-      localStorage.setItem('userId', result.userId);
-      localStorage.setItem('userName', result.userName);
-      localStorage.setItem('departmentId', decodedToken.departmentId);
+      localStorage.setItem("jwtToken", jwtToken);
+      localStorage.setItem("userRole", decodedToken.role);
+      localStorage.setItem("userId", result.userId);
+      localStorage.setItem("userName", result.userName);
+      localStorage.setItem("departmentId", decodedToken.departmentId);
 
       // Success toast notification
-      toast.success('Đăng nhập thành công!');
-
+      toast.success("Đăng nhập thành công!");
+      const user : UserConnectionHubType = {
+        userId : result.userId,
+        role : decodedToken.role
+      }
+      await SetSignalR.SetSignalR(user, connection, dispatch);
       // Navigate to dashboard after successful login
-      navigate('/dashboard');
+      navigate("/dashboard");
     } catch (error) {
-      console.error('Login failed:', error);
-      toast.error('Đăng nhập thất bại. Vui lòng thử lại.');
+      console.error("Login failed:", error);
+      toast.error("Đăng nhập thất bại. Vui lòng thử lại.");
     }
   };
 
@@ -66,7 +75,7 @@ function Login() {
       {/* Left side - Image */}
       <div className="hidden lg:block lg:w-1/2">
         <img
-          className="object-cover w-full h-full"
+          className="object-contain w-full h-full"
           src={LoginImg}
           alt="Modern office building"
         />
@@ -76,11 +85,16 @@ function Login() {
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <LockOutlined className="text-4xl text-blue-500" />
-            <h2 className="mt-6 text-3xl font-extrabold text-gray-900">Security Gate Apache</h2>
+            <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
+              Security Gate Apache
+            </h2>
           </div>
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Địa chỉ email
               </label>
               <div className="mt-1 relative rounded-md shadow-sm">
@@ -100,7 +114,10 @@ function Login() {
               </div>
             </div>
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Mật khẩu
               </label>
               <div className="mt-1 relative rounded-md shadow-sm">
@@ -129,12 +146,18 @@ function Login() {
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
                 />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
+                <label
+                  htmlFor="remember-me"
+                  className="ml-2 block text-sm text-gray-900"
+                >
                   Ghi nhớ
                 </label>
               </div>
               <div className="text-sm">
-                <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
+                <a
+                  href="#"
+                  className="font-medium text-blue-600 hover:text-blue-500"
+                >
                   Quên mật khẩu?
                 </a>
               </div>
@@ -144,7 +167,7 @@ function Login() {
                 type="submit"
                 className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
-                {isLoading ? 'Đang đăng nhập...' : 'Đăng nhập'}
+                {isLoading ? "Đang đăng nhập..." : "Đăng nhập"}
               </button>
             </div>
           </form>

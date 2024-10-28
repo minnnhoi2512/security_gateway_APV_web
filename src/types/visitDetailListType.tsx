@@ -1,11 +1,11 @@
-import VisitDetail from "./VisitDetailType";
+import VisitDetail from "./visitDetailType";
 
 type VisitDetailList = {
   expectedStartTime?: Date | null;
   expectedEndTime?: Date | null;
   acceptLevel?: number;
   visitName?: string;
-  description?: Draft.DraftModel.Encoding.RawDraftContentState;
+  description?: string;
   visitQuantity: number;
   scheduleId: number;
   visitType?: string;

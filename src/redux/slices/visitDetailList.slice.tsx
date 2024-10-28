@@ -1,7 +1,7 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-import visitDetailListType from "../../types/VisitDetailListType";
-import VisitDetail from "../../types/VisitDetailType";
+import visitDetailListType from "../../types/visitDetailListType";
+import VisitDetail from "../../types/visitDetailType";
 import Visitor from "../../types/visitorType";
 
 const initVisitor: Visitor = {
@@ -24,20 +24,31 @@ const initVisitDetail: VisitDetail = {
   status: true,
   visitor: initVisitor,
 };
-const initialState: visitDetailListType = {
+const initialState: visitDetailListType[] = [{
   visitQuantity: 0,
   scheduleId: 0,
-  visitType: "",
+  visitType: "teststs",
   daysOfProcess: "",
   visitDetail: [initVisitDetail],
-};
+}];
 
 const visitDetailListSlice = createSlice({
   name: "visitDetailList",
-  initialState,
-  reducers: {},
+  initialState: {
+    data : [] as visitDetailListType[],
+    isFiltering : false
+  },
+  reducers: {
+    setListOfVisitList(state, action : PayloadAction<visitDetailListType[]>){
+      state.data = action.payload
+      state.isFiltering = true
+    },
+    cancelFilter(state){
+      state.isFiltering = false
+    }
+  },
 });
 
 const visitDetailListReducer = visitDetailListSlice.reducer;
-
+export const {setListOfVisitList, cancelFilter} = visitDetailListSlice.actions
 export default visitDetailListReducer;

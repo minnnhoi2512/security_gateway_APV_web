@@ -1,6 +1,6 @@
 
 import { createSlice } from "@reduxjs/toolkit";
-import DepartmentType from "../../types/DepartmentType";
+import DepartmentType from "../../types/departmentType";
 
 const initialState: DepartmentType = {
     departmentId: 0,

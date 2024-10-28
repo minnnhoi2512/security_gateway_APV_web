@@ -1,6 +1,6 @@
 type QRCard = {
-    qrCardId?: number;
-    cardVerification?: string;
+    qrCardId: number;
+    cardVerification: string;
     createDate?: Date;
     lastCancelDate?: Date;
     cardImage?: string;
