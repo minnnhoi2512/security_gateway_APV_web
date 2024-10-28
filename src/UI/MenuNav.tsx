@@ -38,6 +38,7 @@ const MenuNav = () => {
 
   const allMenuItems = [
     { key: "dashboard", icon: <HomeOutlined />, label: "Thông tin chung" },
+    { key: "departManager", icon: <SolutionOutlined />, label: "Danh sách phòng ban" },
     { key: "visitorManager", icon: <TeamOutlined />, label: "Nhóm khách" },
     { key: "customerVisit", icon: <ContactsOutlined />, label: "Danh sách khách" },
     { key: "staff", icon: <SolutionOutlined />, label: "Danh sách nhân viên" },

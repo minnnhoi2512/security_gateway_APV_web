@@ -4,7 +4,13 @@ import baseAPI from "../api/baseAPI";
 
 export const departmentAPI = createApi({
   reducerPath: "departmentAPI",
-  baseQuery: fetchBaseQuery({ baseUrl: `${baseAPI}/api/Department/` }),
+  baseQuery: fetchBaseQuery({
+    baseUrl: `${baseAPI}/api/Department/`,
+    prepareHeaders: (headers) => {
+      headers.set("Content-Type", "application/json");
+      return headers;
+    },
+  }),
   endpoints: (builder) => ({
 
     getListDepartments: builder.query<any, { pageNumber: number; pageSize: number }>({
