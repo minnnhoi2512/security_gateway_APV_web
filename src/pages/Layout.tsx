@@ -4,6 +4,8 @@ import { Avatar, Badge, Button, Dropdown, Layout, Space } from "antd";
 import { useNavigate } from "react-router-dom";
 import "@fontsource/inter"; 
 import MenuNav from "../UI/MenuNav";
+import { useGetDetailUserQuery } from "../services/user.service";
+import DefaultUserImage from "../assets/default-user-image.png";
 import { MenuProps } from "antd/lib";
 import { useDispatch, useSelector } from "react-redux";
 import NotificationType from "../types/notificationType";
@@ -19,11 +21,28 @@ const { Header, Sider, Content } = Layout;
 
 const LayoutPage = ({ children }: Props) => {
   const [collapsed, setCollapsed] = useState(false);
+  const userId = Number(localStorage.getItem("userId"));
+
+  // Assuming getUserDetail is the type of the data returned from the query
+  const { data: data1 } = useGetDetailUserQuery(userId);
+  const getRoleDisplayName = (roleName: string) => {
+    switch (roleName) {
+      case "Staff":
+        return "Nhân viên";
+      case "DepartmentManager":
+        return "Quản lý phòng ban";
+      case "Manager":
+        return "Quản lý";
+      case "Admin":
+        return "ADMIN";
+      default:
+        return roleName;
+    }
+  };
   const navigate = useNavigate();
   const [markAsRead] = useMarkNotiReadMutation()
   const userName = localStorage.getItem("userName") || "User";
   const userRole = localStorage.getItem("userRole") || "Role";
-  const userId = localStorage.getItem("userId");
   const takingNew = useSelector<any>(s => s.notification.takingNew) as boolean
   var data = []
   var isloading = false
@@ -118,12 +137,19 @@ const LayoutPage = ({ children }: Props) => {
             <div onClick={handleProfileClick} className="flex items-center mb-4 cursor-pointer">
               <img
                 className="w-[40px] h-[40px] rounded-full"
-                src="https://thanhnien.mediacdn.vn/Uploaded/haoph/2021_10_21/jack-va-thien-an-5805.jpeg"
+                src={data1?.image || DefaultUserImage}
                 alt="User"
               />
               <div className="ml-3">
-                <h1 className="text-sm font-medium text-white">{userName}</h1>
-                <h2 className="text-xs text-gray-300">{userRole}</h2>
+                <h1 className="text-sm font-medium text-white">
+                  {data1?.fullName}
+                </h1>
+                <h2 className="text-xs text-gray-300">
+                  {getRoleDisplayName(data1?.role.roleName)}
+                </h2>
+                <h2 className="text-xs text-gray-300">
+                  {data1?.department.departmentName}
+                </h2>
               </div>
             </div>
             <div className="border-t border-gray-400"></div>

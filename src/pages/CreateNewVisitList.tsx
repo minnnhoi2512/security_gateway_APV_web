@@ -19,7 +19,10 @@ import { useEffect, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import dayjs, { Dayjs } from "dayjs";
 import { useGetVisitorByCredentialCardQuery } from "../services/visitor.service";
-import { useCreateNewListDetailVisitMutation } from "../services/visitDetailList.service";
+import {
+  useCreateNewListDetailVisitMutation,
+  useCreateNewScheduleVisitMutation,
+} from "../services/visitDetailList.service";
 import moment from "moment";
 import { EditorState } from "draft-js";
 import { useDebounce } from "use-debounce";
@@ -48,11 +51,10 @@ const CreateNewVisitList: React.FC = () => {
   const location = useLocation();
   const { state } = location;
   // console.log(state.from.id);
-  let duration: number = 0;
+
   let daysOfSchedule: string = "";
   let scheduleTypeName: string = "";
   try {
-    duration = state?.from?.schedule?.duration ?? undefined;
     daysOfSchedule = state?.from?.schedule?.daysOfSchedule ?? undefined;
     scheduleTypeName =
       state?.from?.schedule?.scheduleType?.scheduleTypeName ?? undefined;
@@ -76,10 +78,11 @@ const CreateNewVisitList: React.FC = () => {
     }[]
   >([]);
   const [createNewListDetailVisit] = useCreateNewListDetailVisitMutation();
+  const [createNewScheduleVisit] = useCreateNewScheduleVisitMutation();
+
   const [editorState, setEditorState] = useState(EditorState.createEmpty());
   const [debouncedCredentialCard] = useDebounce(credentialCard, 300);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const [selectedDate, setSelectedDate] = useState<Dayjs>();
   const {
     data: visitorData,
     isSuccess: isVisitorDataFetched,
@@ -89,11 +92,33 @@ const CreateNewVisitList: React.FC = () => {
     { skip: debouncedCredentialCard.length !== 12 }
   );
   // const [isLoading, setIsLoading] = useState(false);
+  const [isModalCalendarVisible, setIsModalCalendarVisible] = useState(false);
   const [startHourForAll, setStartHourForAll] = useState<string | null>(null);
   const [endHourForAll, setEndHourForAll] = useState<string | null>(null);
   const visitQuantity = form.getFieldValue("visitQuantity");
   const [showCreateVisitor, setShowCreateVisitor] = useState(false);
 
+  const [expectedStartTime, setExpectedStartTime] = useState<Dayjs | null>(
+    null
+  );
+  const [expectedEndTime, setExpectedEndTime] = useState<Dayjs | null>(null);
+  // console.log(expectedStartTime);
+  const showModalCalendar = (type: any) => {
+    setIsModalCalendarVisible(true);
+    if (type === "ProcessWeek") {
+      setIsWeekCalendarVisible(true);
+      setIsMonthCalendarVisible(false);
+    } else if (type === "ProcessMonth") {
+      setIsMonthCalendarVisible(true);
+      setIsWeekCalendarVisible(false);
+    }
+  };
+
+  const handleCancelCalendar = () => {
+    setIsModalCalendarVisible(false);
+    setIsMonthCalendarVisible(false);
+    setIsWeekCalendarVisible(false);
+  };
   const handleAddNewVisitor = () => {
     setShowCreateVisitor(true);
   };
@@ -105,6 +130,8 @@ const CreateNewVisitList: React.FC = () => {
     // console.log(visitorData);
     setSearchResults([visitorData]);
   };
+  const [isMonthCalendarVisible, setIsMonthCalendarVisible] = useState(false);
+  const [isWeekCalendarVisible, setIsWeekCalendarVisible] = useState(false);
   useEffect(() => {
     // Clear the timeout on every input change
     if (timeoutRef.current) {
@@ -259,28 +286,38 @@ const CreateNewVisitList: React.FC = () => {
           : null,
         createById: userId,
         description: htmlContent,
-        scheduleId: 6,
+        scheduleId: 2,
         visitDetail: selectedVisitors.map((visitor) => ({
           expectedStartHour: visitor.startHour,
           expectedEndHour: visitor.endHour,
           visitorId: visitor.visitorId,
         })),
+        responsiblePersonId: userId,
       };
       if (
         scheduleTypeName === "ProcessWeek" ||
         scheduleTypeName === "ProcessMonth"
       ) {
-        requestData.expectedEndTime = formData.expectedStartTime
-          ? moment(formData.expectedStartTime).add(duration, "days").toDate() // Calculate the end time based on duration
-          : null;
-        requestData.scheduleId = state.from.id; // Update scheduleId to state.from.id
+        requestData.expectedStartTime = expectedStartTime?.toDate();
+        requestData.expectedEndTime = expectedEndTime?.toDate();
+        // console.log(state.from.schedule.scheduleId)
+        requestData.scheduleId = state.from.schedule.scheduleId // Update scheduleId to state.from.id
       }
       try {
-        await createNewListDetailVisit({
-          newVisitDetailList: requestData,
-        }).unwrap(); // unwrapping for better error handling
+        if (
+          scheduleTypeName === "ProcessWeek" ||
+          scheduleTypeName === "ProcessMonth"
+        ) {
+          await createNewScheduleVisit({
+            newVisitDetailList: requestData,
+          }).unwrap();
+        } else {
+          await createNewListDetailVisit({
+            newVisitDetailList: requestData,
+          }).unwrap(); // unwrapping for better error handling
+        }
         message.success("Lịch hẹn đã được tạo thành công!");
-        navigate("/customerVisit");
+        navigate("/customerVisit", { state: { statusCreate: true } });
       } catch (error: any) {
         console.log(error.data.message);
         message.error("Đã có lỗi xảy ra khi tạo lịch hẹn. Vui lòng thử lại.");
@@ -301,34 +338,6 @@ const CreateNewVisitList: React.FC = () => {
 
   const prev = () => {
     setCurrentStep(currentStep - 1);
-  };
-  const popUpReviewSchedule = (date: Dayjs) => {
-    let content;
-
-    if (scheduleTypeName === "ProcessWeek") {
-      content = (
-        <ReadOnlyWeekCalendar
-          daysOfSchedule={daysOfSchedule}
-          duration={duration}
-          selectedDate={date}
-        />
-      );
-    } else if (scheduleTypeName === "ProcessMonth") {
-      content = (
-        <ReadOnlyMonthCalendar
-          daysOfSchedule={daysOfSchedule}
-          duration={duration}
-          selectedDate={date}
-        />
-      );
-    }
-
-    // Open modal with the content
-    Modal.info({
-      title: "Xem trước lịch",
-      content: <div>{content}</div>,
-      width: 800,
-    });
   };
 
   const handleSelectVisitor = (visitor: any) => {
@@ -404,7 +413,16 @@ const CreateNewVisitList: React.FC = () => {
     });
     setSelectedVisitors([...selectedVisitors]); // Trigger a re-render
   };
+  const handleOk = () => {
+    // Logic to use expectedStartTime and expectedEndTime
+    console.log("Expected Start Time:", expectedStartTime);
+    console.log("Expected End Time:", expectedEndTime);
 
+    // Close the modal
+    setIsModalCalendarVisible(false);
+    setIsMonthCalendarVisible(false);
+    setIsWeekCalendarVisible(false);
+  };
   const handleEndHourChangeForAll = (time: any) => {
     let endHour = time?.format("HH:mm:ss");
     const isEndHourValid = dayjs(endHour, "HH:mm:ss").isAfter(
@@ -604,35 +622,60 @@ const CreateNewVisitList: React.FC = () => {
             >
               <InputNumber />
             </Form.Item>
-            <Form.Item
-              name="expectedStartTime"
-              label="Ngày đến thăm"
-              rules={[{ required: true, message: "Vui lòng chọn thời gian" }]}
-            >
-              <DatePicker
-                format={"DD/MM/YYYY"}
-                disabledDate={(current) =>
-                  current && current < moment().startOf("day")
-                }
-                onChange={(date) => setSelectedDate(date)} // Set the selected date in state
-              />
-            </Form.Item>
-            {(scheduleTypeName === "ProcessWeek" ||
-              scheduleTypeName === "ProcessMonth") && (
-              <>
-                {selectedDate && ( // Render the button only if a date is selected
-                  <Button
-                    className="mx-2"
-                    type="primary"
-                    onClick={() => {
-                      popUpReviewSchedule(selectedDate); // Pass the selected date
-                    }}
-                  >
-                    Xem trước lịch
-                  </Button>
+            {scheduleTypeName !== "ProcessWeek" &&
+              scheduleTypeName !== "ProcessMonth" && (
+                <Form.Item
+                  name="expectedStartTime"
+                  label="Ngày đến thăm"
+                  rules={[
+                    { required: true, message: "Vui lòng chọn thời gian" },
+                  ]}
+                >
+                  <DatePicker
+                    format={"DD/MM/YYYY"}
+                    disabledDate={(current) =>
+                      current && current < moment().startOf("day")
+                    }
+                  />
+                </Form.Item>
+              )}
+            <>
+              {(scheduleTypeName === "ProcessWeek" ||
+                scheduleTypeName === "ProcessMonth") && (
+                <Button
+                  className="mx-2"
+                  type="primary"
+                  onClick={() => showModalCalendar(scheduleTypeName)}
+                >
+                  Chọn ngày và xem lịch
+                </Button>
+              )}
+
+              <Modal
+                title="Xem lịch"
+                visible={isModalCalendarVisible}
+                onCancel={handleCancelCalendar}
+                cancelText="Quay lại"
+                onOk={handleOk}
+                // footer={null} // You can customize the footer if needed
+              >
+                {isMonthCalendarVisible && (
+                  <ReadOnlyMonthCalendar
+                    daysOfSchedule={daysOfSchedule}
+                    setExpectedStartTime={setExpectedStartTime}
+                    setExpectedEndTime={setExpectedEndTime}
+                  />
                 )}
-              </>
-            )}
+
+                {isWeekCalendarVisible && (
+                  <ReadOnlyWeekCalendar
+                    daysOfSchedule={daysOfSchedule}
+                    setExpectedStartTime={setExpectedStartTime}
+                    setExpectedEndTime={setExpectedEndTime}
+                  />
+                )}
+              </Modal>
+            </>
             <Form.Item
               name="description"
               label="Mô tả"

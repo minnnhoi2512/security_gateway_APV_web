@@ -1,15 +1,5 @@
-import { useRef, useState } from "react";
-import {
-  Button,
-  Table,
-  Input,
-  Tag,
-  Space,
-  Modal,
-  Form,
-  notification,
-  Select,
-} from "antd";
+import { useState } from "react";
+import { Button, Table, Input, Tag, Space, Modal, notification } from "antd";
 import {
   SearchOutlined,
   PlusOutlined,
@@ -19,50 +9,44 @@ import moment from "moment-timezone";
 import { Content } from "antd/es/layout/layout";
 import {
   useGetAllVisitorsQuery,
-  useUpdateVisitorMutation,
   useDeleteVisitorMutation,
 } from "../services/visitor.service";
 import CreateNewVisitor from "../form/CreateNewVisitor";
+import DetailVisitor from "../components/DetailVisitor";
+import Visitor from "../types/visitorType";
 
 const { confirm } = Modal;
-const { Option } = Select;
+
 const VisitorManager = () => {
   const [searchText, setSearchText] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(5);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
-  const [form] = Form.useForm();
-  const [editingVisitor, setEditingVisitor] = useState<any>(null);
-  const [faceImg, setFaceImg] = useState<File | null>(null);
-  const [credentialCardTypeId, setCredentialCardTypeId] = useState<
-    number | null
-  >(null);
-  const [updateVisitor, { isLoading: isUpdating }] = useUpdateVisitorMutation();
   const [deleteVisitor] = useDeleteVisitorMutation();
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  // State to store base64 image for preview
-  const [imageBase64, setImageBase64] = useState<string | null>(null);
+  const [idVisitor, setIdVisitor] = useState<number>(0);
+  const userRole = localStorage.getItem("userRole");
 
   const {
     data,
     isLoading: isLoadingData,
     error,
     refetch,
-  } = useGetAllVisitorsQuery({
-    pageNumber: currentPage,
-    pageSize,
-  });
+  } = useGetAllVisitorsQuery({ pageNumber: -1, pageSize: -1 }); // Fetch all visitors
+  let visitors: Visitor[] = data ? data : [];
 
-  const visitors = data ? data : [];
-  const totalVisitors = data ? data.length : 0;
+  // Filter visitors based on userRole after fetching
+  if (userRole === "Staff" || userRole === "DepartmentManager") {
+    visitors = visitors.filter(
+      (visitor: Visitor) => visitor.status === "Active"
+    );
+  }
 
+  const totalVisitors = visitors.length; // Total visitors after filtering
   const filteredData = visitors.filter((visitor: any) =>
     visitor.visitorName.toLowerCase().includes(searchText.toLowerCase())
   );
-  const handleCredentialCardTypeChange = (value: number) => {
-    setCredentialCardTypeId(value);
-  };
+
   const columns = [
     {
       title: "Tên khách",
@@ -127,23 +111,50 @@ const VisitorManager = () => {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-      render: (status: string) => (
-        <Tag color={status === "Active" ? "green" : "red"}>{status}</Tag>
-      ),
+      render: (status: string) => {
+        const statusText = status === "Active" ? "Hợp lệ" : "Bị cấm";
+        const tagColor = status === "Active" ? "green" : "red";
+
+        return <Tag color={tagColor}>{statusText}</Tag>;
+      },
     },
+
     {
       title: "Hành động",
       key: "actions",
-      render: (_: any, record: any) => (
-        <Space>
-          <Button type="primary" onClick={() => openEditModal(record)}>
-            Chỉnh sửa
-          </Button>
-          <Button danger onClick={() => showDeleteConfirm(record.visitorId)}>
-            Xóa
-          </Button>
-        </Space>
-      ),
+      render: (_: any, record: any) => {
+        const status = record.status; // Get the status of the current record
+
+        return (
+          <Space>
+            <Button
+              type="primary"
+              onClick={() => showEditModal(record.visitorId)}
+            >
+              Chi tiết
+            </Button>
+            {userRole !== "Staff" && userRole !== "DepartmentManager" && (
+              <>
+                {status === "Active" ? (
+                  <Button
+                    danger
+                    onClick={() => showDeleteConfirm(record.visitorId)}
+                  >
+                    Cấm
+                  </Button>
+                ) : (
+                  <Button 
+                    type="primary" // Set button type to primary for green color
+                    onClick={() => showDeleteConfirm(record.visitorId)}
+                  >
+                    Mở khóa
+                  </Button>
+                )}
+              </>
+            )}
+          </Space>
+        );
+      },
     },
   ];
 
@@ -151,125 +162,29 @@ const VisitorManager = () => {
     setSearchText(e.target.value);
   };
   const handleVisitorCreated = () => {
-    // Call refetch after creating a visitor
-    refetch();
+    refetch(); // Call refetch after creating a visitor
   };
   const handleTableChange = (pagination: any) => {
     setCurrentPage(pagination.current || 1);
     setPageSize(pagination.pageSize || 5);
   };
 
-  const showModal = () => {
-    setFaceImg(null);
-    setIsModalVisible(true);
-  };
-  const closeModal = () => {
-    setFaceImg(null);
-    setIsModalVisible(false);
-  };
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setFaceImg(file);
-      console.log("Form data: ", file);
-    }
-  };
-
-  const handleCancel = () => {
-    setFaceImg(null);
-    setImageBase64(null); // Reset the image preview when closing the modal
-    form.resetFields();
-    setIsModalVisible(false);
-    setIsEditModalVisible(false);
-
-   
-  };
-  function base64ToBinary(base64String: any) {
-    // Decode the base64 string to a binary string
-    const binaryString = atob(base64String);
-    const length = binaryString.length;
-    const bytes = new Uint8Array(length);
-
-    // Convert binary string to bytes
-    for (let i = 0; i < length; i++) {
-      bytes[i] = binaryString.charCodeAt(i); // Convert each character to a byte
-    }
-
-    return bytes; // This is the binary representation as a Uint8Array
-  }
-
-  const openEditModal = (visitor: any) => {
-    console.log("Opening edit modal with visitor:", visitor);
-   
-    setEditingVisitor(visitor);
-    const visitorImage = visitor.visitorCredentialImage
-      ? visitor.visitorCredentialImage
-      : null;
-
-    form.setFieldsValue({
-      visitorName: visitor.visitorName,
-      companyName: visitor.companyName,
-      phoneNumber: visitor.phoneNumber,
-      credentialsCard: visitor.credentialsCard,
-      credentialCardTypeId: visitor.credentialCardType.credentialCardTypeId,
-      visitorCredentialImageFromRequest: base64ToBinary(
-        visitor.visitorCredentialImage
-      ),
-    });
-    // console.log(base64ToBinary(visitor.visitorCredentialImage));
-    // console.log(form);
-    if (visitorImage) {
-      setImageBase64(visitorImage); // Show base64 image in the modal
-    }
-
+  const showEditModal = (id: number) => {
+    setIdVisitor(id);
     setIsEditModalVisible(true);
   };
-
-  const handleUpdate = async () => {
-    try {
-      const values = await form.validateFields();
-  
-      // Use faceImg or existing image from the form fields
-      const finalValues = {
-        ...values,
-        visitorCredentialImageFromRequest:
-          faceImg || form.getFieldValue("visitorCredentialImageFromRequest"),
-      };
-  
-      // Update the visitor's information
-      await updateVisitor({
-        id: editingVisitor.visitorId,
-        ...finalValues,
-      }).unwrap();
-  
-      // Close modal and reset form
-      setIsEditModalVisible(false);
-      form.resetFields();
-  
-      // Clear the file input by resetting the ref
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-  
-      notification.success({
-        message: "Thành công",
-        description: "Cập nhật thông tin khách thành công.",
-      });
-  
-      // Reset faceImg for the next operation
-      setFaceImg(null);
-      setImageBase64(null); // Optionally reset the displayed image
-  
-      // Refetch the updated data
-      refetch();
-    } catch (error) {
-      console.error("Update visitor error:", error);
-      notification.error({
-        message: "Thất bại",
-        description: "Cập nhật thông tin khách thất bại, vui lòng thử lại.",
-      });
-    }
+  const closeEditModal = () => {
+    refetch();
+    setIsEditModalVisible(false);
   };
+
+  const showCreateModal = () => {
+    setIsModalVisible(true);
+  };
+  const closeCreateModal = () => {
+    setIsModalVisible(false);
+  };
+
   const showDeleteConfirm = (visitorId: number) => {
     confirm({
       title: "Bạn có chắc chắn muốn xóa khách này?",
@@ -284,16 +199,15 @@ const VisitorManager = () => {
           notification.success({
             message: `Xóa khách thành công!`,
           });
-          refetch();
+          refetch(); // Refetch data after deletion
         } catch (error) {
           notification.error({
             message: "Xóa khách thất bại, vui lòng thử lại.",
           });
-          console.error("Failed to delete visitor:", error);
         }
       },
       onCancel() {
-        console.log("Hủy xóa");
+        // console.log("Hủy xóa");
       },
     });
   };
@@ -325,7 +239,7 @@ const VisitorManager = () => {
         <Button
           type="primary"
           icon={<PlusOutlined />}
-          onClick={showModal}
+          onClick={showCreateModal}
           style={{ borderRadius: 5 }}
         >
           Tạo mới khách
@@ -334,110 +248,17 @@ const VisitorManager = () => {
       {isModalVisible && (
         <CreateNewVisitor
           isModalVisible={isModalVisible}
-          setIsModalVisible={closeModal}
+          setIsModalVisible={closeCreateModal}
           onVisitorCreated={handleVisitorCreated}
         />
       )}
-      {/* <Modal
-        title="Tạo mới khách"
-        open={isModalVisible}
-        onOk={handleOk}
-        confirmLoading={isCreating}
-        onCancel={handleCancel}
-        okText="Tạo mới"
-        cancelText="Hủy"
-      >
-        <Form form={form} layout="vertical">
-          <Form.Item label="Tên khách" name="visitorName" rules={[{ required: true, message: "Vui lòng nhập tên khách!" }]}>
-            <Input placeholder="Nhập tên khách" />
-          </Form.Item>
-          <Form.Item label="Công ty" name="companyName" rules={[{ required: true, message: "Vui lòng nhập tên công ty!" }]}>
-            <Input placeholder="Nhập tên công ty" />
-          </Form.Item>
-          <Form.Item label="Số điện thoại" name="phoneNumber" rules={[{ required: true, message: "Vui lòng nhập số điện thoại!" }]}>
-            <Input placeholder="Nhập số điện thoại" />
-          </Form.Item>
-          <Form.Item label="Thẻ nhận dạng" name="credentialsCard" rules={[{ required: true, message: "Vui lòng nhập mã thẻ!" }]}>
-            <Input placeholder="Nhập mã thẻ" />
-          </Form.Item>
-          <Form.Item label="Loại thẻ nhận dạng" name="credentialCardTypeId" rules={[{ required: true, message: "Vui lòng chọn loại thẻ!" }]}>
-            <Input placeholder="Chọn loại thẻ" />
-          </Form.Item>
-          <Form.Item label="Hình ảnh thẻ" name="visitorCredentialImage" rules={[{ required: true, message: "Vui lòng nhập hình ảnh thẻ!" }]}>
-            <Input type="file" accept="image/*" onChange={handleFileChange} />
-          </Form.Item>
-        </Form>
-      </Modal> */}
-
-      {/* Edit visitor modal */}
-      <Modal
-        title="Chỉnh sửa khách"
-        open={isEditModalVisible}
-        onOk={handleUpdate}
-        confirmLoading={isUpdating}
-        onCancel={handleCancel}
-        okText="Cập nhật"
-        cancelText="Hủy"
-      >
-        <Form form={form} layout="vertical">
-          <Form.Item
-            label="Tên khách"
-            name="visitorName"
-            rules={[{ required: true, message: "Vui lòng nhập tên khách!" }]}
-          >
-            <Input placeholder="Nhập tên khách" />
-          </Form.Item>
-          <Form.Item
-            label="Công ty"
-            name="companyName"
-            rules={[{ required: true, message: "Vui lòng nhập tên công ty!" }]}
-          >
-            <Input placeholder="Nhập tên công ty" />
-          </Form.Item>
-          <Form.Item
-            label="Số điện thoại"
-            name="phoneNumber"
-            rules={[
-              { required: true, message: "Vui lòng nhập số điện thoại!" },
-            ]}
-          >
-            <Input placeholder="Nhập số điện thoại" />
-          </Form.Item>
-          <Form.Item
-            label="Thẻ nhận dạng"
-            name="credentialsCard"
-            rules={[{ required: true, message: "Vui lòng nhập mã thẻ!" }]}
-          >
-            <Input placeholder="Nhập mã thẻ" />
-          </Form.Item>
-          <Form.Item
-            label="Loại nhận dạng"
-            name="credentialCardTypeId"
-            rules={[{ required: true, message: "Vui lòng chọn loại thẻ!" }]}
-          >
-            <Select
-              placeholder="Chọn loại thẻ"
-              onChange={handleCredentialCardTypeChange}
-            >
-              <Option value={1}>Căn cước công dân</Option>
-              <Option value={2}>Giấy phép lái xe</Option>
-            </Select>
-          </Form.Item>
-          <Form>
-            {imageBase64 && (
-              <img
-                src={`data:image/jpeg;base64,${imageBase64}`}
-                alt="Credential"
-                style={{ width: "100px" }}
-              />
-            )}
-
-            <Form.Item label="Hình ảnh thẻ">
-              <Input type="file" accept="image/*" onChange={handleFileChange} />
-            </Form.Item>
-          </Form>
-        </Form>
-      </Modal>
+      {isEditModalVisible && (
+        <DetailVisitor
+          isEditModalVisible={isEditModalVisible}
+          setIsEditModalVisible={closeEditModal}
+          id={idVisitor}
+        />
+      )}
 
       {error ? (
         <p>Đã xảy ra lỗi khi tải dữ liệu!</p>

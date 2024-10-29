@@ -8,7 +8,7 @@ import { Content } from "antd/es/layout/layout";
 import VisitListType from "../types/VisitListType";
 import {
   useGetListVisitByCreatedIdQuery,
-  useGetListVisitByDepartmentManagerIdQuery,
+  useGetListVisitByDepartmentIdQuery,
   useGetListVisitQuery,
 } from "../services/visitList.service";
 import CustomPagination from "../components/Pagination";
@@ -20,6 +20,8 @@ import VisitDetailList from "../types/VisitDetailListType";
 const CustomerVisit = () => {
   const userRole = localStorage.getItem("userRole");
   const userId = Number(localStorage.getItem("userId"));
+  const departmentId = Number(localStorage.getItem("departmentId"))
+  // console.log(departmentId);
   const navigate = useNavigate();
   const [searchText, setSearchText] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("Active");
@@ -32,9 +34,9 @@ const CustomerVisit = () => {
   // Fetching data using the query
   let isLoading = true;
   let refetch;
-
+  // console.log(departmentId)
   if (userRole === "Staff") {
-    const {
+    let {
       data: staffData,
       isLoading: staffLoading,
       refetch: refetchStaff,
@@ -48,20 +50,20 @@ const CustomerVisit = () => {
     isLoading = staffLoading;
     refetch = refetchStaff;
   } else if (userRole === "DepartmentManager") {
-    const {
+    let {
       data: managerData,
       isLoading: managerLoading,
       refetch: refetchManager,
-    } = useGetListVisitByDepartmentManagerIdQuery({
+    } = useGetListVisitByDepartmentIdQuery({
       pageNumber: -1,
       pageSize: -1,
-      DepartmentManagerId: userId,
+      departmentId: departmentId,
     });
     data = managerData;
     isLoading = managerLoading;
     refetch = refetchManager;
   } else {
-    const {
+    let {
       data: allData,
       isLoading: allLoading,
       refetch: refetchAll,
