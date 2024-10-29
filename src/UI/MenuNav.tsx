@@ -76,6 +76,7 @@ const MenuNav = () => {
       icon: <ContactsOutlined />,
       label: "Danh sách khách",
     },
+    { key: "departManager", icon: <SolutionOutlined />, label: "Danh sách phòng ban" },
     { key: "staff", icon: <SolutionOutlined />, label: "Danh sách nhân viên" },
     { key: "schedule", icon: <FileTextOutlined />, label: "Tiến trình" },
     { key: "schedule-staff", icon: <FileTextOutlined />, label: "Tạo lịch tiến trình" },
