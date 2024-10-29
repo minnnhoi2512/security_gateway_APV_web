@@ -1,9 +1,15 @@
-import React, { useState } from "react";
-import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
-import { Button, Layout } from "antd";
+import React, { useEffect, useState } from "react";
+import { DownOutlined, MenuFoldOutlined, MenuUnfoldOutlined, SmileOutlined } from "@ant-design/icons";
+import { Avatar, Badge, Button, Dropdown, Layout, Space } from "antd";
 import { useNavigate } from "react-router-dom";
 import "@fontsource/inter"; 
 import MenuNav from "../UI/MenuNav";
+import { MenuProps } from "antd/lib";
+import { useDispatch, useSelector } from "react-redux";
+import NotificationType from "../types/notificationType";
+import { toast, ToastContainer } from "react-toastify";
+import { reloadNoti } from "../redux/slices/notification.slice";
+import { useGetListNotificationUserQuery, useMarkNotiReadMutation } from "../services/notification.service";
 
 type Props = {
   children: React.ReactNode;
@@ -14,11 +20,15 @@ const { Header, Sider, Content } = Layout;
 const LayoutPage = ({ children }: Props) => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
-
+  const [markAsRead] = useMarkNotiReadMutation()
   const userName = localStorage.getItem("userName") || "User";
   const userRole = localStorage.getItem("userRole") || "Role";
   const userId = localStorage.getItem("userId");
+  const takingNew = useSelector<any>(s => s.notification.takingNew) as boolean
+  var data = []
+  var isloading = false
 
+  const dispatch = useDispatch();
   const handleProfileClick = () => {
     if (userId) {
       navigate(`/profile/${userId}`);
@@ -26,11 +36,60 @@ const LayoutPage = ({ children }: Props) => {
       console.error("User ID không tồn tại.");
     }
   };
+  const {
+    data: notificaitionData,
+    isLoading: notiLoading,
+    refetch: refetchNoti,
+  } = useGetListNotificationUserQuery({
+    userId : Number(userId)
+  });
+  data = notificaitionData as NotificationType[];
+  console.log(notificaitionData as NotificationType[])
 
+  
+  var notiCount = data?.filter(s => s.readStatus == false)
+  var reload = useSelector<any>( s => s.notification.isnew) as boolean
+  useEffect(()=>{
+    if(data?.length > 0 && takingNew){
+      toast("Bạn có thông báo mới")
+      refetchNoti()
+    }
+    dispatch(reloadNoti())
+  },[takingNew])
+  const items: MenuProps['items'] = [
+  ];
+  const handleReadNotification = (id : string, isRead : boolean) =>{
+    if(!isRead){
+      markAsRead({notificationUserId : Number(id)}).then(() => {
+        refetchNoti()
+      })
+      dispatch(reloadNoti())
+    }
+
+  } 
+  if(data){
+    var reverseArray = [...data]
+    reverseArray.reverse().slice(0,10).forEach((element, index )=> {
+      items.push({
+        key: index,
+        label: (
+          <div className="inline-flex">
+            <a style={{fontWeight: `${element.readStatus == true ? "lighter": "bold"}
+              
+              `}} onClick={() => handleReadNotification(element.notificationUserID, element.readStatus)} rel="noopener noreferrer" href="#">
+            {element.notification.title}
+            <p style={{fontWeight: "lighter"}}>{element.notification.content}</p>
+            </a>
+          </div>
+        ),
+      },)
+    });
+  }
   const sharedBackgroundColor = "#34495e"; 
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
+      <ToastContainer position="top-center" containerId="NotificationToast"  />
       <Sider
         trigger={null}
         collapsible
@@ -89,6 +148,17 @@ const LayoutPage = ({ children }: Props) => {
             className="text-white"
             style={{ fontSize: "18px" }}
           />
+          <div className="top-0 right-20 absolute ">
+          <Dropdown menu={{ items }} trigger={['click']} overlayClassName="pt-1">
+            <a onClick={(e) => e.preventDefault()}>
+            <Space>
+            <Badge count={notiCount?.length}>
+            <button><Avatar shape="circle" size="default" src="/src/assets/iconNoti.png"/></button>
+            </Badge>
+            </Space>
+            </a>
+          </Dropdown>
+          </div>
         </Header>
 
         <Content className="m-6 p-6 bg-white rounded shadow min-h-[80vh]">

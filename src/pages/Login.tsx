@@ -54,7 +54,6 @@ function Login() {
       localStorage.setItem("userId", result.userId);
       localStorage.setItem("userName", result.userName);
       localStorage.setItem("departmentId", decodedToken.departmentId);
-
       // Success toast notification
       toast.success("Đăng nhập thành công!");
       const user : UserConnectionHubType = {
