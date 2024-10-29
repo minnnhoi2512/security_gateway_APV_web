@@ -70,6 +70,7 @@ const MenuNav = () => {
 
   const allMenuItems = [
     { key: "dashboard", icon: <HomeOutlined />, label: "Thông tin chung" },
+    { key: "departManager", icon: <SolutionOutlined />, label: "Danh sách phòng ban" },
     { key: "visitorManager", icon: <TeamOutlined />, label: "Nhóm khách" },
     {
       key: "customerVisit",
