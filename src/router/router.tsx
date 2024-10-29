@@ -26,11 +26,30 @@ import ChatRoom from "../pages/ChatRoom";
 import VisitorManager from "../pages/VisitorManager";
 import CreateNewSchedule from "../pages/CreateNewSchedule";
 import DetailSchedule from "../pages/DetailSchedule";
+import Profile from "../pages/Profile";
+import { useEffect, useRef } from "react";
+import { useDispatch } from "react-redux";
+import SignalR from '../utils/signalR';
+import UserConnectionHubType from "../types/userConnectionHubType";
 import ScheduleStaff from "../pages/ScheduleStaff";
 import DetailScheduleStaff from "../pages/DetailScheduleStaff";
 
 
 const ContentRouter = () => {
+
+  const userRole = localStorage.getItem("userRole"); // Get user role from local storage
+  const userId = Number(localStorage.getItem("userId"));
+  const connection = useRef<signalR.HubConnection | null>(null);
+  const dispatch = useDispatch()
+  useEffect(() => {
+    if(userRole){
+      const user : UserConnectionHubType = {
+        userId : userId,
+        role : userRole
+      }
+      SignalR.SetSignalR(user, connection, dispatch)
+    }
+  },[])
   return (
     <Routes>
       <Route
@@ -294,6 +313,13 @@ const ContentRouter = () => {
           </LayoutPage>
         }
       />
+      <Route
+        index
+        path="/profile/:idUser" 
+        element={
+          <LayoutPage>
+            <Profile />
+          </LayoutPage>} />
       <Route index path="/" element={<Login />} />
     </Routes>
   );

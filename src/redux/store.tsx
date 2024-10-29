@@ -8,6 +8,13 @@ import { qrCardAPI } from "../services/QRCard.service";
 import { departmentAPI } from "../services/department.service";
 import { visitorAPI } from "../services/visitor.service";
 import { scheduleTypeAPI } from "../services/scheduleType.service";
+import filterTabReducer from "./slices/filterTab.slice";
+import { visitGrapqlAPI } from "../services/visitGraphql.service";
+import visitDetailListReducer from "./slices/visitDetailList.slice";
+import hubConnectionReducer from "./slices/hubConnection.slice";
+import notificationReducer from "./slices/notification.slice";
+import { notificationAPI } from "../services/notification.service";
+import visitorSessionReducer from "./slices/visitorSession.slice";
 
 export const store = configureStore({
   reducer: {
@@ -19,9 +26,18 @@ export const store = configureStore({
     [departmentAPI.reducerPath]: departmentAPI.reducer,
     [visitorAPI.reducerPath]: visitorAPI.reducer,
     [scheduleTypeAPI.reducerPath]: scheduleTypeAPI.reducer,
+    [visitGrapqlAPI.reducerPath] : visitGrapqlAPI.reducer,
+    [notificationAPI.reducerPath] : notificationAPI.reducer,
+    filterTabs: filterTabReducer,
+    visitDetailList : visitDetailListReducer,
+    visitorSession : visitorSessionReducer,
+    hubConnection : hubConnectionReducer,
+    notification : notificationReducer
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware()
+    getDefaultMiddleware({
+      serializableCheck: false
+    })
       .concat(userAPI.middleware)
       .concat(visitListAPI.middleware)
       .concat(visitDetailListAPI.middleware)
@@ -30,7 +46,9 @@ export const store = configureStore({
       .concat(departmentAPI.middleware)
       .concat(visitorAPI.middleware)
       .concat(scheduleTypeAPI.middleware)
-      .concat(departmentAPI.middleware),
+      .concat(departmentAPI.middleware)
+      .concat(notificationAPI.middleware)
+      .concat(visitGrapqlAPI.middleware),
 });
 
 // Define RootState and AppDispatch types

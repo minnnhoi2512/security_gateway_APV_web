@@ -91,7 +91,8 @@ const ScheduleManager = () => {
   const [deleteSchedule] = useDeleteScheduleMutation();
   const [assignSchedule] = useAssignScheduleMutation();
   useEffect(() => {
-    refetch();
+    console.log("refetsh đi m")
+    // refetch();
   }, []);
 
   const handleDeleteSchedule = (scheduleId: number) => {

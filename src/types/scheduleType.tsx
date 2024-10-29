@@ -23,14 +23,14 @@ type Schedule = {
   createById?: number;
   createBy?: {
     userId?: number;
-    userName?: string; // Cần thêm nếu lấy thông tin người tạo
+    userName?: string;
     fullName?: string;
     email?: string;
     phoneNumber?: string;
     image?: string;
     createdDate?: Date;
     updatedDate?: Date;
-    status?: string; // Trạng thái của người tạo
+    status?: string;
   };
 
   assignTo?: {

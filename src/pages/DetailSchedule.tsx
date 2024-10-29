@@ -40,7 +40,7 @@ const DetailSchedule = () => {
 
   useEffect(() => {
     if (scheduleData) {
-      const initialContentState = stateFromHTML(scheduleData.description)
+      const initialContentState = stateFromHTML(scheduleData.description);
 
       const daysArray = scheduleData.daysOfSchedule
         ? scheduleData.daysOfSchedule.split(",").map(Number)
@@ -61,8 +61,6 @@ const DetailSchedule = () => {
       setIsProcessMonth(scheduleTypeName === "ProcessMonth");
     }
   }, [scheduleData, form]);
-
-  
 
   const onEditorStateChange = (newState: EditorState) => {
     setEditorState(newState);
@@ -109,7 +107,6 @@ const DetailSchedule = () => {
 
   const [isProcessWeek, setIsProcessWeek] = useState(false);
   const [isProcessMonth, setIsProcessMonth] = useState(false);
-
 
   const handleFinish = async (values: any) => {
     try {
@@ -212,6 +209,9 @@ const DetailSchedule = () => {
       <Form.Item>
         <Button type="primary" htmlType="submit" loading={isLoading}>
           Cập nhật lịch trình
+        </Button>
+        <Button type="primary" onClick={() => navigate(-1)}>
+          Quay lại
         </Button>
       </Form.Item>
     </Form>

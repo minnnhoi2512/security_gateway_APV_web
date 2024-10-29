@@ -11,8 +11,10 @@ import {
   LogoutOutlined,
 } from "@ant-design/icons";
 import { Menu, Modal } from "antd";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import SignalR from '../utils/signalR';
+import { useDispatch, useSelector } from "react-redux";
 
 const MenuNav = () => {
   const navigate = useNavigate();
@@ -24,7 +26,8 @@ const MenuNav = () => {
   const [nextLocation, setNextLocation] = useState<string | null>(null);
 
   const userRole = localStorage.getItem("userRole"); // Get userRole from localStorage
-
+  const connection = useSelector<any>(s => s.hubConnection.connection) as React.MutableRefObject<signalR.HubConnection | null>
+  const dispatch = useDispatch();
   const handleCancel = () => {
     setIsModalVisible(true); // Show the confirmation modal
   };
@@ -45,6 +48,9 @@ const MenuNav = () => {
 
   const handleMenuClick = ({ key }: { key: string }) => {
     if (key === "") {
+      if(connection){
+        SignalR.DisconnectSignalR(connection,dispatch)
+      }
       localStorage.clear();
       navigate("/");
     } else {
@@ -64,12 +70,14 @@ const MenuNav = () => {
 
   const allMenuItems = [
     { key: "dashboard", icon: <HomeOutlined />, label: "Thông tin chung" },
+    { key: "departManager", icon: <SolutionOutlined />, label: "Danh sách phòng ban" },
     { key: "visitorManager", icon: <TeamOutlined />, label: "Nhóm khách" },
     {
       key: "customerVisit",
       icon: <ContactsOutlined />,
       label: "Danh sách khách",
     },
+    { key: "departManager", icon: <SolutionOutlined />, label: "Danh sách phòng ban" },
     { key: "staff", icon: <SolutionOutlined />, label: "Danh sách nhân viên" },
     { key: "schedule", icon: <FileTextOutlined />, label: "Tiến trình" },
     { key: "schedule-staff", icon: <FileTextOutlined />, label: "Tạo lịch tiến trình" },
@@ -93,7 +101,6 @@ const MenuNav = () => {
         "departmentManager",
         "departManager",
         "schedule",
-        "history",
         "card",
         "gate",
       ].includes(item.key);
@@ -105,7 +112,6 @@ const MenuNav = () => {
         "departmentManager",
         "departManager",
         "schedule-staff",
-        "history",
         "card",
         "gate",
       ].includes(item.key);
@@ -113,7 +119,6 @@ const MenuNav = () => {
       return ![
         "dashboard",
         "project",
-        "history",
         "manager",
         "staff",
         "schedule-staff",
