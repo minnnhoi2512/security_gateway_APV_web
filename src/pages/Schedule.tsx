@@ -151,14 +151,6 @@ const ScheduleManager = () => {
       sorter: (a, b) => a.scheduleName.localeCompare(b.scheduleName),
     },
     {
-      title: "Kéo dài (ngày)",
-      dataIndex: "duration",
-      key: "duration",
-      align: "center",
-      sorter: (a, b) => (a.duration || 0) - (b.duration || 0),
-      render: (duration: number) => `${duration} ngày`,
-    },
-    {
       title: "Loại",
       dataIndex: "scheduleType",
       key: "scheduleType",
@@ -168,7 +160,7 @@ const ScheduleManager = () => {
         let tagColor = "default"; // Default color
 
         switch (scheduleTypeName) {
-          case "DailyVisit":
+          case "VisitDaily":
             return <Tag color="blue">Theo ngày</Tag>;
           case "ProcessWeek":
             return <Tag color="green">Theo tuần</Tag>;

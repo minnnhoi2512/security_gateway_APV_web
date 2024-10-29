@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Layout, Table, Button, Row, Col, Input, Tag } from "antd";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
@@ -13,29 +13,35 @@ const { Content } = Layout;
 const { Search } = Input;
 
 const DetailCustomerVisit: React.FC = () => {
-  const navigate = useNavigate(); // For navigating back
-  const { id } = useParams<{ id: string }>(); // Extract id from params
-  const visitId: number | null = id ? parseInt(id, 10) : null; // Convert id to a number
-  const location = useLocation(); // Get the location
+  const [isEditMode, setIsEditMode] = useState(false); // Toggle view/edit mode
+  const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+  const visitId: number | null = id ? parseInt(id, 10) : null;
+  const location = useLocation();
   const visit = location.state.record;
-  // Fetch data using the id from params
+
   const { data = [], isLoading } = useGetListDetailVisitQuery({
     visitId: visitId,
   });
-  
-  // console.log("Visit : ", visit);
-  console.log(data);
-  // Format date to DD/MM/YYYY
+
   const formatDate = (date: string) =>
     moment.tz(date, "Asia/Ho_Chi_Minh").format("DD/MM/YYYY");
-  // Format time to HH:mm
+
+  const handleToggleMode = () => {
+    setIsEditMode((prev) => !prev);
+  };
+
+  const handleAddGuest = () => {
+    console.log("Add guest functionality triggered");
+    // Implement the add guest logic here
+  };
+
+  const handleUpdate = () => {
+    console.log("Update functionality triggered");
+    // Implement the update logic here
+  };
 
   const columns = [
-    {
-      title: "ID",
-      dataIndex: "visitDetailId",
-      key: "visitDetailId",
-    },
     {
       title: "Họ và tên",
       dataIndex: ["visitor", "visitorName"],
@@ -60,7 +66,7 @@ const DetailCustomerVisit: React.FC = () => {
       title: "Trạng thái",
       key: "status",
       dataIndex: "status",
-      render: (status : boolean) => (
+      render: (status: boolean) => (
         <Tag color={status ? "green" : "volcano"}>
           {status ? "Còn hiệu lực" : "Hết hiệu lực"}
         </Tag>
@@ -80,14 +86,12 @@ const DetailCustomerVisit: React.FC = () => {
     },
   ];
 
-
   return (
     <Layout className="min-h-screen">
       <Content className="p-6">
         <h1 className="text-green-500 text-2xl font-bold mb-4 text-center">
           Chi tiết chuyến thăm
         </h1>
-        {/* Redesigned layout for visit details */}
         <Row gutter={16} className="mb-4">
           <Col span={12}>
             <div className="bg-white border border-gray-200 p-4 rounded-md shadow-sm flex items-start space-x-4">
@@ -123,20 +127,42 @@ const DetailCustomerVisit: React.FC = () => {
             </div>
           </Col>
         </Row>
-        {/* Enhanced Search Input without border */}
         <div className="mb-4">
           <Search
             placeholder="Tìm kiếm theo họ và tên"
             style={{
               width: 300,
               borderRadius: "5px",
-              border: "none", // Removed border for a cleaner look
-              boxShadow: "0 0 5px rgba(0, 0, 0, 0.1)", // Optional shadow for subtle depth
+              border: "none",
+              boxShadow: "0 0 5px rgba(0, 0, 0, 0.1)",
             }}
             enterButton={<SearchOutlined />}
             size="large"
             className="shadow-sm"
           />
+          {/* Mode Toggle Button */}
+          <Button
+            type="primary"
+            onClick={handleToggleMode}
+            className="bg-green-500 text-white hover:bg-green-600"
+          >
+            {isEditMode ? "Xem" : "Chỉnh sửa"}
+          </Button>
+
+          {isEditMode && (
+            <div className="flex space-x-4">
+              {/* Add Guest Button */}
+              <Button
+                type="default"
+                onClick={handleAddGuest}
+                className="bg-blue-500 text-white hover:bg-blue-600"
+              >
+                Thêm khách
+              </Button>
+
+              {/* Update Button */}
+            </div>
+          )}
         </div>
         <Table
           columns={columns}
@@ -149,15 +175,24 @@ const DetailCustomerVisit: React.FC = () => {
           bordered
           loading={isLoading}
         />
-        {/* Back button */}
-        <div className="mt-6">
+        <div className="mt-6 flex justify-between">
+          {/* Back button */}
           <Button
             type="default"
-            onClick={() => navigate(-1)} // Navigates back to the previous page
+            onClick={() => navigate(-1)}
             className="bg-gray-200 text-black hover:bg-gray-300"
           >
             Quay lại
           </Button>
+          {isEditMode && (
+            <Button
+              type="default"
+              onClick={handleUpdate}
+              className="bg-yellow-500 text-white hover:bg-yellow-600"
+            >
+              Cập nhập
+            </Button>
+          )}
         </div>
       </Content>
     </Layout>

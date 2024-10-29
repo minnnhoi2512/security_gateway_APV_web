@@ -75,7 +75,7 @@ const LayoutPage = ({ children }: Props) => {
                   {getRoleDisplayName(data?.role.roleName)}
                 </h2>
                 <h2 className="text-xs text-gray-300">
-                  {data?.department.departmentName}
+                  {data?.department?.departmentName}
                 </h2>
               </div>
             </div>

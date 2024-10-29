@@ -27,7 +27,7 @@ const DetailSchedule = () => {
   const [form] = Form.useForm();
   const { id } = useParams();
   const scheduleId = Number(id);
-  const { data: scheduleData } = useGetDetailScheduleQuery({
+  const { data: scheduleData, refetch } = useGetDetailScheduleQuery({
     idSchedule: scheduleId,
   });
   const [updateSchedule, { isLoading }] = useUpdateScheduleMutation();
@@ -35,10 +35,13 @@ const DetailSchedule = () => {
   const [showCalendarModal, setShowCalendarModal] = useState(false);
   const [daysOfSchedule, setDaysOfSchedule] = useState<string>("");
   const [selectedDays, setSelectedDays] = useState<number[]>([]);
+  const [editorState, setEditorState] = useState(EditorState.createEmpty());
   const navigate = useNavigate();
 
   useEffect(() => {
     if (scheduleData) {
+      const initialContentState = stateFromHTML(scheduleData.description)
+
       const daysArray = scheduleData.daysOfSchedule
         ? scheduleData.daysOfSchedule.split(",").map(Number)
         : [];
@@ -53,20 +56,13 @@ const DetailSchedule = () => {
 
       const scheduleTypeName = scheduleData.scheduleType?.scheduleTypeName;
       setDaysOfSchedule(scheduleData?.daysOfSchedule);
+      setEditorState(EditorState.createWithContent(initialContentState));
       setIsProcessWeek(scheduleTypeName === "ProcessWeek");
       setIsProcessMonth(scheduleTypeName === "ProcessMonth");
     }
   }, [scheduleData, form]);
 
-  const initialContentState = scheduleData?.description
-    ? stateFromHTML(scheduleData.description)
-    : null;
-
-  const [editorState, setEditorState] = useState(
-    initialContentState
-      ? EditorState.createWithContent(initialContentState)
-      : EditorState.createEmpty()
-  );
+  
 
   const onEditorStateChange = (newState: EditorState) => {
     setEditorState(newState);
@@ -100,7 +96,7 @@ const DetailSchedule = () => {
     let tagColor = "default"; // Default color
 
     switch (scheduleTypeName) {
-      case "DailyVisit":
+      case "VisitDaily":
         return <Tag color="blue">Theo ngày</Tag>;
       case "ProcessWeek":
         return <Tag color="green">Theo tuần</Tag>;
@@ -114,23 +110,6 @@ const DetailSchedule = () => {
   const [isProcessWeek, setIsProcessWeek] = useState(false);
   const [isProcessMonth, setIsProcessMonth] = useState(false);
 
-
-  useEffect(() => {
-    if (scheduleData) {
-      form.setFieldsValue({
-        ...scheduleData,
-        status: scheduleData.status.toString(),
-        scheduleTypeName: scheduleData.scheduleType?.scheduleTypeName,
-        daysOfSchedule:
-          scheduleData.daysOfSchedule?.split(",").map(Number) || [],
-      });
-
-      const scheduleTypeName = scheduleData.scheduleType?.scheduleTypeName;
-      setIsProcessWeek(scheduleTypeName === "ProcessWeek");
-      setIsProcessMonth(scheduleTypeName === "ProcessMonth");
-     
-    }
-  }, [scheduleData, form]);
 
   const handleFinish = async (values: any) => {
     try {
@@ -149,6 +128,7 @@ const DetailSchedule = () => {
         schedule: parsedValues,
         idSchedule: scheduleId,
       }).unwrap();
+      refetch();
       message.success("Dự án đã được cập nhật thành công!");
       navigate(-1);
     } catch (error) {

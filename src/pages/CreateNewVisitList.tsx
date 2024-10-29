@@ -10,26 +10,23 @@ import {
   TimePicker,
   Modal,
   Image,
-  Tag,
   notification,
 } from "antd";
 import { Editor } from "react-draft-wysiwyg";
 import "react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
-import { useEffect, useState, useRef } from "react";
+import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import dayjs, { Dayjs } from "dayjs";
-import { useGetVisitorByCredentialCardQuery } from "../services/visitor.service";
 import {
   useCreateNewListDetailVisitMutation,
   useCreateNewScheduleVisitMutation,
 } from "../services/visitDetailList.service";
 import moment from "moment";
 import { EditorState } from "draft-js";
-import { useDebounce } from "use-debounce";
 import { stateToHTML } from "draft-js-export-html";
-import CreateNewVisitor from "../form/CreateNewVisitor";
 import ReadOnlyWeekCalendar from "../components/ReadOnlyWeekCalendar";
 import ReadOnlyMonthCalendar from "../components/ReadOnlyMonthCalendar";
+import VisitorSearchModal from "../components/ModalSearchVisitor";
 const { Step } = Steps;
 
 interface FormValues {
@@ -45,13 +42,10 @@ interface FormValues {
   daysOfSchedule: number[] | null;
   [key: string]: any;
 }
-
 const CreateNewVisitList: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { state } = location;
-  // console.log(state.from.id);
-
   let daysOfSchedule: string = "";
   let scheduleTypeName: string = "";
   try {
@@ -65,8 +59,6 @@ const CreateNewVisitList: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
   const [currentStep, setCurrentStep] = useState<number>(0);
   const userId = Number(localStorage.getItem("userId"));
-  const [credentialCard, setCredentialCard] = useState<string>("");
-  const [searchResults, setSearchResults] = useState<any[]>([]);
   const [selectedVisitors, setSelectedVisitors] = useState<
     {
       startHour: string;
@@ -79,25 +71,11 @@ const CreateNewVisitList: React.FC = () => {
   >([]);
   const [createNewListDetailVisit] = useCreateNewListDetailVisitMutation();
   const [createNewScheduleVisit] = useCreateNewScheduleVisitMutation();
-
   const [editorState, setEditorState] = useState(EditorState.createEmpty());
-  const [debouncedCredentialCard] = useDebounce(credentialCard, 300);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const {
-    data: visitorData,
-    isSuccess: isVisitorDataFetched,
-    isLoading,
-  } = useGetVisitorByCredentialCardQuery(
-    { CredentialCard: debouncedCredentialCard },
-    { skip: debouncedCredentialCard.length !== 12 }
-  );
-  // const [isLoading, setIsLoading] = useState(false);
   const [isModalCalendarVisible, setIsModalCalendarVisible] = useState(false);
   const [startHourForAll, setStartHourForAll] = useState<string | null>(null);
   const [endHourForAll, setEndHourForAll] = useState<string | null>(null);
   const visitQuantity = form.getFieldValue("visitQuantity");
-  const [showCreateVisitor, setShowCreateVisitor] = useState(false);
-
   const [expectedStartTime, setExpectedStartTime] = useState<Dayjs | null>(
     null
   );
@@ -113,69 +91,52 @@ const CreateNewVisitList: React.FC = () => {
       setIsWeekCalendarVisible(false);
     }
   };
+  const handleVisitorSelection = (visitor: any) => {
+    setSelectedVisitors((prevVisitors) => {
+      // Check if the visitor is already selected
+      const isDuplicate = prevVisitors.some(
+        (v) => v.visitorId === visitor[0].visitorId
+      );
+
+      // If duplicate, return the current array without changes
+      if (isDuplicate) {
+        notification.warning({
+          message: "Khách này đã có trong danh sách.",
+        });
+        return prevVisitors;
+      }
+
+      // Check if adding the new visitor would exceed the limit
+      if (prevVisitors.length >= visitQuantity) {
+        notification.warning({
+          message: "Đã đạt số lượng khách tối đa.",
+        });
+        return prevVisitors;
+      }
+      if (prevVisitors.length + 1 == visitQuantity) {
+        setIsModalVisible(false);
+        return [...prevVisitors, visitor[0]];
+      }
+      return [...prevVisitors, visitor[0]];
+    });
+  };
 
   const handleCancelCalendar = () => {
     setIsModalCalendarVisible(false);
     setIsMonthCalendarVisible(false);
     setIsWeekCalendarVisible(false);
   };
-  const handleAddNewVisitor = () => {
-    setShowCreateVisitor(true);
-  };
 
-  const handleCloseCreateVisitor = () => {
-    setShowCreateVisitor(false);
-  };
-  const handleVisitorCreated = (visitorData: any) => {
-    // console.log(visitorData);
-    setSearchResults([visitorData]);
-  };
   const [isMonthCalendarVisible, setIsMonthCalendarVisible] = useState(false);
   const [isWeekCalendarVisible, setIsWeekCalendarVisible] = useState(false);
-  useEffect(() => {
-    // Clear the timeout on every input change
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
 
-    if (debouncedCredentialCard.length === 12) {
-      // setSearchResults([]);
-
-      timeoutRef.current = setTimeout(() => {
-        if (isVisitorDataFetched && visitorData) {
-          setSearchResults([visitorData]);
-          message.success("Đã tìm thấy khách này.");
-        } else if (!isVisitorDataFetched) {
-          setSearchResults([]);
-        }
-      }, 1000); // Delay the search for 1000 milliseconds (1 second)
-    } else {
-      setSearchResults([]); // Clear results if input is less than 12 characters
-    }
-
-    // Cleanup function to clear the timeout when the component unmounts
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, [isVisitorDataFetched, visitorData, debouncedCredentialCard]);
-  const handleCredentialCardChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const newValue = e.target.value;
-    setCredentialCard(newValue);
-    if (newValue.length === 0) {
-      setSearchResults([]); // Clear results if input is empty
-    }
-  };
   const onEditorStateChange = (newState: EditorState) => {
     setEditorState(newState);
   };
 
   const handleCancel = () => {
     Modal.confirm({
-      title: "Bạn có muốn   hủy quá trình tạo mới lịch?",
+      title: "Bạn có muốn hủy quá trình tạo mới lịch?",
       content: "Hành động này sẽ xóa hết dữ liệu.",
       okText: "Đồng ý",
       cancelText: "Quay lại",
@@ -301,7 +262,7 @@ const CreateNewVisitList: React.FC = () => {
         requestData.expectedStartTime = expectedStartTime?.toDate();
         requestData.expectedEndTime = expectedEndTime?.toDate();
         // console.log(state.from.schedule.scheduleId)
-        requestData.scheduleId = state.from.schedule.scheduleId // Update scheduleId to state.from.id
+        requestData.scheduleId = state.from.schedule.scheduleId; // Update scheduleId to state.from.id
       }
       try {
         if (
@@ -340,38 +301,8 @@ const CreateNewVisitList: React.FC = () => {
     setCurrentStep(currentStep - 1);
   };
 
-  const handleSelectVisitor = (visitor: any) => {
-    const isDuplicate = selectedVisitors.some(
-      (v) => v.visitorId === visitor.visitorId
-    );
-    // console.log(visitor);
-    // Check if the visitor's status is "Unactive"
-    if (visitor.status === "Unactive") {
-      message.error("Không thể thêm khách trong sổ đen");
-      return;
-    }
-
-    // Check if adding this visitor would exceed the limit
-    if (selectedVisitors.length >= visitQuantity) {
-      message.warning("Danh sách đã đầy, vui lòng kiểm tra lại thông tin.");
-      return;
-    }
-
-    if (isDuplicate) {
-      message.warning("Khách này đã được chọn.");
-      return;
-    }
-
-    const updatedVisitors = [...selectedVisitors, visitor];
-    setSelectedVisitors(updatedVisitors);
-    setSearchResults([]); // Clear search results after selecting
-    setCredentialCard(""); // Clear input after selection
-  };
-
   const handleAddVisitor = () => {
     setIsModalVisible(true);
-    setCredentialCard("");
-    setSearchResults([]);
   };
   const handleStartHourChangeForAll = (time: any) => {
     const startHour = time?.format("HH:mm:ss");
@@ -415,9 +346,6 @@ const CreateNewVisitList: React.FC = () => {
   };
   const handleOk = () => {
     // Logic to use expectedStartTime and expectedEndTime
-    console.log("Expected Start Time:", expectedStartTime);
-    console.log("Expected End Time:", expectedEndTime);
-
     // Close the modal
     setIsModalCalendarVisible(false);
     setIsMonthCalendarVisible(false);
@@ -693,10 +621,18 @@ const CreateNewVisitList: React.FC = () => {
         )}
         {currentStep === 1 && (
           <>
-            {selectedVisitors.length != visitQuantity && (
+            {selectedVisitors.length !== visitQuantity && (
               <Button type="primary" onClick={handleAddVisitor}>
                 Thêm khách
               </Button>
+            )}
+
+            {isModalVisible && (
+              <VisitorSearchModal
+                isModalVisible={isModalVisible}
+                setIsModalVisible={setIsModalVisible}
+                onVisitorSelected={handleVisitorSelection} // Pass the callback here
+              />
             )}
             {selectedVisitors.length === visitQuantity && (
               <div className="flex flex-col mt-4">
@@ -762,116 +698,6 @@ const CreateNewVisitList: React.FC = () => {
           </Button>
         )}
       </div>
-
-      <Modal
-        title="Tìm kiếm khách"
-        visible={isModalVisible}
-        onCancel={() => setIsModalVisible(false)}
-        footer={null}
-      >
-        <Form.Item
-          validateStatus={
-            credentialCard.length > 12 ||
-            (credentialCard.length < 12 && credentialCard.length > 0)
-              ? "error"
-              : ""
-          }
-          help={
-            credentialCard.length > 12 ||
-            (credentialCard.length < 12 && credentialCard.length > 0)
-              ? "Cần đúng 12 số."
-              : ""
-          }
-        >
-          <Input
-            value={credentialCard}
-            onChange={handleCredentialCardChange} // Use the new handler
-            placeholder="Nhập mã căn cước hoặc giấy phép lái xe (12 số)"
-          />
-        </Form.Item>
-
-        {searchResults.length > 0 ? (
-          <Table
-            dataSource={searchResults}
-            columns={[
-              {
-                title: "Ảnh căn cước",
-                dataIndex: "visitorCredentialImage",
-                key: "visitorCredentialImage",
-                render: (image: string) => {
-                  const base64Image = image.startsWith(
-                    "data:image/jpeg;base64,"
-                  )
-                    ? image
-                    : `data:image/jpeg;base64,${image}`;
-
-                  return (
-                    <Image
-                      src={base64Image}
-                      alt="Visitor Credential"
-                      width={50}
-                      height={50}
-                      preview={false}
-                      style={{ objectFit: "cover" }}
-                    />
-                  );
-                },
-              },
-              {
-                title: "Tên khách",
-                dataIndex: "visitorName",
-                key: "visitorName",
-              },
-              {
-                title: "Mã căn cước",
-                dataIndex: "credentialsCard",
-                key: "credentialsCard",
-              },
-              {
-                title: "Trạng thái",
-                dataIndex: "status",
-                key: "status",
-                render: (status: string) => {
-                  let color = status === "Unactive" ? "red" : "green";
-                  let displayText = status === "Unactive" ? "Sổ đen" : "Hợp lệ";
-
-                  return <Tag color={color}>{displayText}</Tag>;
-                },
-              },
-              {
-                title: "Hành động",
-                dataIndex: "action",
-                key: "action",
-                render: (_, visitor) => (
-                  <Button onClick={() => handleSelectVisitor(visitor)}>
-                    Chọn
-                  </Button>
-                ),
-              },
-            ]}
-            rowKey="visitorId"
-            loading={isLoading}
-            pagination={false}
-          />
-        ) : (
-          <div style={{ textAlign: "center", margin: "20px 0" }}>
-            <p>Không tìm thấy khách nào.</p>
-            <br></br>
-            {selectedVisitors.length < visitQuantity && (
-              <Button type="primary" onClick={handleAddNewVisitor}>
-                Thêm khách mới
-              </Button>
-            )}
-          </div>
-        )}
-      </Modal>
-      {showCreateVisitor && (
-        <CreateNewVisitor
-          isModalVisible={showCreateVisitor}
-          setIsModalVisible={handleCloseCreateVisitor}
-          onVisitorCreated={handleVisitorCreated}
-        />
-      )}
     </div>
   );
 };
