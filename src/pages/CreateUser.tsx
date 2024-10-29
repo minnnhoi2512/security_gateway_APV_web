@@ -12,7 +12,7 @@ import {
   useGetListUserByRoleQuery,
 } from "../services/user.service";
 import { useGetListDepartmentsQuery } from "../services/department.service";
-import DepartmentType from "../types/departmentType";
+import DepartmentType from "../types/DepartmentType";
 
 const { Content } = Layout;
 

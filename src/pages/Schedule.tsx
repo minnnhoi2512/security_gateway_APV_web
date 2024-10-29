@@ -20,7 +20,7 @@ import {
   UserAddOutlined,
   PlusOutlined,
 } from "@ant-design/icons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import moment from "moment";
 import type { ColumnsType } from "antd/es/table";
@@ -29,6 +29,7 @@ import {
   useGetListScheduleQuery,
   useDeleteScheduleMutation,
   useAssignScheduleMutation,
+  useGetDepartmentSchedulesQuery,
 } from "../services/schedule.service";
 import { useGetListUsersByDepartmentIdQuery } from "../services/user.service";
 import ScheduleType from "../types/scheduleType";
@@ -39,6 +40,9 @@ const { Option } = Select;
 
 const ScheduleManager = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const userRole = localStorage.getItem("userRole");
+  const userId = Number(localStorage.getItem("userId"));
+  const departmentIdUser = Number(localStorage.getItem("departmentId"));
   const [assignData, setAssignData] = useState({
     title: "",
     description: "",
@@ -49,24 +53,46 @@ const ScheduleManager = () => {
     assignFromId: parseInt(localStorage.getItem("userId") || "0"),
   });
 
-  const [departmentId] = useState<number>(1);
   const [searchText, setSearchText] = useState<string>("");
 
   const navigate = useNavigate();
-  const { data: schedules, refetch, isLoading } = useGetListScheduleQuery({
-    pageNumber: 1,
-    pageSize: 10,
-  });
+  let schedules;
+  let refetch;
+  let isLoading;
+
+  if (userRole === "DepartmentManager") {
+    const result = useGetDepartmentSchedulesQuery({
+      departmenManagerId: userId,
+      pageNumber: -1,
+      pageSize: -1,
+    });
+
+    schedules = result.data;
+    refetch = result.refetch;
+    isLoading = result.isLoading;
+  } else {
+    const result = useGetListScheduleQuery({
+      pageNumber: -1,
+      pageSize: -1,
+    });
+
+    schedules = result.data;
+    refetch = result.refetch;
+    isLoading = result.isLoading;
+  }
 
   const { data: users = [], isLoading: usersLoading } =
     useGetListUsersByDepartmentIdQuery({
-      departmentId,
+      departmentId: departmentIdUser,
       pageNumber: 1,
-      pageSize: 10,
+      pageSize: 100,
     });
-
+  // console.log(users);
   const [deleteSchedule] = useDeleteScheduleMutation();
   const [assignSchedule] = useAssignScheduleMutation();
+  useEffect(() => {
+    refetch();
+  }, []);
 
   const handleDeleteSchedule = (scheduleId: number) => {
     Modal.confirm({
@@ -86,7 +112,7 @@ const ScheduleManager = () => {
       },
     });
   };
-
+  
   const handleAssignUser = (scheduleId?: number) => {
     if (!scheduleId) {
       message.error("Lỗi: Không tìm thấy ID dự án.");
@@ -106,7 +132,7 @@ const ScheduleManager = () => {
   const handleAssignSubmit = async () => {
     try {
       const payload = { ...assignData };
-      console.log("Payload gửi:", payload); // Kiểm tra payload
+      // console.log("Payload gửi:", payload); // Kiểm tra payload
       await assignSchedule(payload).unwrap();
       message.success("Phân công thành công!");
       setIsModalVisible(false);
@@ -137,7 +163,21 @@ const ScheduleManager = () => {
       dataIndex: "scheduleType",
       key: "scheduleType",
       align: "center",
-      render: (text) => text.scheduleTypeName,
+      render: (text) => {
+        const scheduleTypeName = text.scheduleTypeName;
+        let tagColor = "default"; // Default color
+
+        switch (scheduleTypeName) {
+          case "DailyVisit":
+            return <Tag color="blue">Theo ngày</Tag>;
+          case "ProcessWeek":
+            return <Tag color="green">Theo tuần</Tag>;
+          case "ProcessMonth":
+            return <Tag color="orange">Theo tháng</Tag>;
+          default:
+            return <Tag color={tagColor}>{scheduleTypeName}</Tag>; // Fallback if needed
+        }
+      },
     },
     {
       title: "Trạng thái",
@@ -145,7 +185,9 @@ const ScheduleManager = () => {
       key: "status",
       align: "center",
       render: (status: boolean) => (
-        <Tag color={status ? "green" : "red"}>{status ? "Còn hiệu lực" : "Hết hiệu lực"}</Tag>
+        <Tag color={status ? "green" : "red"}>
+          {status ? "Còn hiệu lực" : "Hết hiệu lực"}
+        </Tag>
       ),
     },
     {
@@ -238,21 +280,28 @@ const ScheduleManager = () => {
             <Form.Item label="Tiêu đề">
               <Input
                 value={assignData.title}
-                onChange={(e) => setAssignData((prev) => ({ ...prev, title: e.target.value }))}
+                onChange={(e) =>
+                  setAssignData((prev) => ({ ...prev, title: e.target.value }))
+                }
               />
             </Form.Item>
             <Form.Item label="Miêu tả">
               <Input
                 value={assignData.description}
                 onChange={(e) =>
-                  setAssignData((prev) => ({ ...prev, description: e.target.value }))
+                  setAssignData((prev) => ({
+                    ...prev,
+                    description: e.target.value,
+                  }))
                 }
               />
             </Form.Item>
             <Form.Item label="Ghi chú">
               <Input
                 value={assignData.note}
-                onChange={(e) => setAssignData((prev) => ({ ...prev, note: e.target.value }))}
+                onChange={(e) =>
+                  setAssignData((prev) => ({ ...prev, note: e.target.value }))
+                }
               />
             </Form.Item>
             <Form.Item label="Thời hạn">

@@ -8,8 +8,11 @@ type Visitor = {
     updatedDate?: Date,
     status? : string,
     credentialsCard? : string,
-    credentialCardTypeId?: number,
+    credentialCardType :{
+        credentialCardTypeId : number,
+    }
     visitorCredentialImageFromRequest?: File;
+    // visitorCredentialImage
 }
 
 export default Visitor

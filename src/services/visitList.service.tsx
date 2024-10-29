@@ -44,13 +44,13 @@ export const visitListAPI = createApi({
         };
       },
     }),
-    getListVisitByDepartmentManagerId: builder.query<
+    getListVisitByDepartmentId: builder.query<
       any,
-      { DepartmentManagerId: number; pageNumber: number; pageSize: number }
+      { departmentId: number; pageNumber: number; pageSize: number }
     >({
-      query: ({ DepartmentManagerId, pageNumber, pageSize }) => {
+      query: ({ departmentId, pageNumber, pageSize }) => {
         return {
-          url: `DepartmentManagerId/${DepartmentManagerId}`,
+          url: `DepartmentId/${departmentId}`,
           method: "GET",
           params: {
             pageNumber,
@@ -66,5 +66,5 @@ export const visitListAPI = createApi({
 export const {
   useGetListVisitQuery,
   useGetListVisitByCreatedIdQuery,
-  useGetListVisitByDepartmentManagerIdQuery,
+  useGetListVisitByDepartmentIdQuery,
 } = visitListAPI;
