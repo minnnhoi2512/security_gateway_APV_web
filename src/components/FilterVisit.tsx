@@ -20,6 +20,7 @@ import { useGetVisitGraphqlMutation } from '../services/visitGraphql.service';
 import { DatePickerProps } from 'antd/lib';
 import dayjs, { Dayjs } from 'dayjs';
 import { cancelFilter, setListOfVisitList } from '../redux/slices/visitDetailList.slice';
+import VisitDetailList from '../types/VisitDetailListType';
 
 const FilterVisit: React.FC = () => {
     const statusTabs = useSelector<any>(s => s.filterTabs.isOpen);
@@ -43,7 +44,7 @@ const FilterVisit: React.FC = () => {
         const returned = postGraphql({
             query : body
         }).unwrap().then((payload) => {
-            dispatch(setListOfVisitList(payload.data.visit.items))
+            dispatch(setListOfVisitList(payload.data.visit?.items as VisitDetailList[]))
         })
     }
     const handleCancelFilter = () => {

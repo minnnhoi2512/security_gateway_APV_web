@@ -3,30 +3,40 @@ import NotificationType from "../../types/notificationType";
 
 
 
-
 const notificationSlice = createSlice({
   name: "notiList",
   initialState : {
-    notification : JSON.parse(localStorage.getItem("notification") as string) as NotificationType[],
-    isnew : false
+    //notification : JSON.parse(localStorage.getItem("notification") as string) as NotificationType[],
+    isnew : false,
+    takingNew : false
   },
   reducers: {
-    pushNotification(state, action : PayloadAction<NotificationType>){
-        state.notification?.push(action.payload)
-        state.isnew = true
+    pushNotification(state){
+        //state.notification?.push(action.payload)
+        state.takingNew = true
+        if(state.isnew == true){
+            state.isnew = false
+        }
+        else{
+            state.isnew = true
+        }
     },
     reloadNoti(state){
-        state.isnew = false
+        state.takingNew = false
+        if(state.isnew == true){
+            state.isnew = false
+        }
+        else{
+            state.isnew = true
+        }
     },
     markAsRead(state, action : PayloadAction<string>){
-        var noti = state.notification
-        if(noti){
-            var readNoti = noti.find(s => s.id == action.payload)
-            if(readNoti){
-                readNoti.isRead = true
-            }
+        if(state.isnew == true){
+            state.isnew = false
         }
-        localStorage.setItem("notification", JSON.stringify(noti))
+        else{
+            state.isnew = true
+        }
     }
     },
 });

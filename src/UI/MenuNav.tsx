@@ -99,7 +99,6 @@ const MenuNav = () => {
         "departmentManager",
         "departManager",
         "schedule",
-        "history",
         "card",
         "gate",
       ].includes(item.key);
@@ -111,7 +110,6 @@ const MenuNav = () => {
         "departmentManager",
         "departManager",
         "schedule-staff",
-        "history",
         "card",
         "gate",
       ].includes(item.key);
@@ -119,7 +117,6 @@ const MenuNav = () => {
       return ![
         "dashboard",
         "project",
-        "history",
         "manager",
         "staff",
         "schedule-staff",

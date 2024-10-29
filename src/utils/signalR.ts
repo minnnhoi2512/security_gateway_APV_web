@@ -15,7 +15,9 @@ const SetSignalR = async (
 
   if (user) {
     connection.current = new signalR.HubConnectionBuilder()
-      .withUrl("https://localhost:7018/notificationHub", {
+      //.withUrl("https://security-gateway-api.tools.kozow.com/notificationHub", 
+        .withUrl("https://localhost:7018/notificationHub", 
+      {
         skipNegotiation: false,
         transport: signalR.HttpTransportType.WebSockets
       })
@@ -27,6 +29,7 @@ const SetSignalR = async (
         console.log("Connected to NotificationHub " + connection.current?.connectionId);
         dispatch(setConnection(connection));
         connection.current?.on("ReceiveMessage", (title, message) => {
+          console.log(message)
         //   PushNotification.localNotification({
         //     channelId: "general_notifications",
         //     title: title,
@@ -40,31 +43,22 @@ const SetSignalR = async (
         //     title: title,
         //     message: message,
         //   });
-          const notification : NotificationType ={
-            id : Guid.newGuid().toString(),
-            title : title,
-            discription : message,
-            isRead : false,
-            notiType : "AssignForStaff",
-            scheduleAssign : {
-              scheduleId : scheduleId
-            }
-          } 
-          const notiList = JSON.parse(localStorage.getItem("notification") as string) as NotificationType[]
-          if(notiList){
-            notiList.push(notification)
-            if(notiList?.length > 10){
-              notiList.shift()
-            }
-            localStorage.setItem("notification", JSON.stringify(notiList)) 
-            dispatch(pushNotification(notification));
-          }
-          else{
-            const newList : NotificationType[] = [notification]
-            localStorage.setItem("notification", JSON.stringify(newList)) 
-            dispatch(pushNotification(notification));
-          }
-          console.log(notiList)
+
+          // const notiList = JSON.parse(localStorage.getItem("notification") as string) as NotificationType[]
+          // if(notiList){
+          //   notiList.push(notification)
+          //   if(notiList?.length > 10){
+          //     notiList.shift()
+          //   }
+          //   localStorage.setItem("notification", JSON.stringify(notiList)) 
+          //   dispatch(pushNotification(notification));
+          // }
+          // else{
+          //   const newList : NotificationType[] = [notification]
+          //   localStorage.setItem("notification", JSON.stringify(newList)) 
+            dispatch(pushNotification());
+          // }
+          // console.log(notiList)
         });
         await connection.current?.invoke("JoinHub", user);
       } catch (error) {

@@ -7,9 +7,9 @@ import MenuNav from "../UI/MenuNav";
 import { MenuProps } from "antd/lib";
 import { useDispatch, useSelector } from "react-redux";
 import NotificationType from "../types/notificationType";
-import { el } from "date-fns/locale";
 import { toast, ToastContainer } from "react-toastify";
-import { markAsRead, reloadNoti } from "../redux/slices/notification.slice";
+import { reloadNoti } from "../redux/slices/notification.slice";
+import { useGetListNotificationUserQuery, useMarkNotiReadMutation } from "../services/notification.service";
 
 type Props = {
   children: React.ReactNode;
@@ -20,10 +20,14 @@ const { Header, Sider, Content } = Layout;
 const LayoutPage = ({ children }: Props) => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
-
+  const [markAsRead] = useMarkNotiReadMutation()
   const userName = localStorage.getItem("userName") || "User";
   const userRole = localStorage.getItem("userRole") || "Role";
   const userId = localStorage.getItem("userId");
+  const takingNew = useSelector<any>(s => s.notification.takingNew) as boolean
+  var data = []
+  var isloading = false
+
   const dispatch = useDispatch();
   const handleProfileClick = () => {
     if (userId) {
@@ -32,35 +36,49 @@ const LayoutPage = ({ children }: Props) => {
       console.error("User ID không tồn tại.");
     }
   };
-  const notifications = useSelector<any>( s => s.notification.notification) as NotificationType[]
-  var notiCount = notifications?.filter(s => s.isRead == false)
+  const {
+    data: notificaitionData,
+    isLoading: notiLoading,
+    refetch: refetchNoti,
+  } = useGetListNotificationUserQuery({
+    userId : Number(userId)
+  });
+  data = notificaitionData as NotificationType[];
+  console.log(notificaitionData as NotificationType[])
+
+  
+  var notiCount = data?.filter(s => s.readStatus == false)
   var reload = useSelector<any>( s => s.notification.isnew) as boolean
   useEffect(()=>{
-    if(notifications?.length > 0 && reload == true){
+    if(data?.length > 0 && takingNew){
       toast("Bạn có thông báo mới")
+      refetchNoti()
     }
     dispatch(reloadNoti())
-  },[notifications])
+  },[takingNew])
   const items: MenuProps['items'] = [
   ];
   const handleReadNotification = (id : string, isRead : boolean) =>{
     if(!isRead){
-      dispatch(markAsRead(id))
+      markAsRead({notificationUserId : Number(id)}).then(() => {
+        refetchNoti()
+      })
+      dispatch(reloadNoti())
     }
 
   } 
-  if(notifications){
-    var reverseArray = [...notifications]
-    reverseArray.reverse().forEach((element, index )=> {
+  if(data){
+    var reverseArray = [...data]
+    reverseArray.reverse().slice(0,10).forEach((element, index )=> {
       items.push({
         key: index,
         label: (
           <div className="inline-flex">
-            <a style={{fontWeight: `${element.isRead == true ? "lighter": "bold"}
+            <a style={{fontWeight: `${element.readStatus == true ? "lighter": "bold"}
               
-              `}} onClick={() => handleReadNotification(element.id, element.isRead)} rel="noopener noreferrer" href="#">
-            {element.title}
-            <p style={{fontWeight: "lighter"}}>{element.discription}</p>
+              `}} onClick={() => handleReadNotification(element.notificationUserID, element.readStatus)} rel="noopener noreferrer" href="#">
+            {element.notification.title}
+            <p style={{fontWeight: "lighter"}}>{element.notification.content}</p>
             </a>
           </div>
         ),
