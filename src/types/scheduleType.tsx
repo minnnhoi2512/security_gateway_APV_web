@@ -2,17 +2,17 @@ type Schedule = {
   scheduleId?: number;
   scheduleName: string;
   daysOfSchedule?: string;
-  createTime: Date;
-  updateTime: Date;
-  description: string;
-  status: boolean;
+  createTime?: Date;
+  updateTime?: Date;
+  description?: string;
+  status?: boolean;
   duration?: number;
   title?: string;
   note?: string;
-  deadlineTime: Date;
+  deadlineTime?: Date;
   assignToId?: number;
   assignFromId?: number;
-
+  // scheduleTypeId? : number,
   scheduleType?: {
     description?: string;
     scheduleTypeId?: number;

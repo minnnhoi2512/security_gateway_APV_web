@@ -20,6 +20,7 @@ import { stateToHTML } from "draft-js-export-html";
 import { stateFromHTML } from "draft-js-import-html";
 import ReadOnlyMonthCalendar from "../components/ReadOnlyMonthCalendar";
 import ReadOnlyWeekCalendar from "../components/ReadOnlyWeekCalendar";
+import Schedule from "../types/scheduleType";
 
 const { Option } = Select;
 
@@ -36,6 +37,7 @@ const DetailSchedule = () => {
   const [daysOfSchedule, setDaysOfSchedule] = useState<string>("");
   const [selectedDays, setSelectedDays] = useState<number[]>([]);
   const [editorState, setEditorState] = useState(EditorState.createEmpty());
+  // const [isCreateSuccess, setIsCreateSuccess] = useState<boolean>(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -49,7 +51,7 @@ const DetailSchedule = () => {
 
       form.setFieldsValue({
         ...scheduleData,
-        status: scheduleData.status.toString(),
+        status: scheduleData.status === true,
         scheduleTypeName: scheduleData.scheduleType?.scheduleTypeName,
         daysOfSchedule: scheduleData.daysOfSchedule,
       });
@@ -110,24 +112,27 @@ const DetailSchedule = () => {
 
   const handleFinish = async (values: any) => {
     try {
+      // console.log(values);
       const contentState = editorState.getCurrentContent();
       const htmlContent = stateToHTML(contentState);
-      const parsedValues = {
-        ...scheduleData,
-        duration: 1,
+
+      // Construct parsedValues with form values or existing schedule data
+      const parsedValues: Schedule = {
+        scheduleName: values.scheduleName || scheduleData.scheduleName,
         description: htmlContent,
-        createById: scheduleData.createBy.userId,
-        scheduleTypeId: scheduleData.scheduleType.scheduleTypeId,
-        status: values.status === "true",
-        daysOfSchedule: daysOfSchedule,
+        status: values.status === true || scheduleData.status,
+        daysOfSchedule: daysOfSchedule || scheduleData.daysOfSchedule,
+        duration: scheduleData.duration || 1,
       };
-      await updateSchedule({
+      console.log(parsedValues);
+      const result = await updateSchedule({
         schedule: parsedValues,
         idSchedule: scheduleId,
       }).unwrap();
+      // setIsCreateSuccess()
       refetch();
       message.success("Dự án đã được cập nhật thành công!");
-      navigate(-1);
+      navigate("/schedule", { state: { result: result } });
     } catch (error) {
       console.log(error);
       message.error("Đã xảy ra lỗi khi cập nhật dự án.");
@@ -164,8 +169,8 @@ const DetailSchedule = () => {
         rules={[{ required: true, message: "Vui lòng chọn trạng thái!" }]}
       >
         <Select placeholder="Chọn trạng thái" style={{ width: "100%" }}>
-          <Option value="true">Còn hiệu lực</Option>
-          <Option value="false">Hết hiệu lực</Option>
+          <Option value={true}>Còn hiệu lực</Option>
+          <Option value={false}>Hết hiệu lực</Option>
         </Select>
       </Form.Item>
 

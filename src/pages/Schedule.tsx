@@ -21,7 +21,7 @@ import {
   PlusOutlined,
 } from "@ant-design/icons";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import moment from "moment";
 import type { ColumnsType } from "antd/es/table";
 
@@ -35,11 +35,15 @@ import { useGetListUsersByDepartmentIdQuery } from "../services/user.service";
 import ScheduleType from "../types/scheduleType";
 import UserType from "../types/userType";
 
+
 const { Content } = Layout;
 const { Option } = Select;
 
 const ScheduleManager = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const location = useLocation();
+  const result = location?.state?.result;
+  // console.log(result);
   const userRole = localStorage.getItem("userRole");
   const userId = Number(localStorage.getItem("userId"));
   const departmentIdUser = Number(localStorage.getItem("departmentId"));
@@ -91,9 +95,9 @@ const ScheduleManager = () => {
   const [deleteSchedule] = useDeleteScheduleMutation();
   const [assignSchedule] = useAssignScheduleMutation();
   useEffect(() => {
-    console.log("refetsh đi m")
-    // refetch();
-  }, []);
+    // console.log("refetsh đi m")
+    refetch();
+  }, [result]);
 
   const handleDeleteSchedule = (scheduleId: number) => {
     Modal.confirm({
@@ -149,7 +153,7 @@ const ScheduleManager = () => {
       dataIndex: "scheduleName",
       key: "scheduleName",
       align: "center",
-      sorter: (a, b) => a.scheduleName.localeCompare(b.scheduleName),
+      sorter: (a, b) => a.scheduleName?.localeCompare(b.scheduleName),
     },
     {
       title: "Loại",

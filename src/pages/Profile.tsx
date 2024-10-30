@@ -1,11 +1,10 @@
 import React, { useEffect } from "react";
 import { Avatar, Button, Form, Input, message, Tag } from "antd";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useGetDetailUserQuery, useUpdateUserMutation } from "../services/user.service";
 
 const Profile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
 
   const userId = Number(id) || Number(localStorage.getItem("userId"));
   const { data: user, isLoading, error, refetch } = useGetDetailUserQuery(userId);
@@ -39,7 +38,7 @@ const Profile: React.FC = () => {
         payload.departmentId = user?.department?.departmentId || 0;
       }
 
-      const response = await updateUser({ User: payload, idUser: userId }).unwrap();
+      await updateUser({ User: payload, idUser: userId }).unwrap();
       message.success("Cập nhật thông tin thành công!");
 
       refetch(); // Gọi lại API để lấy dữ liệu mới nhất

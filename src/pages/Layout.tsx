@@ -59,7 +59,7 @@ const LayoutPage = ({ children }: Props) => {
     userId : Number(userId)
   });
   data = notificaitionData as NotificationType[];
-  console.log(notificaitionData as NotificationType[])
+  // console.log(notificaitionData as NotificationType[])
 
   
   var notiCount = data?.filter(s => s.readStatus == false)
