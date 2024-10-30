@@ -71,14 +71,17 @@ const MenuNav = () => {
   const allMenuItems = [
     { key: "dashboard", icon: <HomeOutlined />, label: "Thông tin chung" },
     { key: "departManager", icon: <SolutionOutlined />, label: "Danh sách phòng ban" },
+
+
+    { key: "staff", icon: <SolutionOutlined />, label: "Danh sách nhân viên" },
+    { key: "departmentManager", icon: <SolutionOutlined />, label: "Danh sách quản lý" },
     { key: "visitorManager", icon: <TeamOutlined />, label: "Nhóm khách" },
     {
       key: "customerVisit",
       icon: <ContactsOutlined />,
       label: "Danh sách khách",
     },
-    { key: "departManager", icon: <SolutionOutlined />, label: "Danh sách phòng ban" },
-    { key: "staff", icon: <SolutionOutlined />, label: "Danh sách nhân viên" },
+    
     { key: "schedule", icon: <FileTextOutlined />, label: "Tiến trình" },
     { key: "schedule-staff", icon: <FileTextOutlined />, label: "Tạo lịch tiến trình" },
     { key: "calendar", icon: <CalendarOutlined />, label: "Lịch trình" },

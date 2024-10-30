@@ -32,7 +32,7 @@ export const visitorAPI = createApi({
         phoneNumber: string;
         credentialsCard: string;
         credentialCardTypeId: number;
-        visitorCredentialImageFromRequest: string;
+        visitorCredentialImageFromRequest: File;
       }
     >({
       query: (newVisitor) => {
@@ -48,7 +48,7 @@ export const visitorAPI = createApi({
         );
         formData.append(
           "visitorCredentialImageFromRequest",
-          newVisitor.visitorCredentialImageFromRequest.toString()
+          newVisitor.visitorCredentialImageFromRequest
         );
         return {
           url: "/", // Ensure this matches the endpoint

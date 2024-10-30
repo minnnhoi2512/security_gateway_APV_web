@@ -1,46 +1,255 @@
-import React, { useState } from "react";
-import { Layout, Table, Button, Row, Col, Input, Tag } from "antd";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import React, { useEffect, useState } from "react";
 import {
-  CalendarOutlined,
-  TeamOutlined,
-  SearchOutlined,
-} from "@ant-design/icons";
-import moment from "moment-timezone";
-import { useGetListDetailVisitQuery } from "../services/visitDetailList.service";
+  Layout,
+  Table,
+  Button,
+  Row,
+  Col,
+  TimePicker,
+  DatePicker,
+  Tag,
+  notification,
+  Input,
+} from "antd";
+import { useNavigate, useParams } from "react-router-dom";
+import { CalendarOutlined } from "@ant-design/icons";
+import dayjs, { Dayjs } from "dayjs";
+import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+import {
+  useGetDetailVisitQuery,
+  useGetListDetailVisitQuery,
+  useUpdateVisitAfterStartDateMutation,
+  useUpdateVisitBeforeStartDateMutation,
+} from "../services/visitDetailList.service";
+import VisitorSearchModal from "../components/ModalSearchVisitor";
+import { DetailVisitor } from "../types/detailVisitorForVisit";
+
+dayjs.extend(isSameOrAfter);
+dayjs.extend(customParseFormat);
 
 const { Content } = Layout;
-const { Search } = Input;
 
 const DetailCustomerVisit: React.FC = () => {
-  const [isEditMode, setIsEditMode] = useState(false); // Toggle view/edit mode
-  const navigate = useNavigate();
+  const userId = localStorage.getItem("userId");
+  const [isEditMode, setIsEditMode] = useState(false);
   const { id } = useParams<{ id: string }>();
-  const visitId: number | null = id ? parseInt(id, 10) : null;
-  const location = useLocation();
-  const visit = location.state.record;
-
-  const { data = [], isLoading } = useGetListDetailVisitQuery({
-    visitId: visitId,
+  const navigate = useNavigate();
+  const { data: visitData, refetch: refetchVisit } = useGetDetailVisitQuery({
+    visitId: Number(id),
   });
-
-  const formatDate = (date: string) =>
-    moment.tz(date, "Asia/Ho_Chi_Minh").format("DD/MM/YYYY");
-
-  const handleToggleMode = () => {
-    setIsEditMode((prev) => !prev);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const {
+    data: detailVisitData = [],
+    refetch: refetchListVisitor,
+    isLoading: loadingDetailVisitData,
+  } = useGetListDetailVisitQuery({
+    visitId: Number(id),
+    pageNumber: -1,
+    pageSize: -1,
+  });
+  const [visitors, setVisitors] = useState<DetailVisitor[]>([]);
+  const [visitQuantity, setVisitQuantity] = useState<number>(
+    visitData?.visitQuantity || 0
+  );
+  const [editableVisitName, setEditableVisitName] = useState<string>("");
+  const [updateVisitBeforeStartDate] = useUpdateVisitBeforeStartDateMutation();
+  const [updateVisitAfterStartDate] = useUpdateVisitAfterStartDateMutation();
+  const [editableStartDate, setEditableStartDate] = useState<Dayjs>();
+  const [editableEndDate, setEditableEndDate] = useState<Dayjs>();
+  const [scheduleTypeId, setScheduleTypeId] = useState<number>(0);
+  const convertToDayjs = (date: string | Date | Dayjs): Dayjs => {
+    return dayjs(date);
   };
+  const formatDate = (date: string) => dayjs(date).format("DD/MM/YYYY");
 
+  // Check if the visit is editable based on the expected start time
+  const isEditable = () =>
+    dayjs().isBefore(dayjs(visitData?.expectedStartTime));
+
+  useEffect(() => {
+    setVisitors(detailVisitData);
+    // console.log(detailVisitData);
+    setVisitQuantity(detailVisitData.length);
+    setEditableVisitName(visitData?.visitName);
+    setEditableStartDate(convertToDayjs(visitData?.expectedStartTime));
+    setEditableEndDate(convertToDayjs(visitData?.expectedEndTime));
+    setScheduleTypeId(Number(visitData?.schedule.scheduleTypeId));
+  }, [detailVisitData, visitData, refetchListVisitor, refetchVisit]);
+
+  const handleToggleMode = async () => {
+    if (isEditMode) {
+      // When switching to edit mode, call the API to save changes
+      try {
+        const visitId = Number(id);
+        let excptedEndTimeFinally =
+          editableEndDate?.toDate() || visitData?.expectedEndTime;
+        if (scheduleTypeId === 1) {
+          excptedEndTimeFinally =
+            editableStartDate?.toDate() || visitData?.expectedStartTime;
+        }
+        // console.log("Visitors list luc put : ",visitors);
+        const visitDetail = visitors.map((v) => ({
+          // console.log(v)
+          expectedStartHour: v.expectedStartHour,
+          expectedEndHour: v.expectedEndHour,
+          visitorId: v.visitor.visitorId,
+          status: v.status,
+        }));
+        const updatedVisitData = {
+          visitName: editableVisitName || visitData?.visitName, // Include other necessary fields
+          expectedStartTime:
+            editableStartDate?.toDate() || visitData?.expectedStartTime,
+          expectedEndTime: excptedEndTimeFinally,
+          description: visitData?.description,
+          visitDetail: visitDetail,
+          updateById: userId,
+          visitQuantity: visitDetail.length,
+        };
+        // console.log(updatedVisitData);
+        // Call the API to update the visit
+        if (isEditable()) {
+          await updateVisitBeforeStartDate({
+            visitId: visitId,
+            updateVisit: updatedVisitData,
+          }).unwrap();
+        } else {
+          await updateVisitAfterStartDate({
+            visitId: visitId,
+            updateVisit: updatedVisitData,
+          }).unwrap();
+        }
+        await refetchVisit();
+        await refetchListVisitor();
+        notification.success({ message: "Chỉnh sửa thành công!" });
+      } catch (error) {
+        return notification.error({ message: "Chỉnh sửa thất bại!" });;
+      }
+    }
+    setIsEditMode((prev) => !prev); // Toggle edit mode
+  };
+  const timePickerStyles = {
+    error: {
+      borderColor: "red",
+    },
+  };
   const handleAddGuest = () => {
-    console.log("Add guest functionality triggered");
-    // Implement the add guest logic here
+    setIsModalVisible(true);
   };
 
-  const handleUpdate = () => {
-    console.log("Update functionality triggered");
-    // Implement the update logic here
+  const handleVisitorSelected = (visitor: any) => {
+    const selectedVisitor: DetailVisitor = {
+      expectedEndHour: "",
+      expectedStartHour: "",
+      visitor: visitor[0],
+      status: true,
+    };
+
+    if (visitor[0].status === "Unactive") {
+      notification.warning({ message: "Người dùng đã bị cấm." });
+      return setVisitors((prevVisitors: DetailVisitor[]) => [...prevVisitors]);
+    }
+
+    const isDuplicate = visitors.some(
+      (v: DetailVisitor) =>
+        v.visitor.visitorId === selectedVisitor.visitor.visitorId
+    );
+
+    if (!isDuplicate) {
+      setVisitors((prevVisitors: DetailVisitor[]) => [
+        ...prevVisitors,
+        selectedVisitor,
+      ]);
+      setVisitQuantity((prevQuantity) => prevQuantity + 1);
+    } else {
+      notification.warning({ message: "Visitor is already in the list." });
+    }
   };
 
+  const handleDeleteVisitor = (visitorId: string) => {
+    if (!isEditable()) {
+      setVisitors((prevVisitors: DetailVisitor[]) => {
+        return prevVisitors.map((v: DetailVisitor) => {
+          if (v.visitor.visitorId === Number(visitorId)) {
+            console.log("data before change : ", v);
+            // Change the status of the specific visitor
+            return {
+              ...v,
+              status: !v.status,
+            };
+          }
+          return v;
+        });
+      });
+    } else {
+      if (visitors.length === 1) {
+        return notification.warning({
+          message: "Danh sách không thể trống khách.",
+        });
+      }
+      setVisitors((prevVisitors: DetailVisitor[]) =>
+        prevVisitors.filter(
+          (v: DetailVisitor) => v.visitor.visitorId !== Number(visitorId)
+        )
+      );
+      setVisitQuantity((prevQuantity) => Math.max(prevQuantity - 1, 0));
+      notification.success({
+        message: "Xóa khách ra khỏi danh sách thành công.",
+      });
+    }
+  };
+
+  const getScheduleType = (typeId: number) => {
+    switch (typeId) {
+      case 1:
+        return "Theo ngày";
+      case 2:
+        return "Theo tháng";
+      default:
+        return "Khác";
+    }
+  };
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEditableVisitName(e.target.value);
+  };
+
+  const handleStartDateChange = (date: Dayjs) => {
+    setEditableStartDate(date);
+  };
+
+  const handleEndDateChange = (date: Dayjs) => {
+    setEditableEndDate(date);
+  };
+  const handleEndHourChange = (time: any, index: any, record: any) => {
+    const startHour = dayjs(record.expectedStartHour, "HH:mm");
+
+    if (time && startHour && time.isBefore(startHour)) {
+      // Show an error message or feedback
+      notification.warning({ message: "Giờ ra phải sau giờ vào" });
+      return; // Prevent setting the end hour if it's not valid
+    }
+
+    getHourString(time, "expectedEndHour", index); // Update end hour
+  };
+  const getHourString = (
+    value: Dayjs | null,
+    nameValue: string,
+    index: number
+  ) => {
+    setVisitors((prevVisitors) => {
+      const updatedVisitors = prevVisitors.map((visitor, i) =>
+        i === index
+          ? {
+              ...visitor,
+              [nameValue]: value ? value.format("HH:mm:ss") : "",
+            }
+          : visitor
+      );
+
+      return updatedVisitors;
+    });
+  };
   const columns = [
     {
       title: "Họ và tên",
@@ -56,11 +265,37 @@ const DetailCustomerVisit: React.FC = () => {
       title: "Giờ vào dự kiến",
       dataIndex: "expectedStartHour",
       key: "expectedStartHour",
+      render: (text: string, record: DetailVisitor, index: number) => {
+        const isError = !text && !isEditMode; // Check if there is no value and edit mode is not active
+        return (
+          <TimePicker
+            value={text ? dayjs(text, "HH:mm:ss") : null}
+            onChange={(time) => getHourString(time, "expectedStartHour", index)}
+            disabled={!isEditMode}
+            format="HH:mm:ss"
+            style={isError ? timePickerStyles.error : undefined} // Apply error style
+            key={record.visitor.visitorId}
+          />
+        );
+      },
     },
     {
       title: "Giờ ra dự kiến",
       dataIndex: "expectedEndHour",
       key: "expectedEndHour",
+      render: (text: string, record: DetailVisitor, index: number) => {
+        const isError = !text && !isEditMode; // Check if there is no value and edit mode is not active
+        return (
+          <TimePicker
+            value={text ? dayjs(text, "HH:mm:ss") : null}
+            onChange={(time) => handleEndHourChange(time, index, record)}
+            disabled={!isEditMode}
+            format="HH:mm:ss"
+            style={isError ? timePickerStyles.error : undefined} // Apply error style
+            key={record.visitor.visitorId}
+          />
+        );
+      },
     },
     {
       title: "Trạng thái",
@@ -75,17 +310,30 @@ const DetailCustomerVisit: React.FC = () => {
     {
       title: "Hành động",
       key: "action",
-      render: () => (
-        <Button
-          size="middle"
-          onClick={() => console.log("Kiểm tra người dùng")}
-        >
-          Kiểm tra người dùng
-        </Button>
+      render: (record: any) => (
+        <>
+          {!isEditMode && (
+            <Button
+              size="middle"
+              onClick={() => console.log("Kiểm tra người dùng")}
+            >
+              Kiểm tra người dùng
+            </Button>
+          )}
+          {isEditMode && (
+            <Button
+              size="middle"
+              danger
+              onClick={() => handleDeleteVisitor(record.visitor.visitorId)}
+              style={{ marginLeft: 8 }}
+            >
+              Xóa người dùng
+            </Button>
+          )}
+        </>
       ),
     },
   ];
-
   return (
     <Layout className="min-h-screen">
       <Content className="p-6">
@@ -99,101 +347,99 @@ const DetailCustomerVisit: React.FC = () => {
               <div>
                 <p className="text-sm text-gray-600">Ngày đăng ký:</p>
                 <p className="text-base font-semibold text-gray-800">
-                  {formatDate(visit.createTime)}
+                  {formatDate(visitData?.createTime)}
                 </p>
+                <p className="text-sm text-gray-600">Tên danh sách:</p>
+                {isEditMode && isEditable() ? (
+                  <Input
+                    value={editableVisitName}
+                    onChange={handleNameChange}
+                    placeholder="Edit Visit Name"
+                  />
+                ) : (
+                  <p className="text-base font-semibold text-gray-800">
+                    {editableVisitName}
+                  </p>
+                )}
                 <p className="text-sm text-gray-600">Lịch di chuyển:</p>
+                {isEditMode && isEditable() ? (
+                  <>
+                    <DatePicker
+                      value={editableStartDate}
+                      onChange={handleStartDateChange}
+                      format="DD/MM/YYYY"
+                      placeholder="Chọn ngày bắt đầu"
+                      style={{ marginRight: 8 }}
+                    />
+                    {/* Render end date picker only if scheduleTypeId is not 1 */}
+                    {scheduleTypeId !== 1 && (
+                      <DatePicker
+                        value={editableEndDate}
+                        onChange={handleEndDateChange}
+                        format="DD/MM/YYYY"
+                        placeholder="Chọn ngày kết thúc"
+                      />
+                    )}
+                  </>
+                ) : (
+                  <>
+                    {scheduleTypeId === 1 ? (
+                      <p className="text-base font-semibold text-gray-800">
+                        Ngày {formatDate(visitData?.expectedStartTime)}
+                      </p>
+                    ) : (
+                      <p className="text-base font-semibold text-gray-800">
+                        Từ {formatDate(visitData?.expectedStartTime)} Đến{" "}
+                        {formatDate(visitData?.expectedEndTime)}
+                      </p>
+                    )}
+                  </>
+                )}
+
+                <p className="text-sm text-gray-600">Số lượng:</p>
                 <p className="text-base font-semibold text-gray-800">
-                  {formatDate(visit.expectedStartTime)} -{" "}
-                  {formatDate(visit.expectedEndTime)}
+                  {visitQuantity} người
+                </p>
+                <p className="text-sm text-gray-600">Loại:</p>
+                <p className="text-base font-semibold text-gray-800">
+                  {getScheduleType(visitData?.schedule.scheduleTypeId)}
                 </p>
               </div>
             </div>
           </Col>
           <Col span={12}>
-            <div className="bg-white border border-gray-200 p-4 rounded-md shadow-sm flex items-start space-x-4">
-              <TeamOutlined className="text-blue-500 text-2xl mt-1" />
-              <div>
-                <p className="text-sm text-gray-600">Loại chuyến thăm:</p>
-                <p className="text-base font-semibold text-gray-800">
-                  {data.visitType}
-                </p>
-                <p className="text-sm text-gray-600">
-                  Số lượng người tham gia:
-                </p>
-                <p className="text-base font-semibold text-gray-800">
-                  {visit.visitQuantity}
-                </p>
-              </div>
-            </div>
-          </Col>
-        </Row>
-        <div className="mb-4">
-          <Search
-            placeholder="Tìm kiếm theo họ và tên"
-            style={{
-              width: 300,
-              borderRadius: "5px",
-              border: "none",
-              boxShadow: "0 0 5px rgba(0, 0, 0, 0.1)",
-            }}
-            enterButton={<SearchOutlined />}
-            size="large"
-            className="shadow-sm"
-          />
-          {/* Mode Toggle Button */}
-          <Button
-            type="primary"
-            onClick={handleToggleMode}
-            className="bg-green-500 text-white hover:bg-green-600"
-          >
-            {isEditMode ? "Xem" : "Chỉnh sửa"}
-          </Button>
-
-          {isEditMode && (
-            <div className="flex space-x-4">
-              {/* Add Guest Button */}
+            {isEditMode && (
               <Button
                 type="default"
                 onClick={handleAddGuest}
-                className="bg-blue-500 text-white hover:bg-blue-600"
+                className="mb-4 ml-2"
               >
                 Thêm khách
               </Button>
-
-              {/* Update Button */}
-            </div>
-          )}
-        </div>
+            )}
+          </Col>
+        </Row>
         <Table
+          dataSource={visitors}
           columns={columns}
-          dataSource={data}
-          pagination={{
-            showSizeChanger: true,
-            pageSizeOptions: ["5", "10", "20"],
-          }}
-          rowKey="visitDetailId"
-          bordered
-          loading={isLoading}
+          loading={loadingDetailVisitData}
+          rowKey="visitorId"
         />
-        <div className="mt-6 flex justify-between">
-          {/* Back button */}
-          <Button
-            type="default"
-            onClick={() => navigate(-1)}
-            className="bg-gray-200 text-black hover:bg-gray-300"
-          >
-            Quay lại
-          </Button>
-          {isEditMode && (
-            <Button
-              type="default"
-              onClick={handleUpdate}
-              className="bg-yellow-500 text-white hover:bg-yellow-600"
-            >
-              Cập nhập
-            </Button>
-          )}
-        </div>
+        <Button
+          type="default"
+          onClick={() => navigate(-1)}
+          className="mb-4 ml-2"
+        >
+          Quay lại
+        </Button>
+        <Button type="primary" onClick={handleToggleMode} className="mb-4">
+          {isEditMode ? "Lưu" : "Chỉnh sửa"}
+        </Button>
+        <VisitorSearchModal
+          isModalVisible={isModalVisible}
+          setIsModalVisible={() => setIsModalVisible(false)}
+          onVisitorSelected={handleVisitorSelected}
+        />
       </Content>
     </Layout>
   );

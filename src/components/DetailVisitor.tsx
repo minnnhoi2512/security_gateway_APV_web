@@ -19,7 +19,7 @@ const DetailVisitor: React.FC<DetailVisitorProps> = ({
   setIsEditModalVisible,
 }) => {
   const userRole = localStorage.getItem("userRole");
-  const { data: visitorData } = useGetVisitorByIdQuery({ id });
+  const { data: visitorData,refetch } = useGetVisitorByIdQuery({ id });
   const [updateVisitor, { isLoading: isUpdating }] = useUpdateVisitorMutation();
   const [form] = Form.useForm();
   const [imageBase64, setImageBase64] = useState<string | null>(null);
@@ -56,6 +56,7 @@ const DetailVisitor: React.FC<DetailVisitorProps> = ({
       };
 
       await updateVisitor(updatedVisitor).unwrap();
+      refetch();
       message.success("Cập nhật thành công!");
       setIsEditModalVisible(false); // Close the modal after successful update
     } catch (error) {

@@ -31,47 +31,47 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
   const handleCredentialCardTypeChange = (value: number) => {
     setCredentialCardTypeId(value);
   };
-  function convertImageToBase64(faceImg: any) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
+//  function convertImageToBase64(faceImg: any) {
+//     return new Promise((resolve, reject) => {
+//       const reader = new FileReader();
+ 
+//       reader.onloadend = () => {
+//         // Get the result as a base64 string
+//         const base64String = reader.result as string;
 
-      reader.onloadend = () => {
-        // Get the result as a base64 string
-        const base64String = reader.result as string;
+//         // Replace the prefix if necessary
+//         const imageBase64 = base64String.replace(
+//           /^data:image\/[a-zA-Z]+;base64,/,
+//           ""
+//         );
+//         resolve(imageBase64);
+//       };
 
-        // Replace the prefix if necessary
-        const imageBase64 = base64String.replace(
-          /^data:image\/[a-zA-Z]+;base64,/,
-          ""
-        );
-        resolve(imageBase64);
-      };
+//       reader.onerror = () => {
+//         reject(new Error("Could not convert image to base64."));
+//       };
 
-      reader.onerror = () => {
-        reject(new Error("Could not convert image to base64."));
-      };
-
-      // Check if faceImg is a File object
-      if (faceImg instanceof File) {
-        reader.readAsDataURL(faceImg);
-      } else {
-        // If faceImg is a URL, you might need to fetch it first
-        fetch(faceImg)
-          .then((response) => response.blob())
-          .then((blob) => reader.readAsDataURL(blob))
-          .catch(reject);
-      }
-    });
-  }
+//       // Check if faceImg is a File object
+//       if (faceImg instanceof File) {
+//         reader.readAsDataURL(faceImg);
+//       } else {
+//         // If faceImg is a URL, you might need to fetch it first
+//         fetch(faceImg)
+//           .then((response) => response.blob())
+//           .then((blob) => reader.readAsDataURL(blob))
+//           .catch(reject);
+//       }
+//     });
+//   }
   const handleOk = async () => {
     try {
       // Validate form fields and get values
       const values = await form.validateFields();
-      const base64StringImage = await convertImageToBase64(faceImg)
+      // const base64StringImage = await convertImageToBase64(faceImg)
       // Prepare final values to be sent
       const finalValues = {
         ...values,
-        visitorCredentialImageFromRequest: base64StringImage,
+        visitorCredentialImageFromRequest: faceImg,
       };
      
       // Send request to create a visitor

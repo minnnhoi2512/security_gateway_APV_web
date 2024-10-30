@@ -24,7 +24,7 @@ const LayoutPage = ({ children }: Props) => {
   const userId = Number(localStorage.getItem("userId"));
 
   // Assuming getUserDetail is the type of the data returned from the query
-  const { data: data1 } = useGetDetailUserQuery(userId);
+  const { data: data1,refetch } = useGetDetailUserQuery(userId);
   const getRoleDisplayName = (roleName: string) => {
     switch (roleName) {
       case "Staff":
@@ -69,6 +69,7 @@ const LayoutPage = ({ children }: Props) => {
       toast("Bạn có thông báo mới")
       refetchNoti()
     }
+    refetch();
     dispatch(reloadNoti())
   },[takingNew])
   const items: MenuProps['items'] = [

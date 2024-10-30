@@ -31,7 +31,6 @@ const VisitorSearchModal: React.FC<VisitorSearchModalProps> = ({
     setSearchResults([]);
     setCredentialCard("");
     onVisitorSelected([visitor]);
-
   };
 
   return (
@@ -121,17 +120,27 @@ const VisitorSearchModal: React.FC<VisitorSearchModalProps> = ({
           pagination={false}
         />
       )}
-
       {searchResults.length <= 0 && (
         <div style={{ textAlign: "center", margin: "20px 0" }}>
           <p>Không tìm thấy khách nào.</p>
+
+          {/* Ant Design Button to open the CreateNewVisitor modal */}
+          <Button
+            type="primary" // Set button type to primary for a styled button
+            onClick={() => {
+              setIsCreateNewVisitorVisible(true); // Optionally set this state
+            }}
+            style={{ marginTop: "10px" }} // Optional margin for spacing
+          >
+            Thêm khách mới
+          </Button>
+
           {isCreateNewVisitorVisible && (
             <CreateNewVisitor
-              isModalVisible={isModalVisible}
-              setIsModalVisible={setIsModalVisible}
+              isModalVisible={isCreateNewVisitorVisible}
+              setIsModalVisible={setIsCreateNewVisitorVisible}
               onVisitorCreated={(newVisitor) => {
-                setSearchResults(newVisitor); // Add new visitor to search results
-                setIsCreateNewVisitorVisible(false);
+                setSearchResults((prevResults) => [...prevResults, newVisitor]); // Add new visitor to search results
               }}
             />
           )}
