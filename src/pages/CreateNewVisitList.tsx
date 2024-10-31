@@ -91,6 +91,18 @@ const CreateNewVisitList: React.FC = () => {
       setIsWeekCalendarVisible(false);
     }
   };
+  const formatDateTime = (dateString: Date) => {
+    // Create a Date object from the input string
+    const date = new Date(dateString);
+
+    // Extract day, month, and year
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+
+    // Return formatted date as DD/MM/YYYY
+    return `${day}/${month}/${year}`;
+  };
   const handleVisitorSelection = (visitor: any) => {
     setSelectedVisitors((prevVisitors) => {
       // Check if the visitor is already selected
@@ -278,9 +290,11 @@ const CreateNewVisitList: React.FC = () => {
           }).unwrap(); // unwrapping for better error handling
         }
         message.success("Lịch hẹn đã được tạo thành công!");
-        navigate("/customerVisit", { state: { statusCreate: true } });
+        
+        navigate(-1);
+        
       } catch (error: any) {
-        console.log(error.data.message);
+        // console.log(error.data.message);
         message.error("Đã có lỗi xảy ra khi tạo lịch hẹn. Vui lòng thử lại.");
       }
     } catch (error) {
@@ -578,7 +592,12 @@ const CreateNewVisitList: React.FC = () => {
                   Chọn ngày và xem lịch
                 </Button>
               )}
-
+              {expectedStartTime && expectedEndTime && (
+                <div>
+                  Từ {formatDateTime(expectedStartTime?.toDate())} Đến{" "}
+                  {formatDateTime(expectedEndTime?.toDate())}
+                </div>
+              )}
               <Modal
                 title="Xem lịch"
                 visible={isModalCalendarVisible}

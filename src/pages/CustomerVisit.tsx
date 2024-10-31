@@ -5,22 +5,20 @@ import { TableProps } from "antd";
 import { useNavigate } from "react-router-dom";
 import moment from "moment-timezone";
 import { Content } from "antd/es/layout/layout";
-import VisitListType from "../types/VisitListType";
+import VisitListType from "../types/visitListType";
 import {
   useGetListVisitByCreatedIdQuery,
   useGetListVisitByDepartmentIdQuery,
   useGetListVisitQuery,
 } from "../services/visitList.service";
-import CustomPagination from "../components/Pagination";
 import FilterVisit from "../components/FilterVisit";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleStatusTab } from "../redux/slices/filterTab.slice";
-import VisitDetailList from "../types/VisitDetailListType";
 
 const CustomerVisit = () => {
   const userRole = localStorage.getItem("userRole");
   const userId = Number(localStorage.getItem("userId"));
-  const departmentId = Number(localStorage.getItem("departmentId"))
+  const departmentId = Number(localStorage.getItem("departmentId"));
   // console.log(departmentId);
   const navigate = useNavigate();
   const [searchText, setSearchText] = useState<string>("");
@@ -29,12 +27,16 @@ const CustomerVisit = () => {
   let data: any = [];
   // const totalPages = Math.ceil(data.length / pageSize);
   const dispatch = useDispatch();
-  const visit  = useSelector<any>(s => s.visitDetailList.data) as []
-  const isFiltering  = useSelector<any>(s => s.visitDetailList.isFiltering) as boolean
+  const visit = useSelector<any>((s) => s.visitDetailList.data) as [];
+  const isFiltering = useSelector<any>(
+    (s) => s.visitDetailList.isFiltering
+  ) as boolean;
   // Fetching data using the query
   let isLoading = true;
   let refetch;
-  // console.log(departmentId)
+  useEffect(() => {
+    sessionStorage.setItem("selectedKey", "customerVisit");
+  }, []);
   if (userRole === "Staff") {
     let {
       data: staffData,
@@ -76,8 +78,8 @@ const CustomerVisit = () => {
     isLoading = allLoading;
     refetch = refetchAll;
   }
-  if(isFiltering){
-    data = visit
+  if (isFiltering) {
+    data = visit;
   }
   // const handlePageChange = (page: number, size: number) => {
   //   setCurrentPage(page);
@@ -202,7 +204,7 @@ const CustomerVisit = () => {
   };
   const handleFilterTabs = () => {
     dispatch(toggleStatusTab());
-  }
+  };
   useEffect(() => {
     refetch();
   }, [statusFilter]);
@@ -257,10 +259,7 @@ const CustomerVisit = () => {
         >
           Đang đợi
         </Button>
-        <Button
-          type={"default"}
-          onClick={handleFilterTabs}
-        >
+        <Button type={"default"} onClick={handleFilterTabs}>
           Bộ lọc tìm kiếm
         </Button>
       </Space>
@@ -286,9 +285,8 @@ const CustomerVisit = () => {
         onPageChange={handlePageChange}
         onPageSizeChange={handlePageSizeChange}
       /> */}
-      <FilterVisit/>
+      <FilterVisit />
     </Content>
-    
   );
 };
 

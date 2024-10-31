@@ -23,13 +23,14 @@ interface DataType {
 
 const History = () => {
   const [searchText, setSearchText] = useState<string>("");
-  const data: DataType[] = [
-  ];
+  const data: DataType[] = [];
   const [filteredData, setFilteredData] = useState<DataType[]>(data); // Holds filtered data
-  const [postGraphql] = useGetVisitGraphqlMutation()
+  const [postGraphql] = useGetVisitGraphqlMutation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const dataList = useSelector<any>(s => s.visitorSession.data) as VisitorSessionType[]
+  const dataList = useSelector<any>(
+    (s) => s.visitorSession.data
+  ) as VisitorSessionType[];
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.toLowerCase();
@@ -39,33 +40,39 @@ const History = () => {
       entry.gateOut.toLowerCase().includes(value)
     );
     setFilteredData(filtered);
-  };  
+  };
 
   useEffect(() => {
     var body = MakeQuery();
-    const returned = postGraphql({
-        query : body
-    }).unwrap().then((payload) => {
-        dispatch(setListOfVisitorSession(payload.data.visitorSession?.items as VisitorSessionType[]))
+    postGraphql({
+      query: body,
     })
-  },[])
-  if(dataList){
+      .unwrap()
+      .then((payload) => {
+        dispatch(
+          setListOfVisitorSession(
+            payload.data.visitorSession?.items as VisitorSessionType[]
+          )
+        );
+      });
+  }, []);
+  if (dataList) {
     dataList.forEach((element, index) => {
       data.push({
         id: element.visitorSessionId,
-        checkInTime : element.checkinTime,
-        checkOutTime : element.checkoutTime,
-        gateIn : element.gateIn?.gateName,
-        gateOut : element.gateOut?.gateName,
+        checkInTime: element.checkinTime,
+        checkOutTime: element.checkoutTime,
+        gateIn: element.gateIn?.gateName,
+        gateOut: element.gateOut?.gateName,
         key: index.toString(),
         securityGateIn: element.securityIn?.fullName,
-        securityGateOut : element.securityOut?.fullName,
+        securityGateOut: element.securityOut?.fullName,
         status: element.status,
-        imageSrc: element.images[0].imageURL
-      })
-    })
+        imageSrc: element.images[0].imageURL,
+      });
+    });
   }
-  function MakeQuery (){
+  function MakeQuery() {
     var queryPlain = `
         query{
   visitorSession(take: 100){
@@ -97,14 +104,13 @@ const History = () => {
     }
   }
 }
-    `
+    `;
 
-    var query : GraphqlQueryType = {
-        query :  queryPlain
-    }
+    var query: GraphqlQueryType = {
+      query: queryPlain,
+    };
     return query;
-}
-
+  }
 
   const columns: TableProps<DataType>["columns"] = [
     {
@@ -116,7 +122,8 @@ const History = () => {
       title: "Giờ Vào",
       dataIndex: "checkInTime",
       key: "checkInTime",
-      sorter: (a, b) => new Date(a.checkInTime).getTime() - new Date(b.checkInTime).getTime(),
+      sorter: (a, b) =>
+        new Date(a.checkInTime).getTime() - new Date(b.checkInTime).getTime(),
     },
     {
       title: "Cổng Vào",
@@ -128,8 +135,10 @@ const History = () => {
       title: "Giờ Ra",
       dataIndex: "checkOutTime",
       key: "checkOutTime",
-      sorter: (a, b) => new Date(a.checkOutTime).getTime() - new Date(b.checkOutTime).getTime(),
-    },    {
+      sorter: (a, b) =>
+        new Date(a.checkOutTime).getTime() - new Date(b.checkOutTime).getTime(),
+    },
+    {
       title: "Cổng Ra",
       dataIndex: "gateOut",
       key: "gateOut",
@@ -156,15 +165,14 @@ const History = () => {
       title: "Trạng thái",
       key: "status",
       dataIndex: "status",
-      render: (_, { status }) => 
-          {
-            let color = status === "CheckIn" ? "volcano" : "green";
-            return (
-              <Tag color={color} key={""}>
-                {status.toUpperCase()}
-              </Tag>
-            );
-          }
+      render: (_, { status }) => {
+        let color = status === "CheckIn" ? "volcano" : "green";
+        return (
+          <Tag color={color} key={""}>
+            {status.toUpperCase()}
+          </Tag>
+        );
+      },
     },
     {
       title: "Action",
@@ -184,7 +192,6 @@ const History = () => {
 
   return (
     <div>
-
       <Input
         placeholder="Tìm kiếm theo tiêu đề"
         value={searchText}
@@ -194,7 +201,7 @@ const History = () => {
       <Space style={{ marginBottom: 16, display: "flex" }}>
         <Button
           type={"default"}
-         // onClick={handleFilterTabs}
+          // onClick={handleFilterTabs}
         >
           Bộ lọc tìm kiếm
         </Button>

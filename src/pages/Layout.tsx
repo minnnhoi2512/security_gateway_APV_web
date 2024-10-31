@@ -164,6 +164,8 @@ const LayoutPage = ({ children }: Props) => {
             paddingLeft: 20,
           }}
         >
+
+          {/* // button set thu phong navbar */}
           <Button
             type="text"
             icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}

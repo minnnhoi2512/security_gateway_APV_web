@@ -19,8 +19,7 @@ import CreateUser from "../pages/CreateUser";
 import CreateNewVisitList from "../pages/CreateNewVisitList";
 import CardManager from "../pages/CardManager";
 import CreateQRCard from "../pages/CreateQRCard";
-import GateManager from "../pages/GateManager";
-import Notification from "../pages/NotificationTest";
+import GateManager from "../pages/GateManager"
 import Staff from "../pages/Staff";
 import ChatRoom from "../pages/ChatRoom";
 import VisitorManager from "../pages/VisitorManager";
@@ -33,6 +32,8 @@ import SignalR from '../utils/signalR';
 import UserConnectionHubType from "../types/userConnectionHubType";
 import ScheduleStaff from "../pages/ScheduleStaff";
 import DetailScheduleStaff from "../pages/DetailScheduleStaff";
+import ScheduleAssignedManager from "../pages/ScheduleAssigned";
+import BanVisitorManager from "../pages/BanVisitorManager";
 
 
 const ContentRouter = () => {
@@ -118,6 +119,15 @@ const ContentRouter = () => {
       />
        <Route
         index
+        path="/schedule-assigned"
+        element={
+          <LayoutPage>
+            <ScheduleAssignedManager />
+          </LayoutPage>
+        }
+      />
+       <Route
+        index
         path="/detail-schedule-staff/:id"
         element={
           <LayoutPage>
@@ -145,28 +155,29 @@ const ContentRouter = () => {
       />
       <Route
         index
-        path="/customerVisit/"
+        path="/customerVisit"
         element={
           <LayoutPage>
             <CustomerVisit />
           </LayoutPage>
         }
       />
-            <Route
-        index
-        path="/departmentManager"
-        element={
-          <LayoutPage>
-            <DepartmentManager />
-          </LayoutPage>
-        }
-      />
+       
       <Route
         index
         path="/visitorManager"
         element={
           <LayoutPage>
             <VisitorManager />
+          </LayoutPage>
+        }
+      />
+      <Route
+        index
+        path="/banVisitorManager"
+        element={
+          <LayoutPage>
+            <BanVisitorManager />
           </LayoutPage>
         }
       />
@@ -179,15 +190,6 @@ const ContentRouter = () => {
           </LayoutPage>
         }
       />
-      {/* <Route
-        index
-        path="/createNewGuest"
-        element={
-          <LayoutPage>
-            <CreateNewGuest />
-          </LayoutPage>
-        }
-      /> */}
       <Route
         index
         path="/detailVisit/:id"
@@ -197,15 +199,7 @@ const ContentRouter = () => {
           </LayoutPage>
         }
       />
-      <Route
-        index
-        path="/notification-test"
-        element={
-          <LayoutPage>
-            <Notification />
-          </LayoutPage>
-        }
-      />
+     
       <Route
         index
         path="/schedule"

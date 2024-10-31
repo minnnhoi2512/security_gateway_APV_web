@@ -17,6 +17,7 @@ import dayjs, { Dayjs } from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import {
+  useAppendVisitAfterStartDateMutation,
   useGetDetailVisitQuery,
   useGetListDetailVisitQuery,
   useUpdateVisitAfterStartDateMutation,
@@ -55,6 +56,7 @@ const DetailCustomerVisit: React.FC = () => {
   const [editableVisitName, setEditableVisitName] = useState<string>("");
   const [updateVisitBeforeStartDate] = useUpdateVisitBeforeStartDateMutation();
   const [updateVisitAfterStartDate] = useUpdateVisitAfterStartDateMutation();
+  const [appendVisitAfterStartDate] = useAppendVisitAfterStartDateMutation();
   const [editableStartDate, setEditableStartDate] = useState<Dayjs>();
   const [editableEndDate, setEditableEndDate] = useState<Dayjs>();
   const [scheduleTypeId, setScheduleTypeId] = useState<number>(0);
@@ -82,10 +84,10 @@ const DetailCustomerVisit: React.FC = () => {
       // When switching to edit mode, call the API to save changes
       try {
         const visitId = Number(id);
-        let excptedEndTimeFinally =
+        let expectedEndTimeFinally =
           editableEndDate?.toDate() || visitData?.expectedEndTime;
         if (scheduleTypeId === 1) {
-          excptedEndTimeFinally =
+          expectedEndTimeFinally =
             editableStartDate?.toDate() || visitData?.expectedStartTime;
         }
         // console.log("Visitors list luc put : ",visitors);
@@ -100,14 +102,23 @@ const DetailCustomerVisit: React.FC = () => {
           visitName: editableVisitName || visitData?.visitName, // Include other necessary fields
           expectedStartTime:
             editableStartDate?.toDate() || visitData?.expectedStartTime,
-          expectedEndTime: excptedEndTimeFinally,
+          expectedEndTime: expectedEndTimeFinally,
           description: visitData?.description,
           visitDetail: visitDetail,
           updateById: userId,
           visitQuantity: visitDetail.length,
         };
-        // console.log(updatedVisitData);
-        // Call the API to update the visit
+        // if (
+        //   !isEditable() &&
+        //   editableStartDate?.toDate().toString() ===
+        //     convertToDayjs(visitData?.expectedStartTime).toDate().toString()
+        // ) {
+        //   await appendVisitAfterStartDate({
+        //     visitId: visitId,
+        //     updateById: Number(userId),
+        //     expectedEndTime: expectedEndTimeFinally,
+        //   }).unwrap();
+        // }
         if (isEditable()) {
           await updateVisitBeforeStartDate({
             visitId: visitId,
@@ -123,7 +134,7 @@ const DetailCustomerVisit: React.FC = () => {
         await refetchListVisitor();
         notification.success({ message: "Chỉnh sửa thành công!" });
       } catch (error) {
-        return notification.error({ message: "Chỉnh sửa thất bại!" });;
+        return notification.error({ message: "Chỉnh sửa thất bại!" });
       }
     }
     setIsEditMode((prev) => !prev); // Toggle edit mode
@@ -350,35 +361,31 @@ const DetailCustomerVisit: React.FC = () => {
                   {formatDate(visitData?.createTime)}
                 </p>
                 <p className="text-sm text-gray-600">Tên danh sách:</p>
-                {isEditMode && isEditable() ? (
-                  <Input
-                    value={editableVisitName}
-                    onChange={handleNameChange}
-                    placeholder="Edit Visit Name"
-                  />
-                ) : (
-                  <p className="text-base font-semibold text-gray-800">
-                    {editableVisitName}
-                  </p>
-                )}
-                <p className="text-sm text-gray-600">Lịch di chuyển:</p>
-                {isEditMode && isEditable() ? (
+
+                {isEditMode ? (
                   <>
-                    <DatePicker
-                      value={editableStartDate}
-                      onChange={handleStartDateChange}
-                      format="DD/MM/YYYY"
-                      placeholder="Chọn ngày bắt đầu"
-                      style={{ marginRight: 8 }}
-                    />
-                    {/* Render end date picker only if scheduleTypeId is not 1 */}
-                    {scheduleTypeId !== 1 && (
+                    {isEditable() && (
                       <DatePicker
-                        value={editableEndDate}
-                        onChange={handleEndDateChange}
+                        value={editableStartDate}
+                        onChange={handleStartDateChange}
                         format="DD/MM/YYYY"
-                        placeholder="Chọn ngày kết thúc"
+                        placeholder="Chọn ngày bắt đầu"
+                        style={{ marginRight: 8 }}
                       />
+                    )}
+                    {/* Render end date picker only if scheduleTypeId is not 1 and isEditable() is true */}
+                    {scheduleTypeId !== 1 && !isEditable() && (
+                      <>
+                        <p className="text-base font-semibold text-gray-800">
+                          Từ {formatDate(visitData?.expectedStartTime)} Đến
+                        </p>
+                        <DatePicker
+                          value={editableEndDate}
+                          onChange={handleEndDateChange}
+                          format="DD/MM/YYYY"
+                          placeholder="Chọn ngày kết thúc"
+                        />
+                      </>
                     )}
                   </>
                 ) : (

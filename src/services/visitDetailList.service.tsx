@@ -84,6 +84,19 @@ export const visitDetailListAPI = createApi({
         body: updateVisit, // Include the body in the request
       }),
     }),
+    appendVisitAfterStartDate: builder.mutation<
+      number, // The type of the response
+      { visitId: number; expectedEndTime : Date, updateById : number } // Input parameters
+    >({
+      query: ({ visitId, expectedEndTime, updateById}) => ({
+        url: `AppendTime/${visitId}`, // Construct the URL using the ID
+        method: "PUT",
+        body: {
+          expectedEndTime,
+          updateById
+        }, // Include the body in the request
+      }),
+    }),
   }),
 });
 
@@ -94,5 +107,6 @@ export const {
   useCreateNewScheduleVisitMutation,
   useGetDetailVisitQuery,
   useUpdateVisitBeforeStartDateMutation,
-  useUpdateVisitAfterStartDateMutation
+  useUpdateVisitAfterStartDateMutation,
+  useAppendVisitAfterStartDateMutation
 } = visitDetailListAPI;

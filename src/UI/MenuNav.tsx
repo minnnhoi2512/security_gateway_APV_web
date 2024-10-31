@@ -1,22 +1,23 @@
 import {
-  HomeOutlined,
   TeamOutlined,
-  ContactsOutlined,
   SolutionOutlined,
   FileTextOutlined,
-  CalendarOutlined,
   HistoryOutlined,
-  MessageOutlined,
-  NotificationOutlined,
   LogoutOutlined,
+  LineChartOutlined,
+  AppstoreOutlined,
+  BarsOutlined,
+  DeploymentUnitOutlined,
 } from "@ant-design/icons";
-import { Menu, Modal } from "antd";
-import { useEffect, useRef, useState } from "react";
+import { Menu, MenuProps, Modal, MenuTheme, Switch } from "antd";
+import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import SignalR from '../utils/signalR';
+import SignalR from "../utils/signalR";
 import { useDispatch, useSelector } from "react-redux";
+type MenuItem = Required<MenuProps>["items"][number];
 
 const MenuNav = () => {
+  const [theme, setTheme] = useState<MenuTheme>("dark");
   const navigate = useNavigate();
   const location = useLocation();
   const [selectedKey, setSelectedKey] = useState<string>(() => {
@@ -25,40 +26,44 @@ const MenuNav = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [nextLocation, setNextLocation] = useState<string | null>(null);
 
-  const userRole = localStorage.getItem("userRole"); // Get userRole from localStorage
-  const connection = useSelector<any>(s => s.hubConnection.connection) as React.MutableRefObject<signalR.HubConnection | null>
-  const dispatch = useDispatch();
-  const handleCancel = () => {
-    setIsModalVisible(true); // Show the confirmation modal
+  const userRole = localStorage.getItem("userRole");
+  const changeTheme = (value: boolean) => {
+    setTheme(value ? "dark" : "light");
   };
+  const connection = useSelector<any>(
+    (s) => s.hubConnection.connection
+  ) as React.MutableRefObject<signalR.HubConnection | null>;
+  const dispatch = useDispatch();
+  const handleCancel = () => setIsModalVisible(true);
 
   const handleOk = () => {
     if (nextLocation) {
-      setSelectedKey(nextLocation.split("/")[1]); // Update the selectedKey based on nextLocation
-      navigate(nextLocation); // Navigate to the next location
+      setSelectedKey(nextLocation.split("/")[1]);
+      navigate(nextLocation);
     }
-    setIsModalVisible(false); // Close the modal
-    setNextLocation(null); // Reset nextLocation
+    setIsModalVisible(false);
+    setNextLocation(null);
   };
 
   const handleCancelNavigation = () => {
-    setIsModalVisible(false); // Close the modal without navigation
-    setNextLocation(null); // Reset nextLocation
+    setIsModalVisible(false);
+    setNextLocation(null);
   };
 
   const handleMenuClick = ({ key }: { key: string }) => {
     if (key === "") {
-      if(connection){
-        SignalR.DisconnectSignalR(connection,dispatch)
+      if (connection) {
+        SignalR.DisconnectSignalR(connection, dispatch);
       }
       localStorage.clear();
       navigate("/");
     } else {
       if (location.pathname === "/createNewVisitList") {
-        setNextLocation(`/${key}`); // Store the next location
-        handleCancel(); // Show confirmation modal
+        setNextLocation(`/${key}`);
+        handleCancel();
       } else {
-        setSelectedKey(key); // Update selected key directly
+        setSelectedKey(key);
+        sessionStorage.setItem("selectedKey", key);
         navigate(`/${key}`);
       }
     }
@@ -67,73 +72,211 @@ const MenuNav = () => {
   useEffect(() => {
     sessionStorage.setItem("selectedKey", selectedKey);
   }, [selectedKey]);
-
-  const allMenuItems = [
-    { key: "dashboard", icon: <HomeOutlined />, label: "Thông tin chung" },
-    { key: "departManager", icon: <SolutionOutlined />, label: "Danh sách phòng ban" },
-
-
-    { key: "staff", icon: <SolutionOutlined />, label: "Danh sách nhân viên" },
-    { key: "departmentManager", icon: <SolutionOutlined />, label: "Danh sách quản lý" },
-    { key: "visitorManager", icon: <TeamOutlined />, label: "Nhóm khách" },
+  const allMenuItems: MenuItem[] = [
+    { key: "dashboard", icon: <LineChartOutlined />, label: "Thông tin chung" },
     {
-      key: "customerVisit",
-      icon: <ContactsOutlined />,
+      key: "accountManage",
+      icon: <TeamOutlined />,
+      label: "Người dùng",
+      children: [
+        { key: "manager", label: "Quản lý" },
+        { key: "departmentManager", label: "Quản lý phòng ban" },
+        { key: "staff", label: "Nhân viên phòng ban" },
+        { key: "security", label: "Bảo vệ" },
+      ],
+    },
+    {
+      key: "scheduleManage",
+      icon: <FileTextOutlined />,
+      label: "Lịch trình",
+      children: [
+        { key: "schedule", label: "Tất cả lịch trình" },
+        { key: "schedule-assigned", label: "Lịch trình đã giao" },
+        { key: "schedule-staff", label: "Tạo lịch hẹn" },
+      ],
+    },
+
+    {
+      key: "visitorManage",
+      icon: <SolutionOutlined />,
       label: "Danh sách khách",
+      children: [
+        { key: "visitorManager", label: "Khách tiêu chuẩn" },
+        { key: "banVisitorManager", label: "Sổ đen" },
+      ],
     },
-    
-    { key: "schedule", icon: <FileTextOutlined />, label: "Tiến trình" },
-    { key: "schedule-staff", icon: <FileTextOutlined />, label: "Tạo lịch tiến trình" },
-    { key: "calendar", icon: <CalendarOutlined />, label: "Lịch trình" },
-    { key: "history", icon: <HistoryOutlined />, label: "Lịch sử" },
-    { key: "chat", icon: <MessageOutlined />, label: "Nhắn tin" },
     {
-      key: "notification-test",
-      icon: <NotificationOutlined />,
-      label: "Thông báo - test",
+      key: "customerVisitManage",
+      icon: <BarsOutlined />,
+      label: "Chuyến thăm",
+      children: [
+        { key: "customerVisit", label: "Theo ngày" },
+        { key: "customerVisitWeekly", label: "Theo tuần" },
+        { key: "customerVisitMonthly", label: "Theo tháng" },
+      ],
     },
+    {
+      key: "historyManage",
+      icon: <HistoryOutlined />,
+      label: "Lịch sử",
+      children: [
+        { key: "history", label: "Phiên ra vào" },
+        { key: "guest-history", label: "Khách ra vào" },
+        { key: "visit-history", label: "Chuyến thăm" },
+      ],
+    },
+    {
+      key: "facilityManage",
+      icon: <DeploymentUnitOutlined />,
+      label: "Cơ sở vật chất",
+      children: [
+        { key: "departManager", label: "Phòng ban" },
+        { key: "gate", label: "Cổng ra vào" },
+        { key: "card", label: "Thẻ ra vào" },
+      ],
+    },
+    {
+      key: "utility",
+      icon: <AppstoreOutlined />,
+      label: "Tiện ích",
+      children: [
+        { key: "calendar", label: "Lịch hẹn của tôi" },
+        { key: "chat", label: "Nhắn tin" },
+      ],
+    },
+
     { key: "", icon: <LogoutOutlined />, label: "Đăng xuất" },
   ];
+  // Filter out "manager" item if userRole is "Manager"
+  const filteredMenuItems = allMenuItems
+    .map((item: any) => {
+      if (userRole === "Admin") {
+        const excludedKeys = [
+          "schedule-staff",
+        ];
 
-  const filteredMenuItems = allMenuItems.filter((item) => {
-    if (userRole === "Staff") {
-      return ![
-        "dashboard",
-        "manager",
-        "security",
-        "departmentManager",
-        "departManager",
-        "schedule",
-        "card",
-        "gate",
-      ].includes(item.key);
-    } else if (userRole === "DepartmentManager") {
-      return ![
-        "dashboard",
-        "manager",
-        "security",
-        "departmentManager",
-        "departManager",
-        "schedule-staff",
-        "card",
-        "gate",
-      ].includes(item.key);
-    } else if (userRole === "Manager") {
-      return ![
-        "dashboard",
-        "project",
-        "manager",
-        "staff",
-        "schedule-staff",
-      ].includes(item.key);
-    }
-    return true; // Include all items for other roles
-  });
+        // Exclude top-level items and children based on excluded keys
+        if (excludedKeys.includes(item.key)) {
+          return null;
+        }
+        if (item.children) {
+          return {
+            ...item,
+            children: item.children.filter(
+              (child: any) => !excludedKeys.includes(child.key)
+            ),
+          };
+        }
+      }
+      if (userRole === "Manager") {
+        const excludedKeys = [
+          "manager",
+          "schedule-staff",
+        ];
 
-  const menuStyle = {
-    backgroundColor: "#34495e",
-    color: "#ffffff",
-  };
+        // Exclude top-level items and children based on excluded keys
+        if (excludedKeys.includes(item.key)) {
+          return null;
+        }
+        if (item.children) {
+          return {
+            ...item,
+            children: item.children.filter(
+              (child: any) => !excludedKeys.includes(child.key)
+            ),
+          };
+        }
+      }
+
+      // Exclude specific items for DepartmentManager role
+      if (userRole === "DepartmentManager") {
+        const excludedKeys = [
+          "dashboard",
+          "manager",
+          "departmentManager",
+          "facilityManage",
+          "banVisitorManager",
+          "schedule-staff",
+          "guest-history",
+          "history",
+          "security",
+        ];
+
+        // Exclude top-level items and children based on excluded keys
+        if (excludedKeys.includes(item.key)) {
+          return null;
+        }
+        if (item.children) {
+          return {
+            ...item,
+            children: item.children.filter(
+              (child: any) => !excludedKeys.includes(child.key)
+            ),
+          };
+        }
+      }
+      if (userRole === "Staff") {
+        const excludedKeys = [
+          "dashboard",
+          "accountManage",
+          "schedule-assigned",
+          "schedule",
+          "facilityManage",
+          "banVisitorManager",
+          "guest-history",
+          "history",
+          "security",
+        ];
+
+        // Exclude top-level items and children based on excluded keys
+        if (excludedKeys.includes(item.key)) {
+          return null;
+        }
+        if (item.children) {
+          return {
+            ...item,
+            children: item.children.filter(
+              (child: any) => !excludedKeys.includes(child.key)
+            ),
+          };
+        }
+      }
+
+      return item;
+    })
+    .filter(Boolean); // Remove any null values from the filtered array
+
+  const renderMenuItems = (menuItems: any) =>
+    menuItems.map((item: any) => {
+      if (item.children) {
+        return (
+          <Menu.SubMenu
+            key={item.key}
+            icon={item.icon}
+            title={item.label}
+            style={menuItemStyle}
+          >
+            {item.children.map((subItem: any) => (
+              <Menu.Item key={subItem.key} style={menuItemStyle}>
+                {subItem.label}
+              </Menu.Item>
+            ))}
+          </Menu.SubMenu>
+        );
+      }
+      return (
+        <Menu.Item
+          key={item.key}
+          icon={item.icon}
+          style={{
+            ...menuItemStyle,
+            ...(selectedKey === item.key ? menuItemSelectedStyle : {}),
+          }}
+        >
+          {item.label}
+        </Menu.Item>
+      );
+    });
 
   const menuItemStyle = {
     transition: "background-color 0.3s ease-in-out",
@@ -147,29 +290,17 @@ const MenuNav = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="">
+      <Switch checked={theme === "dark"} onChange={changeTheme} />
+      <br />
+      <br />
       <Menu
-        theme="dark"
+        theme={theme}
         mode="inline"
         selectedKeys={[selectedKey]}
         onClick={handleMenuClick}
-        style={menuStyle}
       >
-        {filteredMenuItems.map((item) => (
-          <Menu.Item
-            key={item.key}
-            icon={item.icon}
-            style={{
-              ...menuItemStyle,
-              ...(selectedKey === item.key ? menuItemSelectedStyle : {}),
-            }}
-            className={`menu-item ${
-              selectedKey === item.key ? "selected" : ""
-            }`}
-          >
-            {item.label}
-          </Menu.Item>
-        ))}
+        {renderMenuItems(filteredMenuItems)}
       </Menu>
 
       <Modal

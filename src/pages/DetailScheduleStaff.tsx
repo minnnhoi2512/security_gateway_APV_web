@@ -22,6 +22,7 @@ const DetailScheduleStaff = () => {
   const location = useLocation();
   const { state } = location;
   const navigate = useNavigate();
+  console.log(state);
   useEffect(() => {
     // console.log(state.schedule.daysOfSchedule);
   }, [state]);
@@ -172,10 +173,11 @@ const DetailScheduleStaff = () => {
                 }}
               >
                 <Button onClick={() => navigate(-1)}>Trở lại</Button>
-                <Button type="primary" onClick={handleCreateNewVisit}>
-                  Tạo lịch hẹn
-                </Button>
-            
+                {state.status != "Pending" && (
+                  <Button type="primary" onClick={handleCreateNewVisit}>
+                    Tạo lịch hẹn
+                  </Button>
+                )}
               </div>
             </>
           ) : (

@@ -24,7 +24,7 @@ const ScheduleStaff = () => {
     pageSize: 10,
     staffId: Number(userId),
   });
-
+  console.log(schedules);
   interface ScheduleType {
     title: string;
     description: string;
@@ -79,7 +79,7 @@ const ScheduleStaff = () => {
         // Check the schedule type and return the corresponding Tag
         switch (schedule.scheduleType.scheduleTypeName) {
           case "VisitDaily":
-            return <Tag color="blue">Vãng lai</Tag>; // Blue tag for Daily Visit
+            return <Tag color="blue">Theo ngày</Tag>; // Blue tag for Daily Visit
           case "ProcessWeek":
             return <Tag color="green">Theo tuần</Tag>; // Green tag for Weekly Process
           case "ProcessMonth":
@@ -105,7 +105,7 @@ const ScheduleStaff = () => {
       dataIndex: "assignFrom",
       key: "assignFrom",
       align: "center",
-      render: (assignFrom: { userName: string }) => assignFrom.userName,
+      render: (assignFrom: { fullName: string }) => assignFrom.fullName,
     },
     {
       title: "Hành động",
