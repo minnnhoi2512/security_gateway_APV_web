@@ -17,7 +17,6 @@ import dayjs, { Dayjs } from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import {
-  useAppendVisitAfterStartDateMutation,
   useGetDetailVisitQuery,
   useGetListDetailVisitQuery,
   useUpdateVisitAfterStartDateMutation,
@@ -56,7 +55,7 @@ const DetailCustomerVisit: React.FC = () => {
   const [editableVisitName, setEditableVisitName] = useState<string>("");
   const [updateVisitBeforeStartDate] = useUpdateVisitBeforeStartDateMutation();
   const [updateVisitAfterStartDate] = useUpdateVisitAfterStartDateMutation();
-  const [appendVisitAfterStartDate] = useAppendVisitAfterStartDateMutation();
+  // const [appendVisitAfterStartDate] = useAppendVisitAfterStartDateMutation();
   const [editableStartDate, setEditableStartDate] = useState<Dayjs>();
   const [editableEndDate, setEditableEndDate] = useState<Dayjs>();
   const [scheduleTypeId, setScheduleTypeId] = useState<number>(0);
@@ -108,17 +107,6 @@ const DetailCustomerVisit: React.FC = () => {
           updateById: userId,
           visitQuantity: visitDetail.length,
         };
-        // if (
-        //   !isEditable() &&
-        //   editableStartDate?.toDate().toString() ===
-        //     convertToDayjs(visitData?.expectedStartTime).toDate().toString()
-        // ) {
-        //   await appendVisitAfterStartDate({
-        //     visitId: visitId,
-        //     updateById: Number(userId),
-        //     expectedEndTime: expectedEndTimeFinally,
-        //   }).unwrap();
-        // }
         if (isEditable()) {
           await updateVisitBeforeStartDate({
             visitId: visitId,
@@ -357,11 +345,23 @@ const DetailCustomerVisit: React.FC = () => {
               <CalendarOutlined className="text-blue-500 text-2xl mt-1" />
               <div>
                 <p className="text-sm text-gray-600">Ngày đăng ký:</p>
+
                 <p className="text-base font-semibold text-gray-800">
                   {formatDate(visitData?.createTime)}
                 </p>
                 <p className="text-sm text-gray-600">Tên danh sách:</p>
-
+                {isEditMode && isEditable() ? (
+                  <Input
+                    value={editableVisitName}
+                    onChange={(e) => handleNameChange(e)}
+                    className="text-base font-semibold text-gray-800"
+                  />
+                ) : (
+                  <p className="text-base font-semibold text-gray-800">
+                    {editableVisitName}
+                  </p>
+                )}
+                <p className="text-sm text-gray-600">Thời gian:</p>
                 {isEditMode ? (
                   <>
                     {isEditable() && (
