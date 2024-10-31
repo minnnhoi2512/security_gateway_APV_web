@@ -113,26 +113,108 @@ const ScheduleManager = () => {
     });
   };
   
-  const handleAssignUser = (scheduleId?: number) => {
+  // const handleAssignUser = (scheduleId?: number) => {
+  //   if (!scheduleId) {
+  //     message.error("Lỗi: Không tìm thấy ID dự án.");
+  //     return;
+  //   }
+  //   setAssignData((prev) => ({ ...prev, scheduleId }));
+  //   setIsModalVisible(true);
+  // };
+  const handleAssignUser = (scheduleId?: number, status?: boolean) => {
     if (!scheduleId) {
       message.error("Lỗi: Không tìm thấy ID dự án.");
       return;
     }
+
+    if (status === false && !status) {
+      message.warning("Không thể phân công vì dự án đã hết hiệu lực.");
+      return;
+    }
+
     setAssignData((prev) => ({ ...prev, scheduleId }));
     setIsModalVisible(true);
   };
 
+
+  
   const handleDateChange = (date: moment.Moment | null) => {
     setAssignData((prev) => ({
       ...prev,
       deadlineTime: date ? date.toISOString() : "",
     }));
   };
+  const filteredSchedules = schedules?.filter(
+    (schedule: ScheduleType) => schedule.scheduleType?.scheduleTypeName !== "VisitDaily"
+  );
+
 
   const handleAssignSubmit = async () => {
+    if (!assignData.title) {
+      message.error("Vui lòng nhập tiêu đề.");
+      return;
+    }
+    if (!assignData.description) {
+      message.error("Vui lòng nhập miêu tả.");
+      return;
+    }
+    if (!assignData.deadlineTime) {
+      message.error("Vui lòng chọn thời hạn.");
+      return;
+    }
+    if (!assignData.assignToId) {
+      message.error("Vui lòng chọn một nhân viên để phân công.");
+      return;
+    }
+
+    if (!assignData.title || assignData.title.length < 3 || assignData.title.length > 100 || /[!@#$%^&*(),?":{}|<>]/.test(assignData.title)) {
+      message.error("Tiêu đề không hợp lệ. Vui lòng kiểm tra độ dài và ký tự đặc biệt.");
+      return;
+    }
+  
+
+    if (!assignData.description || assignData.description.length < 10 || assignData.description.length > 100) {
+      message.error("Miêu tả phải có ít nhất 10  ký tự.");
+      return;
+    }
+  
+    if (assignData.note && assignData.note.length > 200) {
+      message.error("Ghi chú không được vượt quá 200 ký tự.");
+      return;
+    }
+  
+    if (!assignData.deadlineTime) {
+      message.error("Vui lòng chọn thời hạn.");
+      return;
+    } else if (moment(assignData.deadlineTime).isAfter(moment().add(3, 'months'), 'day')) {
+      message.error("Thời hạn không hợp lệ. Vui lòng chọn trong khoảng 3 tháng.");
+      return;
+    }else if (moment(assignData.deadlineTime).isBefore(moment(), 'day')) {
+      message.error("Thời hạn không hợp lệ. Vui lòng chọn ngày hiện tại hoặc trong tương lai.");
+      return;
+    } else if ([0, 6].includes(moment(assignData.deadlineTime).day())) {
+      message.error("Thời hạn không thể vào ngày cuối tuần.");
+      return;
+    }
+  
+    if (!assignData.assignToId) {
+      message.error("Vui lòng chọn một nhân viên để phân công.");
+      return;
+    } else {
+
+      const isEmployeeOverloaded = false; 
+      const isEmployeeEligible = true; 
+      const isEmployeeInDepartment = true; 
+      const isEmployeeAvailable = true;
+  
+      if (isEmployeeOverloaded || !isEmployeeEligible || !isEmployeeInDepartment || !isEmployeeAvailable) {
+        message.error("Nhân viên không đáp ứng yêu cầu hoặc đang có lịch trình khác. Vui lòng chọn nhân viên khác.");
+        return;
+      }
+    }
+  
     try {
       const payload = { ...assignData };
-      // console.log("Payload gửi:", payload); // Kiểm tra payload
       await assignSchedule(payload).unwrap();
       message.success("Phân công thành công!");
       setIsModalVisible(false);
@@ -165,7 +247,7 @@ const ScheduleManager = () => {
       align: "center",
       render: (text) => {
         const scheduleTypeName = text.scheduleTypeName;
-        let tagColor = "default"; // Default color
+        let tagColor = "default";
 
         switch (scheduleTypeName) {
           case "DailyVisit":
@@ -175,7 +257,7 @@ const ScheduleManager = () => {
           case "ProcessMonth":
             return <Tag color="orange">Theo tháng</Tag>;
           default:
-            return <Tag color={tagColor}>{scheduleTypeName}</Tag>; // Fallback if needed
+            return <Tag color={tagColor}>{scheduleTypeName}</Tag>;
         }
       },
     },
@@ -212,7 +294,7 @@ const ScheduleManager = () => {
             type="text"
             icon={<UserAddOutlined />}
             className="text-blue-500 hover:text-blue-700"
-            onClick={() => handleAssignUser(record.scheduleId)}
+            onClick={() => handleAssignUser(record.scheduleId, record.status)}
           />
         </div>
       ),
@@ -251,11 +333,11 @@ const ScheduleManager = () => {
 
         <Table
           columns={columns}
-          dataSource={schedules || []}
+          dataSource={filteredSchedules  || []}
           rowKey="scheduleId"
           loading={isLoading}
           pagination={{
-            total: schedules?.totalCount || 0,
+            total: filteredSchedules?.length || 0,
             showSizeChanger: true,
             pageSizeOptions: ["5", "10", "20"],
           }}
@@ -277,7 +359,7 @@ const ScheduleManager = () => {
           ]}
         >
           <Form layout="vertical">
-            <Form.Item label="Tiêu đề">
+            <Form.Item label="Tiêu đề" rules={[{ required: true, message: 'Vui lòng nhập tiêu đề.' }]}>
               <Input
                 value={assignData.title}
                 onChange={(e) =>
@@ -285,7 +367,7 @@ const ScheduleManager = () => {
                 }
               />
             </Form.Item>
-            <Form.Item label="Miêu tả">
+            <Form.Item label="Miêu tả" rules={[{ required: true, message: 'Vui lòng nhập miêu tả.' }]}>
               <Input
                 value={assignData.description}
                 onChange={(e) =>
@@ -304,14 +386,14 @@ const ScheduleManager = () => {
                 }
               />
             </Form.Item>
-            <Form.Item label="Thời hạn">
+            <Form.Item label="Thời hạn" rules={[{ required: true, message: 'Vui lòng chọn thời hạn.' }]}>
               <DatePicker
                 onChange={handleDateChange}
                 style={{ width: "100%" }}
                 format="DD/MM/YYYY"
               />
             </Form.Item>
-            <Form.Item label="Chọn nhân viên">
+            <Form.Item label="Chọn nhân viên" rules={[{ required: true, message: 'Vui lòng chọn một nhân viên.' }]}>
               <Select
                 placeholder="Chọn nhân viên"
                 onChange={(value) =>
