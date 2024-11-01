@@ -10,8 +10,6 @@ const { confirm } = Modal;
 
 const DepartManager = () => {
   const [searchText, setSearchText] = useState<string>("");
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [pageSize, setPageSize] = useState<number>(5);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [isUserListModalVisible, setIsUserListModalVisible] = useState(false);
@@ -19,13 +17,13 @@ const DepartManager = () => {
   const [form] = Form.useForm();
   const [editingDepartment, setEditingDepartment] = useState<any>(null);
 
-  const [createDepartment, { isLoading: isCreating }] = useCreateDepartmentMutation();
+  const [createDepartment, { isLoading: isCreating  }] = useCreateDepartmentMutation();
   const [updateDepartment, { isLoading: isUpdating }] = useUpdateDepartmentMutation();
   const [deleteDepartment] = useDeleteDepartmentMutation();
 
-  const { data, isLoading, error } = useGetListDepartmentsQuery({
-    pageNumber: currentPage,
-    pageSize,
+  const { data, isLoading, error,refetch } = useGetListDepartmentsQuery({
+    pageNumber: -1,
+    pageSize : -1,
   });
 
   const departments = data ? data : [];
@@ -114,11 +112,6 @@ const DepartManager = () => {
     setSearchText(e.target.value);
   };
 
-  const handleTableChange = (pagination: any) => {
-    setCurrentPage(pagination.current || 1);
-    setPageSize(pagination.pageSize || 5);
-  };
-
   const showModal = () => {
     setIsModalVisible(true);
   };
@@ -133,6 +126,7 @@ const DepartManager = () => {
         message: "Thành công",
         description: "Phòng ban đã được tạo mới thành công.",
       });
+      refetch();
     } catch (error) {
       notification.error({
         message: "Thất bại",
@@ -168,6 +162,7 @@ const DepartManager = () => {
         message: "Thành công",
         description: "Cập nhật phòng ban thành công.",
       });
+      refetch();
     } catch (error) {
       notification.error({
         message: "Thất bại",
@@ -335,14 +330,11 @@ const DepartManager = () => {
           columns={columns}
           dataSource={filteredData}
           pagination={{
-            current: currentPage,
-            pageSize,
             total: totalDepartments,
             showSizeChanger: true,
             pageSizeOptions: ["5", "10", "20"],
             size: "small",
           }}
-          onChange={handleTableChange}
           loading={isLoading}
           rowKey="departmentId"
           bordered

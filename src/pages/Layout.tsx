@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
-import { Avatar, Badge, Button, Dropdown, Layout, Space } from "antd";
+import { Avatar, Badge, Breadcrumb, Button, Dropdown, Layout, Space } from "antd";
 import { useNavigate } from "react-router-dom";
 import "@fontsource/inter"; 
 import MenuNav from "../UI/MenuNav";
@@ -185,7 +185,10 @@ const LayoutPage = ({ children }: Props) => {
           </Dropdown>
           </div>
         </Header>
-
+        <Breadcrumb
+            items={[{ title: 'Home' }, { title: 'List' }, { title: 'App' }]}
+            style={{ margin: '16px' }}
+          />
         <Content className="m-6 p-6 bg-white rounded shadow min-h-[80vh]">
           {children}
         </Content>

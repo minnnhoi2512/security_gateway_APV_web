@@ -1,5 +1,5 @@
 type DepartmentType = {
-    departmentId?: number;
+    departmentId: number;
     departmentName?: string;
     description?: string;
     createDate?: Date;

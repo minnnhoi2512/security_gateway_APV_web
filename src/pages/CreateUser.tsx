@@ -12,7 +12,7 @@ import {
   useGetListUserByRoleQuery,
 } from "../services/user.service";
 import { useGetListDepartmentsQuery } from "../services/department.service";
-import DepartmentType from "../types/DepartmentType";
+import DepartmentType from "../types/departmentType";
 
 const { Content } = Layout;
 
@@ -51,6 +51,7 @@ const CreateUser: React.FC = () => {
     pageNumber: -1,
     pageSize: -1,
   });
+
   const { refetch: refetchStaffData } = useGetListStaffByDepartmentManagerQuery(
     { pageNumber: -1, pageSize: -1, departmentManagerId: userId },
     { skip: userRole !== "DepartmentManager" } // Skip if not Department Manager
@@ -76,11 +77,12 @@ const CreateUser: React.FC = () => {
       // Wait for all uploads to complete and get URLs
       const faceImgUrls = await Promise.all(faceImgPromises);
       // Determine departmentId based on roleId
+      // console.log(roleId);
       const assignedDepartmentId =
         roleId === 2
-          ? 20
+          ? 2
           : roleId === 5
-          ? 19
+          ? 3
           : departmentId || departmentId_local; // Use departmentId_local if userRole is DepartmentManager
       const user: UserType = {
         userName: username,
@@ -114,6 +116,9 @@ const CreateUser: React.FC = () => {
   const handleCancel = () => {
     navigate(-1);
   };
+  const filteredDepartments = listDepartment?.filter(
+    (department: DepartmentType) => ![1, 2, 3].includes(department.departmentId)
+  );
 
   return (
     <Layout className="min-h-screen">
@@ -174,8 +179,9 @@ const CreateUser: React.FC = () => {
               onChange={(e) => setPhoneNumber(e.target.value)}
             />
           </Form.Item>
-          {userRole !== "Manager" &&
-            userRole !== "Admin" && ( // Only show this Form.Item if userRole is NOT "DepartmentManager"
+          {roleId !== 2 &&
+            roleId !== 5 &&
+            !(roleId === 4 && userRole === "DepartmentManager") && (
               <Form.Item
                 name="departmentId"
                 label="Chọn phòng ban"
@@ -184,13 +190,8 @@ const CreateUser: React.FC = () => {
                 <Select
                   placeholder="Chọn phòng ban"
                   onChange={(value) => setDepartmentId(value)}
-                  defaultValue={
-                    userRole === "DepartmentManager"
-                      ? departmentId_local
-                      : undefined
-                  } // Set default value if userRole is DepartmentManager
                 >
-                  {listDepartment?.map((department: DepartmentType) => (
+                  {filteredDepartments?.map((department: DepartmentType) => (
                     <Select.Option
                       key={department.departmentId}
                       value={department.departmentId}
@@ -201,6 +202,7 @@ const CreateUser: React.FC = () => {
                 </Select>
               </Form.Item>
             )}
+
           <Form.Item label="Ảnh đại diện">
             <Upload
               beforeUpload={(file) => {
