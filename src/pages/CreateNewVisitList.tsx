@@ -27,6 +27,7 @@ import { stateToHTML } from "draft-js-export-html";
 import ReadOnlyWeekCalendar from "../components/ReadOnlyWeekCalendar";
 import ReadOnlyMonthCalendar from "../components/ReadOnlyMonthCalendar";
 import VisitorSearchModal from "../components/ModalSearchVisitor";
+import { convertToVietnamTime } from "../utils/ultil";
 const { Step } = Steps;
 
 interface FormValues {
@@ -252,10 +253,10 @@ const CreateNewVisitList: React.FC = () => {
         visitName: formData.title,
         visitQuantity: Number(formData.visitQuantity),
         expectedStartTime: formData.expectedStartTime
-          ? formData.expectedStartTime.toDate()
+          ? convertToVietnamTime(formData.expectedStartTime.toDate())
           : null,
         expectedEndTime: formData.expectedStartTime
-          ? formData.expectedStartTime.toDate()
+          ? convertToVietnamTime(formData.expectedStartTime.toDate())
           : null,
         createById: userId,
         description: htmlContent,
@@ -271,8 +272,8 @@ const CreateNewVisitList: React.FC = () => {
         scheduleTypeName === "ProcessWeek" ||
         scheduleTypeName === "ProcessMonth"
       ) {
-        requestData.expectedStartTime = expectedStartTime?.toDate();
-        requestData.expectedEndTime = expectedEndTime?.toDate();
+        requestData.expectedStartTime = convertToVietnamTime(expectedStartTime?.toDate());
+        requestData.expectedEndTime = convertToVietnamTime(expectedEndTime?.toDate());
         // console.log(state.from.schedule.scheduleId)
         requestData.scheduleId = state.from.schedule.scheduleId; // Update scheduleId to state.from.id
       }

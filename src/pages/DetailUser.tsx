@@ -25,10 +25,8 @@ const DetailUser: React.FC = () => {
   const [updateUser] = useUpdateUserMutation(); // Hook for updating user
 
   // Fetch user details using the userId
-  const { data: userData, isLoading, isError } = useGetDetailUserQuery(userId);
-  // Handle loading and error states
-  if (isLoading) return <div>Loading...</div>;
-  if (isError) return <div>Error loading user details.</div>;
+  const { data: userData } = useGetDetailUserQuery(userId);
+  
   const { refetch: refetchUserList } = useGetListUserByRoleQuery({
     pageNumber: -1,
     pageSize: -1,

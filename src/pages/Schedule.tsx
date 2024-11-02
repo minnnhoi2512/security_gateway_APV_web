@@ -35,7 +35,6 @@ import { useGetListUsersByDepartmentIdQuery } from "../services/user.service";
 import ScheduleType from "../types/scheduleType";
 import UserType from "../types/userType";
 
-
 const { Content } = Layout;
 const { Option } = Select;
 
@@ -43,7 +42,7 @@ const ScheduleManager = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const location = useLocation();
   const result = location?.state?.result;
-  // console.log(result);
+
   const userRole = localStorage.getItem("userRole");
   const userId = Number(localStorage.getItem("userId"));
   const departmentIdUser = Number(localStorage.getItem("departmentId"));
@@ -98,7 +97,7 @@ const ScheduleManager = () => {
     // console.log("refetsh đi m")
     refetch();
   }, [result]);
-
+  const staffData = users.filter((user: any) => user.role?.roleId === 4);
   const handleDeleteSchedule = (scheduleId: number) => {
     Modal.confirm({
       title: "Xác nhận xóa",
@@ -117,7 +116,7 @@ const ScheduleManager = () => {
       },
     });
   };
-  
+
   const handleAssignUser = (scheduleId?: number) => {
     if (!scheduleId) {
       message.error("Lỗi: Không tìm thấy ID dự án.");
@@ -140,6 +139,15 @@ const ScheduleManager = () => {
       // console.log("Payload gửi:", payload); // Kiểm tra payload
       await assignSchedule(payload).unwrap();
       message.success("Phân công thành công!");
+      setAssignData({
+        title: "",
+        description: "",
+        note: "",
+        deadlineTime: "",
+        scheduleId: 0,
+        assignToId: 0,
+        assignFromId: parseInt(localStorage.getItem("userId") || "0")
+      });
       setIsModalVisible(false);
       refetch();
     } catch (error) {
@@ -215,7 +223,18 @@ const ScheduleManager = () => {
       ),
     },
   ];
-
+  const handleCancelAssigned = () => {
+    setAssignData({
+      title: "",
+      description: "",
+      note: "",
+      deadlineTime: "",
+      scheduleId: 0,
+      assignToId: 0,
+      assignFromId: parseInt(localStorage.getItem("userId") || "0")
+    });
+    setIsModalVisible(false);
+  };
   return (
     <Layout className="min-h-screen bg-gray-50">
       <Content className="p-8">
@@ -263,9 +282,9 @@ const ScheduleManager = () => {
         <Modal
           title="Phân công nhân viên"
           visible={isModalVisible}
-          onCancel={() => setIsModalVisible(false)}
+          onCancel={handleCancelAssigned}
           footer={[
-            <Button key="cancel" onClick={() => setIsModalVisible(false)}>
+            <Button key="cancel" onClick={handleCancelAssigned}>
               Hủy
             </Button>,
             <Button key="submit" type="primary" onClick={handleAssignSubmit}>
@@ -316,7 +335,7 @@ const ScheduleManager = () => {
                 }
                 loading={usersLoading}
               >
-                {users.map((user: UserType) => (
+                {staffData.map((user: UserType) => (
                   <Option key={user.userId} value={user.userId}>
                     {user.fullName}
                   </Option>

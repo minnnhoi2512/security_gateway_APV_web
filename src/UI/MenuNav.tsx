@@ -106,21 +106,21 @@ const MenuNav = () => {
       ],
     },
     {
-      key: "customerVisitManage",
+      key: "customerVisit",
       icon: <BarsOutlined />,
       label: "Chuyến thăm",
-      children: [
-        { key: "customerVisit", label: "Theo ngày" },
-        { key: "customerVisitWeekly", label: "Theo tuần" },
-        { key: "customerVisitMonthly", label: "Theo tháng" },
-      ],
+      // children: [
+      //   { key: "customerVisit", label: "Theo ngày" },
+      //   { key: "customerVisitWeekly", label: "Theo tuần" },
+      //   { key: "customerVisitMonthly", label: "Theo tháng" },
+      // ],
     },
     {
       key: "historyManage",
       icon: <HistoryOutlined />,
       label: "Lịch sử",
       children: [
-        { key: "history", label: "Phiên ra vào" },
+        { key: "history", label: "Lượt ra vào" },
         { key: "guest-history", label: "Khách ra vào" },
         { key: "visit-history", label: "Chuyến thăm" },
       ],
