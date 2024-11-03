@@ -26,7 +26,7 @@ import { EditorState } from "draft-js";
 import { stateToHTML } from "draft-js-export-html";
 import ReadOnlyWeekCalendar from "../components/ReadOnlyWeekCalendar";
 import ReadOnlyMonthCalendar from "../components/ReadOnlyMonthCalendar";
-import VisitorSearchModal from "../components/ModalSearchVisitor";
+import VisitorSearchModal from "./ModalSearchVisitor";
 import { convertToVietnamTime } from "../utils/ultil";
 const { Step } = Steps;
 

@@ -3,8 +3,8 @@ import { Button, Table, Input, Tag, Space, Modal, Form, notification } from "ant
 import { SearchOutlined, PlusOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import moment from "moment-timezone";
 import { Content } from "antd/es/layout/layout";
-import { useGetListDepartmentsQuery, useCreateDepartmentMutation, useUpdateDepartmentMutation, useDeleteDepartmentMutation } from "../services/department.service";
-import { useGetListUsersByDepartmentIdQuery } from "../services/user.service";
+import { useGetListDepartmentsQuery, useCreateDepartmentMutation, useUpdateDepartmentMutation, useDeleteDepartmentMutation } from "../../services/department.service";
+import { useGetListUsersByDepartmentIdQuery } from "../../services/user.service";
 
 const { confirm } = Modal;
 

@@ -10,6 +10,7 @@ import {
   Tag,
   notification,
   Input,
+  Modal,
 } from "antd";
 import { useNavigate, useParams } from "react-router-dom";
 import { CalendarOutlined } from "@ant-design/icons";
@@ -21,9 +22,11 @@ import {
   useGetListDetailVisitQuery,
   useUpdateVisitAfterStartDateMutation,
   useUpdateVisitBeforeStartDateMutation,
-} from "../services/visitDetailList.service";
-import VisitorSearchModal from "../components/ModalSearchVisitor";
-import { DetailVisitor } from "../types/detailVisitorForVisit";
+} from "../../services/visitDetailList.service";
+import VisitorSearchModal from "../../form/ModalSearchVisitor";
+import { DetailVisitor } from "../../types/detailVisitorForVisit";
+import { convertToVietnamTime } from "../../utils/ultil";
+import ListHistorySesson from "../History/ListHistorySession";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(customParseFormat);
@@ -59,6 +62,8 @@ const DetailCustomerVisit: React.FC = () => {
   const [editableStartDate, setEditableStartDate] = useState<Dayjs>();
   const [editableEndDate, setEditableEndDate] = useState<Dayjs>();
   const [scheduleTypeId, setScheduleTypeId] = useState<number>(0);
+  const [selectedRecord, setSelectedRecord] = useState<any>(null);
+  const [isHistoryModalVisible, setIsHistoryModalVisible] = useState(false);
   const convertToDayjs = (date: string | Date | Dayjs): Dayjs => {
     return dayjs(date);
   };
@@ -100,8 +105,9 @@ const DetailCustomerVisit: React.FC = () => {
         const updatedVisitData = {
           visitName: editableVisitName || visitData?.visitName, // Include other necessary fields
           expectedStartTime:
-            editableStartDate?.toDate() || visitData?.expectedStartTime,
-          expectedEndTime: expectedEndTimeFinally,
+            convertToVietnamTime(editableStartDate?.toDate()) ||
+            visitData?.expectedStartTime,
+          expectedEndTime: convertToVietnamTime(expectedEndTimeFinally),
           description: visitData?.description,
           visitDetail: visitDetail,
           updateById: userId,
@@ -134,6 +140,16 @@ const DetailCustomerVisit: React.FC = () => {
   };
   const handleAddGuest = () => {
     setIsModalVisible(true);
+  };
+  const showHistoryModal = (record: any) => {
+    console.log(record);
+    setSelectedRecord(record);
+    setIsHistoryModalVisible(true);
+  };
+
+  const handleCloseHistoryModal = () => {
+    setIsHistoryModalVisible(false);
+    setSelectedRecord(null);
   };
 
   const handleVisitorSelected = (visitor: any) => {
@@ -312,12 +328,11 @@ const DetailCustomerVisit: React.FC = () => {
       render: (record: any) => (
         <>
           {!isEditMode && (
-            <Button
-              size="middle"
-              onClick={() => console.log("Kiểm tra người dùng")}
-            >
-              Kiểm tra người dùng
-            </Button>
+            <>
+              <Button size="middle" onClick={() => showHistoryModal(record)}>
+                Kiểm tra người dùng
+              </Button>
+            </>
           )}
           {isEditMode && (
             <Button
@@ -448,6 +463,16 @@ const DetailCustomerVisit: React.FC = () => {
           onVisitorSelected={handleVisitorSelected}
         />
       </Content>
+      <Modal
+        title="Chi tiết lịch sử"
+        visible={isHistoryModalVisible}
+        onCancel={handleCloseHistoryModal}
+        footer={null} // No footer buttons
+      >
+        {selectedRecord && (
+          <ListHistorySesson data={selectedRecord.visitDetailId} />
+        )}
+      </Modal>
     </Layout>
   );
 };

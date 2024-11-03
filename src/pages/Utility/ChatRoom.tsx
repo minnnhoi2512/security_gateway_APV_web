@@ -7,8 +7,8 @@ import {
   where,
   onSnapshot,
 } from "firebase/firestore";
-import { chatDB } from "../api/firebase";
 import { Input, Button, List, Typography, Avatar } from "antd";
+import { chatDB } from "../../api/firebase";
 
 // Define the Message type
 interface Message {
