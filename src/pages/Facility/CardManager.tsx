@@ -4,8 +4,8 @@ import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import moment from "moment-timezone";
 import { Content } from "antd/es/layout/layout";
-import QRCardType from "../types/QRCardType";
-import { useGetListQRCardQuery } from "../services/QRCard.service";
+import QRCardType from "../../types/QRCardType";
+import { useGetListQRCardQuery } from "../../services/QRCard.service";
 
 const CardManager = () => {
   const navigate = useNavigate();

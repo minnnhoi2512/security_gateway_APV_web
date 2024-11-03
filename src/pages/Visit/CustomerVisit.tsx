@@ -5,15 +5,15 @@ import { TableProps } from "antd";
 import { useNavigate } from "react-router-dom";
 import moment from "moment-timezone";
 import { Content } from "antd/es/layout/layout";
-import VisitListType from "../types/visitListType";
+import VisitListType from "../../types/visitListType";
 import {
   useGetListVisitByCreatedIdQuery,
   useGetListVisitByDepartmentIdQuery,
   useGetListVisitQuery,
-} from "../services/visitList.service";
-import FilterVisit from "../components/FilterVisit";
+} from "../../services/visitList.service";
+import FilterVisit from "../../components/FilterVisit";
 import { useDispatch, useSelector } from "react-redux";
-import { toggleStatusTab } from "../redux/slices/filterTab.slice";
+import { toggleStatusTab } from "../../redux/slices/filterTab.slice";
 
 const CustomerVisit = () => {
   const userRole = localStorage.getItem("userRole");
@@ -148,6 +148,9 @@ const CustomerVisit = () => {
         } else if (text === "Pending") {
           color = "yellow";
           displayText = "Đang đợi";
+        } else if (text === "Unactive") {
+          color = "blue";
+          displayText = "Hết hạn";
         }
 
         return (

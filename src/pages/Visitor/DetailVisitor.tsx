@@ -3,7 +3,7 @@ import { Modal, Form, Input, Select, message, Button } from "antd";
 import {
   useGetVisitorByIdQuery,
   useUpdateVisitorMutation,
-} from "../services/visitor.service";
+} from "../../services/visitor.service";
 
 const { Option } = Select;
 

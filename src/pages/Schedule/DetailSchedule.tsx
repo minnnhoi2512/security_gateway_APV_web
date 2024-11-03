@@ -12,15 +12,15 @@ import { useEffect, useState } from "react";
 import {
   useUpdateScheduleMutation,
   useGetDetailScheduleQuery,
-} from "../services/schedule.service";
+} from "../../services/schedule.service";
 import { useNavigate, useParams } from "react-router-dom";
 import { Editor } from "react-draft-wysiwyg";
 import { EditorState } from "draft-js";
 import { stateToHTML } from "draft-js-export-html";
 import { stateFromHTML } from "draft-js-import-html";
-import ReadOnlyMonthCalendar from "../components/ReadOnlyMonthCalendar";
-import ReadOnlyWeekCalendar from "../components/ReadOnlyWeekCalendar";
-import Schedule from "../types/scheduleType";
+import ReadOnlyMonthCalendar from "../../components/ReadOnlyMonthCalendar";
+import ReadOnlyWeekCalendar from "../../components/ReadOnlyWeekCalendar";
+import Schedule from "../../types/scheduleType";
 
 const { Option } = Select;
 

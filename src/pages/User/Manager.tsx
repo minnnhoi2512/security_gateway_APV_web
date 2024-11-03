@@ -1,8 +1,8 @@
 import { Layout, Button, Table, Tag, Input, Modal, message } from "antd";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import UserType from "../types/userType";
-import { useGetListUserByRoleQuery, useDeleteUserMutation } from "../services/user.service";
+import UserType from "../../types/userType";
+import { useGetListUserByRoleQuery, useDeleteUserMutation } from "../../services/user.service";
 
 const { Content } = Layout;
 

@@ -1,53 +1,25 @@
 import { Layout, Button, Table, Tag, Input, Modal, message } from "antd";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import UserType from "../types/userType";
-import {
-  useGetListStaffByDepartmentManagerQuery,
-  useGetListUserByRoleQuery,
-  useDeleteUserMutation,
-} from "../services/user.service";
+import UserType from "../../types/userType";
+import { useGetListUserByRoleQuery, useDeleteUserMutation } from "../../services/user.service";
 
 const { Content } = Layout;
 
-const Staff = () => {
-  const userRole = localStorage.getItem("userRole");
-  const userId = Number(localStorage.getItem("userId"));
+const Security = () => {
   const [searchText, setSearchText] = useState<string>("");
   const navigate = useNavigate();
-  const [data, setData] = useState<UserType[]>([]);
+
+  // Fetch data for users with the role of "Security"
+  const { data = [], refetch, isLoading } = useGetListUserByRoleQuery({
+    pageNumber: -1,
+    pageSize: -1,
+    role: "Security",
+  });
+
   const [isModalVisible, setIsModalVisible] = useState(false); // State for modal visibility
   const [userIdToDelete, setUserIdToDelete] = useState<number | null>(null); // State to store user ID for deletion
-
-  // Fetch data based on user role
-  const {
-    data: staffData,
-    refetch: refetchStaffData,
-    isLoading: isLoadingStaff,
-  } = useGetListStaffByDepartmentManagerQuery(
-    { pageNumber: -1, pageSize: -1, departmentManagerId: userId },
-    { skip: userRole !== "DepartmentManager" } // Skip if not Department Manager
-  );
-
-  const {
-    data: userData,
-    refetch: refetchUserData,
-    isLoading: isLoadingUser,
-  } = useGetListUserByRoleQuery(
-    { pageNumber: -1, pageSize: -1, role: "Staff" },
-    { skip: userRole === "DepartmentManager" } // Skip if Department Manager
-  );
-
-  // Combine loading states
-  const isLoading = isLoadingStaff || isLoadingUser;
-
-  useEffect(() => {
-    if (staffData) {
-      setData(staffData);
-    } else if (userData) {
-      setData(userData);
-    }
-  }, [staffData, userData]);
+  const [deleteUser] = useDeleteUserMutation(); // Hook for deleting user
 
   // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -58,27 +30,6 @@ const Staff = () => {
   const filteredData = data.filter((user: UserType) =>
     user.fullName.toLowerCase().includes(searchText.toLowerCase())
   );
-
-  const [deleteUser] = useDeleteUserMutation(); // Hook for deleting user
-
-  const handleDeleteUser = async () => {
-    if (userIdToDelete) {
-      try {
-        await deleteUser(userIdToDelete).unwrap(); // Call the delete mutation
-        message.success("Xóa người dùng thành công");
-        setIsModalVisible(false); // Close the modal
-        setUserIdToDelete(null); // Reset the user ID
-        // Refetch the data after deletion based on the user role
-        if (userRole === "DepartmentManager") {
-          refetchStaffData();
-        } else {
-          refetchUserData();
-        }
-      } catch (error) {
-        message.error("Xóa người dùng thất bại");
-      }
-    }
-  };
 
   const columns = [
     {
@@ -102,16 +53,6 @@ const Staff = () => {
       key: "phoneNumber",
     },
     {
-      title: "Phòng ban",
-      dataIndex: "department",
-      key: "department",
-      render: (text: any) => (
-        <span style={{ fontSize: "14px", color: "#000" }}>
-          {text ? text.departmentName : "Không có phòng ban"}
-        </span>
-      ),
-    },
-    {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
@@ -125,9 +66,9 @@ const Staff = () => {
       dataIndex: "role",
       key: "role",
       render: (role: { roleName: string; status: string } | null) => {
-        const displayedRole = role ? role.roleName : "Nhân viên";
-        const color = role && role.status === "Active" ? "green" : "volcano";
-        return <Tag color={color}>{displayedRole}</Tag>;
+        const displayedRole = role ? role.roleName : "Bảo vệ"; // Use roleName if role is not null
+        const color = role && role.status === "Active" ? "green" : "volcano"; // Check status for color
+        return <Tag color={color}>{displayedRole}</Tag>; // Use displayedRole for the tag
       },
     },
     {
@@ -161,19 +102,33 @@ const Staff = () => {
     },
   ];
 
+  const handleDeleteUser = async () => {
+    if (userIdToDelete) {
+      try {
+        await deleteUser(userIdToDelete).unwrap(); // Call the delete mutation
+        message.success("Xóa người dùng thành công");
+        setIsModalVisible(false); // Close the modal
+        setUserIdToDelete(null); // Reset the user ID
+        refetch(); // Refetch the data after deletion
+      } catch (error) {
+        message.error(`Xóa người dùng thất bại`);
+      }
+    }
+  };
+
   return (
     <Layout className="min-h-screen">
       <Layout>
         <Content className="p-6">
           <div className="flex justify-center mb-4">
             <h1 className="text-green-500 text-2xl font-bold">
-              Danh sách nhân viên
+              Danh sách bảo vệ
             </h1>
           </div>
           <Button
             type="primary"
             className="mb-4 bg-blue-500 hover:bg-blue-600"
-            onClick={() => navigate("/createUser", { state: { roleId: 4 } })}
+            onClick={() => navigate("/createUser", { state: { roleId: 5 } })}
           >
             Tạo mới người dùng
           </Button>
@@ -187,13 +142,12 @@ const Staff = () => {
             columns={columns}
             dataSource={filteredData}
             pagination={{
-              total: filteredData?.length, // Assuming data contains total count
+              total: data?.length, // Assuming totalCount is provided in the response
               showSizeChanger: true,
               pageSizeOptions: ["5", "10", "20"],
-              hideOnSinglePage: false,
               size: "small",
             }}
-            loading={isLoading} // Use the combined loading state
+            loading={isLoading} // Use the loading state from the query
             rowKey={"userId"}
           />
           <Modal
@@ -212,4 +166,4 @@ const Staff = () => {
   );
 };
 
-export default Staff;
+export default Security;
