@@ -68,6 +68,7 @@ const CreateNewVisitList: React.FC = () => {
       visitorName: string;
       credentialsCard: string;
       visitorCredentialImage: string;
+      companyName: string;
     }[]
   >([]);
   const [createNewListDetailVisit] = useCreateNewListDetailVisitMutation();
@@ -105,7 +106,14 @@ const CreateNewVisitList: React.FC = () => {
     return `${day}/${month}/${year}`;
   };
   const handleVisitorSelection = (visitor: any) => {
+    console.log(selectedVisitors);
     setSelectedVisitors((prevVisitors) => {
+      if (visitor[0].status === "Unactive") {
+        notification.warning({
+          message: "Không thể thêm khách sổ đen vào danh sách.",
+        });
+        return prevVisitors;
+      }
       // Check if the visitor is already selected
       const isDuplicate = prevVisitors.some(
         (v) => v.visitorId === visitor[0].visitorId
@@ -180,7 +188,9 @@ const CreateNewVisitList: React.FC = () => {
 
         // Check if the selected start time is before the minimum allowed start time
         if (selectedTime < minStartHour) {
-          message.warning("Giờ vào phải hơn hiện tại ít nhất 30 phút.");
+          notification.warning({
+            message: "Giờ vào phải hơn hiện tại ít nhất 30 phút.",
+          });
           return; // Prevent updating startHour if the condition fails
         }
       }
@@ -195,7 +205,7 @@ const CreateNewVisitList: React.FC = () => {
     } else if (nameValue === "endHour") {
       if (value <= startHour) {
         // Optionally show a message to the user
-        message.warning("Giờ ra phải sau giờ vào!"); // Adjust the message to your needs
+        notification.warning({ message: "Giờ ra phải sau giờ vào!" }); // Adjust the message to your needs
         return; // Do not update endHour if it is not valid
       }
 
@@ -231,7 +241,7 @@ const CreateNewVisitList: React.FC = () => {
       // console.log(htmlContent);
       // Check if the selected visitors count matches the required visit quantity
       if (selectedVisitors.length < visitQuantity) {
-        message.warning("Cần nhập đủ số lượng khách!");
+        notification.warning({ message: "Cần nhập đủ số lượng khách!" });
         return; // Stop further execution
       }
 
@@ -244,7 +254,9 @@ const CreateNewVisitList: React.FC = () => {
       );
 
       if (hasMissingHours) {
-        message.warning("Vui lòng nhập đủ thông tin giờ ra và giờ vào!");
+        notification.warning({
+          message: "Vui lòng nhập đủ thông tin giờ ra và giờ vào!",
+        });
         return; // Stop further execution
       }
 
@@ -260,7 +272,7 @@ const CreateNewVisitList: React.FC = () => {
           : null,
         createById: userId,
         description: htmlContent,
-        scheduleId: 2,
+        scheduleId: null,
         visitDetail: selectedVisitors.map((visitor) => ({
           expectedStartHour: visitor.startHour,
           expectedEndHour: visitor.endHour,
@@ -272,8 +284,12 @@ const CreateNewVisitList: React.FC = () => {
         scheduleTypeName === "ProcessWeek" ||
         scheduleTypeName === "ProcessMonth"
       ) {
-        requestData.expectedStartTime = convertToVietnamTime(expectedStartTime?.toDate());
-        requestData.expectedEndTime = convertToVietnamTime(expectedEndTime?.toDate());
+        requestData.expectedStartTime = convertToVietnamTime(
+          expectedStartTime?.toDate()
+        );
+        requestData.expectedEndTime = convertToVietnamTime(
+          expectedEndTime?.toDate()
+        );
         // console.log(state.from.schedule.scheduleId)
         requestData.scheduleId = state.from.schedule.scheduleId; // Update scheduleId to state.from.id
       }
@@ -291,9 +307,8 @@ const CreateNewVisitList: React.FC = () => {
           }).unwrap(); // unwrapping for better error handling
         }
         message.success("Lịch hẹn đã được tạo thành công!");
-        
+
         navigate(-1);
-        
       } catch (error: any) {
         // console.log(error.data.message);
         message.error("Đã có lỗi xảy ra khi tạo lịch hẹn. Vui lòng thử lại.");
@@ -339,7 +354,9 @@ const CreateNewVisitList: React.FC = () => {
 
       // Check if the selected start time is before the minimum allowed start time
       if (selectedTime < minStartHour) {
-        message.warning("Giờ vào phải hơn hiện tại ít nhất 30 phút.");
+        notification.warning({
+          message: "Giờ vào phải hơn hiện tại ít nhất 30 phút.",
+        });
         return; // Prevent updating startHour if the condition fails
       }
     }
@@ -374,7 +391,7 @@ const CreateNewVisitList: React.FC = () => {
     // console.log(endHour);
     // If endHour is not valid, clear it and show a warning
     if (!isEndHourValid && endHour !== null && endHour !== undefined) {
-      message.warning("Giờ ra phải sau giờ vào!");
+      notification.warning({ message: "Giờ ra phải sau giờ vào!" });
       setEndHourForAll(null);
       const updatedVisitors = selectedVisitors.map((visitor) => ({
         ...visitor,
@@ -439,6 +456,11 @@ const CreateNewVisitList: React.FC = () => {
         key: "visitorName",
       },
       {
+        title: "Công ty",
+        dataIndex: "companyName",
+        key: "companyName",
+      },
+      {
         title: "Mã căn cước",
         dataIndex: "credentialsCard",
         key: "credentialsCard",
@@ -474,8 +496,7 @@ const CreateNewVisitList: React.FC = () => {
                 if (!record.startHour) {
                   // Show toast notification
                   notification.warning({
-                    message: "",
-                    description: "Vui lòng chọn giờ vào trước khi chọn giờ ra.",
+                    message: "Vui lòng chọn giờ vào trước khi chọn giờ ra.",
                   });
                   return; // Prevent further action
                 }
@@ -510,6 +531,7 @@ const CreateNewVisitList: React.FC = () => {
         visitorName: visitor?.visitorName,
         startHour: visitor?.startHour,
         endHour: visitor?.endHour,
+        companyName: visitor?.companyName,
         credentialsCard: visitor?.credentialsCard,
         visitorCredentialImage: visitor?.visitorCredentialImage,
       };

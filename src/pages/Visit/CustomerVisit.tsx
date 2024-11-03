@@ -43,8 +43,8 @@ const CustomerVisit = () => {
       isLoading: staffLoading,
       refetch: refetchStaff,
     } = useGetListVisitByCreatedIdQuery({
-      pageNumber: -1,
-      pageSize: -1,
+      pageNumber: 1,
+      pageSize: 100,
       createdById: userId,
     });
 
@@ -57,8 +57,8 @@ const CustomerVisit = () => {
       isLoading: managerLoading,
       refetch: refetchManager,
     } = useGetListVisitByDepartmentIdQuery({
-      pageNumber: -1,
-      pageSize: -1,
+      pageNumber: 1,
+      pageSize: 100,
       departmentId: departmentId,
     });
     data = managerData;
@@ -70,8 +70,8 @@ const CustomerVisit = () => {
       isLoading: allLoading,
       refetch: refetchAll,
     } = useGetListVisitQuery({
-      pageNumber: -1,
-      pageSize: -1,
+      pageNumber: 1,
+      pageSize: 100,
       status: statusFilter,
     });
     data = allData;
@@ -81,6 +81,7 @@ const CustomerVisit = () => {
   if (isFiltering) {
     data = visit;
   }
+  console.log(data);
   // const handlePageChange = (page: number, size: number) => {
   //   setCurrentPage(page);
   //   // Call your API with the new page number and size
@@ -166,7 +167,7 @@ const CustomerVisit = () => {
       key: "schedule",
       render: (text) => (
         <span style={{ fontSize: "14px", color: "#000" }}>
-          {text.scheduleName}
+          {text?.scheduleName || "Theo ngày"}
         </span>
       ),
     },

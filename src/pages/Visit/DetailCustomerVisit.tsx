@@ -80,7 +80,7 @@ const DetailCustomerVisit: React.FC = () => {
     setEditableVisitName(visitData?.visitName);
     setEditableStartDate(convertToDayjs(visitData?.expectedStartTime));
     setEditableEndDate(convertToDayjs(visitData?.expectedEndTime));
-    setScheduleTypeId(Number(visitData?.schedule.scheduleTypeId));
+    // setScheduleTypeId(Number(visitData?.schedule.scheduleTypeId));
   }, [detailVisitData, visitData, refetchListVisitor, refetchVisit]);
 
   const handleToggleMode = async () => {
@@ -405,7 +405,7 @@ const DetailCustomerVisit: React.FC = () => {
                   </>
                 ) : (
                   <>
-                    {scheduleTypeId === 1 ? (
+                    {/* {scheduleTypeId === 1 ? (
                       <p className="text-base font-semibold text-gray-800">
                         Ngày {formatDate(visitData?.expectedStartTime)}
                       </p>
@@ -414,7 +414,7 @@ const DetailCustomerVisit: React.FC = () => {
                         Từ {formatDate(visitData?.expectedStartTime)} Đến{" "}
                         {formatDate(visitData?.expectedEndTime)}
                       </p>
-                    )}
+                    )} */}
                   </>
                 )}
 
@@ -424,7 +424,7 @@ const DetailCustomerVisit: React.FC = () => {
                 </p>
                 <p className="text-sm text-gray-600">Loại:</p>
                 <p className="text-base font-semibold text-gray-800">
-                  {getScheduleType(visitData?.schedule.scheduleTypeId)}
+                  {/* {getScheduleType(visitData?.schedule.scheduleTypeId)} */}
                 </p>
               </div>
             </div>

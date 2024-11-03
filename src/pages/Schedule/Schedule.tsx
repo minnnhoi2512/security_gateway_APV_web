@@ -12,6 +12,7 @@ import {
   Row,
   Col,
   Divider,
+  notification,
 } from "antd";
 import {
   SearchOutlined,
@@ -34,6 +35,7 @@ import {
 import { useGetListUsersByDepartmentIdQuery } from "../../services/user.service";
 import ScheduleType from "../../types/scheduleType";
 import UserType from "../../types/userType";
+import { formatDate } from "../../utils/ultil";
 
 const { Content } = Layout;
 const { Option } = Select;
@@ -138,7 +140,7 @@ const Schedule = () => {
       const payload = { ...assignData };
       // console.log("Payload gửi:", payload); // Kiểm tra payload
       await assignSchedule(payload).unwrap();
-      message.success("Phân công thành công!");
+      notification.success({ message: "Phân công thành công!" });
       setAssignData({
         title: "",
         description: "",
@@ -146,12 +148,12 @@ const Schedule = () => {
         deadlineTime: "",
         scheduleId: 0,
         assignToId: 0,
-        assignFromId: parseInt(localStorage.getItem("userId") || "0")
+        assignFromId: parseInt(localStorage.getItem("userId") || "0"),
       });
       setIsModalVisible(false);
       refetch();
     } catch (error) {
-      message.error("Có lỗi xảy ra khi phân công.");
+      notification.error({ message: "Có lỗi xảy ra khi phân công." });
     }
   };
 
@@ -183,6 +185,13 @@ const Schedule = () => {
             return <Tag color={tagColor}>{scheduleTypeName}</Tag>; // Fallback if needed
         }
       },
+    },
+    {
+      title: "Ngày tạo",
+      dataIndex: "createTime",
+      key: "createTime",
+      align: "center",
+      render: (createDate: string) => <div>{formatDate(createDate)}</div>,
     },
     {
       title: "Trạng thái",
@@ -231,7 +240,7 @@ const Schedule = () => {
       deadlineTime: "",
       scheduleId: 0,
       assignToId: 0,
-      assignFromId: parseInt(localStorage.getItem("userId") || "0")
+      assignFromId: parseInt(localStorage.getItem("userId") || "0"),
     });
     setIsModalVisible(false);
   };

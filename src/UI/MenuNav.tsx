@@ -93,8 +93,8 @@ const MenuNav = () => {
         { key: "schedule", label: "Tất cả lịch trình" },
         { key: "schedule-assigned", label: "Lịch trình đã giao" },
         { key: "schedule-staff", label: "Tạo lịch hẹn" },
-        { key: "schedule-staff-assigned", label: "lịch trình được giao" },
-        { key: "schedule-staff-rejected", label: "lịch trình bị hủy bỏ" },
+        { key: "schedule-staff-assigned", label: "Lịch trình được giao" },
+        { key: "schedule-staff-rejected", label: "Lịch trình bị hủy bỏ" },
       ],
     },
 
@@ -153,6 +153,8 @@ const MenuNav = () => {
       if (userRole === "Admin") {
         const excludedKeys = [
           "schedule-staff",
+          "schedule-staff-assigned",
+          "schedule-staff-rejected"
         ];
 
         // Exclude top-level items and children based on excluded keys
@@ -172,6 +174,8 @@ const MenuNav = () => {
         const excludedKeys = [
           "manager",
           "schedule-staff",
+          "schedule-staff-assigned",
+          "schedule-staff-rejected"
         ];
 
         // Exclude top-level items and children based on excluded keys

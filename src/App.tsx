@@ -12,16 +12,16 @@ const queryClient = new QueryClient();
 
 const App = () => {
   return (
+    <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <ConfigProvider locale={locale}>
-        <React.StrictMode>
           <Provider store={store}>
             <ContentRouter />
             <ToastContainer />
           </Provider>
-        </React.StrictMode>
       </ConfigProvider>
     </QueryClientProvider>
+    </React.StrictMode>
   );
 };
 

@@ -33,14 +33,16 @@ const VisitorManager = () => {
     error,
     refetch,
   } = useGetAllVisitorsQuery({ pageNumber: -1, pageSize: -1 }); // Fetch all visitors
-  let visitors: Visitor[] = data ? data : [];
+  let visitors: Visitor[] = data ? data.filter(
+    (visitor: Visitor) => visitor.status === "Active"
+  ): [];
 
   // Filter visitors based on userRole after fetching
-  if (userRole === "Staff" || userRole === "DepartmentManager") {
-    visitors = visitors.filter(
-      (visitor: Visitor) => visitor.status === "Active"
-    );
-  }
+  // if (userRole === "Staff" || userRole === "DepartmentManager") {
+  //   visitors = visitors.filter(
+  //     (visitor: Visitor) => visitor.status === "Active"
+  //   );
+  // }
 
   const totalVisitors = visitors.length; // Total visitors after filtering
   const filteredData = visitors.filter((visitor: any) =>
@@ -65,30 +67,6 @@ const VisitorManager = () => {
       dataIndex: "phoneNumber",
       key: "phoneNumber",
       sorter: (a: any, b: any) => a.phoneNumber.localeCompare(b.phoneNumber),
-    },
-    {
-      title: "Thẻ nhận dạng",
-      dataIndex: "credentialsCard",
-      key: "credentialsCard",
-      sorter: (a: any, b: any) =>
-        a.credentialsCard.localeCompare(b.credentialsCard),
-    },
-    {
-      title: "Loại thẻ nhận dạng",
-      dataIndex: ["credentialCardType", "credentialCardTypeName"],
-      key: "credentialCardType",
-    },
-    {
-      title: "Hình ảnh thẻ nhận dạng",
-      dataIndex: "visitorCredentialImage",
-      key: "visitorCredentialImage",
-      render: (text: string) => (
-        <img
-          src={`data:image/*;base64,${text}`}
-          alt="Credential"
-          style={{ width: "50px" }}
-        />
-      ),
     },
     {
       title: "Ngày tạo",

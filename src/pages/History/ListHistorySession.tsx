@@ -18,7 +18,9 @@ const ListHistorySesson = ({ data }: { data: any }) => {
       const body = makeQuery(data);
       try {
         const payload = await postGraphql({ query: body }).unwrap();
-        const visitorData = payload.data.visitorSession?.items as VisitorSessionType[] || [] as VisitorSessionType[];
+        const visitorData =
+          (payload.data.visitorSession?.items as VisitorSessionType[]) ||
+          ([] as VisitorSessionType[]);
         setResult(visitorData);
         dispatch(setListOfVisitorSession(visitorData));
       } catch (error) {
@@ -78,26 +80,30 @@ const ListHistorySesson = ({ data }: { data: any }) => {
     };
   }
 
-  if (!result) return null;
+  if (result.length <= 0) return "Khách này chưa có thông tin ra vào";
 
   return (
     <Content className="p-6 bg-gray-100">
-      <h2 className="text-2xl font-semibold text-gray-800 mb-4">Lịch sử lượt ra vào</h2>
+      <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+        Lịch sử lượt ra vào
+      </h2>
       <div className="space-y-6">
         {result.map((session) => (
-          <div  className="bg-white shadow-md rounded-lg p-6">
+          <div className="bg-white shadow-md rounded-lg p-6">
             <h3 className="text-xl font-semibold text-gray-800 mb-4">
-              Thông tin lượt ra vào 
+              Thông tin lượt ra vào
             </h3>
             <div className="flex flex-col md:flex-row md:space-x-6 space-y-6 md:space-y-0">
               {/* Visitor Information */}
               <div className="flex-1">
                 <p className="text-lg">
-                  <strong>Tên khách:</strong> {session.visitor?.visitorName || "N/A"}
+                  <strong>Tên khách:</strong>{" "}
+                  {session.visitor?.visitorName || "N/A"}
                   <div>{}</div>
                 </p>
                 <p className="text-lg">
-                  <strong>Công ty:</strong> {session.visitor?.companyName || "N/A"}
+                  <strong>Công ty:</strong>{" "}
+                  {session.visitor?.companyName || "N/A"}
                 </p>
                 <p className="text-lg mt-2">
                   <strong>Trạng thái:</strong>{" "}
@@ -121,13 +127,17 @@ const ListHistorySesson = ({ data }: { data: any }) => {
                   Thông tin vào
                 </h4>
                 <p className="text-lg">
-                  <strong>Giờ vào:</strong> {session.checkinTime ? formatDate(session.checkinTime) : "N/A"}
+                  <strong>Giờ vào:</strong>{" "}
+                  {session.checkinTime
+                    ? formatDate(session.checkinTime)
+                    : "N/A"}
                 </p>
                 <p className="text-lg mt-2">
                   <strong>Cổng vào:</strong> {session.gateIn?.gateName || "N/A"}
                 </p>
                 <p className="text-lg mt-2">
-                  <strong>Cho phép bởi:</strong> {session.securityIn?.fullName || "N/A"}
+                  <strong>Cho phép bởi:</strong>{" "}
+                  {session.securityIn?.fullName || "N/A"}
                 </p>
               </div>
 
@@ -140,13 +150,17 @@ const ListHistorySesson = ({ data }: { data: any }) => {
                   Thông tin ra
                 </h4>
                 <p className="text-lg">
-                  <strong>Giờ ra:</strong> {session.checkoutTime ? formatDate(session.checkoutTime) : "N/A"}
+                  <strong>Giờ ra:</strong>{" "}
+                  {session.checkoutTime
+                    ? formatDate(session.checkoutTime)
+                    : "N/A"}
                 </p>
                 <p className="text-lg mt-2">
                   <strong>Cổng ra:</strong> {session.gateOut?.gateName || "N/A"}
                 </p>
                 <p className="text-lg mt-2">
-                  <strong>Cho phép bởi:</strong> {session.securityOut?.fullName || "N/A"}
+                  <strong>Cho phép bởi:</strong>{" "}
+                  {session.securityOut?.fullName || "N/A"}
                 </p>
               </div>
             </div>

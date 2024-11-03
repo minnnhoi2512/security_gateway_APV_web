@@ -7,7 +7,7 @@ type VisitDetailList = {
   visitName?: string;
   description?: string;
   visitQuantity: number;
-  scheduleId: number;
+  scheduleId: number | null;
   visitType?: string;
   createById?: number;
   updateById?: number;

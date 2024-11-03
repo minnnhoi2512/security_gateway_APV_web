@@ -39,6 +39,7 @@ const VisitorSearchModal: React.FC<VisitorSearchModalProps> = ({
       visible={isModalVisible}
       onCancel={() => setIsModalVisible(false)}
       footer={null}
+      width={1000}
     >
       <Form.Item
         validateStatus={
@@ -90,6 +91,11 @@ const VisitorSearchModal: React.FC<VisitorSearchModalProps> = ({
               title: "Tên khách",
               dataIndex: "visitorName",
               key: "visitorName",
+            },
+            {
+              title: "Công ty",
+              dataIndex: "companyName",
+              key: "companyName",
             },
             {
               title: "Mã căn cước",
