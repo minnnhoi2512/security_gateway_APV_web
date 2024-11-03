@@ -93,7 +93,7 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({ schedules, isLoading, tot
             align: "center",
             render: (_, record) => {
                 if (userRole === "Staff") {
-                    if (scheduleUserStatus === "all") {
+                    if (scheduleUserStatus === "All") {
                         if (record.status === "Assigned") {
                             return (
                                 <div className="flex justify-center space-x-2">
@@ -104,13 +104,15 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({ schedules, isLoading, tot
                                         onClick={() =>
                                             navigate(`/detail-schedule-staff/${record.schedule.scheduleId}`, { state: record })
                                         }
-                                    />
+                                    >
+                                        Xem chi tiết
+                                    </Button>
                                 </div>
                             );
                         }else{
                             return null;
                         }
-                    } else if (scheduleUserStatus === "assigned" && record.status === "Assigned") {
+                    } else if (scheduleUserStatus === "Assigned" ) {
                         return (
                             <div className="flex justify-center space-x-2">
                                 <Button
@@ -123,18 +125,9 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({ schedules, isLoading, tot
                                 />
                             </div>
                         );
-                    } else if (scheduleUserStatus === "rejected" && record.status === "Rejected") {
+                    } else if (scheduleUserStatus === "Rejected" ) {
                         return (
-                            <div className="flex justify-center space-x-2">
-                                <Button
-                                    type="text"
-                                    icon={<EditOutlined />}
-                                    className="text-green-600 hover:text-green-800"
-                                    onClick={() =>
-                                        navigate(`/detail-schedule-staff/${record.schedule.scheduleId}`, { state: record })
-                                    }
-                                />
-                            </div>
+                           null
                         );
                     } else {
                         return null;

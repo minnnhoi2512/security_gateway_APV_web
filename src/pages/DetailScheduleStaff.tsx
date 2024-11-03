@@ -22,9 +22,10 @@ const DetailScheduleStaff = () => {
   const location = useLocation();
   const { state } = location;
   const navigate = useNavigate();
+  console.log(state);
   // console.log(state);
   useEffect(() => {
-    // console.log(state.schedule.daysOfSchedule);
+     //console.log(state.schedule.daysOfSchedule);
   }, [state]);
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);

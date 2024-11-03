@@ -16,12 +16,12 @@ export const scheduleUserAPI = createApi({
         },
     }),
     endpoints: (builder) => ({
-        getSchedulesUserAssign: builder.query<
+        getSchedulesUserByStatus: builder.query<
             any,
-            { userId: number; pageNumber: number; pageSize: number }
+            { userId: number; status : string; pageNumber: number; pageSize: number }
         >({
-            query: ({ userId, pageNumber, pageSize }) => ({
-                url: `Assigned/UserId/${userId}`,
+            query: ({ userId, status, pageNumber, pageSize }) => ({
+                url: `Status/${status}/UserId/${userId}`,
                 params: { pageNumber, pageSize },
             }),
         }),
@@ -29,4 +29,4 @@ export const scheduleUserAPI = createApi({
 }); 
 
 
-export const { useGetSchedulesUserAssignQuery } = scheduleUserAPI;
+export const { useGetSchedulesUserByStatusQuery } = scheduleUserAPI;

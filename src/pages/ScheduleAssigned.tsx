@@ -32,7 +32,7 @@ import {
 //import { useGetListUsersByDepartmentIdQuery } from "../services/user.service";
 import ScheduleType from "../types/scheduleType";
 //import UserType from "../types/userType";
-import { useGetSchedulesUserAssignQuery } from "../services/scheduleUser.service";
+import { useGetSchedulesUserByStatusQuery } from "../services/scheduleUser.service";
 
 
 const { Content } = Layout;
@@ -54,7 +54,8 @@ const ScheduleAssignedManager = () => {
 
   const navigate = useNavigate();
 
-  const { data: scheduleUser, } = useGetSchedulesUserAssignQuery({
+  const { data: scheduleUser, } = useGetSchedulesUserByStatusQuery({
+    status: "assigned",
     userId: userId,
     pageNumber: -1,
     pageSize: -1,

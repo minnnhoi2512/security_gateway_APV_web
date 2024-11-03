@@ -4,34 +4,30 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { ColumnsType } from "antd/es/table";
 import { useGetListScheduleByStaffQuery } from "../services/schedule.service";
-import { useGetSchedulesUserAssignQuery } from "../services/scheduleUser.service";
+import { useGetSchedulesUserByStatusQuery } from "../services/scheduleUser.service";
 import ScheduleTable from "../components/TableScheduleUser";
 const { Content } = Layout;
 interface SchedulePageProps {
-  status: 'assigned' | 'rejected' | 'all';
+  status: 'Assigned' | 'Rejected' | 'All';
 }
 const ScheduleStaff : React.FC<SchedulePageProps> = ({ status }) => {
-  const [scheduleUserFilter, setScheduleUserFilter] = useState([]);
   const userRole = localStorage.getItem("userRole");
   const userId = localStorage.getItem("userId");
   if (userRole !== "Staff") {
     return <div>This page is only for staff.</div>;
   }
-
   const [searchText, setSearchText] = useState<string>("");
-
-  const navigate = useNavigate();
   const {
     data: schedules,
     isLoading,
     isFetching,
     error,
-  } = useGetSchedulesUserAssignQuery({
+  } = useGetSchedulesUserByStatusQuery({
     pageNumber: 1,
     pageSize: 10,
     userId: Number(userId),
+    status: status,
   });
-  console.log(schedules);
   
 
   return (

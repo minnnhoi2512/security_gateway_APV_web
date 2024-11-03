@@ -113,7 +113,7 @@ const ContentRouter = () => {
         path="/schedule-staff"
         element={
           <LayoutPage>
-            <ScheduleStaff status="all"/>
+            <ScheduleStaff status="All"/>
           </LayoutPage>
         }
       />
@@ -122,7 +122,7 @@ const ContentRouter = () => {
         path="/schedule-staff-assigned"
         element={
           <LayoutPage>
-            <ScheduleStaff status="assigned"/>
+            <ScheduleStaff status="Assigned"/>
           </LayoutPage>
         }
       />
@@ -131,7 +131,7 @@ const ContentRouter = () => {
         path="/schedule-staff-rejected"
         element={
           <LayoutPage>
-            <ScheduleStaff status="rejected"/>
+            <ScheduleStaff status="Rejected"/>
           </LayoutPage>
         }
       />
