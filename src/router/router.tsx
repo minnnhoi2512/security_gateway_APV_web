@@ -43,14 +43,14 @@ const ContentRouter = () => {
   const connection = useRef<signalR.HubConnection | null>(null);
   const dispatch = useDispatch()
   useEffect(() => {
-    if(userRole){
-      const user : UserConnectionHubType = {
-        userId : userId,
-        role : userRole
+    if (userRole) {
+      const user: UserConnectionHubType = {
+        userId: userId,
+        role: userRole
       }
       SignalR.SetSignalR(user, connection, dispatch)
     }
-  },[])
+  }, [])
   return (
     <Routes>
       <Route
@@ -98,7 +98,7 @@ const ContentRouter = () => {
           </LayoutPage>
         }
       />
-    
+
       <Route
         index
         path="/staff"
@@ -108,16 +108,34 @@ const ContentRouter = () => {
           </LayoutPage>
         }
       />
-       <Route
+      <Route
         index
         path="/schedule-staff"
         element={
           <LayoutPage>
-            <ScheduleStaff />
+            <ScheduleStaff status="all"/>
           </LayoutPage>
         }
       />
-       <Route
+      <Route
+        index
+        path="/schedule-staff-assigned"
+        element={
+          <LayoutPage>
+            <ScheduleStaff status="assigned"/>
+          </LayoutPage>
+        }
+      />
+      <Route
+        index
+        path="/schedule-staff-rejected"
+        element={
+          <LayoutPage>
+            <ScheduleStaff status="rejected"/>
+          </LayoutPage>
+        }
+      />
+      <Route
         index
         path="/schedule-assigned"
         element={
@@ -126,7 +144,7 @@ const ContentRouter = () => {
           </LayoutPage>
         }
       />
-       <Route
+      <Route
         index
         path="/detail-schedule-staff/:id"
         element={
@@ -162,7 +180,7 @@ const ContentRouter = () => {
           </LayoutPage>
         }
       />
-       
+
       <Route
         index
         path="/visitorManager"
@@ -199,7 +217,7 @@ const ContentRouter = () => {
           </LayoutPage>
         }
       />
-     
+
       <Route
         index
         path="/schedule"
@@ -214,11 +232,11 @@ const ContentRouter = () => {
         path="/detailSchedule/:id"
         element={
           <LayoutPage>
-            <DetailSchedule  />
+            <DetailSchedule />
           </LayoutPage>
         }
       />
-       <Route
+      <Route
         index
         path="/createNewSchedule"
         element={
@@ -309,7 +327,7 @@ const ContentRouter = () => {
       />
       <Route
         index
-        path="/profile/:idUser" 
+        path="/profile/:idUser"
         element={
           <LayoutPage>
             <Profile />
