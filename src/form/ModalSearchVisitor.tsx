@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Modal, Form, Input, Table, Image, Button, Tag } from "antd";
-import CreateNewVisitor from "../form/CreateNewVisitor";
-import SearchVisitor from "../form/SearchVisitor";
+import CreateNewVisitor from "./CreateNewVisitor";
+import SearchVisitor from "./SearchVisitor";
 
 interface VisitorSearchModalProps {
   isModalVisible: boolean;

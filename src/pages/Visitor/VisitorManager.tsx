@@ -10,10 +10,10 @@ import { Content } from "antd/es/layout/layout";
 import {
   useGetAllVisitorsQuery,
   useDeleteVisitorMutation,
-} from "../services/visitor.service";
-import CreateNewVisitor from "../form/CreateNewVisitor";
-import DetailVisitor from "../components/DetailVisitor";
-import Visitor from "../types/visitorType";
+} from "../../services/visitor.service";
+import CreateNewVisitor from "../../form/CreateNewVisitor";
+import DetailVisitor from "./DetailVisitor";
+import Visitor from "../../types/visitorType";
 
 const { confirm } = Modal;
 

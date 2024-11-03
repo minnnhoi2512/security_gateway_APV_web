@@ -3,7 +3,7 @@ import { SearchOutlined, EditOutlined } from "@ant-design/icons";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { ColumnsType } from "antd/es/table";
-import { useGetListScheduleByStaffQuery } from "../services/schedule.service";
+import { useGetListScheduleByStaffQuery } from "../../services/schedule.service";
 const { Content } = Layout;
 
 const ScheduleStaff = () => {

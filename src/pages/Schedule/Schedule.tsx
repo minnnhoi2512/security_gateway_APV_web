@@ -30,15 +30,15 @@ import {
   useDeleteScheduleMutation,
   useAssignScheduleMutation,
   useGetDepartmentSchedulesQuery,
-} from "../services/schedule.service";
-import { useGetListUsersByDepartmentIdQuery } from "../services/user.service";
-import ScheduleType from "../types/scheduleType";
-import UserType from "../types/userType";
+} from "../../services/schedule.service";
+import { useGetListUsersByDepartmentIdQuery } from "../../services/user.service";
+import ScheduleType from "../../types/scheduleType";
+import UserType from "../../types/userType";
 
 const { Content } = Layout;
 const { Option } = Select;
 
-const ScheduleManager = () => {
+const Schedule = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const location = useLocation();
   const result = location?.state?.result;
@@ -349,4 +349,4 @@ const ScheduleManager = () => {
   );
 };
 
-export default ScheduleManager;
+export default Schedule;

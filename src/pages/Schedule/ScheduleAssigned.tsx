@@ -24,16 +24,12 @@ import {
   import { useLocation, useNavigate } from "react-router-dom";
   import moment from "moment";
   import type { ColumnsType } from "antd/es/table";
+import { useAssignScheduleMutation, useDeleteScheduleMutation, useGetDepartmentSchedulesQuery, useGetListScheduleQuery } from "../../services/schedule.service";
+import { useGetListUsersByDepartmentIdQuery } from "../../services/user.service";
+import Schedule from "../../types/scheduleType";
+import User from "../../types/userType";
   
-  import {
-    useGetListScheduleQuery,
-    useDeleteScheduleMutation,
-    useAssignScheduleMutation,
-    useGetDepartmentSchedulesQuery,
-  } from "../services/schedule.service";
-  import { useGetListUsersByDepartmentIdQuery } from "../services/user.service";
-  import ScheduleType from "../types/scheduleType";
-  import UserType from "../types/userType";
+
   
   
   const { Content } = Layout;
@@ -147,7 +143,7 @@ import {
       }
     };
   
-    const columns: ColumnsType<ScheduleType> = [
+    const columns: ColumnsType<Schedule> = [
       {
         title: "Tiêu đề",
         dataIndex: "scheduleName",
@@ -316,7 +312,7 @@ import {
                   }
                   loading={usersLoading}
                 >
-                  {users.map((user: UserType) => (
+                  {users.map((user: User) => (
                     <Option key={user.userId} value={user.userId}>
                       {user.fullName}
                     </Option>

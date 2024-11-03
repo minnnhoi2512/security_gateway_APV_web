@@ -121,8 +121,6 @@ const MenuNav = () => {
       label: "Lịch sử",
       children: [
         { key: "history", label: "Lượt ra vào" },
-        { key: "guest-history", label: "Khách ra vào" },
-        { key: "visit-history", label: "Chuyến thăm" },
       ],
     },
     {
@@ -197,7 +195,6 @@ const MenuNav = () => {
           "facilityManage",
           "banVisitorManager",
           "schedule-staff",
-          "guest-history",
           "history",
           "security",
         ];
@@ -223,8 +220,6 @@ const MenuNav = () => {
           "schedule",
           "facilityManage",
           "banVisitorManager",
-          "guest-history",
-          "history",
           "security",
         ];
 

@@ -1,39 +1,39 @@
 import { Route, Routes } from "react-router-dom";
 import LayoutPage from "../pages/Layout";
 import Dashboard from "../pages/Dashboard";
-import CustomerVisit from "../pages/CustomerVisit";
-import DetailCustomerVisit from "../pages/DetailCustomerVisit";
-import Schedule from "../pages/Schedule";
-import Manager from "../pages/Manager";
-import DetailProject from "../pages/DetailProject";
-import HistoryDetail from "../pages/HistoryDetail";
-import History from "../pages/History";
-import Chat from "../pages/Chat";
 import Login from "../pages/Login";
-import CalendarPage from "../pages/Calendar";
-import Security from "../pages/Security";
-import DepartManager from "../pages/DepartManager";
-import DepartmentManager from "../pages/DepartmentManager";
-import DetailUser from "../pages/DetailUser";
-import CreateUser from "../pages/CreateUser";
-import CreateNewVisitList from "../pages/CreateNewVisitList";
-import CardManager from "../pages/CardManager";
-import CreateQRCard from "../pages/CreateQRCard";
-import GateManager from "../pages/GateManager"
-import Staff from "../pages/Staff";
-import ChatRoom from "../pages/ChatRoom";
-import VisitorManager from "../pages/VisitorManager";
-import CreateNewSchedule from "../pages/CreateNewSchedule";
-import DetailSchedule from "../pages/DetailSchedule";
-import Profile from "../pages/Profile";
 import { useEffect, useRef } from "react";
 import { useDispatch } from "react-redux";
 import SignalR from '../utils/signalR';
 import UserConnectionHubType from "../types/userConnectionHubType";
-import ScheduleStaff from "../pages/ScheduleStaff";
-import DetailScheduleStaff from "../pages/DetailScheduleStaff";
-import ScheduleAssignedManager from "../pages/ScheduleAssigned";
-import BanVisitorManager from "../pages/BanVisitorManager";
+import Manager from "../pages/User/Manager";
+import DepartManager from "../pages/Facility/DepartManager";
+import DepartmentManager from "../pages/User/DepartmentManager";
+import Security from "../pages/User/Security";
+import Staff from "../pages/User/Staff";
+import ScheduleStaff from "../pages/Schedule/ScheduleStaff";
+import ScheduleAssignedManager from "../pages/Schedule/ScheduleAssigned";
+import DetailScheduleStaff from "../pages/Schedule/DetailScheduleStaff";
+import DetailUser from "../pages/User/DetailUser";
+import CreateUser from "../form/CreateUser";
+import CustomerVisit from "../pages/Visit/CustomerVisit";
+import VisitorManager from "../pages/Visitor/VisitorManager";
+import BanVisitorManager from "../pages/Visitor/BanVisitorManager";
+import CreateNewVisitList from "../form/CreateNewVisitList";
+import DetailCustomerVisit from "../pages/Visit/DetailCustomerVisit";
+import Schedule from "../pages/Schedule/Schedule";
+import DetailSchedule from "../pages/Schedule/DetailSchedule";
+import CreateNewSchedule from "../form/CreateNewSchedule";
+import CardManager from "../pages/Facility/CardManager";
+import CreateQRCard from "../form/CreateQRCard";
+import GateManager from "../pages/Facility/GateManager";
+import CalendarPage from "../pages/Utility/Calendar";
+import History from "../pages/History/History";
+import Chat from "../pages/Utility/Chat";
+import ChatRoom from "../pages/Utility/ChatRoom";
+import Profile from "../pages/User/Profile";
+
+
 
 
 const ContentRouter = () => {
@@ -255,15 +255,6 @@ const ContentRouter = () => {
       />
       <Route
         index
-        path="/detailProject"
-        element={
-          <LayoutPage>
-            <DetailProject />
-          </LayoutPage>
-        }
-      />
-      <Route
-        index
         path="/calendar"
         element={
           <LayoutPage>
@@ -277,15 +268,6 @@ const ContentRouter = () => {
         element={
           <LayoutPage>
             <History />
-          </LayoutPage>
-        }
-      />
-      <Route
-        index
-        path="/historyDetail"
-        element={
-          <LayoutPage>
-            <HistoryDetail />
           </LayoutPage>
         }
       />

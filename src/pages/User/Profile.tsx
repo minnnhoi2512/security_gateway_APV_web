@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Avatar, Button, Form, Input, message, Tag } from "antd";
 import { useParams } from "react-router-dom";
-import { useGetDetailUserQuery, useUpdateUserMutation } from "../services/user.service";
+import { useGetDetailUserQuery, useUpdateUserMutation } from "../../services/user.service";
 
 const Profile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
