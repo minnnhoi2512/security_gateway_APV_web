@@ -21,7 +21,7 @@ import {
   UserAddOutlined,
   PlusOutlined,
 } from "@ant-design/icons";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import moment from "moment";
 import type { ColumnsType } from "antd/es/table";
@@ -35,8 +35,9 @@ import { useGetListUsersByDepartmentIdQuery } from "../../services/user.service"
 import ScheduleType from "../../types/scheduleType";
 import UserType from "../../types/userType";
 import { convertToVietnamTime, formatDate } from "../../utils/ultil";
-import TableSchedule from "../../components/TableScheduleUser";
 import { useAssignScheduleMutation } from "../../services/scheduleUser.service";
+import TableSchedule from "../../components/TableSchedule";
+import { isEntityError } from "../../utils/helpers";
 
 const { Content } = Layout;
 const { Option } = Select;
@@ -57,9 +58,10 @@ const Schedule = () => {
     scheduleId: 0,
     assignToId: 0,
   });
+  type FormError = { [key in keyof typeof assignData]: string } | null;
+
 
   const [searchText, setSearchText] = useState<string>("");
-
   const navigate = useNavigate();
 
   const { data: schedules, isLoading: schedulesIsLoading, refetch: scheduleUserRefetch } = userRole === "DepartmentManager"
@@ -72,6 +74,14 @@ const Schedule = () => {
       pageNumber: -1,
       pageSize: -1,
     });
+  // const errorForm: FormError = useMemo(() => {
+  //   if (isEntityError(error)) {
+  //     return error.data.error as FormError;
+  //   }
+  //   return null;
+  // }, [error]);
+  //console.log("test error",errorForm);
+
   //console.log(schedules);
   const { data: users = [], isLoading: usersLoading } =
     useGetListUsersByDepartmentIdQuery({
@@ -114,7 +124,7 @@ const Schedule = () => {
   };
 
   const handleDateChange = (date: moment.Moment | null) => {
-    
+
     setAssignData((prev) => ({
       ...prev,
       deadlineTime: date ? convertToVietnamTime(date).toISOString() : "",
@@ -122,7 +132,9 @@ const Schedule = () => {
   };
 
   const handleAssignSubmit = async () => {
+    console.log("Dlick")
     try {
+      console.log("fsdafsda")
       const payload = { ...assignData };
       // console.log("Payload gửi:", payload); // Kiểm tra payload
       await assignSchedule(payload).unwrap();
@@ -138,6 +150,9 @@ const Schedule = () => {
       setIsModalVisible(false);
       scheduleUserRefetch();
     } catch (error) {
+      if (isEntityError(error)) {
+        console.log("error1", error.data.errors.ScheduleId[0]);
+      }
       notification.error({ message: "Có lỗi xảy ra khi phân công." });
     }
   };
@@ -279,24 +294,12 @@ const Schedule = () => {
 
         <Divider />
         <TableSchedule
-          columns={columns}
           schedules={schedules || []}
           schedulesIsLoading={schedulesIsLoading}
           totalCount={schedules?.totalCount || 0}
+          handleDeleteSchedule={handleDeleteSchedule}
+          handleAssignUser={handleAssignUser}
         />
-        {/* <Table
-          columns={columns}
-          dataSource={schedules || []}
-          rowKey="scheduleId"
-          loading={schedulesIsLoading}
-          pagination={{
-            total: schedules?.totalCount || 0,
-            showSizeChanger: true,
-            pageSizeOptions: ["5", "10", "20"],
-          }}
-          bordered
-          className="bg-white shadow-md rounded-lg"
-        /> */}
 
         <Modal
           title="Phân công nhân viên"
@@ -363,6 +366,7 @@ const Schedule = () => {
             </Form.Item>
           </Form>
         </Modal>
+
       </Content>
     </Layout>
   );
