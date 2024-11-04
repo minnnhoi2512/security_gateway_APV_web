@@ -43,7 +43,9 @@ const { Content } = Layout;
 const { Option } = Select;
 
 const Schedule = () => {
+  type FormError = { [key in keyof typeof assignData]: string } | null;
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [errorAssignSchedule, setErrorAssignSchedule] = useState<FormError>();
   const location = useLocation();
   const result = location?.state?.result;
 
@@ -58,7 +60,6 @@ const Schedule = () => {
     scheduleId: 0,
     assignToId: 0,
   });
-  type FormError = { [key in keyof typeof assignData]: string } | null;
 
 
   const [searchText, setSearchText] = useState<string>("");
@@ -106,6 +107,7 @@ const Schedule = () => {
       onOk: async () => {
         try {
           await deleteSchedule(scheduleId).unwrap();
+          scheduleUserRefetch();
           message.success("Dự án đã được xóa thành công!");
         } catch (error) {
           message.error("Có lỗi xảy ra khi xóa dự án.");
@@ -132,9 +134,7 @@ const Schedule = () => {
   };
 
   const handleAssignSubmit = async () => {
-    console.log("Dlick")
     try {
-      console.log("fsdafsda")
       const payload = { ...assignData };
       // console.log("Payload gửi:", payload); // Kiểm tra payload
       await assignSchedule(payload).unwrap();
@@ -151,9 +151,11 @@ const Schedule = () => {
       scheduleUserRefetch();
     } catch (error) {
       if (isEntityError(error)) {
-        console.log("error1", error.data.errors.ScheduleId[0]);
+        setErrorAssignSchedule(error.data.errors as FormError);
+        console.log("tesst error", errorAssignSchedule?.deadlineTime[0])
+        // console.log("error1", error.data.errors);
       }
-      notification.error({ message: "Có lỗi xảy ra khi phân công." });
+      //notification.error({ message: "Có lỗi xảy ra khi phân công." });
     }
   };
 
@@ -342,7 +344,11 @@ const Schedule = () => {
                 }
               />
             </Form.Item>
-            <Form.Item label="Thời hạn">
+            <Form.Item label="Thời hạn" className=""
+              validateStatus={errorAssignSchedule?.deadlineTime ? "error" : ""}
+              help={errorAssignSchedule?.deadlineTime ? errorAssignSchedule.deadlineTime[0] : ""}
+
+            >
               <DatePicker
                 onChange={handleDateChange}
                 style={{ width: "100%" }}

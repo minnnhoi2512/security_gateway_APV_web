@@ -25,6 +25,7 @@ import { useAssignScheduleMutation, useGetSchedulesUserByStatusQuery } from "../
 import { ScheduleUserType } from "../../types/ScheduleUserType";
 import TableScheduleUser from "../../components/TableScheduleUser";
 import { isEntityError, isFerchBaseQueryError } from "../../utils/helpers";
+import ScheduleUserDetailModal from "../../components/Modal/ScheduleUserDetailModal";
 
 type FormError =
   |
@@ -40,15 +41,6 @@ const ScheduleAssignedManager = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<ScheduleUserType | null>(null);
   const userId = Number(localStorage.getItem("userId"));
-  const [assignData, setAssignData] = useState({
-    title: "",
-    description: "",
-    note: "",
-    deadlineTime: "",
-    scheduleId: 0,
-    assignToId: 0,
-    assignFromId: parseInt(localStorage.getItem("userId") || "0"),
-  });
 
   const [searchText, setSearchText] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("All");
@@ -60,13 +52,14 @@ const ScheduleAssignedManager = () => {
     isLoading,
     isFetching,
     error,
+    refetch   
   } = useGetSchedulesUserByStatusQuery({
     pageNumber: 1,
     pageSize: 10,
     userId: Number(userId),
     status: statusFilter,
   });
-  console.log("scheduleUserData", schedules);
+  
 
   const handleRowClick = (record: ScheduleUserType) => {
     setSelectedRecord(record);
@@ -84,10 +77,10 @@ const ScheduleAssignedManager = () => {
   //   return null;
   // }, [error]);
   // console.log(errorForm);
-  useEffect(() => {
-    console.log(statusFilter);
-    console.log(schedules);
-  }, [statusFilter]);
+  // useEffect(() => {
+  //   console.log(statusFilter);
+  //   console.log(schedules);
+  // }, [statusFilter]);
 
   // const { data: users = [], isLoading: usersLoading } =
   //   useGetListUsersByDepartmentIdQuery({
@@ -159,16 +152,25 @@ const ScheduleAssignedManager = () => {
             <Button
               type="primary"
               className="bg-blue-500"
-              onClick={() => { setStatusFilter("Pendding"); }}
+              onClick={() => { setStatusFilter("Assigned"); }}
             >
-              Đang chờ
+              Đang chờ xử lý
             </Button>
           </Col>
           <Col>
             <Button
               type="primary"
               className="bg-blue-500"
-              onClick={() => { setStatusFilter("Approve"); }}
+              onClick={() => { setStatusFilter("Pending"); }}
+            >
+              Đang chờ duyệt
+            </Button>
+          </Col>
+          <Col>
+            <Button
+              type="primary"
+              className="bg-blue-500"
+              onClick={() => { setStatusFilter("Approved"); }}
             >
               Đã chấp nhận
             </Button>
@@ -177,7 +179,7 @@ const ScheduleAssignedManager = () => {
             <Button
               type="primary"
               className="bg-blue-500"
-              onClick={() => { setStatusFilter("Reject"); }}
+              onClick={() => { setStatusFilter("Rejected"); }}
             >
               Đã từ chối
             </Button>
@@ -218,35 +220,16 @@ const ScheduleAssignedManager = () => {
 
         <TableScheduleUser
           data={schedules}
-          isLoading={isLoading}
+          isLoading={isLoading || isFetching}
           onRowClick={handleRowClick}
-          error={"fdsfas"}
+          error={error}
         />
-        <Modal
-          title="Chi tiết lịch trình"
-          visible={isModalVisible}
-          onCancel={handleModalClose}
-          footer={[
-            <Button key="close" onClick={handleModalClose}>
-              Đóng
-            </Button>,
-          ]}
-        >
-          {selectedRecord && (
-            <div>
-              <p><strong>Tiêu đề:</strong> {selectedRecord.title}</p>
-              <p><strong>Mô tả:</strong> {selectedRecord.description}</p>
-              <p><strong>Ghi chú:</strong> {selectedRecord.note}</p>
-              <p><strong>Thời gian giao:</strong> {new Date(selectedRecord.assignTime).toLocaleString()}</p>
-              <p><strong>Thời hạn hoàn thành:</strong> {new Date(selectedRecord.deadlineTime).toLocaleString()}</p>
-              <p><strong>Trạng thái:</strong> {selectedRecord.status}</p>
-              <p><strong>Người giao việc:</strong> {selectedRecord.assignFrom.userName}</p>
-              <p><strong>Người nhận việc:</strong> {selectedRecord.assignTo.userName}</p>
-              <p><strong>Tên lịch trình:</strong> {selectedRecord.schedule.scheduleName}</p>
-              <p><strong>Loại lịch trình:</strong> {selectedRecord.schedule.scheduleType.scheduleTypeName}</p>
-            </div>
-          )}
-        </Modal>
+        <ScheduleUserDetailModal
+          isVisible={isModalVisible}
+          handleClose={handleModalClose}
+          selectedRecord={selectedRecord}
+          refetch={refetch}
+        />
 
 
       </Content>

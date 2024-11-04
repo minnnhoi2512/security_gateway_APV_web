@@ -1,22 +1,25 @@
 // src/components/TableSchedule.tsx
 import React from 'react';
-import { Table, Tag } from 'antd';
+import { Button, Table, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import Schedule from '../types/scheduleType';
 import { ScheduleUserType } from '../types/ScheduleUserType';
+import { DeleteOutlined, EditOutlined, UserAddOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router';
+import { ScheduleUserStatus, statusMap } from '../types/Enum/ScheduleUserStatus';
 
 
 interface ScheduleAssignedTableProps {
   data: ScheduleUserType[];
   isLoading: boolean;
   onRowClick: (record: ScheduleUserType) => void;
-  error: string | null;
-
+  error: any | null;
 }
 
 const TableScheduleUser: React.FC<ScheduleAssignedTableProps> = ({ data, isLoading, onRowClick, error }) => {
-  
-
+  const navigate = useNavigate();
+  // console.log(data);
+  const userRole = localStorage.getItem("userRole");
   const columns: ColumnsType<ScheduleUserType> = [
     {
       title: "Tiêu đề",
@@ -57,62 +60,78 @@ const TableScheduleUser: React.FC<ScheduleAssignedTableProps> = ({ data, isLoadi
       dataIndex: "status",
       key: "status",
       align: "center",
-      render: (status: string) => (
-        <Tag color={status ? "green" : "red"}>
-          {status === 'Assigned' ? 'Đã tạo' : status === 'Pending' ? "" : 'Chờ duyệt'}
-        </Tag>
-      ),
+      render: (status: ScheduleUserStatus) => {
+        const { color, text } = statusMap[status] || { color: "black", text: "Không xác định" };
+        return <Tag color={color}>{text}</Tag>;
+      }
     },
-    {
+    ...(userRole === "Staff" ? [{
       title: 'Người giao việc',
       dataIndex: ['assignFrom', 'userName'],
       key: 'assignFrom',
-    },
+    }] : []),
     {
       title: "Hành động",
       key: "action",
       align: "center",
       render: (_, record) => (
-        <div className="flex justify-center space-x-2">
-          {/* <Button
+        (userRole === "Staff") ? (
+
+
+          <Button
             type="text"
             icon={<EditOutlined />}
             className="text-green-600 hover:text-green-800"
-            onClick={() => navigate(`/detailSchedule/${record.scheduleId}`)}
+            onClick={() => navigate(`/detail-schedule-staff/${record.schedule.scheduleId}`, { state: record })}
           />
-          <Button
-            type="text"
-            danger
-            icon={<DeleteOutlined />}
-            onClick={() => handleDeleteSchedule(record.scheduleId!)}
-          />
-          <Button
-            type="text"
-            icon={<UserAddOutlined />}
-            className="text-blue-500 hover:text-blue-700"
-            onClick={() => handleAssignUser(record.scheduleId)}
-          /> */}
-        </div>
+        ) : (
+          <div className="flex justify-center space-x-2">
+            <Button
+              type="text"
+              icon={<EditOutlined />}
+              className="text-green-600 hover:text-green-800"
+              onClick={() => navigate(`/detailSchedule/${record.schedule.scheduleId}`)}
+            />
+            <Button
+              type="text"
+              danger
+              icon={<DeleteOutlined />}
+            //onClick={() => handleDeleteSchedule(record.scheduleId!)}
+            />
+            <Button
+              type="text"
+              icon={<UserAddOutlined />}
+              className="text-blue-500 hover:text-blue-700"
+            //onClick={() => handleAssignUser(record.scheduleId)}
+            />
+          </div>
+        )
       ),
     },
   ];
-  
+
   return (
-    <Table
-      columns={columns}
-      dataSource={data}
-      rowKey="id"
-      loading={isLoading}
-      pagination={{
-        showSizeChanger: true,
-        pageSizeOptions: ['5', '10'],
-      }}
-      bordered
-      className="bg-white shadow-md rounded-lg"
-      onRow={(record) => ({
-        onClick: () => onRowClick(record),
-      })}
-    />
+    <>
+      {error ? (
+        <p >Không có lịch trình được giao</p>
+      ) : (
+        <Table
+          columns={columns}
+          dataSource={data}
+          rowKey="id"
+          loading={isLoading}
+          pagination={{
+            showSizeChanger: true,
+            pageSizeOptions: ['5', '10'],
+          }}
+          bordered
+          className="bg-white shadow-md rounded-lg"
+          onRow={(record) => ({
+            onClick: () => onRowClick(record),
+          })}
+        />
+      )}
+    </>
   );
 };
 

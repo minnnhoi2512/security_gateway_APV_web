@@ -3,11 +3,15 @@ import { SearchOutlined, EditOutlined } from "@ant-design/icons";
 import { useState } from "react";
 import { useGetSchedulesUserByStatusQuery } from "../../services/scheduleUser.service";
 import ScheduleTable from "../../components/TableScheduleUser";
+import TableScheduleUser from "../../components/TableScheduleUser";
+import { ScheduleUserType } from "../../types/ScheduleUserType";
 const { Content } = Layout;
 interface SchedulePageProps {
   status: 'Assigned' | 'Rejected' | 'All';
 }
-const ScheduleStaff : React.FC<SchedulePageProps> = ({ status }) => {
+const ScheduleStaff: React.FC<SchedulePageProps> = ({ status }) => {
+  const [selectedRecord, setSelectedRecord] = useState<ScheduleUserType | null>(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
   const userRole = localStorage.getItem("userRole");
   const userId = localStorage.getItem("userId");
   if (userRole !== "Staff") {
@@ -25,8 +29,12 @@ const ScheduleStaff : React.FC<SchedulePageProps> = ({ status }) => {
     userId: Number(userId),
     status: status,
   });
-  
-
+  console.log(schedules)
+  const handleRowClick = (record: ScheduleUserType) => {
+    setSelectedRecord(record);
+    setIsModalVisible(true);
+    //console.log(record);
+  };
   return (
     <Layout className="min-h-screen bg-gray-50">
       <Content className="p-8">
@@ -46,13 +54,18 @@ const ScheduleStaff : React.FC<SchedulePageProps> = ({ status }) => {
         </Row>
 
         <Divider />
-
-        <ScheduleTable
+        <TableScheduleUser
+          data={schedules}
+          isLoading={isLoading}
+          onRowClick={handleRowClick}
+          error={"fdsfas"}
+        />
+        {/* <ScheduleTable
           schedules={schedules || []}
           isLoading={isLoading || isFetching}
           totalCount={schedules?.totalCount || 0}
           scheduleUserStatus={status}
-        />
+        /> */}
       </Content>
     </Layout>
   );

@@ -42,8 +42,25 @@ export const scheduleUserAPI = createApi({
                 body,
             }),
         }),
+        rejectSchedule: builder.mutation<any, number>({
+            query: (scheduleUserId) => ({
+                url: `Reject/${scheduleUserId}`,
+                method: 'PUT',
+            }),
+        }),
+        approveSchedule: builder.mutation<any, number>({
+            query: (scheduleUserId) => ({
+                url: `Approve/${scheduleUserId}`,
+                method: 'PUT',
+            }),
+        }),
     }),
 });
 
 
-export const { useGetSchedulesUserByStatusQuery, useAssignScheduleMutation } = scheduleUserAPI;
+export const {
+    useGetSchedulesUserByStatusQuery,
+    useAssignScheduleMutation,
+    useRejectScheduleMutation,
+    useApproveScheduleMutation
+} = scheduleUserAPI;

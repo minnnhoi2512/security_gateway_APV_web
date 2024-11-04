@@ -16,6 +16,7 @@ import notificationReducer from "./slices/notification.slice";
 import { notificationAPI } from "../services/notification.service";
 import visitorSessionReducer from "./slices/visitorSession.slice";
 import { scheduleUserAPI } from "../services/scheduleUser.service";
+import { rtkQueryErrorLogger } from "../middleware";
 
 export const store = configureStore({
   reducer: {
@@ -44,7 +45,7 @@ export const store = configureStore({
       .concat(visitListAPI.middleware)
       .concat(visitDetailListAPI.middleware)
       .concat(qrCardAPI.middleware)
-      .concat(scheduleAPI.middleware)
+      .concat(scheduleAPI.middleware, rtkQueryErrorLogger)
       .concat(scheduleUserAPI.middleware)
       .concat(departmentAPI.middleware)
       .concat(visitorAPI.middleware)

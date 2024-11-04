@@ -18,8 +18,6 @@ interface ScheduleTableProps {
 const TableSchedule: React.FC<ScheduleTableProps> = ({ schedules, schedulesIsLoading, totalCount, handleDeleteSchedule, handleAssignUser }) => {
   const navigate = useNavigate();
 
-
-
   const columns: ColumnsType<Schedule> = [
     {
       title: "Tiêu đề",
@@ -96,22 +94,25 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({ schedules, schedulesIsLoa
               icon={<EditOutlined />}
               className="text-green-600 hover:text-green-800"
               onClick={() => navigate(`/detailSchedule/${record.scheduleId}`)}
-              />
+            />
           )}
-          {record.scheduleUser.length === 0 && (
+          {record.scheduleUser.length === 0 && record.status === true && (
             <Button
               type="text"
               danger
               icon={<DeleteOutlined />}
               onClick={() => handleDeleteSchedule(record.scheduleId!)}
+            >
+            </Button>
+          )}
+          { record.status === true && (
+            <Button
+              type="text"
+              icon={<UserAddOutlined />}
+              className="text-blue-500 hover:text-blue-700"
+              onClick={() => handleAssignUser(record.scheduleId)}
             />
           )}
-          <Button
-            type="text"
-            icon={<UserAddOutlined />}
-            className="text-blue-500 hover:text-blue-700"
-            onClick={() => handleAssignUser(record.scheduleId)}
-          />
         </div>
       ),
     },

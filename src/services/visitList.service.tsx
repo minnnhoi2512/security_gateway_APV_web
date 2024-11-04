@@ -16,8 +16,8 @@ export const visitListAPI = createApi({
     },
   }),
   endpoints: (builder) => ({
-    getListVisit: builder.query<any, { pageNumber: number; pageSize: number,status : string }>({
-      query: ({ pageNumber, pageSize,status }) => {
+    getListVisit: builder.query<any, { pageNumber: number; pageSize: number, status: string }>({
+      query: ({ pageNumber, pageSize, status }) => {
         return {
           url: "/Status",
           method: "GET",
@@ -59,6 +59,20 @@ export const visitListAPI = createApi({
         };
       },
     }),
+    getVisitByScheduleUserId: builder.query<
+      any,
+      { scheduleUserId: number }
+    >({
+      query: ({ scheduleUserId }) => {
+        return {
+          url: `ScheduleUserId/${scheduleUserId}`,
+          method: "GET",
+          params: {
+
+          },
+        };
+      },
+    }),
   }),
 });
 
@@ -67,4 +81,5 @@ export const {
   useGetListVisitQuery,
   useGetListVisitByCreatedIdQuery,
   useGetListVisitByDepartmentIdQuery,
+  useGetVisitByScheduleUserIdQuery,
 } = visitListAPI;
