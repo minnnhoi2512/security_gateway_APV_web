@@ -3,6 +3,7 @@ import { Table, Button, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { EditOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
+import { formatDate } from "../utils/ultil";
 
 interface ScheduleType {
     title: string;
@@ -51,7 +52,7 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({ schedules, isLoading, tot
             dataIndex: "deadlineTime",
             key: "deadlineTime",
             align: "center",
-            render: (deadlineTime: string) => new Date(deadlineTime).toLocaleString(),
+            render: (deadlineTime: string) => formatDate(deadlineTime),
         },
         {
             title: "Loại chuyến thăm",

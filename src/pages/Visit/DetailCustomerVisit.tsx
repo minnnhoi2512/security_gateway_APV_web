@@ -80,7 +80,7 @@ const DetailCustomerVisit: React.FC = () => {
     setEditableVisitName(visitData?.visitName);
     setEditableStartDate(convertToDayjs(visitData?.expectedStartTime));
     setEditableEndDate(convertToDayjs(visitData?.expectedEndTime));
-    // setScheduleTypeId(Number(visitData?.schedule.scheduleTypeId));
+    // setScheduleTypeId((visitData?.schedule));
   }, [detailVisitData, visitData, refetchListVisitor, refetchVisit]);
 
   const handleToggleMode = async () => {
@@ -90,10 +90,10 @@ const DetailCustomerVisit: React.FC = () => {
         const visitId = Number(id);
         let expectedEndTimeFinally =
           editableEndDate?.toDate() || visitData?.expectedEndTime;
-        if (scheduleTypeId === 1) {
-          expectedEndTimeFinally =
-            editableStartDate?.toDate() || visitData?.expectedStartTime;
-        }
+        // if (scheduleTypeId === 1) {
+        //   expectedEndTimeFinally =
+        //     editableStartDate?.toDate() || visitData?.expectedStartTime;
+        // }
         // console.log("Visitors list luc put : ",visitors);
         const visitDetail = visitors.map((v) => ({
           // console.log(v)
@@ -124,8 +124,8 @@ const DetailCustomerVisit: React.FC = () => {
             updateVisit: updatedVisitData,
           }).unwrap();
         }
-        await refetchVisit();
-        await refetchListVisitor();
+        refetchVisit();
+        refetchListVisitor();
         notification.success({ message: "Chỉnh sửa thành công!" });
       } catch (error) {
         return notification.error({ message: "Chỉnh sửa thất bại!" });
@@ -217,11 +217,11 @@ const DetailCustomerVisit: React.FC = () => {
   const getScheduleType = (typeId: number) => {
     switch (typeId) {
       case 1:
-        return "Theo ngày";
+        return "Theo tuần";
       case 2:
         return "Theo tháng";
       default:
-        return "Khác";
+        return "Theo ngày";
     }
   };
 
@@ -377,6 +377,11 @@ const DetailCustomerVisit: React.FC = () => {
                   </p>
                 )}
                 <p className="text-sm text-gray-600">Thời gian:</p>
+                {/* {!visitData.schedule && !isEditMode && (
+                  <p className="text-base font-semibold text-gray-800">
+                    {formatDate(visitData?.expectedStartTime)}
+                  </p>
+                )} */}
                 {isEditMode ? (
                   <>
                     {isEditable() && (
@@ -404,18 +409,19 @@ const DetailCustomerVisit: React.FC = () => {
                     )}
                   </>
                 ) : (
-                  <>
-                    {/* {scheduleTypeId === 1 ? (
-                      <p className="text-base font-semibold text-gray-800">
-                        Ngày {formatDate(visitData?.expectedStartTime)}
-                      </p>
-                    ) : (
-                      <p className="text-base font-semibold text-gray-800">
-                        Từ {formatDate(visitData?.expectedStartTime)} Đến{" "}
-                        {formatDate(visitData?.expectedEndTime)}
-                      </p>
-                    )} */}
-                  </>
+                  // <>
+                  //   {visitData.schedule === null ? (
+                  //     <p className="text-base font-semibold text-gray-800">
+                  //       Ngày {formatDate(visitData?.expectedStartTime)}
+                  //     </p>
+                  //   ) : (
+                  //     <p className="text-base font-semibold text-gray-800">
+                  //       Từ {formatDate(visitData?.expectedStartTime)} Đến{" "}
+                  //       {formatDate(visitData?.expectedEndTime)}
+                  //     </p>
+                  //   )}
+                  // </>
+                  null
                 )}
 
                 <p className="text-sm text-gray-600">Số lượng:</p>
@@ -424,7 +430,7 @@ const DetailCustomerVisit: React.FC = () => {
                 </p>
                 <p className="text-sm text-gray-600">Loại:</p>
                 <p className="text-base font-semibold text-gray-800">
-                  {/* {getScheduleType(visitData?.schedule.scheduleTypeId)} */}
+                  {/* {getScheduleType(visitData?.schedule)} */}
                 </p>
               </div>
             </div>
