@@ -1,18 +1,21 @@
-// src/components/TableSchedule.tsx
+// src/components/ScheduleTable.tsx
 import React from 'react';
 import { Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import Schedule from '../types/scheduleType';
 
+interface ScheduleType {
+  scheduleId: number;
+  // Define other properties of ScheduleType here
+}
 
-interface TableScheduleProps {
-  columns: ColumnsType<Schedule>;
-  schedules: Schedule[];
+interface ScheduleTableProps {
+  columns: ColumnsType<ScheduleType>;
+  schedules: ScheduleType[];
   schedulesIsLoading: boolean;
   totalCount: number;
 }
 
-const TableSchedule: React.FC<TableScheduleProps> = ({ columns, schedules, schedulesIsLoading, totalCount }) => {
+const ScheduleTable: React.FC<ScheduleTableProps> = ({ columns, schedules, schedulesIsLoading, totalCount }) => {
   return (
     <Table
       columns={columns}
@@ -30,4 +33,4 @@ const TableSchedule: React.FC<TableScheduleProps> = ({ columns, schedules, sched
   );
 };
 
-export default TableSchedule;
+export default ScheduleTable;
