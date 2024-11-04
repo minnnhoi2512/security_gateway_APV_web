@@ -18,15 +18,32 @@ export const scheduleUserAPI = createApi({
     endpoints: (builder) => ({
         getSchedulesUserByStatus: builder.query<
             any,
-            { userId: number; status : string; pageNumber: number; pageSize: number }
+            { userId: number; status: string; pageNumber: number; pageSize: number }
         >({
             query: ({ userId, status, pageNumber, pageSize }) => ({
                 url: `Status/${status}/UserId/${userId}`,
                 params: { pageNumber, pageSize },
             }),
         }),
+        assignSchedule: builder.mutation<
+            any,
+            {
+                title: string;
+                description: string;
+                note: string;
+                deadlineTime: string;
+                scheduleId: number;
+                assignToId: number;
+            }
+        >({
+            query: (body) => ({
+                url: "",
+                method: "POST",
+                body,
+            }),
+        }),
     }),
-}); 
+});
 
 
-export const { useGetSchedulesUserByStatusQuery } = scheduleUserAPI;
+export const { useGetSchedulesUserByStatusQuery, useAssignScheduleMutation } = scheduleUserAPI;

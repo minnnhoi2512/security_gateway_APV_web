@@ -91,10 +91,10 @@ const MenuNav = () => {
       label: "Lịch trình",
       children: [
         { key: "schedule", label: "Tất cả lịch trình" },
-        { key: "schedule-assigned", label: "Lịch trình đã giao" },
         { key: "schedule-staff", label: "Tạo lịch hẹn" },
         { key: "schedule-staff-assigned", label: "Lịch trình được giao" },
         { key: "schedule-staff-rejected", label: "Lịch trình bị hủy bỏ" },
+        { key: "schedule-assigned", label: "Lịch trình đã giao" },
       ],
     },
 
@@ -202,6 +202,8 @@ const MenuNav = () => {
           "banVisitorManager",
           "schedule-staff",
           "security",
+          "schedule-staff-assigned",
+          "schedule-staff-rejected"
         ];
 
         // Exclude top-level items and children based on excluded keys

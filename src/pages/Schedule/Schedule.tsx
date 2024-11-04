@@ -29,13 +29,14 @@ import type { ColumnsType } from "antd/es/table";
 import {
   useGetListScheduleQuery,
   useDeleteScheduleMutation,
-  useAssignScheduleMutation,
   useGetDepartmentSchedulesQuery,
 } from "../../services/schedule.service";
 import { useGetListUsersByDepartmentIdQuery } from "../../services/user.service";
 import ScheduleType from "../../types/scheduleType";
 import UserType from "../../types/userType";
-import { formatDate } from "../../utils/ultil";
+import { convertToVietnamTime, formatDate } from "../../utils/ultil";
+import TableSchedule from "../../components/TableScheduleUser";
+import { useAssignScheduleMutation } from "../../services/scheduleUser.service";
 
 const { Content } = Layout;
 const { Option } = Select;
@@ -55,50 +56,35 @@ const Schedule = () => {
     deadlineTime: "",
     scheduleId: 0,
     assignToId: 0,
-    assignFromId: parseInt(localStorage.getItem("userId") || "0"),
   });
 
   const [searchText, setSearchText] = useState<string>("");
 
   const navigate = useNavigate();
-  let schedules;
-  let refetch;
-  let isLoading;
 
-  if (userRole === "DepartmentManager") {
-    const result = useGetDepartmentSchedulesQuery({
+  const { data: schedules, isLoading: schedulesIsLoading, refetch: scheduleUserRefetch } = userRole === "DepartmentManager"
+    ? useGetDepartmentSchedulesQuery({
       departmenManagerId: userId,
       pageNumber: -1,
       pageSize: -1,
-    });
-
-    schedules = result.data;
-    refetch = result.refetch;
-    isLoading = result.isLoading;
-  } else {
-    const result = useGetListScheduleQuery({
+    })
+    : useGetListScheduleQuery({
       pageNumber: -1,
       pageSize: -1,
     });
-
-    schedules = result.data;
-    refetch = result.refetch;
-    isLoading = result.isLoading;
-  }
-
+  //console.log(schedules);
   const { data: users = [], isLoading: usersLoading } =
     useGetListUsersByDepartmentIdQuery({
       departmentId: departmentIdUser,
       pageNumber: 1,
       pageSize: 100,
     });
-  // console.log(users);
   const [deleteSchedule] = useDeleteScheduleMutation();
   const [assignSchedule] = useAssignScheduleMutation();
-  useEffect(() => {
-    // console.log("refetsh đi m")
-    refetch();
-  }, [result]);
+  // useEffect(() => {
+  //   // console.log("refetsh đi m")
+  //   refetch();
+  // }, [result]);
   const staffData = users.filter((user: any) => user.role?.roleId === 4);
   const handleDeleteSchedule = (scheduleId: number) => {
     Modal.confirm({
@@ -111,7 +97,6 @@ const Schedule = () => {
         try {
           await deleteSchedule(scheduleId).unwrap();
           message.success("Dự án đã được xóa thành công!");
-          refetch();
         } catch (error) {
           message.error("Có lỗi xảy ra khi xóa dự án.");
         }
@@ -129,9 +114,10 @@ const Schedule = () => {
   };
 
   const handleDateChange = (date: moment.Moment | null) => {
+    
     setAssignData((prev) => ({
       ...prev,
-      deadlineTime: date ? date.toISOString() : "",
+      deadlineTime: date ? convertToVietnamTime(date).toISOString() : "",
     }));
   };
 
@@ -148,10 +134,9 @@ const Schedule = () => {
         deadlineTime: "",
         scheduleId: 0,
         assignToId: 0,
-        assignFromId: parseInt(localStorage.getItem("userId") || "0"),
       });
       setIsModalVisible(false);
-      refetch();
+      scheduleUserRefetch();
     } catch (error) {
       notification.error({ message: "Có lỗi xảy ra khi phân công." });
     }
@@ -205,23 +190,44 @@ const Schedule = () => {
       ),
     },
     {
+      title: "Số lịch hẹn đã tạo",
+      dataIndex: "scheduleUser",
+      key: "scheduleUser",
+      align: "center",
+      render: (scheduleUser: any) => (
+        <div>
+          <div>{scheduleUser.length}</div>
+          {scheduleUser.length !== 0 ? (
+            <button
+            >
+              xem
+            </button>
+          ) : (null)}
+        </div>
+      ),
+    },
+    {
       title: "Hành động",
       key: "action",
       align: "center",
-      render: (_, record) => (
+      render: (_, record: any) => (
         <div className="flex justify-center space-x-2">
-          <Button
-            type="text"
-            icon={<EditOutlined />}
-            className="text-green-600 hover:text-green-800"
-            onClick={() => navigate(`/detailSchedule/${record.scheduleId}`)}
-          />
-          <Button
-            type="text"
-            danger
-            icon={<DeleteOutlined />}
-            onClick={() => handleDeleteSchedule(record.scheduleId!)}
-          />
+          {record.scheduleUser.length === 0 && (
+            <Button
+              type="text"
+              icon={<EditOutlined />}
+              className="text-green-600 hover:text-green-800"
+              onClick={() => navigate(`/detailSchedule/${record.scheduleId}`)}
+            />
+          )}
+          {record.scheduleUser.length === 0 && (
+            <Button
+              type="text"
+              danger
+              icon={<DeleteOutlined />}
+              onClick={() => handleDeleteSchedule(record.scheduleId!)}
+            />
+          )}
           <Button
             type="text"
             icon={<UserAddOutlined />}
@@ -240,7 +246,6 @@ const Schedule = () => {
       deadlineTime: "",
       scheduleId: 0,
       assignToId: 0,
-      assignFromId: parseInt(localStorage.getItem("userId") || "0"),
     });
     setIsModalVisible(false);
   };
@@ -273,12 +278,17 @@ const Schedule = () => {
         </Row>
 
         <Divider />
-
-        <Table
+        <TableSchedule
+          columns={columns}
+          schedules={schedules || []}
+          schedulesIsLoading={schedulesIsLoading}
+          totalCount={schedules?.totalCount || 0}
+        />
+        {/* <Table
           columns={columns}
           dataSource={schedules || []}
           rowKey="scheduleId"
-          loading={isLoading}
+          loading={schedulesIsLoading}
           pagination={{
             total: schedules?.totalCount || 0,
             showSizeChanger: true,
@@ -286,7 +296,7 @@ const Schedule = () => {
           }}
           bordered
           className="bg-white shadow-md rounded-lg"
-        />
+        /> */}
 
         <Modal
           title="Phân công nhân viên"
