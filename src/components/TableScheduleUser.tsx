@@ -27,6 +27,7 @@ const TableScheduleUser: React.FC<ScheduleAssignedTableProps> = ({ data, isLoadi
       key: "title",
       align: "center",
       sorter: (a, b) => a.title?.localeCompare(b.title),
+      
     },
     // {
     //   title: "Loại",
