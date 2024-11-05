@@ -11,11 +11,11 @@ import HistoryDetail from "./HistoryDetail";
 interface DataType {
   key: String;
   id: Number;
-  visitDetailId : Number,
+  visitDetailId: Number;
   visitor: {
     visitorId: Number;
     visitorName: String;
-    companyName : String,
+    companyName: String;
   };
   checkInTime: Date;
   checkOutTime: Date;
@@ -30,13 +30,13 @@ interface DataType {
 const History = () => {
   const [searchText, setSearchText] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false); // Loading state
   const data: DataType[] = [];
   const [filteredData, setFilteredData] = useState<DataType[]>(data);
   const [postGraphql] = useGetVisitGraphqlMutation();
   const dispatch = useDispatch();
   const dataList = useSelector<any>((s) => s.visitorSession.data) as VisitorSessionType[];
-  
-  // State to control modal visibility and selected record
+
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<DataType | null>(null);
 
@@ -54,24 +54,32 @@ const History = () => {
   };
 
   useEffect(() => {
-    const body = MakeQuery();
-    postGraphql({ query: body })
-      .unwrap()
-      .then((payload) => {
+    const fetchData = async () => {
+      setLoading(true); // Start loading
+      try {
+        const body = MakeQuery();
+        const payload = await postGraphql({ query: body }).unwrap();
         dispatch(setListOfVisitorSession(payload.data.visitorSession?.items as VisitorSessionType[]));
-      });
-  }, []);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false); // Stop loading
+      }
+    };
+  
+    fetchData();
+  }, [dispatch]);
 
-  if (dataList) {
-    dataList.forEach((element, index) => {
-      data.push({
+  useEffect(() => {
+    if (dataList) {
+      const updatedData = dataList.map((element, index) => ({
         id: element.visitorSessionId,
         visitor: {
           visitorId: element.visitor.visitorId,
           visitorName: element.visitor.visitorName,
-          companyName : element.visitor.companyName,
+          companyName: element.visitor.companyName,
         },
-        visitDetailId : element.visitDetailId,
+        visitDetailId: element.visitDetailId,
         checkInTime: element.checkinTime,
         checkOutTime: element.checkoutTime,
         gateIn: element.gateIn?.gateName,
@@ -81,17 +89,17 @@ const History = () => {
         securityGateOut: element.securityOut?.fullName,
         status: element.status,
         imageSrc: element.images[0].imageURL,
-      });
-    });
-  }
+      }));
+      
+      setFilteredData(updatedData); // Update filteredData with the new data
+    }
+  }, [dispatch,dataList])
 
   function MakeQuery() {
     return {
       query: `
         query {
-          visitorSession(take: 100,order: [ {
-             visitorSessionId: DESC
-          }]) {
+          visitorSession(take: 100, order: [{ visitorSessionId: DESC }]) {
             items {
               visitorSessionId,
               images {
@@ -151,19 +159,18 @@ const History = () => {
       title: "Giờ Ra",
       dataIndex: "checkOutTime",
       key: "checkOutTime",
-      render: (text) =>
-        formatDate(text) ? formatDate(text) : "Khách còn ở trong công ty",
+      render: (text) => formatDate(text) || "Khách còn ở trong công ty",
       sorter: (a, b) => new Date(a.checkOutTime).getTime() - new Date(b.checkOutTime).getTime(),
     },
     {
       title: "Trạng thái",
       key: "status",
       dataIndex: "status",
-      render: (_, { status }) => {
-        let color = status === "CheckIn" ? "volcano" : "green";
-        let text = status === "CheckIn" ? "Đã vào" : "Đã ra";
-        return <Tag color={color}>{text}</Tag>;
-      },
+      render: (_, { status }) => (
+        <Tag color={status === "CheckIn" ? "volcano" : "green"}>
+          {status === "CheckIn" ? "Đã vào" : "Đã ra"}
+        </Tag>
+      ),
     },
     {
       title: "Hành động",
@@ -172,8 +179,8 @@ const History = () => {
         <Button
           size="middle"
           onClick={() => {
-            setSelectedRecord(record); // Set the selected record
-            setIsModalVisible(true); // Show the modal
+            setSelectedRecord(record);
+            setIsModalVisible(true);
           }}
         >
           Chi tiết
@@ -184,7 +191,7 @@ const History = () => {
 
   const handleModalClose = () => {
     setIsModalVisible(false);
-    setSelectedRecord(null); // Clear the selected record when modal is closed
+    setSelectedRecord(null);
   };
 
   return (
@@ -192,7 +199,6 @@ const History = () => {
       <Input
         placeholder="Tìm kiếm theo tiêu đề"
         value={searchText}
-        // onChange={handleSearchChange}
         style={{ marginBottom: 16, width: 300 }}
       />
       <Button onClick={() => handleStatusFilter("")}>Tất cả</Button>
@@ -202,16 +208,15 @@ const History = () => {
         <Button type="default">Bộ lọc tìm kiếm</Button>
       </Space>
 
-      <Table columns={columns} dataSource={filteredData} />
+      <Table columns={columns} dataSource={filteredData} loading={loading} /> {/* Apply loading here */}
 
-      {/* Modal for HistoryDetail */}
       <Modal
         title="Chi tiết lịch sử"
         visible={isModalVisible}
         onCancel={handleModalClose}
-        footer={null} // Set footer to null if you don't want buttons at the bottom
+        footer={null}
       >
-        {selectedRecord && <HistoryDetail data={selectedRecord} />} {/* Pass the selected data */}
+        {selectedRecord && <HistoryDetail data={selectedRecord} />}
       </Modal>
     </div>
   );

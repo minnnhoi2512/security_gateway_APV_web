@@ -201,7 +201,6 @@ const MenuNav = () => {
           "facilityManage",
           "banVisitorManager",
           "schedule-staff",
-          "history",
           "security",
           "schedule-staff-assigned",
           "schedule-staff-rejected"
