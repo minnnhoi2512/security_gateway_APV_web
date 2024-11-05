@@ -1,6 +1,6 @@
 import { Layout, Button, Table, Input, Tag, Row, Col, Divider } from "antd";
 import { SearchOutlined, EditOutlined } from "@ant-design/icons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useGetSchedulesUserByStatusQuery } from "../../services/scheduleUser.service";
 import ScheduleTable from "../../components/TableScheduleUser";
 import TableScheduleUser from "../../components/TableScheduleUser";
@@ -14,27 +14,30 @@ const ScheduleStaff: React.FC<SchedulePageProps> = ({ status }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const userRole = localStorage.getItem("userRole");
   const userId = localStorage.getItem("userId");
-  if (userRole !== "Staff") {
-    return <div>This page is only for staff.</div>;
-  }
+  // console.log(userRole !== "Staff");
   const [searchText, setSearchText] = useState<string>("");
   const {
     data: schedules,
     isLoading,
-    isFetching,
+    refetch,
     error,
   } = useGetSchedulesUserByStatusQuery({
     pageNumber: 1,
-    pageSize: 10,
+    pageSize: 100,
     userId: Number(userId),
     status: status,
   });
-  console.log(schedules)
+  useEffect(()=>{
+    refetch();
+  },[])
   const handleRowClick = (record: ScheduleUserType) => {
     setSelectedRecord(record);
     setIsModalVisible(true);
     //console.log(record);
   };
+  if (userRole !== "Staff") {
+    return <div>This page is only for staff.</div>;
+  }
   return (
     <Layout className="min-h-screen bg-gray-50">
       <Content className="p-8">
@@ -58,7 +61,7 @@ const ScheduleStaff: React.FC<SchedulePageProps> = ({ status }) => {
           data={schedules}
           isLoading={isLoading}
           onRowClick={handleRowClick}
-          error={"fdsfas"}
+          error={error}
         />
         {/* <ScheduleTable
           schedules={schedules || []}

@@ -28,6 +28,7 @@ import ReadOnlyWeekCalendar from "../components/ReadOnlyWeekCalendar";
 import ReadOnlyMonthCalendar from "../components/ReadOnlyMonthCalendar";
 import VisitorSearchModal from "./ModalSearchVisitor";
 import { convertToVietnamTime } from "../utils/ultil";
+import { useGetDetailScheduleStaffQuery } from "../services/scheduleStaff.service";
 const { Step } = Steps;
 
 interface FormValues {
@@ -47,6 +48,8 @@ const CreateNewVisitList: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { state } = location;
+  // console.log(state);
+  const {refetch} = useGetDetailScheduleStaffQuery(state?.from?.id);
   let daysOfSchedule: string = "";
   let scheduleTypeName: string = "";
   try {
@@ -106,7 +109,7 @@ const CreateNewVisitList: React.FC = () => {
     return `${day}/${month}/${year}`;
   };
   const handleVisitorSelection = (visitor: any) => {
-    console.log(selectedVisitors);
+    // console.log(selectedVisitors);
     setSelectedVisitors((prevVisitors) => {
       if (visitor[0].status === "Unactive") {
         notification.warning({
@@ -217,7 +220,7 @@ const CreateNewVisitList: React.FC = () => {
 
     setSelectedVisitors([...selectedVisitors]); // Trigger a re-render
   };
-
+  // console.log(state.from);
   const handleClearVisitor = (index: number) => {
     if (selectedVisitors.length === 0) {
       message.warning("Không có khách nào để xóa.");
@@ -273,6 +276,7 @@ const CreateNewVisitList: React.FC = () => {
         createById: userId,
         description: htmlContent,
         scheduleId: null,
+        scheduleUserId: null,
         visitDetail: selectedVisitors.map((visitor) => ({
           expectedStartHour: visitor.startHour,
           expectedEndHour: visitor.endHour,
@@ -292,6 +296,7 @@ const CreateNewVisitList: React.FC = () => {
         );
         // console.log(state.from.schedule.scheduleId)
         requestData.scheduleId = state.from.schedule.scheduleId; // Update scheduleId to state.from.id
+        requestData.scheduleUserId = state.from.id; // Update scheduleId to state.from.id
       }
       try {
         if (
@@ -307,7 +312,7 @@ const CreateNewVisitList: React.FC = () => {
           }).unwrap(); // unwrapping for better error handling
         }
         message.success("Lịch hẹn đã được tạo thành công!");
-
+        refetch();
         navigate(-1);
       } catch (error: any) {
         // console.log(error.data.message);

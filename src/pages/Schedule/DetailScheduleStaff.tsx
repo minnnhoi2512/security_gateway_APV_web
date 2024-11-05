@@ -15,6 +15,9 @@ import {
   UserOutlined,
   FileTextOutlined,
 } from "@ant-design/icons";
+import { ScheduleUserStatus, statusMap } from "../../types/Enum/ScheduleUserStatus";
+import { useGetDetailScheduleStaffQuery } from "../../services/scheduleStaff.service";
+import { formatDate } from "../../utils/ultil";
 
 const { Title } = Typography;
 
@@ -22,24 +25,13 @@ const DetailScheduleStaff = () => {
   const location = useLocation();
   const { state } = location;
   const navigate = useNavigate();
-  console.log(state);
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are zero-based
-    const year = date.getFullYear();
-    const hours = String(date.getHours()).padStart(2, "0");
-    const minutes = String(date.getMinutes()).padStart(2, "0");
-
-    return `${day}/${month}/${year} ${hours}:${minutes}`;
+  const {data} = useGetDetailScheduleStaffQuery(Number(state))
+  const getStatusTag = (status: ScheduleUserStatus) => {
+    const { color, text } = statusMap[status] || { color: "black", text: "Không xác định" };
+  
+    return <Tag color={color}>{text}</Tag>;
   };
-  const getStatusTag = (status: string) => {
-    return (
-      <Tag color={status === "Assigned" ? "red" : "green"}>
-        {status === "Assigned" ? "Cần tạo danh sách" : "Đã tạo danh sách"}
-      </Tag>
-    );
-  };
+  console.log(data);
   const getScheduleTypeTag = (scheduleTypeName: string) => {
     switch (scheduleTypeName) {
       case "VisitDaily":
@@ -53,7 +45,7 @@ const DetailScheduleStaff = () => {
     }
   };
   const handleCreateNewVisit = () => {
-    navigate("/createNewVisitList", { state: { from: state } });
+    navigate("/createNewVisitList", { state: { from: data } });
   };
   return (
     <div style={{ padding: "24px", maxWidth: "1200px", margin: "0 auto" }}>
@@ -63,19 +55,19 @@ const DetailScheduleStaff = () => {
             Chi tiết lịch cần tạo chuyến thăm
           </Title>
 
-          {state ? (
+          {data ? (
             <>
-              <Card type="inner" title={`Tên lịch hẹn : ${state.title}`}>
+              <Card type="inner" title={`Tên lịch hẹn : ${data.title}`}>
                 <Descriptions
                   bordered
                   column={{ xxl: 3, xl: 3, lg: 3, md: 2, sm: 1, xs: 1 }}
                 >
                   <Descriptions.Item label="Trạng thái">
-                    {getStatusTag(state.status)}
+                    {getStatusTag(data.status)}
                   </Descriptions.Item>
                   <Descriptions.Item label="Loại chuyến thăm">
                     {getScheduleTypeTag(
-                      state.schedule.scheduleType.scheduleTypeName
+                      data.schedule?.scheduleType?.scheduleTypeName
                     )}
                   </Descriptions.Item>
                 </Descriptions>
@@ -94,7 +86,7 @@ const DetailScheduleStaff = () => {
                       </Space>
                     }
                   >
-                    {formatDate(state.assignTime)}
+                    {formatDate(data.assignTime)}
                   </Descriptions.Item>
                   <Descriptions.Item
                     label={
@@ -104,7 +96,7 @@ const DetailScheduleStaff = () => {
                       </Space>
                     }
                   >
-                    {formatDate(state.deadlineTime)}
+                    {formatDate(data.deadlineTime)}
                   </Descriptions.Item>
                 </Descriptions>
 
@@ -122,17 +114,7 @@ const DetailScheduleStaff = () => {
                       </Space>
                     }
                   >
-                    {state.assignFrom.userName}
-                  </Descriptions.Item>
-                  <Descriptions.Item
-                    label={
-                      <Space>
-                        <UserOutlined />
-                        Người nhận
-                      </Space>
-                    }
-                  >
-                    {state.assignTo.userName}
+                    {data?.assignFrom}
                   </Descriptions.Item>
                 </Descriptions>
 
@@ -147,7 +129,7 @@ const DetailScheduleStaff = () => {
                       </Space>
                     }
                   >
-                    {state.description}
+                    {data.description}
                   </Descriptions.Item>
                   <Descriptions.Item
                     label={
@@ -157,7 +139,7 @@ const DetailScheduleStaff = () => {
                       </Space>
                     }
                   >
-                    {state.note}
+                    {data.note}
                   </Descriptions.Item>
                 </Descriptions>
               </Card>
@@ -170,7 +152,7 @@ const DetailScheduleStaff = () => {
                 }}
               >
                 <Button onClick={() => navigate(-1)}>Trở lại</Button>
-                {state.status != "Pending" && (
+                {data.status != "Pending" && (
                   <Button type="primary" onClick={handleCreateNewVisit}>
                     Tạo lịch hẹn
                   </Button>

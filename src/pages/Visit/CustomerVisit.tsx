@@ -81,7 +81,7 @@ const CustomerVisit = () => {
   if (isFiltering) {
     data = visit;
   }
-  console.log(data);
+  // console.log(data);
   // const handlePageChange = (page: number, size: number) => {
   //   setCurrentPage(page);
   //   // Call your API with the new page number and size
@@ -161,15 +161,31 @@ const CustomerVisit = () => {
         );
       },
     },
+
     {
       title: "Loại",
       dataIndex: "schedule",
       key: "schedule",
-      render: (text) => (
-        <span style={{ fontSize: "14px", color: "#000" }}>
-          {text?.scheduleName || "Theo ngày"}
-        </span>
-      ),
+      render: (text) => {
+        let displayText;
+        let color;
+
+        if (text?.scheduleType?.scheduleTypeId === 2) {
+          displayText = "Theo tuần";
+          color = "blue"; // Set color for "Theo tuần"
+        } else if (text?.scheduleType?.scheduleTypeId === 3) {
+          displayText = "Theo tháng";
+          color = "green"; // Set color for "Theo tháng"
+        } else {
+          displayText = "Theo ngày";
+          color = "default"; // Default color for "Theo ngày"
+        }
+        return (
+          <Tag color={color} style={{ fontSize: "14px" }}>
+            {displayText}
+          </Tag>
+        );
+      },
     },
     {
       title: "Tạo bởi",
@@ -212,7 +228,8 @@ const CustomerVisit = () => {
   useEffect(() => {
     refetch();
   }, [statusFilter]);
-
+  // console.log(data);
+  // refetch();
   return (
     <Content className="p-6">
       <div className="flex justify-center mb-4">

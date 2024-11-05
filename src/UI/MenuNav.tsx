@@ -199,7 +199,6 @@ const MenuNav = () => {
           "manager",
           "departmentManager",
           "facilityManage",
-          "banVisitorManager",
           "schedule-staff",
           "security",
           "schedule-staff-assigned",
@@ -226,7 +225,6 @@ const MenuNav = () => {
           "schedule-assigned",
           "schedule",
           "facilityManage",
-          "banVisitorManager",
           "security",
         ];
 

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Layout, Button, Form, Input, message, Select, Upload, Spin } from "antd";
+import { Layout, Button, Form, Input, message, Upload, Spin } from "antd";
 import { useNavigate, useParams } from "react-router-dom";
 import { UploadOutlined } from "@ant-design/icons";
 import {
@@ -13,7 +13,6 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage"; // Import F
 import { imageDB } from "../../api/firebase"; // Import your Firebase configuration
 
 const { Content } = Layout;
-const { Option } = Select;
 
 const DetailUser: React.FC = () => {
   const navigate = useNavigate();
@@ -47,7 +46,6 @@ const DetailUser: React.FC = () => {
         email: form.getFieldValue("email"),
         departmentId: userData.department.departmentId,
         roleID: userData.role.roleId,
-        status: form.getFieldValue("status") || userData.status,
         image: faceImgUrls[0] || userData.image,
       };
 
@@ -96,17 +94,7 @@ const DetailUser: React.FC = () => {
             <Form.Item label="Vai trò">
               <Input disabled value={userData?.role?.roleName} />
             </Form.Item>
-            <Form.Item name="status" label="Cập nhật trạng thái">
-              <Select
-                defaultValue={userData?.status}
-                onChange={(value) => form.setFieldsValue({ status: value })}
-                style={{ width: "100%" }}
-                disabled={isLoading}
-              >
-                <Option value="Active">Còn hiệu lực</Option>
-                <Option value="Unactive">Bị cấm</Option>
-              </Select>
-            </Form.Item>
+
             <Form.Item label="Hình ảnh mặt">
               <Upload
                 listType="picture"
