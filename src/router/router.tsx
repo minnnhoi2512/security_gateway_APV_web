@@ -1,38 +1,39 @@
 import { Route, Routes } from "react-router-dom";
 import LayoutPage from "../pages/Layout";
 import Dashboard from "../pages/Dashboard";
-import CustomerVisit from "../pages/CustomerVisit";
-import DetailCustomerVisit from "../pages/DetailCustomerVisit";
-import Schedule from "../pages/Schedule";
-import Manager from "../pages/Manager";
-import DetailProject from "../pages/DetailProject";
-import HistoryDetail from "../pages/HistoryDetail";
-import History from "../pages/History";
-import Chat from "../pages/Chat";
 import Login from "../pages/Login";
-import CalendarPage from "../pages/Calendar";
-import Security from "../pages/Security";
-import DepartManager from "../pages/DepartManager";
-import DepartmentManager from "../pages/DepartmentManager";
-import DetailUser from "../pages/DetailUser";
-import CreateUser from "../pages/CreateUser";
-import CreateNewVisitList from "../pages/CreateNewVisitList";
-import CardManager from "../pages/CardManager";
-import CreateQRCard from "../pages/CreateQRCard";
-import GateManager from "../pages/GateManager";
-import Notification from "../pages/NotificationTest";
-import Staff from "../pages/Staff";
-import ChatRoom from "../pages/ChatRoom";
-import VisitorManager from "../pages/VisitorManager";
-import CreateNewSchedule from "../pages/CreateNewSchedule";
-import DetailSchedule from "../pages/DetailSchedule";
-import Profile from "../pages/Profile";
 import { useEffect, useRef } from "react";
 import { useDispatch } from "react-redux";
 import SignalR from '../utils/signalR';
 import UserConnectionHubType from "../types/userConnectionHubType";
-import ScheduleStaff from "../pages/ScheduleStaff";
-import DetailScheduleStaff from "../pages/DetailScheduleStaff";
+import Manager from "../pages/User/Manager";
+import DepartManager from "../pages/Facility/DepartManager";
+import DepartmentManager from "../pages/User/DepartmentManager";
+import Security from "../pages/User/Security";
+import Staff from "../pages/User/Staff";
+import ScheduleStaff from "../pages/Schedule/ScheduleStaff";
+import ScheduleAssignedManager from "../pages/Schedule/ScheduleAssigned";
+import DetailScheduleStaff from "../pages/Schedule/DetailScheduleStaff";
+import DetailUser from "../pages/User/DetailUser";
+import CreateUser from "../form/CreateUser";
+import CustomerVisit from "../pages/Visit/CustomerVisit";
+import VisitorManager from "../pages/Visitor/VisitorManager";
+import BanVisitorManager from "../pages/Visitor/BanVisitorManager";
+import CreateNewVisitList from "../form/CreateNewVisitList";
+import DetailCustomerVisit from "../pages/Visit/DetailCustomerVisit";
+import Schedule from "../pages/Schedule/Schedule";
+import DetailSchedule from "../pages/Schedule/DetailSchedule";
+import CreateNewSchedule from "../form/CreateNewSchedule";
+import CardManager from "../pages/Facility/CardManager";
+import CreateQRCard from "../form/CreateQRCard";
+import GateManager from "../pages/Facility/GateManager";
+import CalendarPage from "../pages/Utility/Calendar";
+import History from "../pages/History/History";
+import Chat from "../pages/Utility/Chat";
+import ChatRoom from "../pages/Utility/ChatRoom";
+import Profile from "../pages/User/Profile";
+
+
 
 
 const ContentRouter = () => {
@@ -42,14 +43,14 @@ const ContentRouter = () => {
   const connection = useRef<signalR.HubConnection | null>(null);
   const dispatch = useDispatch()
   useEffect(() => {
-    if(userRole){
-      const user : UserConnectionHubType = {
-        userId : userId,
-        role : userRole
+    if (userRole) {
+      const user: UserConnectionHubType = {
+        userId: userId,
+        role: userRole
       }
       SignalR.SetSignalR(user, connection, dispatch)
     }
-  },[])
+  }, [])
   return (
     <Routes>
       <Route
@@ -97,7 +98,7 @@ const ContentRouter = () => {
           </LayoutPage>
         }
       />
-    
+
       <Route
         index
         path="/staff"
@@ -107,16 +108,43 @@ const ContentRouter = () => {
           </LayoutPage>
         }
       />
-       <Route
+      <Route
         index
         path="/schedule-staff"
         element={
           <LayoutPage>
-            <ScheduleStaff />
+            <ScheduleStaff status="All" />
           </LayoutPage>
         }
       />
-       <Route
+      <Route
+        index
+        path="/schedule-staff-assigned"
+        element={
+          <LayoutPage>
+            <ScheduleStaff status="Assigned" />
+          </LayoutPage>
+        }
+      />
+      <Route
+        index
+        path="/schedule-staff-rejected"
+        element={
+          <LayoutPage>
+            <ScheduleStaff status="Rejected" />
+          </LayoutPage>
+        }
+      />
+      <Route
+        index
+        path="/schedule-assigned"
+        element={
+          <LayoutPage>
+            <ScheduleAssignedManager />
+          </LayoutPage>
+        }
+      />
+      <Route
         index
         path="/detail-schedule-staff/:id"
         element={
@@ -145,28 +173,29 @@ const ContentRouter = () => {
       />
       <Route
         index
-        path="/customerVisit/"
+        path="/customerVisit"
         element={
           <LayoutPage>
             <CustomerVisit />
           </LayoutPage>
         }
       />
-            <Route
-        index
-        path="/departmentManager"
-        element={
-          <LayoutPage>
-            <DepartmentManager />
-          </LayoutPage>
-        }
-      />
+
       <Route
         index
         path="/visitorManager"
         element={
           <LayoutPage>
             <VisitorManager />
+          </LayoutPage>
+        }
+      />
+      <Route
+        index
+        path="/banVisitorManager"
+        element={
+          <LayoutPage>
+            <BanVisitorManager />
           </LayoutPage>
         }
       />
@@ -179,15 +208,6 @@ const ContentRouter = () => {
           </LayoutPage>
         }
       />
-      {/* <Route
-        index
-        path="/createNewGuest"
-        element={
-          <LayoutPage>
-            <CreateNewGuest />
-          </LayoutPage>
-        }
-      /> */}
       <Route
         index
         path="/detailVisit/:id"
@@ -197,15 +217,7 @@ const ContentRouter = () => {
           </LayoutPage>
         }
       />
-      <Route
-        index
-        path="/notification-test"
-        element={
-          <LayoutPage>
-            <Notification />
-          </LayoutPage>
-        }
-      />
+
       <Route
         index
         path="/schedule"
@@ -220,11 +232,11 @@ const ContentRouter = () => {
         path="/detailSchedule/:id"
         element={
           <LayoutPage>
-            <DetailSchedule  />
+            <DetailSchedule />
           </LayoutPage>
         }
       />
-       <Route
+      <Route
         index
         path="/createNewSchedule"
         element={
@@ -261,15 +273,6 @@ const ContentRouter = () => {
       />
       <Route
         index
-        path="/detailProject"
-        element={
-          <LayoutPage>
-            <DetailProject />
-          </LayoutPage>
-        }
-      />
-      <Route
-        index
         path="/calendar"
         element={
           <LayoutPage>
@@ -283,15 +286,6 @@ const ContentRouter = () => {
         element={
           <LayoutPage>
             <History />
-          </LayoutPage>
-        }
-      />
-      <Route
-        index
-        path="/historyDetail"
-        element={
-          <LayoutPage>
-            <HistoryDetail />
           </LayoutPage>
         }
       />
@@ -315,7 +309,7 @@ const ContentRouter = () => {
       />
       <Route
         index
-        path="/profile/:idUser" 
+        path="/profile/:idUser"
         element={
           <LayoutPage>
             <Profile />

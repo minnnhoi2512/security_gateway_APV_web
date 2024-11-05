@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { DownOutlined, MenuFoldOutlined, MenuUnfoldOutlined, SmileOutlined } from "@ant-design/icons";
-import { Avatar, Badge, Button, Dropdown, Layout, Space } from "antd";
+import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
+import { Avatar, Badge, Breadcrumb, Button, Dropdown, Layout, Space } from "antd";
 import { useNavigate } from "react-router-dom";
 import "@fontsource/inter"; 
 import MenuNav from "../UI/MenuNav";
@@ -24,7 +24,7 @@ const LayoutPage = ({ children }: Props) => {
   const userId = Number(localStorage.getItem("userId"));
 
   // Assuming getUserDetail is the type of the data returned from the query
-  const { data: data1 } = useGetDetailUserQuery(userId);
+  const { data: data1,refetch } = useGetDetailUserQuery(userId);
   const getRoleDisplayName = (roleName: string) => {
     switch (roleName) {
       case "Staff":
@@ -41,11 +41,8 @@ const LayoutPage = ({ children }: Props) => {
   };
   const navigate = useNavigate();
   const [markAsRead] = useMarkNotiReadMutation()
-  const userName = localStorage.getItem("userName") || "User";
-  const userRole = localStorage.getItem("userRole") || "Role";
   const takingNew = useSelector<any>(s => s.notification.takingNew) as boolean
   var data = []
-  var isloading = false
 
   const dispatch = useDispatch();
   const handleProfileClick = () => {
@@ -57,22 +54,22 @@ const LayoutPage = ({ children }: Props) => {
   };
   const {
     data: notificaitionData,
-    isLoading: notiLoading,
     refetch: refetchNoti,
   } = useGetListNotificationUserQuery({
     userId : Number(userId)
   });
   data = notificaitionData as NotificationType[];
-  console.log(notificaitionData as NotificationType[])
+  // console.log(notificaitionData as NotificationType[])
 
   
   var notiCount = data?.filter(s => s.readStatus == false)
-  var reload = useSelector<any>( s => s.notification.isnew) as boolean
+  
   useEffect(()=>{
     if(data?.length > 0 && takingNew){
       toast("Bạn có thông báo mới")
       refetchNoti()
     }
+    refetch();
     dispatch(reloadNoti())
   },[takingNew])
   const items: MenuProps['items'] = [
@@ -148,7 +145,7 @@ const LayoutPage = ({ children }: Props) => {
                   {getRoleDisplayName(data1?.role.roleName)}
                 </h2>
                 <h2 className="text-xs text-gray-300">
-                  {data1?.department.departmentName}
+                  {data1?.department?.departmentName}
                 </h2>
               </div>
             </div>
@@ -167,6 +164,8 @@ const LayoutPage = ({ children }: Props) => {
             paddingLeft: 20,
           }}
         >
+
+          {/* // button set thu phong navbar */}
           <Button
             type="text"
             icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
@@ -186,7 +185,10 @@ const LayoutPage = ({ children }: Props) => {
           </Dropdown>
           </div>
         </Header>
-
+        <Breadcrumb
+            items={[{ title: 'Home' }, { title: 'List' }, { title: 'App' }]}
+            style={{ margin: '16px' }}
+          />
         <Content className="m-6 p-6 bg-white rounded shadow min-h-[80vh]">
           {children}
         </Content>

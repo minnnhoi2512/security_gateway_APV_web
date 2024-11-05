@@ -105,24 +105,6 @@ export const scheduleAPI = createApi({
         };
       },
     }),
-    assignSchedule: builder.mutation<
-      any,
-      {
-        title: string;
-        description: string;
-        note: string;
-        deadlineTime: string;
-        scheduleId: number;
-        assignToId: number;
-        assignFromId: number;
-      }
-    >({
-      query: (body) => ({
-        url: "AssignSchedule",
-        method: "POST",
-        body,
-      }),
-    }),
   }),
 });
 
@@ -135,6 +117,5 @@ export const {
   useCreateNewScheduleMutation,
   useUpdateScheduleMutation,
   useDeleteScheduleMutation,
-  useAssignScheduleMutation,
   useGetListScheduleByStaffQuery
 } = scheduleAPI;
