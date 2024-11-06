@@ -27,7 +27,14 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({ schedules, schedulesIsLoa
       sorter: (a, b) => a.scheduleName?.localeCompare(b.scheduleName),
     },
     {
-      title: "Loại",
+      title: "Ngày tạo",
+      dataIndex: "createTime",
+      key: "createTime",
+      align: "center",
+      render: (createDate: string) => <div>{formatDate(createDate)}</div>,
+    },
+    {
+      title: "Loại lịch trình",
       dataIndex: "scheduleType",
       key: "scheduleType",
       align: "center",
@@ -46,13 +53,6 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({ schedules, schedulesIsLoa
             return <Tag color={tagColor}>{scheduleTypeName}</Tag>; // Fallback if needed
         }
       },
-    },
-    {
-      title: "Ngày tạo",
-      dataIndex: "createTime",
-      key: "createTime",
-      align: "center",
-      render: (createDate: string) => <div>{formatDate(createDate)}</div>,
     },
     {
       title: "Trạng thái",
