@@ -114,7 +114,7 @@ const DetailScheduleStaff = () => {
                       </Space>
                     }
                   >
-                    {data?.assignFrom}
+                    {data?.assignFrom.userName}
                   </Descriptions.Item>
                 </Descriptions>
 
