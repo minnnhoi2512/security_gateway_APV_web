@@ -63,7 +63,7 @@ console.log("LOG DATA: ", data);
                 type="primary" 
                 className="bg-blue-500 mr-2"
                 onClick={() => handleApproveSchedule(selectedRecord?.id || 0)}
-                disabled={selectedRecord?.status !== "Assigned"}
+                disabled={selectedRecord?.status !== "Pending"}
             >
                 Duyệt
             </Button>,
@@ -73,7 +73,7 @@ console.log("LOG DATA: ", data);
                 danger 
                 className="mr-2"
                 onClick={() => handleRejectSchedule(selectedRecord?.id || 0)}
-                disabled={selectedRecord?.status !== "Assigned"}
+                disabled={selectedRecord?.status !== "Pending"}
             >
                 Từ chối
             </Button>,

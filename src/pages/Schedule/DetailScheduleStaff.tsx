@@ -25,7 +25,8 @@ const DetailScheduleStaff = () => {
   const location = useLocation();
   const { state } = location;
   const navigate = useNavigate();
-  const {data} = useGetDetailScheduleStaffQuery(Number(state))
+  console.log(state);
+  const {data,isLoading} = useGetDetailScheduleStaffQuery(Number(state))
   const getStatusTag = (status: ScheduleUserStatus) => {
     const { color, text } = statusMap[status] || { color: "black", text: "Không xác định" };
   
@@ -114,7 +115,7 @@ const DetailScheduleStaff = () => {
                       </Space>
                     }
                   >
-                    {data?.assignFrom}
+                    {data?.assignFrom?.userName}
                   </Descriptions.Item>
                 </Descriptions>
 
