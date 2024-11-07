@@ -21,6 +21,7 @@ import { stateFromHTML } from "draft-js-import-html";
 import ReadOnlyMonthCalendar from "../../components/ReadOnlyMonthCalendar";
 import ReadOnlyWeekCalendar from "../../components/ReadOnlyWeekCalendar";
 import Schedule from "../../types/scheduleType";
+import { HtmlContent } from "../../components/Description/description";
 
 const { Option } = Select;
 
@@ -39,7 +40,7 @@ const DetailSchedule = () => {
   const [editorState, setEditorState] = useState(EditorState.createEmpty());
   // const [isCreateSuccess, setIsCreateSuccess] = useState<boolean>(false);
   const navigate = useNavigate();
-
+  const [htmlConvert, setHtmlConvert] = useState<string>("");
   useEffect(() => {
     if (scheduleData) {
       const initialContentState = stateFromHTML(scheduleData.description);
@@ -57,6 +58,7 @@ const DetailSchedule = () => {
       });
 
       const scheduleTypeName = scheduleData.scheduleType?.scheduleTypeName;
+      setHtmlConvert(scheduleData.description);
       setDaysOfSchedule(scheduleData?.daysOfSchedule);
       setEditorState(EditorState.createWithContent(initialContentState));
       setIsProcessWeek(scheduleTypeName === "ProcessWeek");
@@ -115,7 +117,8 @@ const DetailSchedule = () => {
       // console.log(values);
       const contentState = editorState.getCurrentContent();
       const htmlContent = stateToHTML(contentState);
-
+      setHtmlConvert(htmlContent)
+      // console.log(htmlContent)
       // Construct parsedValues with form values or existing schedule data
       const parsedValues: Schedule = {
         scheduleName: values.scheduleName || scheduleData.scheduleName,
@@ -132,7 +135,7 @@ const DetailSchedule = () => {
       // setIsCreateSuccess()
       refetch();
       message.success("Dự án đã được cập nhật thành công!");
-      navigate("/schedule", { state: { result: result } });
+      // navigate("/schedule", { state: { result: result } });
     } catch (error) {
       console.log(error);
       message.error("Đã xảy ra lỗi khi cập nhật dự án.");
@@ -212,6 +215,7 @@ const DetailSchedule = () => {
       </Modal>
 
       <Form.Item>
+        {/* <HtmlContent htmlString={htmlConvert}/> */}
         <Button type="primary" htmlType="submit" loading={isLoading}>
           Cập nhật lịch trình
         </Button>

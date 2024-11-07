@@ -1,5 +1,14 @@
 import React, { useState } from "react";
-import { Layout, Button, Form, Input, message, Upload, Spin } from "antd";
+import {
+  Layout,
+  Button,
+  Form,
+  Input,
+  message,
+  Upload,
+  Spin,
+  notification,
+} from "antd";
 import { useNavigate, useParams } from "react-router-dom";
 import { UploadOutlined } from "@ant-design/icons";
 import {
@@ -24,7 +33,8 @@ const DetailUser: React.FC = () => {
   const [updateUser] = useUpdateUserMutation();
 
   // Fetch user details using the userId
-  const { data: userData, isLoading } = useGetDetailUserQuery(userId);
+  const { data: userData, isLoading,refetch } = useGetDetailUserQuery(userId);
+  console.log(userData);
   const { refetch: refetchUserList } = useGetListUserByRoleQuery({
     pageNumber: -1,
     pageSize: -1,
@@ -36,7 +46,9 @@ const DetailUser: React.FC = () => {
       const faceImgPromises = faceImg.map((file) => {
         const uniqueFileName = `${uuidv4()}`;
         const storageRef = ref(imageDB, `avtImg/${uniqueFileName}`);
-        return uploadBytes(storageRef, file).then((snapshot) => getDownloadURL(snapshot.ref));
+        return uploadBytes(storageRef, file).then((snapshot) =>
+          getDownloadURL(snapshot.ref)
+        );
       });
       const faceImgUrls = await Promise.all(faceImgPromises);
 
@@ -49,12 +61,17 @@ const DetailUser: React.FC = () => {
         image: faceImgUrls[0] || userData.image,
       };
 
-      await updateUser({ idUser: userData.userId || null, User: updatedUser }).unwrap();
+      await updateUser({
+        idUser: userData.userId || null,
+        User: updatedUser,
+      }).unwrap();
       refetchUserList();
-      message.success(`Cập nhật thành công`);
+      refetch();
+      notification.success({ message: `Cập nhật thành công` });
       navigate(-1);
     } catch (error) {
-      message.error(`Cập nhật thất bại`);
+      console.log(error);
+      notification.error({ message: `Cập nhật thất bại` });
     }
   };
 
@@ -72,7 +89,9 @@ const DetailUser: React.FC = () => {
   return (
     <Layout className="min-h-screen">
       <Content className="p-6">
-        <h1 className="text-green-500 text-2xl font-bold">Chi tiết người dùng</h1>
+        <h1 className="text-green-500 text-2xl font-bold">
+          Chi tiết người dùng
+        </h1>
         {isLoading ? (
           <Spin tip="Đang tải dữ liệu..." />
         ) : (
@@ -121,10 +140,18 @@ const DetailUser: React.FC = () => {
               )}
             </Form.Item>
             <Form.Item>
-              <Button type="primary" onClick={handleUpdateStatus} disabled={isLoading}>
+              <Button
+                type="primary"
+                onClick={handleUpdateStatus}
+                disabled={isLoading}
+              >
                 Cập nhật
               </Button>
-              <Button onClick={handleCancel} style={{ marginLeft: "10px" }} disabled={isLoading}>
+              <Button
+                onClick={handleCancel}
+                style={{ marginLeft: "10px" }}
+                disabled={isLoading}
+              >
                 Hủy
               </Button>
             </Form.Item>

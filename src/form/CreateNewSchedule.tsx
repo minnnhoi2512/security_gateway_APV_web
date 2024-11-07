@@ -20,6 +20,7 @@ import ReadOnlyWeekCalendar from "../components/ReadOnlyWeekCalendar";
 import { Editor } from "react-draft-wysiwyg";
 import { EditorState } from "draft-js";
 import { stateToHTML } from "draft-js-export-html";
+import { useGetListStaffByDepartmentManagerQuery } from "../services/user.service";
 
 const { Option } = Select;
 const { Step } = Steps;
@@ -27,6 +28,7 @@ const { Step } = Steps;
 const CreateNewSchedule: React.FC = () => {
   const [form] = Form.useForm();
   const [createNewSchedule, { isLoading }] = useCreateNewScheduleMutation();
+  // const {refetch} = useGetListStaffByDepartmentManagerQuery()
   const userId = localStorage.getItem("userId");
   const userRole = localStorage.getItem("userRole");
   const navigate = useNavigate();

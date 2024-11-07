@@ -35,13 +35,17 @@ const History = () => {
   const [filteredData, setFilteredData] = useState<DataType[]>(data);
   const [postGraphql] = useGetVisitGraphqlMutation();
   const dispatch = useDispatch();
-  const dataList = useSelector<any>((s) => s.visitorSession.data) as VisitorSessionType[];
-
+  const dataList = useSelector<any>(
+    (s) => s.visitorSession.data
+  ) as VisitorSessionType[];
+  const [updatedData, setUpdatedData] = useState<DataType[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<DataType | null>(null);
 
   const applyFilters = (status: string | null) => {
-    const filtered = data.filter((entry) => {
+    // console.log(filteredData);
+    const filtered = updatedData.filter((entry) => {
+      // console.log(entry);
       const matchesStatus = status ? entry.status === status : true;
       return matchesStatus;
     });
@@ -49,6 +53,8 @@ const History = () => {
   };
 
   const handleStatusFilter = (status: string) => {
+    // console.log(status);
+    // console.log(dataL)
     setStatusFilter(status);
     applyFilters(status);
   };
@@ -59,14 +65,18 @@ const History = () => {
       try {
         const body = MakeQuery();
         const payload = await postGraphql({ query: body }).unwrap();
-        dispatch(setListOfVisitorSession(payload.data.visitorSession?.items as VisitorSessionType[]));
+        dispatch(
+          setListOfVisitorSession(
+            payload.data.visitorSession?.items as VisitorSessionType[]
+          )
+        );
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
         setLoading(false); // Stop loading
       }
     };
-  
+
     fetchData();
   }, [dispatch]);
 
@@ -90,10 +100,10 @@ const History = () => {
         status: element.status,
         imageSrc: element.images[0].imageURL,
       }));
-      
+      setUpdatedData(updatedData);
       setFilteredData(updatedData); // Update filteredData with the new data
     }
-  }, [dispatch,dataList])
+  }, [dispatch, dataList]);
 
   function MakeQuery() {
     return {
@@ -153,14 +163,16 @@ const History = () => {
       dataIndex: "checkInTime",
       key: "checkInTime",
       render: (text) => formatDate(text),
-      sorter: (a, b) => new Date(a.checkInTime).getTime() - new Date(b.checkInTime).getTime(),
+      sorter: (a, b) =>
+        new Date(a.checkInTime).getTime() - new Date(b.checkInTime).getTime(),
     },
     {
       title: "Giờ Ra",
       dataIndex: "checkOutTime",
       key: "checkOutTime",
       render: (text) => formatDate(text) || "Khách còn ở trong công ty",
-      sorter: (a, b) => new Date(a.checkOutTime).getTime() - new Date(b.checkOutTime).getTime(),
+      sorter: (a, b) =>
+        new Date(a.checkOutTime).getTime() - new Date(b.checkOutTime).getTime(),
     },
     {
       title: "Trạng thái",
@@ -204,12 +216,12 @@ const History = () => {
       <Button onClick={() => handleStatusFilter("")}>Tất cả</Button>
       <Button onClick={() => handleStatusFilter("CheckIn")}>Đã vào</Button>
       <Button onClick={() => handleStatusFilter("CheckOut")}>Đã ra</Button>
-      <Space style={{ marginBottom: 16, display: "flex" }}>
-        <Button type="default">Bộ lọc tìm kiếm</Button>
-      </Space>
-
-      <Table columns={columns} dataSource={filteredData} loading={loading} /> {/* Apply loading here */}
-
+      <Table
+        columns={columns}
+        dataSource={filteredData}
+        loading={loading}
+      />{" "}
+      {/* Apply loading here */}
       <Modal
         title="Chi tiết lịch sử"
         visible={isModalVisible}
