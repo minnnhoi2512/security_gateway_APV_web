@@ -55,7 +55,7 @@ const ScheduleAssignedManager = () => {
     refetch   
   } = useGetSchedulesUserByStatusQuery({
     pageNumber: 1,
-    pageSize: 10,
+    pageSize: 100,
     userId: Number(userId),
     status: statusFilter,
   });
