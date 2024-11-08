@@ -216,7 +216,8 @@ const DetailSchedule = () => {
 
       <Form.Item>
         {/* <HtmlContent htmlString={htmlConvert}/> */}
-        <Button type="primary" htmlType="submit" loading={isLoading}>
+        <Button 
+        type="primary" htmlType="submit" loading={isLoading}>
           Cập nhật lịch trình
         </Button>
         <Button type="primary" onClick={() => navigate(-1)}>
