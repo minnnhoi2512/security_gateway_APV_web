@@ -6,6 +6,7 @@ import { clearConnection, setConnection } from '../redux/slices/hubConnection.sl
 import NotificationType from '../types/notificationType';
 import { pushNotification } from '../redux/slices/notification.slice';
 import { Guid } from 'guid-ts';
+import baseAPI from '../api/baseAPI';
 
 const SetSignalR = async (
   user : UserConnectionHubType,
@@ -16,7 +17,7 @@ const SetSignalR = async (
   if (user) {
     connection.current = new signalR.HubConnectionBuilder()
       //.withUrl("https://security-gateway-api.tools.kozow.com/notificationHub", 
-        .withUrl("https://localhost:7018/notificationHub", 
+        .withUrl(baseAPI +"/notificationHub", 
       {
         skipNegotiation: false,
         transport: signalR.HttpTransportType.WebSockets
@@ -29,7 +30,7 @@ const SetSignalR = async (
         console.log("Connected to NotificationHub " + connection.current?.connectionId);
         dispatch(setConnection(connection));
         connection.current?.on("ReceiveMessage", (title, message) => {
-          console.log(message)
+          // console.log(message)
         //   PushNotification.localNotification({
         //     channelId: "general_notifications",
         //     title: title,

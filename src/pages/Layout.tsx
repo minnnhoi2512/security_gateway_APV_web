@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
 import { Avatar, Badge, Breadcrumb, Button, Dropdown, Layout, Space } from "antd";
 import { useNavigate } from "react-router-dom";
-import "@fontsource/inter"; 
+import "@fontsource/inter";
 import MenuNav from "../UI/MenuNav";
 import { useGetDetailUserQuery } from "../services/user.service";
 import DefaultUserImage from "../assets/default-user-image.png";
@@ -12,6 +12,7 @@ import NotificationType from "../types/notificationType";
 import { toast, ToastContainer } from "react-toastify";
 import { reloadNoti } from "../redux/slices/notification.slice";
 import { useGetListNotificationUserQuery, useMarkNotiReadMutation } from "../services/notification.service";
+import NotificationDropdown from "../components/Dropdown/NotificationDropdown";
 
 type Props = {
   children: React.ReactNode;
@@ -24,7 +25,7 @@ const LayoutPage = ({ children }: Props) => {
   const userId = Number(localStorage.getItem("userId"));
 
   // Assuming getUserDetail is the type of the data returned from the query
-  const { data: data1,refetch } = useGetDetailUserQuery(userId);
+  const { data: data1, refetch } = useGetDetailUserQuery(userId);
   const getRoleDisplayName = (roleName: string) => {
     switch (roleName) {
       case "Staff":
@@ -48,7 +49,7 @@ const LayoutPage = ({ children }: Props) => {
   const handleProfileClick = () => {
     if (userId) {
       navigate(`/profile/${userId}`);
-    }else {
+    } else {
       console.error("User ID không tồn tại.");
     }
   };
@@ -56,56 +57,56 @@ const LayoutPage = ({ children }: Props) => {
     data: notificaitionData,
     refetch: refetchNoti,
   } = useGetListNotificationUserQuery({
-    userId : Number(userId)
+    userId: Number(userId)
   });
   data = notificaitionData as NotificationType[];
   // console.log(notificaitionData as NotificationType[])
 
-  
-  var notiCount = data?.filter(s => s.readStatus == false)
-  
-  useEffect(()=>{
-    if(data?.length > 0 && takingNew){
-      toast("Bạn có thông báo mới")
-      refetchNoti()
-    }
-    refetch();
-    dispatch(reloadNoti())
-  },[takingNew])
-  const items: MenuProps['items'] = [
-  ];
-  const handleReadNotification = (id : string, isRead : boolean) =>{
-    if(!isRead){
-      markAsRead({notificationUserId : Number(id)}).then(() => {
-        refetchNoti()
-      })
-      dispatch(reloadNoti())
-    }
 
-  } 
-  if(data){
-    var reverseArray = [...data]
-    reverseArray.reverse().slice(0,10).forEach((element, index )=> {
-      items.push({
-        key: index,
-        label: (
-          <div className="inline-flex">
-            <a style={{fontWeight: `${element.readStatus == true ? "lighter": "bold"}
-              
-              `}} onClick={() => handleReadNotification(element.notificationUserID, element.readStatus)} rel="noopener noreferrer" href="#">
-            {element.notification.title}
-            <p style={{fontWeight: "lighter"}}>{element.notification.content}</p>
-            </a>
-          </div>
-        ),
-      },)
-    });
-  }
-  const sharedBackgroundColor = "#34495e"; 
+  var notiCount = data?.filter(s => s.readStatus == false)
+
+  // useEffect(() => {
+  //   if (data?.length > 0 && takingNew) {
+  //     toast("Bạn có thông báo mới")
+  //     refetchNoti()
+  //   }
+  //   refetch();
+  //   dispatch(reloadNoti())
+  // }, [takingNew])
+  // const items: MenuProps['items'] = [];
+  // const handleReadNotification = (id: string, isRead: boolean) => {
+  //   if (!isRead) {
+  //     markAsRead({ notificationUserId: Number(id) }).then(() => {
+  //       refetchNoti()
+  //     })
+  //     // dispatch(reloadNoti())
+  //   }
+
+  // }
+  // if (data) {
+  //   var reverseArray = [...data]
+  //   reverseArray.reverse().slice(0, 10).forEach((element, index) => {
+  //     items.push({
+  //       key: index,
+  //       label: (
+  //         <div className="inline-flex">
+  //           <a style={{
+  //             fontWeight: `${element.readStatus == true ? "lighter" : "bold"}
+
+  //             `}} onClick={() => handleReadNotification(element.notificationUserID, element.readStatus)} rel="noopener noreferrer" href="#">
+  //             {element.notification.title}
+  //             <p style={{ fontWeight: "lighter" }}>{element.notification.content}</p>
+  //           </a>
+  //         </div>
+  //       ),
+  //     },)
+  //   });
+  // }
+  const sharedBackgroundColor = "#34495e";
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
-      <ToastContainer position="top-center" containerId="NotificationToast"  />
+      <ToastContainer position="top-center" containerId="NotificationToast" />
       <Sider
         trigger={null}
         collapsible
@@ -174,21 +175,22 @@ const LayoutPage = ({ children }: Props) => {
             style={{ fontSize: "18px" }}
           />
           <div className="top-0 right-20 absolute ">
-          <Dropdown menu={{ items }} trigger={['click']} overlayClassName="pt-1">
-            <a onClick={(e) => e.preventDefault()}>
-            <Space>
-            <Badge count={notiCount?.length}>
-            <button><Avatar shape="circle" size="default" src="/src/assets/iconNoti.png"/></button>
-            </Badge>
-            </Space>
-            </a>
-          </Dropdown>
+            {/* <Dropdown menu={{ items }} trigger={['click']} overlayClassName="pt-1">
+              <a onClick={(e) => e.preventDefault()}>
+                <Space>
+                  <Badge count={notiCount?.length}>
+                    <button><Avatar shape="circle" size="default" src="/src/assets/iconNoti.png" /></button>
+                  </Badge>
+                </Space>
+              </a>
+            </Dropdown> */}
+            <NotificationDropdown />
           </div>
         </Header>
         <Breadcrumb
-            items={[{ title: 'Home' }, { title: 'List' }, { title: 'App' }]}
-            style={{ margin: '16px' }}
-          />
+          items={[{ title: 'Home' }, { title: 'List' }, { title: 'App' }]}
+          style={{ margin: '16px' }}
+        />
         <Content className="m-6 p-6 bg-white rounded shadow min-h-[80vh]">
           {children}
         </Content>

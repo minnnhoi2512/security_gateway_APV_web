@@ -12,10 +12,14 @@ import {
   Row,
   Col,
   Divider,
+  Dropdown,
+  Space,
+  MenuProps,
 } from "antd";
 import {
   SearchOutlined,
   PlusOutlined,
+  DownOutlined,
 } from "@ant-design/icons";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -36,16 +40,54 @@ type FormError =
 
 
 const { Content } = Layout;
+type StatusType = 'All' | 'Assigned' | 'Pending' | 'Approved' | 'Rejected' | 'Cancel';
 
+interface StatusOption {
+  label: string;
+  value: StatusType;
+}
 const ScheduleAssignedManager = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<ScheduleUserType | null>(null);
   const userId = Number(localStorage.getItem("userId"));
 
   const [searchText, setSearchText] = useState<string>("");
-  const [statusFilter, setStatusFilter] = useState<string>("All");
-
+  const [statusFilter, setStatusFilter] = useState<StatusType>("All");
   const navigate = useNavigate();
+
+  const statusOptions: StatusOption[] = [
+    { label: 'Tất cả', value: 'All' },
+    { label: 'Đang chờ xử lý', value: 'Assigned' },
+    { label: 'Đang chờ duyệt', value: 'Pending' },
+    { label: 'Đã chấp nhận', value: 'Approved' },
+    { label: 'Đã từ chối', value: 'Rejected' },
+    { label: 'Đã hủy', value: 'Cancel' }
+  ];
+
+  const getStatusColor = (status: StatusType): string => {
+    const colors: Record<StatusType, string> = {
+      All: '#f9fafb',
+      Assigned: '#e0f2fe',
+      Pending: '#fef9c3',
+      Approved: '#dcfce7',
+      Rejected: '#fee2e2',
+      Cancel: '#f3e8ff'
+    };
+    return colors[status] || colors.All;
+  };
+
+  const getCurrentStatusLabel = (): string => {
+    return statusOptions.find(option => option.value === statusFilter)?.label || 'Tất cả';
+  };
+
+  const menuItems: MenuProps['items'] = statusOptions.map((option) => ({
+    key: option.value,
+    label: option.label,
+  }));
+
+  const handleMenuClick: MenuProps['onClick'] = (e) => {
+    setStatusFilter(e.key as StatusType);
+  };
   //Nhật
   const {
     data: schedules,
@@ -59,6 +101,9 @@ const ScheduleAssignedManager = () => {
     userId: Number(userId),
     status: statusFilter,
   });
+
+  console.log("TAO LOG RA schedules", schedules);
+  
   
 
   const handleRowClick = (record: ScheduleUserType) => {
@@ -134,106 +179,81 @@ const ScheduleAssignedManager = () => {
 
   return (
     <Layout className="min-h-screen bg-gray-50">
-      <Content className="p-8">
-        <h1 className="text-3xl font-bold text-green-600 text-center mb-4">
-          Danh sách Dự án Công ty
-        </h1>
-        <Row>
-          <Col>
-            <Button
-              type="primary"
-              className="bg-blue-500"
-              onClick={() => { setStatusFilter("All"); }}
+    <Content className="p-8">
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* Header */}
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-green-600">
+              Danh sách lịch trình đã giao
+          </h1>
+        </div>
+
+        {/* Filters and Actions */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="flex gap-4 w-full sm:w-auto flex-wrap">
+            {/* Status Filter Dropdown */}
+            <Dropdown 
+              menu={{ 
+                items: menuItems,
+                onClick: handleMenuClick,
+                selectedKeys: [statusFilter]
+              }}
+              trigger={['click']}
             >
-              Tất cả
-            </Button>
-          </Col>
-          <Col>
-            <Button
-              type="primary"
-              className="bg-blue-500"
-              onClick={() => { setStatusFilter("Assigned"); }}
-            >
-              Đang chờ xử lý
-            </Button>
-          </Col>
-          <Col>
-            <Button
-              type="primary"
-              className="bg-blue-500"
-              onClick={() => { setStatusFilter("Pending"); }}
-            >
-              Đang chờ duyệt
-            </Button>
-          </Col>
-          <Col>
-            <Button
-              type="primary"
-              className="bg-blue-500"
-              onClick={() => { setStatusFilter("Approved"); }}
-            >
-              Đã chấp nhận
-            </Button>
-          </Col>
-          <Col>
-            <Button
-              type="primary"
-              className="bg-blue-500"
-              onClick={() => { setStatusFilter("Rejected"); }}
-            >
-              Đã từ chối
-            </Button>
-          </Col>
-          <Col>
-            <Button
-              type="primary"
-              className="bg-blue-500"
-              onClick={() => { setStatusFilter("Cancel"); }}
-            >
-              Đã hủy
-            </Button>
-          </Col>
-        </Row>
-        <Row justify="space-between" align="middle" className="mb-4">
-          <Col>
+              <Button
+                style={{ 
+                  backgroundColor: getStatusColor(statusFilter),
+                  minWidth: '140px'
+                }}
+              >
+                <Space>
+                  {getCurrentStatusLabel()}
+                  <DownOutlined />
+                </Space>
+              </Button>
+            </Dropdown>
+
+            {/* Search Input */}
             <Input
               placeholder="Tìm kiếm theo tiêu đề"
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
-              prefix={<SearchOutlined />}
+              prefix={<SearchOutlined className="text-gray-400" />}
               style={{ width: 300 }}
             />
-          </Col>
-          <Col>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              className="bg-blue-500"
-              onClick={() => navigate("/createNewSchedule")}
-            >
-              Tạo mới dự án
-            </Button>
-          </Col>
-        </Row>
+          </div>
 
-        <Divider />
+          {/* Create New Project Button */}
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => navigate("/createNewSchedule")}
+            className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
+          >
+            Tạo mới dự án
+          </Button>
+        </div>
 
-        <TableScheduleUser
-          data={schedules}
-          isLoading={isLoading || isFetching}
-          onRowClick={handleRowClick}
-          error={error}
-        />
-        <ScheduleUserDetailModal
-          isVisible={isModalVisible}
-          handleClose={handleModalClose}
-          selectedRecord={selectedRecord}
-          refetch={refetch}
-        />
+        {/* Table Component */}
+        <div className="mt-6">
+          <TableScheduleUser
+            data={schedules}
+            isLoading={isLoading || isFetching}
+            onRowClick={handleRowClick}
+            error={error}
+          />
+        </div>
+      </div>
 
-
-      </Content>
-    </Layout>
+      {/* Modal */}
+      <ScheduleUserDetailModal
+        isVisible={isModalVisible}
+        handleClose={handleModalClose}
+        selectedRecord={selectedRecord}
+        refetch={refetch}
+      />
+    </Content>
+  </Layout>
   );
 };
 

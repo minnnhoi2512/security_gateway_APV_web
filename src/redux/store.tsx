@@ -17,6 +17,8 @@ import { notificationAPI } from "../services/notification.service";
 import visitorSessionReducer from "./slices/visitorSession.slice";
 import { scheduleUserAPI } from "../services/scheduleUser.service";
 import { rtkQueryErrorLogger } from "../middleware";
+import { scheduleStaffAPI } from "../services/scheduleStaff.service";
+
 
 export const store = configureStore({
   reducer: {
@@ -31,6 +33,7 @@ export const store = configureStore({
     [scheduleTypeAPI.reducerPath]: scheduleTypeAPI.reducer,
     [visitGrapqlAPI.reducerPath] : visitGrapqlAPI.reducer,
     [notificationAPI.reducerPath] : notificationAPI.reducer,
+    [scheduleStaffAPI.reducerPath] : scheduleStaffAPI.reducer,
     filterTabs: filterTabReducer,
     visitDetailList : visitDetailListReducer,
     visitorSession : visitorSessionReducer,
@@ -52,7 +55,8 @@ export const store = configureStore({
       .concat(scheduleTypeAPI.middleware)
       .concat(departmentAPI.middleware)
       .concat(notificationAPI.middleware)
-      .concat(visitGrapqlAPI.middleware),
+      .concat(visitGrapqlAPI.middleware)
+      .concat(scheduleStaffAPI.middleware),
 });
 
 // Define RootState and AppDispatch types

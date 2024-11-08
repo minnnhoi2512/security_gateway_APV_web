@@ -27,6 +27,7 @@ const TableScheduleUser: React.FC<ScheduleAssignedTableProps> = ({ data, isLoadi
       key: "title",
       align: "center",
       sorter: (a, b) => a.title?.localeCompare(b.title),
+      
     },
     // {
     //   title: "Loại",
@@ -82,7 +83,7 @@ const TableScheduleUser: React.FC<ScheduleAssignedTableProps> = ({ data, isLoadi
             type="text"
             icon={<EditOutlined />}
             className="text-green-600 hover:text-green-800"
-            onClick={() => navigate(`/detail-schedule-staff/${record.schedule.scheduleId}`, { state: record })}
+            onClick={() => navigate(`/detail-schedule-staff/${record.id}`, { state: record.id })}
           />
         ) : (
           <div className="flex justify-center space-x-2">
