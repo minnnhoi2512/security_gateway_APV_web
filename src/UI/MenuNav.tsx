@@ -103,19 +103,18 @@ const MenuNav = () => {
       icon: <SolutionOutlined />,
       label: "Danh sách khách",
       children: [
-        { key: "visitorManager", label: "Khách tiêu chuẩn" },
+        { key: "visitorManager", label: "Khách" },
         { key: "banVisitorManager", label: "Sổ đen" },
       ],
     },
     {
-      key: "customerVisit",
+      key: "customerVisitList",
       icon: <BarsOutlined />,
       label: "Chuyến thăm",
-      // children: [
-      //   { key: "customerVisit", label: "Theo ngày" },
-      //   { key: "customerVisitWeekly", label: "Theo tuần" },
-      //   { key: "customerVisitMonthly", label: "Theo tháng" },
-      // ],
+      children: [
+        { key: "customerVisit", label: "Tất cả" },
+        { key: "customerVisitStaff", label: "Chuyến thăm của tôi" },
+      ],
     },
     {
       key: "historyManage",
@@ -154,7 +153,8 @@ const MenuNav = () => {
         const excludedKeys = [
           "schedule-staff",
           "schedule-staff-assigned",
-          "schedule-staff-rejected"
+          "schedule-staff-rejected",
+          "customerVisitStaff"
         ];
 
         // Exclude top-level items and children based on excluded keys
@@ -175,7 +175,8 @@ const MenuNav = () => {
           "manager",
           "schedule-staff",
           "schedule-staff-assigned",
-          "schedule-staff-rejected"
+          "schedule-staff-rejected",
+          "customerVisitStaff"
         ];
 
         // Exclude top-level items and children based on excluded keys
@@ -202,7 +203,8 @@ const MenuNav = () => {
           "schedule-staff",
           "security",
           "schedule-staff-assigned",
-          "schedule-staff-rejected"
+          "schedule-staff-rejected",
+          "customerVisitStaff"
         ];
 
         // Exclude top-level items and children based on excluded keys

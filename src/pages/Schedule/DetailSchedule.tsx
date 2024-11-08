@@ -12,8 +12,8 @@ import { useEffect, useState } from "react";
 import {
   useUpdateScheduleMutation,
   useGetDetailScheduleQuery,
+  useGetDepartmentSchedulesQuery,
 } from "../../services/schedule.service";
-import { useNavigate, useParams } from "react-router-dom";
 import { Editor } from "react-draft-wysiwyg";
 import { EditorState } from "draft-js";
 import { stateToHTML } from "draft-js-export-html";
@@ -21,26 +21,28 @@ import { stateFromHTML } from "draft-js-import-html";
 import ReadOnlyMonthCalendar from "../../components/ReadOnlyMonthCalendar";
 import ReadOnlyWeekCalendar from "../../components/ReadOnlyWeekCalendar";
 import Schedule from "../../types/scheduleType";
-import { HtmlContent } from "../../components/Description/description";
 
 const { Option } = Select;
 
-const DetailSchedule = () => {
+const DetailSchedule = ({ scheduleId, onUpdateSuccess }: any) => {
   const [form] = Form.useForm();
-  const { id } = useParams();
-  const scheduleId = Number(id);
+  const userId = Number(localStorage.getItem("userId"));
   const { data: scheduleData, refetch } = useGetDetailScheduleQuery({
     idSchedule: scheduleId,
   });
   const [updateSchedule, { isLoading }] = useUpdateScheduleMutation();
-
+  const { refetch: scheduleUserRefetch } = useGetDepartmentSchedulesQuery({
+    departmenManagerId: userId,
+    pageNumber: -1,
+    pageSize: -1,
+  });
   const [showCalendarModal, setShowCalendarModal] = useState(false);
   const [daysOfSchedule, setDaysOfSchedule] = useState<string>("");
   const [selectedDays, setSelectedDays] = useState<number[]>([]);
   const [editorState, setEditorState] = useState(EditorState.createEmpty());
-  // const [isCreateSuccess, setIsCreateSuccess] = useState<boolean>(false);
-  const navigate = useNavigate();
-  const [htmlConvert, setHtmlConvert] = useState<string>("");
+  const [isProcessWeek, setIsProcessWeek] = useState(false);
+  const [isProcessMonth, setIsProcessMonth] = useState(false);
+
   useEffect(() => {
     if (scheduleData) {
       const initialContentState = stateFromHTML(scheduleData.description);
@@ -56,9 +58,7 @@ const DetailSchedule = () => {
         scheduleTypeName: scheduleData.scheduleType?.scheduleTypeName,
         daysOfSchedule: scheduleData.daysOfSchedule,
       });
-
       const scheduleTypeName = scheduleData.scheduleType?.scheduleTypeName;
-      setHtmlConvert(scheduleData.description);
       setDaysOfSchedule(scheduleData?.daysOfSchedule);
       setEditorState(EditorState.createWithContent(initialContentState));
       setIsProcessWeek(scheduleTypeName === "ProcessWeek");
@@ -109,35 +109,27 @@ const DetailSchedule = () => {
     }
   };
 
-  const [isProcessWeek, setIsProcessWeek] = useState(false);
-  const [isProcessMonth, setIsProcessMonth] = useState(false);
-
   const handleFinish = async (values: any) => {
     try {
-      // console.log(values);
       const contentState = editorState.getCurrentContent();
       const htmlContent = stateToHTML(contentState);
-      setHtmlConvert(htmlContent)
-      // console.log(htmlContent)
-      // Construct parsedValues with form values or existing schedule data
       const parsedValues: Schedule = {
         scheduleName: values.scheduleName || scheduleData.scheduleName,
         description: htmlContent,
-        status: values.status === true || scheduleData.status,
+        status: values.status === true,
         daysOfSchedule: daysOfSchedule || scheduleData.daysOfSchedule,
         duration: scheduleData.duration || 1,
       };
-      console.log(parsedValues);
-      const result = await updateSchedule({
+
+      await updateSchedule({
         schedule: parsedValues,
         idSchedule: scheduleId,
       }).unwrap();
-      // setIsCreateSuccess()
       refetch();
+      scheduleUserRefetch();
       message.success("Dự án đã được cập nhật thành công!");
-      // navigate("/schedule", { state: { result: result } });
+      onUpdateSuccess(); // Call the callback to close the modal
     } catch (error) {
-      console.log(error);
       message.error("Đã xảy ra lỗi khi cập nhật dự án.");
     }
   };
@@ -197,7 +189,11 @@ const DetailSchedule = () => {
         </Checkbox.Group>
       ) : null}
       {scheduleData?.daysOfSchedule.length > 0 && (
-        <Button type="primary" onClick={handlePreviewCalendar} className="mt-4">
+        <Button
+          type="primary"
+          onClick={handlePreviewCalendar}
+          className="mt-4"
+        >
           Xem trước lịch
         </Button>
       )}
@@ -215,13 +211,8 @@ const DetailSchedule = () => {
       </Modal>
 
       <Form.Item>
-        {/* <HtmlContent htmlString={htmlConvert}/> */}
-        <Button 
-        type="primary" htmlType="submit" loading={isLoading}>
+        <Button type="primary" htmlType="submit" loading={isLoading}>
           Cập nhật lịch trình
-        </Button>
-        <Button type="primary" onClick={() => navigate(-1)}>
-          Quay lại
         </Button>
       </Form.Item>
     </Form>

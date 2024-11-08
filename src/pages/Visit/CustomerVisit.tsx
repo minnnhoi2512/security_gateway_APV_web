@@ -7,22 +7,18 @@ import moment from "moment-timezone";
 import { Content } from "antd/es/layout/layout";
 import VisitListType from "../../types/visitListType";
 import {
-  useGetListVisitByCreatedIdQuery,
   useGetListVisitByDepartmentIdQuery,
   useGetListVisitQuery,
 } from "../../services/visitList.service";
-import FilterVisit from "../../components/FilterVisit";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleStatusTab } from "../../redux/slices/filterTab.slice";
 
 const CustomerVisit = () => {
   const userRole = localStorage.getItem("userRole");
-  const userId = Number(localStorage.getItem("userId"));
   const departmentId = Number(localStorage.getItem("departmentId"));
   // console.log(departmentId);
   const navigate = useNavigate();
   const [searchText, setSearchText] = useState<string>("");
-  const [statusFilter, setStatusFilter] = useState<string>("Active");
 
   let data: any = [];
   // const totalPages = Math.ceil(data.length / pageSize);
@@ -31,27 +27,9 @@ const CustomerVisit = () => {
   const isFiltering = useSelector<any>(
     (s) => s.visitDetailList.isFiltering
   ) as boolean;
-  // Fetching data using the query
   let isLoading = true;
   let refetch;
-  useEffect(() => {
-    sessionStorage.setItem("selectedKey", "customerVisit");
-  }, []);
-  if (userRole === "Staff") {
-    let {
-      data: staffData,
-      isLoading: staffLoading,
-      refetch: refetchStaff,
-    } = useGetListVisitByCreatedIdQuery({
-      pageNumber: 1,
-      pageSize: 100,
-      createdById: userId,
-    });
-
-    data = staffData;
-    isLoading = staffLoading;
-    refetch = refetchStaff;
-  } else if (userRole === "DepartmentManager") {
+  if (userRole === "DepartmentManager") {
     let {
       data: managerData,
       isLoading: managerLoading,
@@ -72,7 +50,7 @@ const CustomerVisit = () => {
     } = useGetListVisitQuery({
       pageNumber: 1,
       pageSize: 100,
-      status: statusFilter,
+      status: "",
     });
     data = allData;
     isLoading = allLoading;
@@ -81,18 +59,7 @@ const CustomerVisit = () => {
   if (isFiltering) {
     data = visit;
   }
-  // console.log(data);
-  // const handlePageChange = (page: number, size: number) => {
-  //   setCurrentPage(page);
-  //   // Call your API with the new page number and size
-  //   refetch({ pageNumber: page, pageSize: size });
-  // };
-  // const handlePageSizeChange = (size: number) => {
-  //   setPageSize(size);
-  //   setCurrentPage(1); // Reset to the first page when page size changes
-  //   // Call your API with updated page size
-  //   refetch({ pageNumber: 1, pageSize: size });
-  // };
+  console.log(data);
   const columns: TableProps<VisitListType>["columns"] = [
     {
       title: "Tiêu đề",
@@ -217,19 +184,13 @@ const CustomerVisit = () => {
     setSearchText(e.target.value);
   };
 
-  const handleStatusChange = (status: string) => {
-    setStatusFilter(status);
-    refetch(); // Automatically refetch the data when status changes
-    // console.log(data)
-  };
   const handleFilterTabs = () => {
     dispatch(toggleStatusTab());
   };
   useEffect(() => {
     refetch();
-  }, [statusFilter]);
-  // console.log(data);
-  // refetch();
+  }, []);
+
   return (
     <Content className="p-6">
       <div className="flex justify-center mb-4">
@@ -268,18 +229,6 @@ const CustomerVisit = () => {
         )}
       </Space>
       <Space style={{ marginBottom: 16, display: "flex" }}>
-        <Button
-          type={statusFilter === "Active" ? "primary" : "default"}
-          onClick={() => handleStatusChange("Active")}
-        >
-          Còn hiệu lực
-        </Button>
-        <Button
-          type={statusFilter === "Pending" ? "primary" : "default"}
-          onClick={() => handleStatusChange("Pending")}
-        >
-          Đang đợi
-        </Button>
         <Button type={"default"} onClick={handleFilterTabs}>
           Bộ lọc tìm kiếm
         </Button>
@@ -299,14 +248,7 @@ const CustomerVisit = () => {
         bordered
         loading={isLoading}
       />
-      {/* <CustomPagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        pageSize={pageSize}
-        onPageChange={handlePageChange}
-        onPageSizeChange={handlePageSizeChange}
-      /> */}
-      <FilterVisit />
+      {/* <FilterVisit body="keke"/> */}
     </Content>
   );
 };

@@ -43,9 +43,7 @@ const History = () => {
   const [selectedRecord, setSelectedRecord] = useState<DataType | null>(null);
 
   const applyFilters = (status: string | null) => {
-    // console.log(filteredData);
     const filtered = updatedData.filter((entry) => {
-      // console.log(entry);
       const matchesStatus = status ? entry.status === status : true;
       return matchesStatus;
     });
@@ -53,8 +51,6 @@ const History = () => {
   };
 
   const handleStatusFilter = (status: string) => {
-    // console.log(status);
-    // console.log(dataL)
     setStatusFilter(status);
     applyFilters(status);
   };

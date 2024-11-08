@@ -43,10 +43,10 @@ const VisitorManager = () => {
   //     (visitor: Visitor) => visitor.status === "Active"
   //   );
   // }
-
+  console.log(data);
   const totalVisitors = visitors.length; // Total visitors after filtering
   const filteredData = visitors.filter((visitor: any) =>
-    visitor.visitorName.toLowerCase().includes(searchText.toLowerCase())
+    visitor.credentialsCard.toLowerCase().includes(searchText.toLowerCase())
   );
 
   const columns = [
@@ -63,10 +63,9 @@ const VisitorManager = () => {
       sorter: (a: any, b: any) => a.companyName.localeCompare(b.companyName),
     },
     {
-      title: "Số điện thoại",
-      dataIndex: "phoneNumber",
-      key: "phoneNumber",
-      sorter: (a: any, b: any) => a.phoneNumber.localeCompare(b.phoneNumber),
+      title: "CCCD/CMND",
+      dataIndex: "credentialsCard",
+      key: "credentialsCard",
     },
     {
       title: "Ngày tạo",
@@ -203,7 +202,7 @@ const VisitorManager = () => {
         }}
       >
         <Input
-          placeholder="Tìm kiếm theo tên khách"
+          placeholder="Tìm kiếm theo CCCD/CMND khách"
           prefix={<SearchOutlined />}
           value={searchText}
           onChange={handleSearchChange}

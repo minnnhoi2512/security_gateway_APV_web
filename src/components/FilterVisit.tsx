@@ -2,13 +2,11 @@ import { FilterOutlined } from "@ant-design/icons";
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleStatusTab } from "../redux/slices/filterTab.slice";
-
 import { Checkbox, Col, DatePicker, GetProp, Row, Slider } from "antd";
-import moment from "moment";
+import dayjs, { Dayjs } from "dayjs";
 import GraphqlQueryType from "../types/graphqlQueryType";
 import { useGetVisitGraphqlMutation } from "../services/visitGraphql.service";
 import { DatePickerProps } from "antd/lib";
-import dayjs from "dayjs";
 import {
   cancelFilter,
   setListOfVisitList,
@@ -17,10 +15,10 @@ import VisitDetailList from "../types/VisitDetailListType";
 
 const FilterVisit: React.FC = () => {
   const statusTabs = useSelector<any>((s) => s.filterTabs.isOpen);
-  const [expectedStartTime, SetExpectedStartTime] = useState(moment.min());
-  const [expectedEndTime, SetExpectedEndTime] = useState(moment.max());
-  const [visitQuantity, SetVisitQuantity] = useState([1, 100]);
-  const [scheduleTypeId, SetScheduleTypeId] = useState([1, 2, 3, 4]);
+  const [expectedStartTime, SetExpectedStartTime] = useState<Dayjs>(dayjs().startOf('day'));
+  const [expectedEndTime, SetExpectedEndTime] = useState<Dayjs>(dayjs().endOf('day'));
+  const [visitQuantity, SetVisitQuantity] = useState<[number, number]>([1, 100]);
+  const [scheduleTypeId, SetScheduleTypeId] = useState<any[]>([null,1, 2, 3, 4]);
   const [visitStatus, SetVisitStatus] = useState<string[]>([
     "Active",
     "Pending",
@@ -37,8 +35,8 @@ const FilterVisit: React.FC = () => {
 
   const handleSubmitFilter = () => {
     var body = MakeQuery(
-      expectedStartTime.format(),
-      expectedEndTime.format(),
+      expectedStartTime,
+      expectedEndTime,
       visitQuantity,
       scheduleTypeId as never,
       visitStatus
@@ -55,8 +53,8 @@ const FilterVisit: React.FC = () => {
       });
   };
   const handleCancelFilter = () => {
-    SetExpectedStartTime(moment());
-    SetExpectedEndTime(moment());
+    SetExpectedStartTime(dayjs().startOf('day'));
+    SetExpectedEndTime(dayjs().endOf('day'));
     SetScheduleTypeId([1, 2, 3, 4]);
     SetScheduleTypeIdDisplay([]);
     SetVisitStatusDisplay([]);
@@ -65,21 +63,19 @@ const FilterVisit: React.FC = () => {
   };
   const handleStartDateChange: DatePickerProps["onChange"] = (
     date,
-    dateString
   ) => {
-    SetExpectedStartTime(moment(dateString));
+    SetExpectedStartTime(date);
   };
   const handleEndDateChange: DatePickerProps["onChange"] = (
     date,
-    dateString
   ) => {
-    SetExpectedEndTime(moment(dateString));
+    SetExpectedEndTime(date);
   };
   const handleVisitScheduleType: GetProp<typeof Checkbox.Group, "onChange"> = (
     checkedValues
   ) => {
-    SetScheduleTypeId(checkedValues as never);
-    SetScheduleTypeIdDisplay(checkedValues as never);
+    SetScheduleTypeId(checkedValues as number[]);
+    SetScheduleTypeIdDisplay(checkedValues as string[]);
   };
   const handlevisitStatusType: GetProp<typeof Checkbox.Group, "onChange"> = (
     checkedValues
@@ -89,10 +85,10 @@ const FilterVisit: React.FC = () => {
   };
 
   function MakeQuery(
-    expectedStartTime: moment.MomentInput,
-    expectedEndTime: moment.MomentInput,
-    visitQuantity: number[],
-    scheduleTypeId: [],
+    expectedStartTime: dayjs.Dayjs,
+    expectedEndTime: dayjs.Dayjs,
+    visitQuantity: [number, number],
+    scheduleTypeId: number[],
     visitStatus: string[] | undefined
   ) {
     var status = "[";
@@ -111,13 +107,13 @@ const FilterVisit: React.FC = () => {
         where:  {
             expectedStartTime:  {
         gte: "${
-          expectedStartTime?.toString().split("T")[0] + "T00:00:00+07:00"
+          expectedStartTime.format()?.toString().split("T")[0] + "T00:00:00+07:00"
         }"
             },
              and: [ {
              expectedEndTime:  {
                 lte: "${
-                  expectedEndTime?.toString().split("T")[0] + "T23:59:59+07:00"
+                  expectedEndTime.format()?.toString().split("T")[0] + "T23:59:59+07:00"
                 }"
             }
             }],
@@ -164,7 +160,7 @@ const FilterVisit: React.FC = () => {
 }
 
         `;
-
+    console.log(queryPlain);
     var query: GraphqlQueryType = {
       query: queryPlain,
     };
@@ -174,8 +170,7 @@ const FilterVisit: React.FC = () => {
   return (
     <div
       className={`fixed top-0 right-0 bg-white shadow-2xl rounded-l-md w-96 h-full grid grid-rows-[60px_1fr_60px] transform transition-transform duration-500
-        ${statusTabs === false ? "translate-x-full" : ""}
-    `}
+        ${statusTabs === false ? "translate-x-full" : ""}`}
     >
       <div dir="ltr" className="grid grid-cols-5">
         <h2 className="ps-5 col-span-4 text-black text-2xl pt-5 font-bold">
@@ -195,7 +190,7 @@ const FilterVisit: React.FC = () => {
             <p className="col-span-4 pe-5">Ngày bắt đầu</p>
             <DatePicker
               size="small"
-              value={dayjs(expectedStartTime.format())}
+              value={expectedStartTime}
               onChange={handleStartDateChange}
             />
           </div>
@@ -203,8 +198,8 @@ const FilterVisit: React.FC = () => {
             <p className="col-span-4 pe-5">Ngày kết thúc</p>
             <DatePicker
               size="small"
-              value={dayjs(expectedEndTime.format())}
-              minDate={dayjs(expectedStartTime.format())}
+              value={expectedEndTime}
+              minDate={expectedStartTime}
               onChange={handleEndDateChange}
             />
           </div>
@@ -218,7 +213,7 @@ const FilterVisit: React.FC = () => {
             min={1}
             max={100}
             value={visitQuantity}
-            onChange={SetVisitQuantity}
+            // onChange={SetVisitQuantity}
           />
         </div>
         <div className="p-5 grid border-b-2 border-b-gray-400 h-fit">
