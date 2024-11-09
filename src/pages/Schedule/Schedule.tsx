@@ -34,7 +34,7 @@ const { Option } = Select;
 const Schedule = () => {
   type FormError = { [key in keyof typeof assignData]: string } | null;
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [errorAssignSchedule, setErrorAssignSchedule] = useState<FormError>();
+  const [errorAssignSchedule, setMysit] = useState<FormError>();
   const userRole = localStorage.getItem("userRole");
   const userId = Number(localStorage.getItem("userId"));
   const departmentIdUser = Number(localStorage.getItem("departmentId"));
@@ -133,7 +133,7 @@ const Schedule = () => {
       scheduleUserRefetch();
     } catch (error) {
       if (isEntityError(error)) {
-        setErrorAssignSchedule(error.data.errors as FormError);
+        setMysit(error.data.errors as FormError);
       }
       notification.error({ message: "Có lỗi xảy ra khi phân công." });
     }

@@ -32,6 +32,7 @@ import History from "../pages/History/History";
 import Chat from "../pages/Utility/Chat";
 import ChatRoom from "../pages/Utility/ChatRoom";
 import Profile from "../pages/User/Profile";
+import MyVisit from "../pages/Visit/MyVisit";
 
 
 
@@ -214,6 +215,15 @@ const ContentRouter = () => {
         element={
           <LayoutPage>
             <DetailCustomerVisit />
+          </LayoutPage>
+        }
+      />
+<Route
+        index
+        path="/customerVisitStaff"
+        element={
+          <LayoutPage>
+            <MyVisit />
           </LayoutPage>
         }
       />
