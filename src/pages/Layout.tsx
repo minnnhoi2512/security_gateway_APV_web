@@ -1,32 +1,50 @@
-import React, { useEffect, useState } from "react";
-import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
-import { Avatar, Badge, Breadcrumb, Button, Dropdown, Layout, Space } from "antd";
+import React, { useState } from "react";
+import {
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+  BulbOutlined,
+} from "@ant-design/icons";
+import {
+  Avatar,
+  Breadcrumb,
+  Button,
+  Layout,
+  Space,
+  Badge,
+} from "antd";
 import { useNavigate } from "react-router-dom";
 import "@fontsource/inter";
 import MenuNav from "../UI/MenuNav";
 import { useGetDetailUserQuery } from "../services/user.service";
 import DefaultUserImage from "../assets/default-user-image.png";
-import { MenuProps } from "antd/lib";
-import { useDispatch, useSelector } from "react-redux";
-import NotificationType from "../types/notificationType";
-import { toast, ToastContainer } from "react-toastify";
-import { reloadNoti } from "../redux/slices/notification.slice";
-import { useGetListNotificationUserQuery, useMarkNotiReadMutation } from "../services/notification.service";
 import NotificationDropdown from "../components/Dropdown/NotificationDropdown";
-
-type Props = {
-  children: React.ReactNode;
-};
+import { ToastContainer } from "react-toastify";
+import { useGetListNotificationUserQuery } from "../services/notification.service";
 
 const { Header, Sider, Content } = Layout;
 
-const LayoutPage = ({ children }: Props) => {
+const LayoutPage = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
+  const [isDarkTheme, setIsDarkTheme] = useState(true); // Toggle for dark/light theme
   const userId = Number(localStorage.getItem("userId"));
+  const { data: userData } = useGetDetailUserQuery(userId);
+  const { data: notifications } = useGetListNotificationUserQuery({
+    userId: Number(userId),
+  });
+  const notiCount = notifications?.filter((s) => !s.readStatus).length || 0;
 
-  // Assuming getUserDetail is the type of the data returned from the query
-  const { data: data1, refetch } = useGetDetailUserQuery(userId);
-  const getRoleDisplayName = (roleName: string) => {
+  const navigate = useNavigate();
+  const sharedBackgroundColor = "#34495e";
+
+  const handleProfileClick = () => {
+    if (userId) {
+      navigate(`/profile/${userId}`);
+    } else {
+      console.error("User ID không tồn tại.");
+    }
+  };
+
+  const getRoleDisplayName = (roleName) => {
     switch (roleName) {
       case "Staff":
         return "Nhân viên";
@@ -40,73 +58,11 @@ const LayoutPage = ({ children }: Props) => {
         return roleName;
     }
   };
-  const navigate = useNavigate();
-  const [markAsRead] = useMarkNotiReadMutation()
-  const takingNew = useSelector<any>(s => s.notification.takingNew) as boolean
-  var data = []
-
-  const dispatch = useDispatch();
-  const handleProfileClick = () => {
-    if (userId) {
-      navigate(`/profile/${userId}`);
-    } else {
-      console.error("User ID không tồn tại.");
-    }
-  };
-  const {
-    data: notificaitionData,
-    refetch: refetchNoti,
-  } = useGetListNotificationUserQuery({
-    userId: Number(userId)
-  });
-  data = notificaitionData as NotificationType[];
-  // console.log(notificaitionData as NotificationType[])
-
-
-  var notiCount = data?.filter(s => s.readStatus == false)
-
-  // useEffect(() => {
-  //   if (data?.length > 0 && takingNew) {
-  //     toast("Bạn có thông báo mới")
-  //     refetchNoti()
-  //   }
-  //   refetch();
-  //   dispatch(reloadNoti())
-  // }, [takingNew])
-  // const items: MenuProps['items'] = [];
-  // const handleReadNotification = (id: string, isRead: boolean) => {
-  //   if (!isRead) {
-  //     markAsRead({ notificationUserId: Number(id) }).then(() => {
-  //       refetchNoti()
-  //     })
-  //     // dispatch(reloadNoti())
-  //   }
-
-  // }
-  // if (data) {
-  //   var reverseArray = [...data]
-  //   reverseArray.reverse().slice(0, 10).forEach((element, index) => {
-  //     items.push({
-  //       key: index,
-  //       label: (
-  //         <div className="inline-flex">
-  //           <a style={{
-  //             fontWeight: `${element.readStatus == true ? "lighter" : "bold"}
-
-  //             `}} onClick={() => handleReadNotification(element.notificationUserID, element.readStatus)} rel="noopener noreferrer" href="#">
-  //             {element.notification.title}
-  //             <p style={{ fontWeight: "lighter" }}>{element.notification.content}</p>
-  //           </a>
-  //         </div>
-  //       ),
-  //     },)
-  //   });
-  // }
-  const sharedBackgroundColor = "#34495e";
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
       <ToastContainer position="top-center" containerId="NotificationToast" />
+
       <Sider
         trigger={null}
         collapsible
@@ -135,18 +91,18 @@ const LayoutPage = ({ children }: Props) => {
             <div onClick={handleProfileClick} className="flex items-center mb-4 cursor-pointer">
               <img
                 className="w-[40px] h-[40px] rounded-full"
-                src={data1?.image || DefaultUserImage}
+                src={userData?.image || DefaultUserImage}
                 alt="User"
               />
               <div className="ml-3">
                 <h1 className="text-sm font-medium text-white">
-                  {data1?.fullName}
+                  {userData?.fullName}
                 </h1>
                 <h2 className="text-xs text-gray-300">
-                  {getRoleDisplayName(data1?.role.roleName)}
+                  {getRoleDisplayName(userData?.role.roleName)}
                 </h2>
                 <h2 className="text-xs text-gray-300">
-                  {data1?.department?.departmentName}
+                  {userData?.department?.departmentName}
                 </h2>
               </div>
             </div>
@@ -154,19 +110,18 @@ const LayoutPage = ({ children }: Props) => {
           </div>
         )}
 
-        <MenuNav />
+        <MenuNav theme={isDarkTheme ? "dark" : "light"} />
       </Sider>
 
       <Layout>
         <Header
-          className="flex items-center"
+          className="flex items-center justify-between"
           style={{
             backgroundColor: sharedBackgroundColor,
             paddingLeft: 20,
           }}
         >
-
-          {/* // button set thu phong navbar */}
+          {/* Button to toggle sidebar collapse */}
           <Button
             type="text"
             icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
@@ -174,23 +129,27 @@ const LayoutPage = ({ children }: Props) => {
             className="text-white"
             style={{ fontSize: "18px" }}
           />
-          <div className="top-0 right-20 absolute ">
-            {/* <Dropdown menu={{ items }} trigger={['click']} overlayClassName="pt-1">
-              <a onClick={(e) => e.preventDefault()}>
-                <Space>
-                  <Badge count={notiCount?.length}>
-                    <button><Avatar shape="circle" size="default" src="/src/assets/iconNoti.png" /></button>
-                  </Badge>
-                </Space>
-              </a>
-            </Dropdown> */}
-            <NotificationDropdown />
-          </div>
+
+          <Space>
+            {/* Dark/Light Mode Toggle Icon */}
+            <Button
+              type="text"
+              icon={<BulbOutlined style={{ color: isDarkTheme ? "#ffc107" : "#fff" }} />}
+              onClick={() => setIsDarkTheme(!isDarkTheme)}
+            />
+
+            {/* Notification Dropdown */}
+            <Badge count={notiCount}>
+              <NotificationDropdown />
+            </Badge>
+          </Space>
         </Header>
+
         <Breadcrumb
           items={[{ title: 'Home' }, { title: 'List' }, { title: 'App' }]}
           style={{ margin: '16px' }}
         />
+
         <Content className="m-6 p-6 bg-white rounded shadow min-h-[80vh]">
           {children}
         </Content>

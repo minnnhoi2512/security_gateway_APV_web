@@ -107,8 +107,6 @@ export const scheduleAPI = createApi({
     }),
   }),
 });
-
-// Export the auto-generated hooks for the queries and mutations
 export const {
   useGetDepartmentSchedulesQuery,
   useGetStaffSchedulesQuery,

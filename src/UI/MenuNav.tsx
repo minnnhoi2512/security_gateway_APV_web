@@ -8,16 +8,17 @@ import {
   AppstoreOutlined,
   BarsOutlined,
   DeploymentUnitOutlined,
+  UserOutlined,
+  UsergroupAddOutlined,
+  SafetyCertificateOutlined,
 } from "@ant-design/icons";
-import { Menu, MenuProps, Modal, MenuTheme, Switch } from "antd";
+import { Menu, Modal } from "antd";
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import SignalR from "../utils/signalR";
 import { useDispatch, useSelector } from "react-redux";
-type MenuItem = Required<MenuProps>["items"][number];
 
 const MenuNav = () => {
-  const [theme, setTheme] = useState<MenuTheme>("dark");
   const navigate = useNavigate();
   const location = useLocation();
   const [selectedKey, setSelectedKey] = useState<string>(() => {
@@ -27,13 +28,11 @@ const MenuNav = () => {
   const [nextLocation, setNextLocation] = useState<string | null>(null);
 
   const userRole = localStorage.getItem("userRole");
-  const changeTheme = (value: boolean) => {
-    setTheme(value ? "dark" : "light");
-  };
   const connection = useSelector<any>(
     (s) => s.hubConnection.connection
   ) as React.MutableRefObject<signalR.HubConnection | null>;
   const dispatch = useDispatch();
+
   const handleCancel = () => setIsModalVisible(true);
 
   const handleOk = () => {
@@ -72,17 +71,21 @@ const MenuNav = () => {
   useEffect(() => {
     sessionStorage.setItem("selectedKey", selectedKey);
   }, [selectedKey]);
-  const allMenuItems: MenuItem[] = [
-    { key: "dashboard", icon: <LineChartOutlined />, label: "Thông tin chung" },
+
+  const menuItems = [
+    {
+      key: "dashboard",
+      icon: <LineChartOutlined />,
+      label: "Thông tin chung",
+    },
     {
       key: "accountManage",
       icon: <TeamOutlined />,
       label: "Người dùng",
       children: [
-        { key: "manager", label: "Quản lý" },
-        { key: "departmentManager", label: "Quản lý phòng ban" },
-        { key: "staff", label: "Nhân viên phòng ban" },
-        { key: "security", label: "Bảo vệ" },
+        { key: "departmentManager", label: "Quản lý phòng ban", icon: <UsergroupAddOutlined /> },
+        { key: "staff", label: "Nhân viên phòng ban", icon: <UserOutlined /> },
+        { key: "security", label: "Bảo vệ", icon: <SafetyCertificateOutlined /> },
       ],
     },
     {
@@ -90,49 +93,38 @@ const MenuNav = () => {
       icon: <FileTextOutlined />,
       label: "Lịch trình",
       children: [
-        { key: "schedule", label: "Tất cả lịch trình" },
-        { key: "schedule-staff", label: "Tạo lịch hẹn" },
-        { key: "schedule-staff-assigned", label: "Lịch trình được giao" },
-        { key: "schedule-staff-rejected", label: "Lịch trình bị hủy bỏ" },
-        { key: "schedule-assigned", label: "Lịch trình đã giao" },
+        { key: "schedule", label: "Tất cả lịch trình", icon: <FileTextOutlined /> },
+        { key: "schedule-assigned", label: "Lịch trình đã giao", icon: <FileTextOutlined /> },
       ],
     },
-
     {
       key: "visitorManage",
       icon: <SolutionOutlined />,
       label: "Danh sách khách",
       children: [
-        { key: "visitorManager", label: "Khách tiêu chuẩn" },
-        { key: "banVisitorManager", label: "Sổ đen" },
+        { key: "visitorManager", label: "Khách tiêu chuẩn", icon: <UserOutlined /> },
+        { key: "banVisitorManager", label: "Sổ đen", icon: <SafetyCertificateOutlined /> },
       ],
     },
     {
       key: "customerVisit",
       icon: <BarsOutlined />,
       label: "Chuyến thăm",
-      // children: [
-      //   { key: "customerVisit", label: "Theo ngày" },
-      //   { key: "customerVisitWeekly", label: "Theo tuần" },
-      //   { key: "customerVisitMonthly", label: "Theo tháng" },
-      // ],
     },
     {
       key: "historyManage",
       icon: <HistoryOutlined />,
       label: "Lịch sử",
-      children: [
-        { key: "history", label: "Lượt ra vào" },
-      ],
+      children: [{ key: "history", label: "Lượt ra vào", icon: <HistoryOutlined /> }],
     },
     {
       key: "facilityManage",
       icon: <DeploymentUnitOutlined />,
       label: "Cơ sở vật chất",
       children: [
-        { key: "departManager", label: "Phòng ban" },
-        { key: "gate", label: "Cổng ra vào" },
-        { key: "card", label: "Thẻ ra vào" },
+        { key: "departManager", label: "Phòng ban", icon: <TeamOutlined /> },
+        { key: "gate", label: "Cổng ra vào", icon: <SolutionOutlined /> },
+        { key: "card", label: "Thẻ ra vào", icon: <SafetyCertificateOutlined /> },
       ],
     },
     {
@@ -140,124 +132,68 @@ const MenuNav = () => {
       icon: <AppstoreOutlined />,
       label: "Tiện ích",
       children: [
-        { key: "calendar", label: "Lịch hẹn của tôi" },
-        { key: "chat", label: "Nhắn tin" },
+        { key: "calendar", label: "Lịch hẹn của tôi", icon: <FileTextOutlined /> },
+        { key: "chat", label: "Nhắn tin", icon: <UserOutlined /> },
       ],
     },
-
-    { key: "", icon: <LogoutOutlined />, label: "Đăng xuất" },
+    {
+      key: "",
+      icon: <LogoutOutlined />,
+      label: "Đăng xuất",
+    },
   ];
-  // Filter out "manager" item if userRole is "Manager"
-  const filteredMenuItems = allMenuItems
-    .map((item: any) => {
-      if (userRole === "Admin") {
-        const excludedKeys = [
-          "schedule-staff",
-          "schedule-staff-assigned",
-          "schedule-staff-rejected"
-        ];
 
-        // Exclude top-level items and children based on excluded keys
+  const getFilteredMenuItems = () => {
+    const roleBasedExclusions = {
+      Admin: ["schedule-staff", "schedule-staff-assigned", "schedule-staff-rejected"],
+      Manager: ["manager", "schedule-staff", "schedule-staff-assigned", "schedule-staff-rejected"],
+      DepartmentManager: [
+        "dashboard",
+        "manager",
+        "facilityManage",
+        "schedule-staff",
+        "schedule-staff-assigned",
+        "schedule-staff-rejected",
+      ],
+      Staff: [
+        "dashboard",
+        "accountManage",
+        "schedule-assigned",
+        "schedule",
+        "facilityManage",
+        "security",
+      ],
+    };
+
+    const excludedKeys = roleBasedExclusions[userRole as keyof typeof roleBasedExclusions] || [];
+
+    return menuItems
+      .map((item) => {
         if (excludedKeys.includes(item.key)) {
           return null;
         }
         if (item.children) {
           return {
             ...item,
-            children: item.children.filter(
-              (child: any) => !excludedKeys.includes(child.key)
-            ),
+            children: item.children.filter((child) => !excludedKeys.includes(child.key)),
           };
         }
-      }
-      if (userRole === "Manager") {
-        const excludedKeys = [
-          "manager",
-          "schedule-staff",
-          "schedule-staff-assigned",
-          "schedule-staff-rejected"
-        ];
+        return item;
+      })
+      .filter(Boolean);
+  };
 
-        // Exclude top-level items and children based on excluded keys
-        if (excludedKeys.includes(item.key)) {
-          return null;
-        }
-        if (item.children) {
-          return {
-            ...item,
-            children: item.children.filter(
-              (child: any) => !excludedKeys.includes(child.key)
-            ),
-          };
-        }
-      }
-
-      // Exclude specific items for DepartmentManager role
-      if (userRole === "DepartmentManager") {
-        const excludedKeys = [
-          "dashboard",
-          "manager",
-          "departmentManager",
-          "facilityManage",
-          "schedule-staff",
-          "security",
-          "schedule-staff-assigned",
-          "schedule-staff-rejected"
-        ];
-
-        // Exclude top-level items and children based on excluded keys
-        if (excludedKeys.includes(item.key)) {
-          return null;
-        }
-        if (item.children) {
-          return {
-            ...item,
-            children: item.children.filter(
-              (child: any) => !excludedKeys.includes(child.key)
-            ),
-          };
-        }
-      }
-      if (userRole === "Staff") {
-        const excludedKeys = [
-          "dashboard",
-          "accountManage",
-          "schedule-assigned",
-          "schedule",
-          "facilityManage",
-          "security",
-        ];
-
-        // Exclude top-level items and children based on excluded keys
-        if (excludedKeys.includes(item.key)) {
-          return null;
-        }
-        if (item.children) {
-          return {
-            ...item,
-            children: item.children.filter(
-              (child: any) => !excludedKeys.includes(child.key)
-            ),
-          };
-        }
-      }
-
-      return item;
-    })
-    .filter(Boolean); // Remove any null values from the filtered array
-
-  const renderMenuItems = (menuItems: any) =>
-    menuItems.map((item: any) => {
+  const renderMenuItems = (menuItems) =>
+    menuItems.map((item) => {
       if (item.children) {
         return (
           <Menu.SubMenu
             key={item.key}
-            icon={item.icon}
-            title={item.label}
-            style={menuItemStyle}
+            icon={<span style={iconStyle}>{item.icon}</span>}
+            title={<span style={titleStyle}>{item.label}</span>}
           >
-            {item.children.map((subItem: any) => (
-              <Menu.Item key={subItem.key} style={menuItemStyle}>
+            {item.children.map((subItem) => (
+              <Menu.Item key={subItem.key} icon={<span style={iconStyle}>{subItem.icon}</span>} style={subItemStyle} onClick={handleMenuClick}>
                 {subItem.label}
               </Menu.Item>
             ))}
@@ -267,40 +203,64 @@ const MenuNav = () => {
       return (
         <Menu.Item
           key={item.key}
-          icon={item.icon}
-          style={{
-            ...menuItemStyle,
-            ...(selectedKey === item.key ? menuItemSelectedStyle : {}),
-          }}
+          icon={<span style={iconStyle}>{item.icon}</span>}
+          style={itemStyle}
+          onClick={handleMenuClick}
         >
           {item.label}
         </Menu.Item>
       );
     });
 
-  const menuItemStyle = {
-    transition: "background-color 0.3s ease-in-out",
+  const itemStyle = {
     fontSize: "16px",
+    fontWeight: "bold",
+    color: "#FFFFFF",
+    backgroundColor: "#34495e",
+    padding: "10px 20px",
     borderRadius: "8px",
+    marginBottom: "5px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "flex-start",
   };
 
-  const menuItemSelectedStyle = {
-    backgroundColor: "#5E84A2",
-    fontWeight: "600",
+  const titleStyle = {
+    fontSize: "16px",
+    fontWeight: "bold",
+    color: "#FFFFFF",
+    display: "flex",
+    alignItems: "center",
+    paddingLeft: "10px 20px", // Đảm bảo padding giống nhau cho cả cha và con
+  };
+
+  const iconStyle = {
+    color: "#87a2be",
+    minWidth: "24px",
+    marginRight: "10px", // Đảm bảo khoảng cách giữa icon và text
+    display: "flex",
+    alignItems: "center",
+  };
+
+  const subItemStyle = {
+    fontSize: "14px",
+    backgroundColor: "#2c3e50",
+    color: "#d1d1d1",
+    padding: "8px 20px",
+    display: "flex",
+    alignItems: "center",
+    borderRadius: "8px",
+    marginBottom: "3px",
   };
 
   return (
-    <div className="">
-      <Switch checked={theme === "dark"} onChange={changeTheme} />
-      <br />
-      <br />
+    <div>
       <Menu
-        theme={theme}
         mode="inline"
         selectedKeys={[selectedKey]}
-        onClick={handleMenuClick}
+        style={{ backgroundColor: "#34495e", borderRight: "none" }}
       >
-        {renderMenuItems(filteredMenuItems)}
+        {renderMenuItems(getFilteredMenuItems())}
       </Menu>
 
       <Modal
