@@ -113,7 +113,7 @@ const LayoutPage = ({ children }: Props) => {
         width={240}
         style={{ backgroundColor: sharedBackgroundColor }}
       >
-        <div className="flex flex-col items-center p-4">
+        <div className="flex flex-col items-center p-4 ">
           <img
             className="w-[50px] h-[50px] mb-2"
             src="https://vietnetco.vn/wp-content/uploads/2020/04/Secure-Web-Gateway-01-1024x844.png"
@@ -124,7 +124,7 @@ const LayoutPage = ({ children }: Props) => {
               <h1 className="text-white text-lg font-bold leading-tight">
                 SECURITY GATE
               </h1>
-              <h2 className="text-white text-sm">APV</h2>
+              <h2 className="text-white text-sm ">APV</h2>
             </div>
           )}
         </div>

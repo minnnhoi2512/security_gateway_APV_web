@@ -22,3 +22,4 @@ export const formatDate = (dateString: any) => {
 
   return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
 };
+
