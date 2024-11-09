@@ -35,12 +35,12 @@ const ScheduleUserDetailModal: React.FC<ScheduleUserModalDetailProps> = ({
   const handleRejectSchedule = async (id: number) => {
     try {
       await rejectSchedule(id).unwrap();
-      notification.success({ message: "Schedule rejected successfully" });
+      notification.success({ message: "Đã từ chối lịch hẹn" });
       handleClose();
       refetch();
     } catch (error) {
       notification.error({
-        message: "Failed to reject schedule",
+        message: "Thất bại",
         description: "Lỗi không từ chối được",
       });
     }
@@ -48,13 +48,13 @@ const ScheduleUserDetailModal: React.FC<ScheduleUserModalDetailProps> = ({
   const handleApproveSchedule = async (id: number) => {
     try {
       await approveSchedule(id).unwrap();
-      notification.success({ message: "Schedule approved successfully" });
+      notification.success({ message: "Chấp nhận lịch hẹn thành công" });
       refetch();
       handleClose();
     } catch (error) {
       if (isEntityError(error)) {
         notification.error({
-          message: "Failed to approve schedule",
+          message: "Thất bại",
           description: "Lỗi không duyệt được",
         });
       }
@@ -72,7 +72,7 @@ const ScheduleUserDetailModal: React.FC<ScheduleUserModalDetailProps> = ({
           type="primary"
           className="bg-blue-500 mr-2"
           onClick={() => handleApproveSchedule(selectedRecord?.id || 0)}
-          disabled={selectedRecord?.status !== "Assigned"}
+          disabled={selectedRecord?.status !== "Pending"}
         >
           Duyệt
         </Button>,
@@ -82,7 +82,7 @@ const ScheduleUserDetailModal: React.FC<ScheduleUserModalDetailProps> = ({
           danger
           className="mr-2"
           onClick={() => handleRejectSchedule(selectedRecord?.id || 0)}
-          disabled={selectedRecord?.status !== "Assigned"}
+          disabled={selectedRecord?.status !== "Pending"}
         >
           Từ chối
         </Button>,

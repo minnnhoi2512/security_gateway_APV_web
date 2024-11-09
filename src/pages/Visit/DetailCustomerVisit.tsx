@@ -555,9 +555,9 @@ const DetailCustomerVisit: React.FC = () => {
           </>
         )}
         {status === "Active" && (
-          <>
-            <Button onClick={handleCancel}>Hủy</Button>
-          </>
+          <div className="bg-red">
+            <Button className="bg-red text-red" onClick={handleCancel}>Hủy chuyến thăm</Button>
+          </div>
         )}
         {(isEditable() && scheduleTypeId == undefined && (
           <Button type="primary" onClick={handleToggleMode} className="mb-4">

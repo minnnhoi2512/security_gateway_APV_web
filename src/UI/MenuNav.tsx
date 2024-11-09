@@ -75,6 +75,15 @@ const MenuNav = () => {
   const allMenuItems: MenuItem[] = [
     { key: "dashboard", icon: <LineChartOutlined />, label: "Thông tin chung" },
     {
+      key: "customerVisitList",
+      icon: <BarsOutlined />,
+      label: "Chuyến thăm",
+      children: [
+        { key: "customerVisit", label: "Tất cả" },
+        { key: "customerVisitStaff", label: "Chuyến thăm của tôi" },
+      ],
+    },
+    {
       key: "accountManage",
       icon: <TeamOutlined />,
       label: "Người dùng",
@@ -107,15 +116,7 @@ const MenuNav = () => {
         { key: "banVisitorManager", label: "Sổ đen" },
       ],
     },
-    {
-      key: "customerVisitList",
-      icon: <BarsOutlined />,
-      label: "Chuyến thăm",
-      children: [
-        { key: "customerVisit", label: "Tất cả" },
-        { key: "customerVisitStaff", label: "Chuyến thăm của tôi" },
-      ],
-    },
+   
     {
       key: "historyManage",
       icon: <HistoryOutlined />,
