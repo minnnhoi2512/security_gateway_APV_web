@@ -8,6 +8,7 @@ import {
   DatePicker,
   Select,
   Slider,
+  Modal,
 } from "antd";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
 import { TableProps } from "antd";
@@ -20,6 +21,7 @@ import VisitListType from "../../types/visitListType";
 import { useGetListVisitByResponsiblePersonIdQuery } from "../../services/visitList.service";
 import { statusMap, VisitStatus } from "../../types/Enum/VisitStatus";
 import { ScheduleType, typeMap } from "../../types/Enum/ScheduleType";
+import ListHistorySessonVisit from "../History/ListHistorySessionVisit";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -38,6 +40,8 @@ const CustomerVisitStaff = () => {
   const userRole = localStorage.getItem("userRole");
   const userId = localStorage.getItem("userId");
   const navigate = useNavigate();
+  const [selectedVisitId, setSelectedVisitId] = useState<number | null>(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
   const [searchText, setSearchText] = useState<string>("");
   const [filteredData, setFilteredData] = useState<VisitListType[]>([]);
   const [filters, setFilters] = useState<Filters>({
@@ -122,12 +126,18 @@ const CustomerVisitStaff = () => {
       },
     },
     {
-      title: "Tạo bởi",
-      dataIndex: "createBy",
-      key: "createBy",
-      render: (text) => (
-        <span style={{ fontSize: "14px", color: "#000" }}>
-          {text?.fullName || "-"}
+      title: "Lượt ra vào",
+      dataIndex: "visitorSessionCount",
+      key: "visitorSessionCount",
+      render: (text, record) => (
+        <span
+          style={{ fontSize: "14px", color: "#000", cursor: "pointer", textDecoration: "underline" }}
+          onClick={() => {
+            setSelectedVisitId(record.visitId);
+            setIsModalVisible(true);
+          }}
+        >
+          {text} lượt
         </span>
       ),
     },
@@ -290,6 +300,15 @@ const CustomerVisitStaff = () => {
         bordered
         loading={isLoading}
       />
+       <Modal
+        title="Lịch sử lượt ra vào"
+        visible={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        footer={null}
+        width={800}
+      >
+        {selectedVisitId && <ListHistorySessonVisit visitId={selectedVisitId} />}
+      </Modal>
     </Content>
   );
 };

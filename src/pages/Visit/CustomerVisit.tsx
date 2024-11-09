@@ -8,6 +8,7 @@ import {
   DatePicker,
   Slider,
   Select,
+  Modal,
 } from "antd";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
 import { TableProps } from "antd";
@@ -22,6 +23,7 @@ import {
 import dayjs, { Dayjs } from "dayjs";
 import { statusMap, VisitStatus } from "../../types/Enum/VisitStatus";
 import { ScheduleType, typeMap } from "../../types/Enum/ScheduleType";
+import ListHistorySessonVisit from "../History/ListHistorySessionVisit";
 
 interface Filters {
   expectedStartTime: Dayjs | null;
@@ -44,6 +46,8 @@ const CustomerVisit = () => {
   });
   const navigate = useNavigate();
   const [searchText, setSearchText] = useState<string>("");
+  const [selectedVisitId, setSelectedVisitId] = useState<number | null>(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
   let data: any = [];
   let isLoading = true;
   let refetch;
@@ -68,13 +72,12 @@ const CustomerVisit = () => {
     } = useGetListVisitQuery({
       pageNumber: 1,
       pageSize: 100,
-      status: "",
     });
     data = allData;
     isLoading = allLoading;
     refetch = refetchAll;
   }
-  console.log(data);
+  // console.log(data);
   const columns: TableProps<VisitListType>["columns"] = [
     {
       title: "Tiêu đề",
@@ -122,25 +125,48 @@ const CustomerVisit = () => {
       dataIndex: "visitStatus",
       key: "visitStatus",
       render: (status: VisitStatus) => {
-        const { colorVisitStatus, textVisitStatus } = statusMap[status] || { color: "black", text: "Không xác định" };
+        const { colorVisitStatus, textVisitStatus } = statusMap[status] || {
+          color: "black",
+          text: "Không xác định",
+        };
         return <Tag color={colorVisitStatus}>{textVisitStatus}</Tag>;
-      }
+      },
     },
 
     {
       title: "Loại",
-      dataIndex: "schedule",
-      key: "schedule",
-      render: (schedule) => {
-        const scheduleTypeId = schedule?.scheduleType?.scheduleTypeId as ScheduleType;
-        if (scheduleTypeId === undefined) return <Tag color="default">Theo ngày</Tag>;
-        const { colorScheduleType, textScheduleType } = typeMap[scheduleTypeId] || { color: "default", text: "Theo ngày" };
+      dataIndex: "scheduleUser",
+      key: "scheduleUser",
+      render: (scheduleUser) => {
+        const scheduleTypeId = scheduleUser?.schedule?.scheduleType
+          ?.scheduleTypeId as ScheduleType;
+        if (scheduleTypeId === undefined)
+          return <Tag color="default">Theo ngày</Tag>;
+        const { colorScheduleType, textScheduleType } = typeMap[
+          scheduleTypeId
+        ] || { color: "default", text: "Theo ngày" };
         return (
           <Tag color={colorScheduleType} style={{ fontSize: "14px" }}>
             {textScheduleType}
           </Tag>
         );
       },
+    },
+    {
+      title: "Lượt ra vào",
+      dataIndex: "visitorSessionCount",
+      key: "visitorSessionCount",
+      render: (text, record) => (
+        <span
+          style={{ fontSize: "14px", color: "#000", cursor: "pointer", textDecoration: "underline" }}
+          onClick={() => {
+            setSelectedVisitId(record.visitId);
+            setIsModalVisible(true);
+          }}
+        >
+          {text} lượt
+        </span>
+      ),
     },
     {
       title: "Tạo bởi",
@@ -208,7 +234,7 @@ const CustomerVisit = () => {
     if (filters.scheduleTypeId.length > 0) {
       filtered = filtered.filter((item: any) =>
         filters.scheduleTypeId.includes(
-          item.schedule?.scheduleType?.scheduleTypeId ?? null
+          item.scheduleUser?.schedule?.scheduleType?.scheduleTypeId ?? null
         )
       );
     }
@@ -218,7 +244,7 @@ const CustomerVisit = () => {
       );
     }
     setFilteredData(filtered);
-  }, [data,isLoading,filters, searchText]);
+  }, [data, isLoading, filters, searchText]);
   return (
     <Content className="p-6">
       <div className="flex justify-center mb-4">
@@ -313,7 +339,15 @@ const CustomerVisit = () => {
         bordered
         loading={isLoading}
       />
-      {/* <FilterVisit body="keke"/> */}
+      <Modal
+        title="Lịch sử lượt ra vào"
+        visible={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        footer={null}
+        width={800}
+      >
+        {selectedVisitId && <ListHistorySessonVisit visitId={selectedVisitId} />}
+      </Modal>
     </Content>
   );
 };

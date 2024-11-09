@@ -30,6 +30,7 @@ import { convertToVietnamTime, formatDate } from "../../utils/ultil";
 import ListHistorySesson from "../History/ListHistorySession";
 import { ScheduleType, typeMap } from "../../types/Enum/ScheduleType";
 import { statusMap, VisitStatus } from "../../types/Enum/VisitStatus";
+import ListHistorySessonVisit from "../History/ListHistorySessionVisit";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(customParseFormat);
@@ -38,6 +39,9 @@ const { Content } = Layout;
 
 const DetailCustomerVisit: React.FC = () => {
   const userId = localStorage.getItem("userId");
+  const [selectedVisitId, setSelectedVisitId] = useState<number | null>(null);
+  const [isHistoryAllModalVisible, setIsHistoryAllModalVisible] =
+    useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -59,7 +63,6 @@ const DetailCustomerVisit: React.FC = () => {
   const [visitQuantity, setVisitQuantity] = useState<number>(
     visitData?.visitQuantity || 0
   );
-  console.log(visitData);
 
   const [editableVisitName, setEditableVisitName] = useState<string>("");
   const [updateVisitBeforeStartDate] = useUpdateVisitBeforeStartDateMutation();
@@ -81,6 +84,7 @@ const DetailCustomerVisit: React.FC = () => {
     dayjs().isBefore(dayjs(visitData?.expectedStartTime));
 
   useEffect(() => {
+    setSelectedVisitId(Number(id));
     setVisitors(detailVisitData);
     setVisitQuantity(detailVisitData.length);
     setEditableVisitName(visitData?.visitName);
@@ -224,7 +228,7 @@ const DetailCustomerVisit: React.FC = () => {
       ]);
       setVisitQuantity((prevQuantity) => prevQuantity + 1);
     } else {
-      notification.warning({ message: "Visitor is already in the list." });
+      notification.warning({ message: "Khách này đã có trong danh sách." });
     }
   };
 
@@ -233,7 +237,7 @@ const DetailCustomerVisit: React.FC = () => {
       setVisitors((prevVisitors: DetailVisitor[]) => {
         return prevVisitors.map((v: DetailVisitor) => {
           if (v.visitor.visitorId === Number(visitorId)) {
-            console.log("data before change : ", v);
+            // console.log("data before change : ", v);
             // Change the status of the specific visitor
             return {
               ...v,
@@ -493,6 +497,13 @@ const DetailCustomerVisit: React.FC = () => {
                 <p className="text-base font-semibold text-gray-800">
                   {visitQuantity} người
                 </p>
+                <p className="text-sm text-gray-600">Tổng lượt ra vào:</p>
+                <p className="text-base font-semibold text-gray-800">
+                  {visitData?.visitorSessionCount} lượt
+                </p>
+                <Button onClick={() => setIsHistoryAllModalVisible(true)}>
+                  Xem
+                </Button>
                 <p className="text-sm text-gray-600">Trạng thái:</p>
                 <p className="text-base font-semibold text-gray-800">
                   <Tag color={colorVisitStatus} style={{ fontSize: "14px" }}>
@@ -538,15 +549,15 @@ const DetailCustomerVisit: React.FC = () => {
           Quay lại
         </Button>
         {status === "ActiveTemporary" && (
-         <>
-         <Button onClick={handleApprove}>Chấp thuận</Button>
-         <Button onClick={handleReport}>Báo cáo</Button>
-       </>
+          <>
+            <Button onClick={handleApprove}>Chấp thuận</Button>
+            <Button onClick={handleReport}>Báo cáo</Button>
+          </>
         )}
         {status === "Active" && (
-         <>
-         <Button onClick={handleCancel}>Hủy</Button>
-       </>
+          <>
+            <Button onClick={handleCancel}>Hủy</Button>
+          </>
         )}
         {(isEditable() && scheduleTypeId == undefined && (
           <Button type="primary" onClick={handleToggleMode} className="mb-4">
@@ -566,13 +577,24 @@ const DetailCustomerVisit: React.FC = () => {
         />
       </Content>
       <Modal
-        title="Chi tiết lịch sử"
+        title="Chi tiết lịch sử từng người"
         visible={isHistoryModalVisible}
         onCancel={handleCloseHistoryModal}
         footer={null} // No footer buttons
       >
         {selectedRecord && (
           <ListHistorySesson data={selectedRecord.visitDetailId} />
+        )}
+      </Modal>
+      <Modal
+        title="Lịch sử lượt ra vào"
+        visible={isHistoryAllModalVisible}
+        onCancel={() => setIsHistoryAllModalVisible(false)}
+        footer={null}
+        width={800}
+      >
+        {selectedVisitId && (
+          <ListHistorySessonVisit visitId={selectedVisitId} />
         )}
       </Modal>
     </Layout>

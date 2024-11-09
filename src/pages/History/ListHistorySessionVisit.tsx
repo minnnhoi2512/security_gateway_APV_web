@@ -1,4 +1,4 @@
-import { Layout, Spin, Tag } from "antd";
+import { Layout, Tag, Spin } from "antd";
 import { formatDate } from "../../utils/ultil";
 import { useEffect, useState } from "react";
 import { useGetVisitGraphqlMutation } from "../../services/visitGraphql.service";
@@ -8,7 +8,7 @@ import { useDispatch } from "react-redux";
 
 const { Content } = Layout;
 
-const ListHistorySesson = ({ data }: { data: any }) => {
+const ListHistorySessonVisit = ({ visitId }: { visitId: number }) => {
   const dispatch = useDispatch();
   const [postGraphql] = useGetVisitGraphqlMutation();
   const [result, setResult] = useState<VisitorSessionType[]>([]);
@@ -17,7 +17,7 @@ const ListHistorySesson = ({ data }: { data: any }) => {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      const body = makeQuery(data);
+      const body = makeQuery(visitId);
       try {
         const payload = await postGraphql({ query: body }).unwrap();
         const visitorData =
@@ -27,18 +27,22 @@ const ListHistorySesson = ({ data }: { data: any }) => {
         dispatch(setListOfVisitorSession(visitorData));
       } catch (error) {
         console.error("Error fetching data:", error);
-      }finally {
+      } finally {
         setLoading(false);
       }
     };
     fetchData();
-  }, [data, dispatch, postGraphql]);
+  }, [visitId, dispatch, postGraphql]);
 
-  function makeQuery(visitDetailId: number) {
+  function makeQuery(visitId: number) {
     return {
       query: `
         query {
-          visitorSession(take: 100, order: [{ visitorSessionId: DESC }], where: { visitDetailId: { eq: ${visitDetailId} } }) {
+          visitorSession(take: 100, order: [{ visitorSessionId: DESC }], where: { visit:  {
+             visitId:  {
+                eq: ` + visitId + `
+             }
+          }}) {
             items {
               visitorSessionId,
               images {
@@ -83,9 +87,11 @@ const ListHistorySesson = ({ data }: { data: any }) => {
       `,
     };
   }
+
   if (loading) {
     return <Spin />;
   }
+
   if (result.length <= 0) return "Khách này chưa có thông tin ra vào";
 
   return (
@@ -105,7 +111,6 @@ const ListHistorySesson = ({ data }: { data: any }) => {
                 <p className="text-lg">
                   <strong>Tên khách:</strong>{" "}
                   {session.visitor?.visitorName || "N/A"}
-                  <div>{}</div>
                 </p>
                 <p className="text-lg">
                   <strong>Công ty:</strong>{" "}
@@ -177,4 +182,4 @@ const ListHistorySesson = ({ data }: { data: any }) => {
   );
 };
 
-export default ListHistorySesson;
+export default ListHistorySessonVisit;

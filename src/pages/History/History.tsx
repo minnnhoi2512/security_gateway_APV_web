@@ -43,7 +43,7 @@ const History = () => {
   } else if (userRole === "DepartmentManager") {
     ({ data: dataVisit, isLoading: isLoadingVisit } = useGetListVisitByDepartmentIdQuery({ departmentId: Number(departmentId), pageNumber: 1, pageSize: 100 }));
   } else {
-    ({ data: dataVisit, isLoading: isLoadingVisit } = useGetListVisitQuery({ status: "", pageNumber: 1, pageSize: 100 }));
+    ({ data: dataVisit, isLoading: isLoadingVisit } = useGetListVisitQuery({pageNumber: 1, pageSize: 100 }));
   }
 
   const applyFilters = () => {
