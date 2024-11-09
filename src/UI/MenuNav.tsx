@@ -231,13 +231,13 @@ const MenuNav = () => {
     color: "#FFFFFF",
     display: "flex",
     alignItems: "center",
-    paddingLeft: "10px 20px", // Đảm bảo padding giống nhau cho cả cha và con
+    paddingLeft: "10px 20px",
   };
 
   const iconStyle = {
     color: "#87a2be",
     minWidth: "24px",
-    marginRight: "10px", // Đảm bảo khoảng cách giữa icon và text
+    marginRight: "10px",
     display: "flex",
     alignItems: "center",
   };

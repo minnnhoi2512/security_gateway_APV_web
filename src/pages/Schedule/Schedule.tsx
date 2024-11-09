@@ -150,18 +150,18 @@ const Schedule = () => {
   
   const columns: ColumnsType<ScheduleType> = [
     {
-      title: <div style={{ textAlign: "center" }}>Tiêu đề</div>,
+      title: "Tiêu đề",
       dataIndex: "scheduleName",
       key: "scheduleName",
       align: "left",
-      width: "30%",
+      width: "40%",
       sorter: (a, b) => a.scheduleName?.localeCompare(b.scheduleName),
     },
     {
       title: "Lịch trình",
       dataIndex: "scheduleType",
       key: "scheduleType",
-      align: "center",
+      align: "left",
       width: "15%",
       render: (text) => {
         const scheduleTypeName = text.scheduleTypeName;
@@ -183,8 +183,8 @@ const Schedule = () => {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-      align: "center",
-      width: "10%",
+      align: "left",
+      width: "15%",
       render: (status: boolean) => (
         <Tag color={status ? "green" : "red"} style={{ minWidth: "80px", textAlign: "center" }}>
           {status ? "Còn hiệu lực" : "Hết hiệu lực"}
@@ -192,21 +192,21 @@ const Schedule = () => {
       ),
     },
     {
-      title: "Ngày tạo",
+      title: <div style={{ textAlign: "left" }}>Ngày tạo</div>,
       dataIndex: "createTime",
       key: "createTime",
-      align: "center",
-      width: "15%",
+      align: "left",
+      width: "10%",
       render: (createDate: string) => (
         <div>{moment(createDate).format("DD/MM/YYYY")}</div>
       ),
     },
     {
-      title: "Số lịch hẹn đã tạo",
+      title: <div style={{ textAlign: "left" }}>Số lịch hẹn đã tạo</div>,
       dataIndex: "scheduleUser",
       key: "scheduleUser",
       align: "center",
-      width: "15%",
+      width: "10%",
       render: (scheduleUser: any) => (
         <div>
           <div>{scheduleUser.length}</div>
@@ -215,10 +215,10 @@ const Schedule = () => {
       ),
     },
     {
-      title: "Hành động",
+      title: <div style={{ textAlign: "left" }}>Ngày tạo</div>,
       key: "action",
       align: "center",
-      width: "15%",
+      width: "10%",
       render: (_, record: any) => (
         <div className="flex justify-center space-x-2">
           {record.scheduleUser.length === 0 && (
@@ -263,7 +263,7 @@ const Schedule = () => {
   return (
     <Layout className="min-h-screen bg-gray-50">
       <Content className="p-8">
-        <h1 className="text-3xl font-bold text-green-600 text-center mb-4">
+        <h1 className="text-3xl font-bold text-titleMain text-center mb-4">
           Danh sách Dự án của phòng ban
         </h1>
         <Row justify="space-between" align="middle" className="mb-4">
@@ -283,7 +283,7 @@ const Schedule = () => {
             <Button
               type="primary"
               icon={<PlusOutlined />}
-              className="bg-blue-500"
+              className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 shadow-sm"
               onClick={() => navigate("/createNewSchedule")}
             >
               Tạo mới dự án
@@ -298,7 +298,7 @@ const Schedule = () => {
           columns={columns}
           rowKey="scheduleId"
           pagination={{
-            pageSizeOptions: ["5", "10", "20"],
+            pageSizeOptions: ["5", "10"],
             defaultPageSize: 10,
             showSizeChanger: true,
           }}
@@ -431,7 +431,7 @@ const Schedule = () => {
 >
   <Select
     placeholder="Chọn nhân viên"
-    value={assignData.assignToId} // Use assignToId directly, no undefined
+    value={assignData.assignToId}
     onChange={(value) =>
       setAssignData((prev) => ({ ...prev, assignToId: value || 0 }))
     }
