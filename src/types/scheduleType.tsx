@@ -13,9 +13,9 @@ type Schedule = {
   assignToId?: number;
   assignFromId?: number;
   // scheduleTypeId? : number,
-  scheduleType?: {
+  scheduleType: {
     description?: string;
-    scheduleTypeId?: number;
+    scheduleTypeId: number;
     scheduleTypeName?: string;
     status?: boolean;
   };

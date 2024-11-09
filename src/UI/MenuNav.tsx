@@ -228,6 +228,7 @@ const MenuNav = () => {
           "schedule",
           "facilityManage",
           "security",
+          "customerVisit"
         ];
 
         // Exclude top-level items and children based on excluded keys

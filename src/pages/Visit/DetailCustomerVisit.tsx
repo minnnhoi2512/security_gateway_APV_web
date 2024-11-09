@@ -20,6 +20,7 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import {
   useGetDetailVisitQuery,
   useGetListDetailVisitQuery,
+  useUpdateStatusVisitMutation,
   useUpdateVisitAfterStartDateMutation,
   useUpdateVisitBeforeStartDateMutation,
 } from "../../services/visitDetailList.service";
@@ -27,6 +28,8 @@ import VisitorSearchModal from "../../form/ModalSearchVisitor";
 import { DetailVisitor } from "../../types/detailVisitorForVisit";
 import { convertToVietnamTime, formatDate } from "../../utils/ultil";
 import ListHistorySesson from "../History/ListHistorySession";
+import { ScheduleType, typeMap } from "../../types/Enum/ScheduleType";
+import { statusMap, VisitStatus } from "../../types/Enum/VisitStatus";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(customParseFormat);
@@ -51,17 +54,22 @@ const DetailCustomerVisit: React.FC = () => {
     pageNumber: -1,
     pageSize: -1,
   });
+  const [updateVisitStatus] = useUpdateStatusVisitMutation();
   const [visitors, setVisitors] = useState<DetailVisitor[]>([]);
   const [visitQuantity, setVisitQuantity] = useState<number>(
     visitData?.visitQuantity || 0
   );
+  console.log(visitData);
+
   const [editableVisitName, setEditableVisitName] = useState<string>("");
   const [updateVisitBeforeStartDate] = useUpdateVisitBeforeStartDateMutation();
   const [updateVisitAfterStartDate] = useUpdateVisitAfterStartDateMutation();
-  // const [appendVisitAfterStartDate] = useAppendVisitAfterStartDateMutation();
   const [editableStartDate, setEditableStartDate] = useState<Dayjs>();
   const [editableEndDate, setEditableEndDate] = useState<Dayjs>();
-  const [scheduleTypeId, setScheduleTypeId] = useState<number | null>(null);
+  const [scheduleTypeId, setScheduleTypeId] = useState<ScheduleType | null>(
+    null
+  );
+  const [status, setStatusVisit] = useState<VisitStatus | String>("");
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
   const [isHistoryModalVisible, setIsHistoryModalVisible] = useState(false);
   const convertToDayjs = (date: string | Date | Dayjs): Dayjs => {
@@ -78,7 +86,10 @@ const DetailCustomerVisit: React.FC = () => {
     setEditableVisitName(visitData?.visitName);
     setEditableStartDate(convertToDayjs(visitData?.expectedStartTime));
     setEditableEndDate(convertToDayjs(visitData?.expectedEndTime));
-    setScheduleTypeId(visitData?.schedule?.scheduleType?.scheduleTypeId);
+    setScheduleTypeId(
+      visitData?.schedule?.scheduleType?.scheduleTypeId as ScheduleType
+    );
+    setStatusVisit(visitData?.visitStatus);
   }, [detailVisitData, visitData, refetchListVisitor, refetchVisit]);
 
   const handleToggleMode = async () => {
@@ -132,6 +143,43 @@ const DetailCustomerVisit: React.FC = () => {
     }
     setIsEditMode((prev) => !prev); // Toggle edit mode
   };
+  const handleApprove = async () => {
+    try {
+      await updateVisitStatus({
+        visitId: Number(id),
+        action: "Active",
+      }).unwrap();
+      notification.success({ message: "Chấp thuận thành công!" });
+      refetchVisit();
+    } catch (error) {
+      notification.error({ message: "Chấp thuận thất bại!" });
+    }
+  };
+  const handleCancel = async () => {
+    try {
+      await updateVisitStatus({
+        visitId: Number(id),
+        action: "Cancelled",
+      }).unwrap();
+      notification.success({ message: "Hủy thành công!" });
+      refetchVisit();
+    } catch (error) {
+      notification.error({ message: "Hủy thất bại!" });
+    }
+  };
+  const handleReport = async () => {
+    try {
+      await updateVisitStatus({
+        visitId: Number(id),
+        action: "Violation",
+      }).unwrap();
+      notification.success({ message: "Từ chối thành công!" });
+      refetchVisit();
+    } catch (error) {
+      notification.error({ message: "Từ chối thất bại!" });
+    }
+  };
+
   const timePickerStyles = {
     error: {
       borderColor: "red",
@@ -213,17 +261,6 @@ const DetailCustomerVisit: React.FC = () => {
     }
   };
 
-  const getScheduleType = (typeId: number | null) => {
-    switch (typeId) {
-      case 2:
-        return "Theo tuần";
-      case 3:
-        return "Theo tháng";
-      default:
-        return "Theo ngày";
-    }
-  };
-
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEditableVisitName(e.target.value);
   };
@@ -263,6 +300,16 @@ const DetailCustomerVisit: React.FC = () => {
 
       return updatedVisitors;
     });
+  };
+  const scheduleType = scheduleTypeId as ScheduleType;
+  const statusType = status as VisitStatus;
+  const { colorScheduleType, textScheduleType } = typeMap[scheduleType] || {
+    color: "default",
+    text: "Theo ngày",
+  };
+  const { colorVisitStatus, textVisitStatus } = statusMap[statusType] || {
+    color: "black",
+    text: "Không xác định",
   };
   const columns = [
     {
@@ -446,10 +493,22 @@ const DetailCustomerVisit: React.FC = () => {
                 <p className="text-base font-semibold text-gray-800">
                   {visitQuantity} người
                 </p>
-                <p className="text-sm text-gray-600">Loại:</p>
+                <p className="text-sm text-gray-600">Trạng thái:</p>
                 <p className="text-base font-semibold text-gray-800">
-                  {getScheduleType(scheduleTypeId)}
+                  <Tag color={colorVisitStatus} style={{ fontSize: "14px" }}>
+                    {textVisitStatus}
+                  </Tag>
                 </p>
+                <p className="text-sm text-gray-600">Loại:</p>
+                {scheduleTypeId === undefined ? (
+                  <Tag color="default" style={{ fontSize: "14px" }}>
+                    Theo ngày
+                  </Tag>
+                ) : (
+                  <Tag color={colorScheduleType} style={{ fontSize: "14px" }}>
+                    {textScheduleType}
+                  </Tag>
+                )}
               </div>
             </div>
           </Col>
@@ -478,6 +537,17 @@ const DetailCustomerVisit: React.FC = () => {
         >
           Quay lại
         </Button>
+        {status === "ActiveTemporary" && (
+         <>
+         <Button onClick={handleApprove}>Chấp thuận</Button>
+         <Button onClick={handleReport}>Báo cáo</Button>
+       </>
+        )}
+        {status === "Active" && (
+         <>
+         <Button onClick={handleCancel}>Hủy</Button>
+       </>
+        )}
         {(isEditable() && scheduleTypeId == undefined && (
           <Button type="primary" onClick={handleToggleMode} className="mb-4">
             {isEditMode ? "Lưu" : "Chỉnh sửa"}

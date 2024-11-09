@@ -1,15 +1,19 @@
 export enum VisitStatus {
-    Assigned = "Assigned",
+    Active = "Active",
     Pending = "Pending",
-    Approved = "Approved",
-    Rejected = "Rejected",
     Cancelled = "Cancelled",
+    ActiveTemporary = "ActiveTemporary",
+    Violation = "Violation",
+    Inactive = "Inactive",
 }
 
-export const statusMap: { [key in VisitStatus]: { color: string; text: string } } = {
-    [VisitStatus.Assigned]: { color: "green", text: "Chờ tạo" },
-    [VisitStatus.Pending]: { color: "orange", text: "Chờ phê duyệt" },
-    [VisitStatus.Approved]: { color: "blue", text: "Đã phê duyệt" },
-    [VisitStatus.Rejected]: { color: "red", text: "Đã từ chối" },
-    [VisitStatus.Cancelled]: { color: "gray", text: "Đã hủy" },
+export const statusMap: { [key in VisitStatus]: { colorVisitStatus: string; textVisitStatus: string } } = {
+    [VisitStatus.Active]: { colorVisitStatus: "green", textVisitStatus: "Còn hiệu lực" },
+    [VisitStatus.Pending]: { colorVisitStatus: "orange", textVisitStatus: "Chờ phê duyệt" },
+    [VisitStatus.Cancelled]: { colorVisitStatus: "red", textVisitStatus: "Đã hủy" },
+    [VisitStatus.ActiveTemporary]: { colorVisitStatus: "yellow", textVisitStatus: "Tạm thời" },
+    [VisitStatus.Violation]: { colorVisitStatus: "red", textVisitStatus: "Vi phạm" },
+    [VisitStatus.Inactive]: { colorVisitStatus: "gray", textVisitStatus: "Đã hết hạn" },
 };
+
+
