@@ -4,6 +4,7 @@ import {
   useGetVisitorByIdQuery,
   useUpdateVisitorMutation,
 } from "../../services/visitor.service";
+import detectAPI from "../../api/detectAPI";
 
 const { Option } = Select;
 
@@ -63,8 +64,17 @@ const DetailVisitor: React.FC<DetailVisitorProps> = ({
       message.error("Đã có lỗi xảy ra khi cập nhật.");
     }
   };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = e.target.files?.[0];
+  //   if (file) {
+  //     const reader = new FileReader();
+  //     reader.onloadend = () => {
+  //       setImageBase64(reader.result as string);
+  //     };
+  //     reader.readAsDataURL(file);
+  //   }
+  // };
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
@@ -72,9 +82,29 @@ const DetailVisitor: React.FC<DetailVisitorProps> = ({
         setImageBase64(reader.result as string);
       };
       reader.readAsDataURL(file);
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+        for (let [key, value] of formData.entries()) {
+          console.log(`${key}:`, value);
+        }
+        const response = await detectAPI.post("/IdentityCard", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+
+        const { id, name } = response.data;
+        // Optionally, you can set these values in the form
+        form.setFieldsValue({
+          visitorName: name,
+          credentialsCard: id,
+        });
+      } catch (error) {
+        return;
+      }
     }
   };
-
   const handleCancel = () => {
     setIsEditModalVisible(false);
   };

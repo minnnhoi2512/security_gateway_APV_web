@@ -86,26 +86,7 @@ const TableScheduleUser: React.FC<ScheduleAssignedTableProps> = ({ data, isLoadi
             onClick={() => navigate(`/detail-schedule-staff/${record.id}`, { state: record.id })}
           />
         ) : (
-          <div className="flex justify-center space-x-2">
-            <Button
-              type="text"
-              icon={<EditOutlined />}
-              className="text-green-600 hover:text-green-800"
-              onClick={() => navigate(`/detailSchedule/${record.schedule.scheduleId}`)}
-            />
-            <Button
-              type="text"
-              danger
-              icon={<DeleteOutlined />}
-            //onClick={() => handleDeleteSchedule(record.scheduleId!)}
-            />
-            <Button
-              type="text"
-              icon={<UserAddOutlined />}
-              className="text-blue-500 hover:text-blue-700"
-            //onClick={() => handleAssignUser(record.scheduleId)}
-            />
-          </div>
+          null
         )
       ),
     },

@@ -1,11 +1,14 @@
-// src/components/ScheduleTable.tsx
-import React from 'react';
-import { Button, Table, Tag } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
-import Schedule from '../types/scheduleType';
-import { DeleteOutlined, EditOutlined, UserAddOutlined } from '@ant-design/icons';
-import { formatDate } from '../utils/ultil';
-import { useNavigate } from 'react-router';
+import React, { useState } from "react";
+import { Button, Modal, Table, Tag } from "antd";
+import type { ColumnsType } from "antd/es/table";
+import Schedule from "../types/scheduleType";
+import {
+  DeleteOutlined,
+  EditOutlined,
+  UserAddOutlined,
+} from "@ant-design/icons";
+import { formatDate } from "../utils/ultil";
+import DetailSchedule from "../pages/Schedule/DetailSchedule";
 
 interface ScheduleTableProps {
   schedules: Schedule[];
@@ -15,8 +18,24 @@ interface ScheduleTableProps {
   handleAssignUser: (scheduleId: number) => void;
 }
 
-const TableSchedule: React.FC<ScheduleTableProps> = ({ schedules, schedulesIsLoading, totalCount, handleDeleteSchedule, handleAssignUser }) => {
-  const navigate = useNavigate();
+const TableSchedule: React.FC<ScheduleTableProps> = ({
+  schedules,
+  schedulesIsLoading,
+  totalCount,
+  handleDeleteSchedule,
+  handleAssignUser,
+}) => {
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedScheduleId, setSelectedScheduleId] = useState<number | null>(null);
+
+  const showModal = (scheduleId: number) => {
+    setSelectedScheduleId(scheduleId);
+    setIsModalVisible(true);
+  };
+
+  const handleCancel = () => {
+    setIsModalVisible(false);
+  };
 
   const columns: ColumnsType<Schedule> = [
     {
@@ -73,12 +92,7 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({ schedules, schedulesIsLoa
       render: (scheduleUser: any) => (
         <div>
           <div>{scheduleUser.length}</div>
-          {scheduleUser.length !== 0 ? (
-            <button
-            >
-              xem
-            </button>
-          ) : (null)}
+          {scheduleUser.length !== 0 ? <button>xem</button> : null}
         </div>
       ),
     },
@@ -93,19 +107,10 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({ schedules, schedulesIsLoa
               type="text"
               icon={<EditOutlined />}
               className="text-green-600 hover:text-green-800"
-              onClick={() => navigate(`/detailSchedule/${record.scheduleId}`)}
+              onClick={() => showModal(record.scheduleId)}
             />
           )}
-          {record.scheduleUser.length === 0 && record.status === true && (
-            <Button
-              type="text"
-              danger
-              icon={<DeleteOutlined />}
-              onClick={() => handleDeleteSchedule(record.scheduleId!)}
-            >
-            </Button>
-          )}
-          { record.status === true && (
+          {record.status === true && (
             <Button
               type="text"
               icon={<UserAddOutlined />}
@@ -119,19 +124,29 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({ schedules, schedulesIsLoa
   ];
 
   return (
-    <Table
-      columns={columns}
-      dataSource={schedules || []}
-      rowKey="scheduleId"
-      loading={schedulesIsLoading}
-      pagination={{
-        total: totalCount,
-        showSizeChanger: true,
-        pageSizeOptions: ["5", "10", "20"],
-      }}
-      bordered
-      className="bg-white shadow-md rounded-lg"
-    />
+    <>
+      <Table
+        columns={columns}
+        dataSource={schedules || []}
+        rowKey="scheduleId"
+        loading={schedulesIsLoading}
+        pagination={{
+          total: totalCount,
+          showSizeChanger: true,
+          pageSizeOptions: ["5", "10", "20"],
+        }}
+        bordered
+        className="bg-white shadow-md rounded-lg"
+      />
+      <Modal
+        title="Detail Schedule"
+        visible={isModalVisible}
+        onCancel={handleCancel}
+        footer={null}
+      >
+        <DetailSchedule scheduleId={selectedScheduleId} onUpdateSuccess={handleCancel} />
+      </Modal>
+    </>
   );
 };
 

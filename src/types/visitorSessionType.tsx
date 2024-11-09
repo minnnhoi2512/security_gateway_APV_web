@@ -7,7 +7,7 @@ type VisitorSessionType = {
   };
   checkinTime: Date;
   checkoutTime: Date;
-  qRCardId: Number;
+  qRCardId?: Number;
   visitDetailId: Number;
   securityIn: SecurityRes;
   securityOut: SecurityRes;
@@ -17,17 +17,17 @@ type VisitorSessionType = {
   images: SessionsImageRes[];
 };
 type SecurityRes = {
-  userId: Number;
+  userId?: Number;
   fullName: String;
-  phoneNumber: String;
+  phoneNumber?: String;
 };
 type GateRes = {
-  gateId: Number;
+  gateId?: Number;
   gateName: String;
 };
 type SessionsImageRes = {
-  visitorSessionsImageId: Number;
-  imageType: String;
+  visitorSessionsImageId?: Number;
+  imageType?: String;
   imageURL: String;
 };
 

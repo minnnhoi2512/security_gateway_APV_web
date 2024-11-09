@@ -1,7 +1,7 @@
 import { Modal, Form, Input, notification, Image, Select } from "antd";
 import { useState } from "react";
 import { useCreateVisitorMutation } from "../services/visitor.service";
-
+import detectAPI from "../api/detectAPI";
 const { Option } = Select;
 
 interface CreateNewVisitorProps {
@@ -21,12 +21,34 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
   const [credentialCardTypeId, setCredentialCardTypeId] = useState<
     number | null
   >(null);
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setFaceImg(file);
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+        for (let [key, value] of formData.entries()) {
+          console.log(`${key}:`, value);
+        }
+        const response = await detectAPI.post("/IdentityCard", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+
+        const { id, name } = response.data;
+        // Optionally, you can set these values in the form
+        form.setFieldsValue({
+          visitorName: name,
+          credentialsCard: id,
+        });
+      } catch (error) {
+        return;
+      }
     }
   };
+
   const handleCredentialCardTypeChange = (value: number) => {
     setCredentialCardTypeId(value);
   };
