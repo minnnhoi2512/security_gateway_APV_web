@@ -132,7 +132,6 @@ const CustomerVisit = () => {
         return <Tag color={colorVisitStatus}>{textVisitStatus}</Tag>;
       },
     },
-
     {
       title: "Loại",
       dataIndex: "scheduleUser",

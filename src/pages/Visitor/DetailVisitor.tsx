@@ -64,16 +64,6 @@ const DetailVisitor: React.FC<DetailVisitorProps> = ({
       message.error("Đã có lỗi xảy ra khi cập nhật.");
     }
   };
-  // const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const file = e.target.files?.[0];
-  //   if (file) {
-  //     const reader = new FileReader();
-  //     reader.onloadend = () => {
-  //       setImageBase64(reader.result as string);
-  //     };
-  //     reader.readAsDataURL(file);
-  //   }
-  // };
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {

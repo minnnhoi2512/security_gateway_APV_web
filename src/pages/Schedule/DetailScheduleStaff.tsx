@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   Card,
@@ -15,9 +14,13 @@ import {
   UserOutlined,
   FileTextOutlined,
 } from "@ant-design/icons";
-import { ScheduleUserStatus, statusMap } from "../../types/Enum/ScheduleUserStatus";
+import {
+  ScheduleUserStatus,
+  statusMap,
+} from "../../types/Enum/ScheduleUserStatus";
 import { useGetDetailScheduleStaffQuery } from "../../services/scheduleStaff.service";
 import { formatDate } from "../../utils/ultil";
+import { ScheduleType, typeMap } from "../../types/Enum/ScheduleType";
 
 const { Title } = Typography;
 
@@ -25,24 +28,21 @@ const DetailScheduleStaff = () => {
   const location = useLocation();
   const { state } = location;
   const navigate = useNavigate();
-  const {data} = useGetDetailScheduleStaffQuery(Number(state))
+  const { data } = useGetDetailScheduleStaffQuery(Number(state));
   const getStatusTag = (status: ScheduleUserStatus) => {
-    const { color, text } = statusMap[status] || { color: "black", text: "Không xác định" };
-  
+    const { color, text } = statusMap[status] || {
+      color: "black",
+      text: "Không xác định",
+    };
+
     return <Tag color={color}>{text}</Tag>;
   };
-  console.log(data);
-  const getScheduleTypeTag = (scheduleTypeName: string) => {
-    switch (scheduleTypeName) {
-      case "VisitDaily":
-        return <Tag color="blue">Vãng lai</Tag>;
-      case "ProcessWeek":
-        return <Tag color="green">Theo tuần</Tag>;
-      case "ProcessMonth":
-        return <Tag color="orange">Theo tháng</Tag>;
-      default:
-        return <Tag color="red">Không xác định</Tag>;
-    }
+  const getScheduleTypeTag = (scheduleTypeName: ScheduleType) => {
+    const { colorScheduleType, textScheduleType } = typeMap[
+      scheduleTypeName
+    ] || { color: "black", text: "Theo ngày" };
+
+    return <Tag color={colorScheduleType}>{textScheduleType}</Tag>;
   };
   const handleCreateNewVisit = () => {
     navigate("/createNewVisitList", { state: { from: data } });
@@ -67,7 +67,7 @@ const DetailScheduleStaff = () => {
                   </Descriptions.Item>
                   <Descriptions.Item label="Loại chuyến thăm">
                     {getScheduleTypeTag(
-                      data.schedule?.scheduleType?.scheduleTypeName
+                      data.schedule?.scheduleType?.scheduleTypeId
                     )}
                   </Descriptions.Item>
                 </Descriptions>
