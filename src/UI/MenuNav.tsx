@@ -183,8 +183,8 @@ const MenuNav = ({ theme }: any) => {
       icon: <SolutionOutlined />,
       label: "Danh sách khách",
       children: [
-        { key: "visitorManager", label: "Khách" },
-        { key: "banVisitorManager", label: "Sổ đen" },
+        { key: "visitorManager", label: "Khách", icon: <UserOutlined />  },
+        { key: "banVisitorManager", label: "Sổ đen", icon: <SafetyCertificateOutlined />  },
       ],
     },
 
@@ -201,9 +201,9 @@ const MenuNav = ({ theme }: any) => {
       icon: <DeploymentUnitOutlined />,
       label: "Cơ sở vật chất",
       children: [
-        { key: "departManager", label: "Phòng ban" },
-        { key: "gate", label: "Cổng ra vào" },
-        { key: "card", label: "Thẻ ra vào" },
+        { key: "departManager", label: "Phòng ban", icon: <TeamOutlined /> },
+        { key: "gate", label: "Cổng ra vào" , icon: <SolutionOutlined />},
+        { key: "card", label: "Thẻ ra vào" , icon: <SafetyCertificateOutlined />},
       ],
     },
     {
@@ -211,8 +211,8 @@ const MenuNav = ({ theme }: any) => {
       icon: <AppstoreOutlined />,
       label: "Tiện ích",
       children: [
-        { key: "calendar", label: "Lịch hẹn của tôi" },
-        { key: "chat", label: "Nhắn tin" },
+        { key: "calendar", label: "Lịch hẹn của tôi" , icon: <FileTextOutlined />},
+        { key: "chat", label: "Nhắn tin" , icon: <UserOutlined />},
       ],
     },
 
