@@ -188,7 +188,7 @@ const DetailSchedule = ({ scheduleId, onUpdateSuccess }: any) => {
               />
             </Form.Item>
 
-            <Form.Item label="Loại">
+            <Form.Item label={<span className="text-blue-500 font-semibold">Loại lịch trình</span>}>
               {renderScheduleTypeTag(scheduleData?.scheduleType?.scheduleTypeName)}
             </Form.Item>
 

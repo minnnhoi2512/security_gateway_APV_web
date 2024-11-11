@@ -63,14 +63,14 @@ const Schedule = () => {
   } =
     userRole === "DepartmentManager"
       ? useGetDepartmentSchedulesQuery({
-          departmenManagerId: userId,
-          pageNumber: -1,
-          pageSize: -1,
-        })
+        departmenManagerId: userId,
+        pageNumber: -1,
+        pageSize: -1,
+      })
       : useGetListScheduleQuery({
-          pageNumber: -1,
-          pageSize: -1,
-        });
+        pageNumber: -1,
+        pageSize: -1,
+      });
 
   const { data: users = [], isLoading: usersLoading } =
     useGetListUsersByDepartmentIdQuery({
@@ -128,7 +128,7 @@ const Schedule = () => {
       message.error("Vui lòng chọn nhân viên.");
       return;
     }
-  
+
     try {
       const payload = { ...assignData };
       await assignSchedule(payload).unwrap();
@@ -151,7 +151,7 @@ const Schedule = () => {
     }
   };
 
-  
+
   const handleCancelAssigned = () => {
     setAssignData({
       title: "",
@@ -167,7 +167,7 @@ const Schedule = () => {
   return (
     <Layout className="min-h-screen bg-gray-50">
       <Content className="p-8">
-        <h1 className="text-3xl font-bold text-green-600 text-center mb-4">
+        <h1 className="text-3xl font-bold text-titleMain text-center mb-4">
           Danh sách Dự án của phòng ban
         </h1>
         <Row justify="space-between" align="middle" className="mb-4">
@@ -187,7 +187,7 @@ const Schedule = () => {
             <Button
               type="primary"
               icon={<PlusOutlined />}
-              className="bg-blue-500"
+              className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 shadow-sm"
               onClick={() => navigate("/createNewSchedule")}
             >
               Tạo mới dự án
@@ -205,28 +205,64 @@ const Schedule = () => {
         />
 
         <Modal
-          title="Phân công nhân viên"
+          title={<span className="text-xl font-semibold">Phân công nhân viên</span>}
           visible={isModalVisible}
           onCancel={handleCancelAssigned}
           footer={[
-            <Button key="cancel" onClick={handleCancelAssigned}>
+            <Button
+              key="cancel"
+              onClick={handleCancelAssigned}
+              className="rounded-full px-4 py-2 border-gray-300"
+            >
               Hủy
             </Button>,
-            <Button key="submit" type="primary" onClick={handleAssignSubmit}>
+            <Button
+              key="submit"
+              type="primary"
+              onClick={handleAssignSubmit}
+              className="rounded-full px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white"
+            >
               Phân công
             </Button>,
           ]}
+          className="rounded-lg p-6 shadow-xl"
+          bodyStyle={{
+            padding: "20px",
+            borderRadius: "12px",
+          }}
         >
-          <Form layout="vertical">
-            <Form.Item label="Tiêu đề">
+          <Form
+            layout="vertical"
+            className="space-y-4"
+            onFinish={handleAssignSubmit}
+            initialValues={assignData}
+          >
+            <Form.Item
+              label="Tiêu đề"
+              name="title"
+              className="text-base font-medium"
+              rules={[
+                { required: true, message: "Tiêu đề không được để trống." },
+                { min: 5, message: "Tiêu đề phải có ít nhất 5 ký tự." },
+              ]}
+            >
               <Input
                 value={assignData.title}
                 onChange={(e) =>
                   setAssignData((prev) => ({ ...prev, title: e.target.value }))
                 }
+                className="rounded-lg px-4 py-2 border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               />
             </Form.Item>
-            <Form.Item label="Miêu tả">
+            <Form.Item
+              label="Miêu tả"
+              name="description"
+              className="text-base font-medium"
+              rules={[
+                { required: true, message: "Miêu tả không được để trống." },
+                { max: 500, message: "Miêu tả không được vượt quá 500 ký tự." },
+              ]}
+            >
               <Input
                 value={assignData.description}
                 onChange={(e) =>
@@ -235,40 +271,79 @@ const Schedule = () => {
                     description: e.target.value,
                   }))
                 }
+                className="rounded-lg px-4 py-2 border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               />
             </Form.Item>
-            <Form.Item label="Ghi chú">
+            <Form.Item
+              label="Ghi chú"
+              name="note"
+              className="text-base font-medium"
+              rules={[
+                { required: true, message: "Ghi chú không được để trống." },
+                { max: 300, message: "Ghi chú không được vượt quá 300 ký tự." },
+              ]}
+            >
               <Input
                 value={assignData.note}
                 onChange={(e) =>
                   setAssignData((prev) => ({ ...prev, note: e.target.value }))
                 }
+                className="rounded-lg px-4 py-2 border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               />
             </Form.Item>
             <Form.Item
               label="Thời hạn"
-              validateStatus={errorAssignSchedule?.deadlineTime ? "error" : ""}
+              name="deadlineTime"
+              className="text-base font-medium"
+              rules={[
+                { required: true, message: "Vui lòng chọn thời hạn." },
+                {
+                  validator: (_, value) => {
+                    if (value && moment(value).isSameOrAfter(moment(), "day")) {
+                      return Promise.resolve();
+                    }
+                    return Promise.reject("Thời hạn phải là ngày trong tương lai.");
+                  },
+                },
+              ]}
               help={
                 errorAssignSchedule?.deadlineTime
                   ? errorAssignSchedule.deadlineTime[0]
                   : ""
               }
+
             >
               <DatePicker
                 onChange={handleDateChange}
                 style={{ width: "100%" }}
                 format="DD/MM/YYYY"
+                className="rounded-lg px-4 py-2 border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               />
             </Form.Item>
-            <Form.Item label="Chọn nhân viên">
+            <Form.Item
+              label="Chọn nhân viên"
+              name="assignToId"
+              className="text-base font-medium"
+              rules={[
+                { required: true, message: "Vui lòng chọn nhân viên." },
+                {
+                  validator: (_, value) =>
+                    value && value !== 0 ? Promise.resolve() : Promise.reject("Vui lòng chọn nhân viên hợp lệ."),
+                },
+              ]}
+            >
               <Select
                 placeholder="Chọn nhân viên"
+                value={assignData.assignToId}
                 onChange={(value) =>
-                  setAssignData((prev) => ({ ...prev, assignToId: value }))
+                  setAssignData((prev) => ({ ...prev, assignToId: value || 0 }))
                 }
-                loading={usersLoading}
+                className="rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               >
-                {staffData.map((user: UserType) => (
+                <Option value={0} disabled>
+                  Chọn nhân viên
+                </Option>
+                {staffData.map((user: any) => (
                   <Option key={user.userId} value={user.userId}>
                     {user.fullName}
                   </Option>
@@ -277,154 +352,6 @@ const Schedule = () => {
             </Form.Item>
           </Form>
         </Modal>
-<Modal
-  title={<span className="text-xl font-semibold">Phân công nhân viên</span>}
-  visible={isModalVisible}
-  onCancel={handleCancelAssigned}
-  footer={[
-    <Button
-      key="cancel"
-      onClick={handleCancelAssigned}
-      className="rounded-full px-4 py-2 border-gray-300"
-    >
-      Hủy
-    </Button>,
-    <Button
-      key="submit"
-      type="primary"
-      onClick={handleAssignSubmit}
-      className="rounded-full px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white"
-    >
-      Phân công
-    </Button>,
-  ]}
-  className="rounded-lg p-6 shadow-xl"
-  bodyStyle={{
-    padding: "20px",
-    borderRadius: "12px",
-  }}
->
-  <Form
-    layout="vertical"
-    className="space-y-4"
-    onFinish={handleAssignSubmit}
-    initialValues={assignData}
-  >
-    <Form.Item
-      label="Tiêu đề"
-      name="title"
-      className="text-base font-medium"
-      rules={[
-        { required: true, message: "Tiêu đề không được để trống." },
-        { min: 5, message: "Tiêu đề phải có ít nhất 5 ký tự." },
-      ]}
-    >
-      <Input
-        value={assignData.title}
-        onChange={(e) =>
-          setAssignData((prev) => ({ ...prev, title: e.target.value }))
-        }
-        className="rounded-lg px-4 py-2 border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-      />
-    </Form.Item>
-    <Form.Item
-      label="Miêu tả"
-      name="description"
-      className="text-base font-medium"
-      rules={[
-        { required: true, message: "Miêu tả không được để trống." },
-        { max: 500, message: "Miêu tả không được vượt quá 500 ký tự." },
-      ]}
-    >
-      <Input
-        value={assignData.description}
-        onChange={(e) =>
-          setAssignData((prev) => ({
-            ...prev,
-            description: e.target.value,
-          }))
-        }
-        className="rounded-lg px-4 py-2 border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-      />
-    </Form.Item>
-    <Form.Item
-      label="Ghi chú"
-      name="note"
-      className="text-base font-medium"
-      rules={[
-        { required: true, message: "Ghi chú không được để trống." },
-        { max: 300, message: "Ghi chú không được vượt quá 300 ký tự." },
-      ]}
-    >
-      <Input
-        value={assignData.note}
-        onChange={(e) =>
-          setAssignData((prev) => ({ ...prev, note: e.target.value }))
-        }
-        className="rounded-lg px-4 py-2 border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-      />
-    </Form.Item>
-    <Form.Item
-  label="Thời hạn"
-  name="deadlineTime"
-  className="text-base font-medium"
-  rules={[
-    { required: true, message: "Vui lòng chọn thời hạn." },
-    {
-      validator: (_, value) => {
-        if (value && moment(value).isSameOrAfter(moment(), "day")) {
-          return Promise.resolve();
-        }
-        return Promise.reject("Thời hạn phải là ngày trong tương lai.");
-      },
-    },
-  ]}
-  help={
-    errorAssignSchedule?.deadlineTime
-      ? errorAssignSchedule.deadlineTime[0]
-      : ""
-  }
-
->
-  <DatePicker
-    onChange={handleDateChange}
-    style={{ width: "100%" }}
-    format="DD/MM/YYYY"
-    className="rounded-lg px-4 py-2 border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-  />
-</Form.Item>
-<Form.Item
-  label="Chọn nhân viên"
-  name="assignToId"
-  className="text-base font-medium"
-  rules={[
-    { required: true, message: "Vui lòng chọn nhân viên." },
-    {
-      validator: (_, value) =>
-        value && value !== 0 ? Promise.resolve() : Promise.reject("Vui lòng chọn nhân viên hợp lệ."),
-    },
-  ]}
->
-  <Select
-    placeholder="Chọn nhân viên"
-    value={assignData.assignToId} // Use assignToId directly, no undefined
-    onChange={(value) =>
-      setAssignData((prev) => ({ ...prev, assignToId: value || 0 }))
-    }
-    className="rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-  >
-    <Option value={0} disabled>
-      Chọn nhân viên
-    </Option>
-    {staffData.map((user : any) => (
-      <Option key={user.userId} value={user.userId}>
-        {user.fullName}
-      </Option>
-    ))}
-  </Select>
-</Form.Item>
-  </Form>
-</Modal>
       </Content>
     </Layout>
   );
