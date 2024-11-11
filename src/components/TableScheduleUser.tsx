@@ -2,9 +2,8 @@
 import React from 'react';
 import { Button, Table, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import Schedule from '../types/scheduleType';
 import { ScheduleUserType } from '../types/ScheduleUserType';
-import { DeleteOutlined, EditOutlined, UserAddOutlined } from '@ant-design/icons';
+import {  EditOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router';
 import { ScheduleUserStatus, statusMap } from '../types/Enum/ScheduleUserStatus';
 
@@ -29,27 +28,6 @@ const TableScheduleUser: React.FC<ScheduleAssignedTableProps> = ({ data, isLoadi
       sorter: (a, b) => a.title?.localeCompare(b.title),
       
     },
-    // {
-    //   title: "Loại",
-    //   dataIndex: "scheduleType",
-    //   key: "scheduleType",
-    //   align: "center",
-    //   render: (text) => {
-    //     const scheduleTypeName = text.scheduleTypeName;
-    //     let tagColor = "default"; // Default color
-
-    //     switch (scheduleTypeName) {
-    //       case "VisitDaily":
-    //         return <Tag color="blue">Theo ngày</Tag>;
-    //       case "ProcessWeek":
-    //         return <Tag color="green">Theo tuần</Tag>;
-    //       case "ProcessMonth":
-    //         return <Tag color="orange">Theo tháng</Tag>;
-    //       default:
-    //         return <Tag color={tagColor}>{scheduleTypeName}</Tag>; // Fallback if needed
-    //     }
-    //   },
-    // },
     {
       title: 'Thời hạn hoàn thành',
       dataIndex: 'deadlineTime',

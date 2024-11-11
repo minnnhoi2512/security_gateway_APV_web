@@ -4,7 +4,6 @@ import {
   Button,
   Form,
   Input,
-  message,
   Upload,
   Spin,
   notification,
@@ -20,6 +19,7 @@ import User from "../../types/userType";
 import { v4 as uuidv4 } from "uuid"; // Import uuid for unique file names
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"; // Import Firebase functions
 import { imageDB } from "../../api/firebase"; // Import your Firebase configuration
+import { roleMap, UserRole } from "../../types/Enum/UserRole";
 
 const { Content } = Layout;
 
@@ -40,7 +40,12 @@ const DetailUser: React.FC = () => {
     pageSize: -1,
     role: userData?.role?.roleName || "",
   });
-
+  const roleId = Number(userData?.role?.roleId) as UserRole;
+  const { textRole } = roleMap[roleId] || {
+    color: "black",
+    text: "Không xác định",
+  };
+  
   const handleUpdateStatus = async () => {
     try {
       const faceImgPromises = faceImg.map((file) => {
@@ -111,7 +116,7 @@ const DetailUser: React.FC = () => {
               <Input disabled={isLoading} />
             </Form.Item>
             <Form.Item label="Vai trò">
-              <Input disabled value={userData?.role?.roleName} />
+              <Input disabled value={textRole} />
             </Form.Item>
 
             <Form.Item label="Hình ảnh mặt">

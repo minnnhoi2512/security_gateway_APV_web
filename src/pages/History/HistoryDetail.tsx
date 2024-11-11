@@ -1,9 +1,10 @@
 import { Layout, Tag } from "antd";
 import { formatDate } from "../../utils/ultil";
+import VisitorSessionType from "../../types/visitorSessionType";
 
 const { Content } = Layout;
 
-const HistoryDetail = ({ data }: { data: any }) => {
+const HistoryDetail = ({ data }: { data: VisitorSessionType }) => {
   return (
     <Content className="p-6 bg-gray-100 ">
     {data && (
@@ -27,7 +28,7 @@ const HistoryDetail = ({ data }: { data: any }) => {
               </Tag>
             </p>
             <img
-              src={data.imageSrc}
+              src={data.images[0].imageURL}
               alt="Visitor"
               className="w-full max-w-xs mt-4 rounded-lg shadow-sm"
             />
@@ -42,13 +43,13 @@ const HistoryDetail = ({ data }: { data: any }) => {
               Thông tin vào
             </h3>
             <p className="text-lg">
-              <strong>Giờ vào:</strong> {formatDate(data.checkInTime)}
+              <strong>Giờ vào:</strong> {formatDate(data.checkinTime)}
             </p>
             <p className="text-lg mt-2">
-              <strong>Cổng vào:</strong> {data.gateIn}
+              <strong>Cổng vào:</strong> {data.gateIn.gateName}
             </p>
             <p className="text-lg mt-2">
-              <strong>Cho phép bởi:</strong> {data.securityGateIn}
+              <strong>Cho phép bởi:</strong> {data.securityIn.fullName}
             </p>
           </div>
   
@@ -61,13 +62,13 @@ const HistoryDetail = ({ data }: { data: any }) => {
               Thông tin ra
             </h3>
             <p className="text-lg">
-              <strong>Giờ ra:</strong> {data.checkOutTime ? formatDate(data.checkOutTime) : "Chưa có thông tin"}
+              <strong>Giờ ra:</strong> {data.checkoutTime ? formatDate(data.checkoutTime) : "Chưa có thông tin"}
             </p>
             <p className="text-lg mt-2">
-              <strong>Cổng ra:</strong> {data.gateOut || "Chưa có thông tin"}
+              <strong>Cổng ra:</strong> {data.gateOut.gateName || "Chưa có thông tin"}
             </p>
             <p className="text-lg mt-2">
-              <strong>Cho phép bởi:</strong> {data.securityGateOut || "Chưa có thông tin"}
+              <strong>Cho phép bởi:</strong> {data.securityOut.fullName || "Chưa có thông tin"}
             </p>
           </div>
         </div>

@@ -1,12 +1,21 @@
 type VisitList = {
-  visitId?: number;
+  visitId: number;
   createTime?: Date;
-  expectedStartTime?: Date;
-  expectedEndTime?: Date;
-  visitName?: string;
-  visitQuantity?: number;
+  expectedStartTime: Date;
+  expectedEndTime: Date;
+  visitName: string;
+  visitQuantity: number;
   description?: string;
+  visitStatus: string;
   visitType?: string;
+  schedule : {
+    scheduleId: number;
+    scheduleName: string;
+    scheduleType: {
+      scheduleTypeId: number;
+      scheduleTypeName: string;
+    };
+  }
   createdBy?: string;
   updatedBy?: string;
 };

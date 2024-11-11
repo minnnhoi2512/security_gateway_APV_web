@@ -16,6 +16,75 @@ import SignalR from "../utils/signalR";
 import { useDispatch, useSelector } from "react-redux";
 type MenuItem = Required<MenuProps>["items"][number];
 
+export const routes = [
+  { path: "/", breadcrumbName: "Trang chủ" },
+  { path: "/dashboard", breadcrumbName: "Thông tin chung" },
+  {
+    path: "/customerVisitList",
+    breadcrumbName: "Chuyến thăm",
+    children: [
+      { path: "/customerVisit", breadcrumbName: "Tất cả" },
+      { path: "/customerVisitStaff", breadcrumbName: "Chuyến thăm của tôi" },
+    ],
+  },
+  {
+    path: "/accountManage",
+    breadcrumbName: "Người dùng",
+    children: [
+      { path: "/manager", breadcrumbName: "Quản lý" },
+      { path: "/departmentManager", breadcrumbName: "Quản lý phòng ban" },
+      { path: "/staff", breadcrumbName: "Nhân viên phòng ban" },
+      { path: "/security", breadcrumbName: "Bảo vệ" },
+    ],
+  },
+  {
+    path: "/scheduleManage",
+    breadcrumbName: "Lịch trình",
+    children: [
+      { path: "/schedule", breadcrumbName: "Tất cả lịch trình" },
+      { path: "/schedule-staff", breadcrumbName: "Tạo lịch hẹn" },
+      { path: "/schedule-staff-assigned", breadcrumbName: "Lịch trình được giao" },
+      { path: "/schedule-staff-rejected", breadcrumbName: "Lịch trình bị hủy bỏ" },
+      { path: "/schedule-assigned", breadcrumbName: "Lịch trình đã giao" },
+    ],
+  },
+  {
+    path: "/visitorManage",
+    breadcrumbName: "Danh sách khách",
+    children: [
+      { path: "/visitorManager", breadcrumbName: "Khách" },
+      { path: "/banVisitorManager", breadcrumbName: "Sổ đen" },
+    ],
+  },
+  {
+    path: "/historyManage",
+    breadcrumbName: "Lịch sử",
+    children: [
+      { path: "/history", breadcrumbName: "Lượt ra vào" },
+    ],
+  },
+  {
+    path: "/facilityManage",
+    breadcrumbName: "Cơ sở vật chất",
+    children: [
+      { path: "/departManager", breadcrumbName: "Phòng ban" },
+      { path: "/gate", breadcrumbName: "Cổng ra vào" },
+      { path: "/card", breadcrumbName: "Thẻ ra vào" },
+    ],
+  },
+  {
+    path: "/utility",
+    breadcrumbName: "Tiện ích",
+    children: [
+      { path: "/calendar", breadcrumbName: "Lịch hẹn của tôi" },
+      { path: "/chat", breadcrumbName: "Nhắn tin" },
+    ],
+  },
+  { path: "/logout", breadcrumbName: "Đăng xuất" },
+];
+
+
+
 const MenuNav = () => {
   const [theme, setTheme] = useState<MenuTheme>("dark");
   const navigate = useNavigate();
@@ -25,6 +94,7 @@ const MenuNav = () => {
   });
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [nextLocation, setNextLocation] = useState<string | null>(null);
+
 
   const userRole = localStorage.getItem("userRole");
   const changeTheme = (value: boolean) => {
@@ -72,8 +142,18 @@ const MenuNav = () => {
   useEffect(() => {
     sessionStorage.setItem("selectedKey", selectedKey);
   }, [selectedKey]);
+
   const allMenuItems: MenuItem[] = [
     { key: "dashboard", icon: <LineChartOutlined />, label: "Thông tin chung" },
+    {
+      key: "customerVisitList",
+      icon: <BarsOutlined />,
+      label: "Chuyến thăm",
+      children: [
+        { key: "customerVisit", label: "Tất cả" },
+        { key: "customerVisitStaff", label: "Chuyến thăm của tôi" },
+      ],
+    },
     {
       key: "accountManage",
       icon: <TeamOutlined />,
@@ -107,15 +187,7 @@ const MenuNav = () => {
         { key: "banVisitorManager", label: "Sổ đen" },
       ],
     },
-    {
-      key: "customerVisitList",
-      icon: <BarsOutlined />,
-      label: "Chuyến thăm",
-      children: [
-        { key: "customerVisit", label: "Tất cả" },
-        { key: "customerVisitStaff", label: "Chuyến thăm của tôi" },
-      ],
-    },
+   
     {
       key: "historyManage",
       icon: <HistoryOutlined />,
@@ -228,6 +300,7 @@ const MenuNav = () => {
           "schedule",
           "facilityManage",
           "security",
+          "customerVisit"
         ];
 
         // Exclude top-level items and children based on excluded keys

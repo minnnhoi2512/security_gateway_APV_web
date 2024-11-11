@@ -1,8 +1,7 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import baseAPI from "../api/baseAPI";
-
 import { getToken } from "../utils/jwtToken";
-import VisitDetailList from "../types/VisitDetailListType";
+import VisitDetailList from "../types/visitDetailListType";
 
 export const visitDetailListAPI = createApi({
   reducerPath: "visitDetailListAPI",
@@ -98,6 +97,18 @@ export const visitDetailListAPI = createApi({
         }, // Include the body in the request
       }),
     }),
+    updateStatusVisit: builder.mutation<
+      number, // The type of the response
+      { visitId: number; action : String } // Input parameters
+    >({
+      query: ({ visitId, action}) => ({
+        url: `Status/${visitId}`, // Construct the URL using the ID
+        method: "PUT",
+        params: {
+          action
+        }, 
+      }),
+    }),
   }),
 });
 
@@ -109,5 +120,6 @@ export const {
   useGetDetailVisitQuery,
   useUpdateVisitBeforeStartDateMutation,
   useUpdateVisitAfterStartDateMutation,
-  useAppendVisitAfterStartDateMutation
+  useAppendVisitAfterStartDateMutation,
+  useUpdateStatusVisitMutation,
 } = visitDetailListAPI;

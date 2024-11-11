@@ -16,15 +16,15 @@ export const visitListAPI = createApi({
     },
   }),
   endpoints: (builder) => ({
-    getListVisit: builder.query<any, { pageNumber: number; pageSize: number, status: string }>({
-      query: ({ pageNumber, pageSize, status }) => {
+    getListVisit: builder.query<any, { pageNumber: number; pageSize: number}>({
+      query: ({ pageNumber, pageSize }) => {
         return {
-          url: "/Status",
+          url: "/",
           method: "GET",
           params: {
             pageNumber,
             pageSize,
-            status,
+    
           },
         };
       },
@@ -44,6 +44,21 @@ export const visitListAPI = createApi({
         };
       },
     }),
+    getListVisitByResponsiblePersonId: builder.query<
+    any,
+    { id: number; pageNumber: number; pageSize: number }
+  >({
+    query: ({ id, pageNumber, pageSize }) => {
+      return {
+        url: `ResponePerson/${id}`,
+        method: "GET",
+        params: {
+          pageNumber,
+          pageSize,
+        },
+      };
+    },
+  }),
     getListVisitByDepartmentId: builder.query<
       any,
       { departmentId: number; pageNumber: number; pageSize: number }
@@ -82,4 +97,5 @@ export const {
   useGetListVisitByCreatedIdQuery,
   useGetListVisitByDepartmentIdQuery,
   useGetVisitByScheduleUserIdQuery,
+  useGetListVisitByResponsiblePersonIdQuery
 } = visitListAPI;

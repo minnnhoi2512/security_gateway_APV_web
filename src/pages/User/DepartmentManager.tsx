@@ -6,6 +6,8 @@ import {
   useGetListUserByRoleQuery,
   useDeleteUserMutation,
 } from "../../services/user.service";
+import { statusUserMap, UserStatus } from "../../types/Enum/UserStatus";
+import { roleMap, UserRole } from "../../types/Enum/UserRole";
 
 const { Content } = Layout;
 
@@ -66,17 +68,24 @@ const DepartmentManager = () => {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-      render: (status: string) => {
-        const color = status === "Active" ? "green" : "volcano";
-        return <Tag color={color}>{status}</Tag>;
+      render: (status: UserStatus) => {
+        const { colorUserStatus, textUserStatus } = statusUserMap[status] || {
+          color: "black",
+          text: "Không xác định",
+        };
+        return <Tag color={colorUserStatus}>{textUserStatus}</Tag>;
       },
     },
     {
       title: "Vai trò",
-      dataIndex: "role",
-      key: "role",
-      render: (role: any) => {
-        return <Tag color="red">{role?.roleName || "Trợ lý phòng ban"}</Tag>;
+      dataIndex: ["role","roleId"],
+      key: "roleId",
+      render: (roleId: UserRole) => {
+        const { textRole } = roleMap[roleId] || {
+          color: "black",
+          text: "Không xác định",
+        };
+        return <Tag color="blue">{textRole}</Tag>;
       },
     },
     {

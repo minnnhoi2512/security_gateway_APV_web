@@ -32,12 +32,12 @@ export const visitorAPI = createApi({
         phoneNumber: string;
         credentialsCard: string;
         credentialCardTypeId: number;
-        visitorCredentialImageFromRequest: File;
+        visitorCredentialImageFromRequest: File | null;
       }
     >({
       query: (newVisitor) => {
-        console.log(newVisitor.visitorCredentialImageFromRequest)
         const formData = new FormData();
+
         formData.append("visitorName", newVisitor.visitorName);
         formData.append("companyName", newVisitor.companyName);
         formData.append("phoneNumber", newVisitor.phoneNumber);
@@ -46,10 +46,14 @@ export const visitorAPI = createApi({
           "credentialCardTypeId",
           newVisitor.credentialCardTypeId.toString()
         );
-        formData.append(
-          "visitorCredentialImageFromRequest",
-          newVisitor.visitorCredentialImageFromRequest
-        );
+
+        if (newVisitor.visitorCredentialImageFromRequest) {
+          formData.append(
+            "visitorCredentialImageFromRequest",
+            newVisitor.visitorCredentialImageFromRequest
+          );
+        }
+
         return {
           url: "/", // Ensure this matches the endpoint
           method: "POST",

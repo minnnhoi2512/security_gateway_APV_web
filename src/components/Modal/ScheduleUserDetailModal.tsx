@@ -26,69 +26,70 @@ const ScheduleUserDetailModal: React.FC<ScheduleUserModalDetailProps> = ({
 }) => {
   const scheduleUserId = selectedRecord?.id || 0;
 
-    const { data, isFetching, isLoading, isError } = useGetVisitByScheduleUserIdQuery({ scheduleUserId: scheduleUserId }, { skip: scheduleUserId === 0 });
-    const [rejectSchedule] = useRejectScheduleMutation();
-    const [approveSchedule] = useApproveScheduleMutation();
-
-
-
-console.log("LOG DATA: ", data);
-
-
-
-    const handleRejectSchedule = async (id: number) => {
-        try {
-            await rejectSchedule(id).unwrap();
-            notification.success({ message: 'Schedule rejected successfully' });
-            handleClose();
-            refetch(); 
-        } catch (error) {
-            notification.error({ message: 'Failed to reject schedule', description: "Lỗi không từ chối được" });
-        }
-    };
-    const handleApproveSchedule = async (id: number) => {
-        try {
-            await approveSchedule(id).unwrap();
-            notification.success({ message: 'Schedule approved successfully' });
-            refetch(); 
-            handleClose();
-        } catch (error) {
-            if (isEntityError(error)  ) {
-
-                notification.error({ message: 'Failed to approve schedule', description: "Lỗi không duyệt được" });
-            }
-        }
-    };
-    return (
-        <Modal
-        title="Chi tiết lịch trình đã giao"
-        visible={isVisible}
-        onCancel={handleClose}
-        width={800}
-        footer={[
-            <Button 
-                key="approve" 
-                type="primary" 
-                className="bg-blue-500 mr-2"
-                onClick={() => handleApproveSchedule(selectedRecord?.id || 0)}
-                disabled={selectedRecord?.status !== "Pending"}
-            >
-                Duyệt
-            </Button>,
-            <Button 
-                key="reject" 
-                type="primary" 
-                danger 
-                className="mr-2"
-                onClick={() => handleRejectSchedule(selectedRecord?.id || 0)}
-                disabled={selectedRecord?.status !== "Pending"}
-            >
-                Từ chối
-            </Button>,
-            <Button key="close" onClick={handleClose}>
-                Đóng
-            </Button>,
-        ]}
+  const { data, isError } = useGetVisitByScheduleUserIdQuery(
+    { scheduleUserId: scheduleUserId },
+    { skip: scheduleUserId === 0 }
+  );
+  const [rejectSchedule] = useRejectScheduleMutation();
+  const [approveSchedule] = useApproveScheduleMutation();
+  const handleRejectSchedule = async (id: number) => {
+    try {
+      await rejectSchedule(id).unwrap();
+      notification.success({ message: "Đã từ chối lịch hẹn" });
+      handleClose();
+      refetch();
+    } catch (error) {
+      notification.error({
+        message: "Thất bại",
+        description: "Lỗi không từ chối được",
+      });
+    }
+  };
+  const handleApproveSchedule = async (id: number) => {
+    try {
+      await approveSchedule(id).unwrap();
+      notification.success({ message: "Chấp nhận lịch hẹn thành công" });
+      refetch();
+      handleClose();
+    } catch (error) {
+      if (isEntityError(error)) {
+        notification.error({
+          message: "Thất bại",
+          description: "Lỗi không duyệt được",
+        });
+      }
+    }
+  };
+  return (
+    <Modal
+      title="Chi tiết lịch trình đã giao"
+      visible={isVisible}
+      onCancel={handleClose}
+      width={800}
+      footer={[
+        <Button
+          key="approve"
+          type="primary"
+          className="bg-blue-500 mr-2"
+          onClick={() => handleApproveSchedule(selectedRecord?.id || 0)}
+          disabled={selectedRecord?.status !== "Pending"}
+        >
+          Duyệt
+        </Button>,
+        <Button
+          key="reject"
+          type="primary"
+          danger
+          className="mr-2"
+          onClick={() => handleRejectSchedule(selectedRecord?.id || 0)}
+          disabled={selectedRecord?.status !== "Pending"}
+        >
+          Từ chối
+        </Button>,
+        <Button key="close" onClick={handleClose}>
+          Đóng
+        </Button>,
+      ]}
     >
       {selectedRecord && (
         <Collapse defaultActiveKey={["2"]} className="mb-4">

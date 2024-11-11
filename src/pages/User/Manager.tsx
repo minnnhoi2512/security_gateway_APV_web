@@ -3,6 +3,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import UserType from "../../types/userType";
 import { useGetListUserByRoleQuery, useDeleteUserMutation } from "../../services/user.service";
+import { statusUserMap, UserStatus } from "../../types/Enum/UserStatus";
+import { roleMap, UserRole } from "../../types/Enum/UserRole";
 
 const { Content } = Layout;
 
@@ -56,19 +58,24 @@ const Manager = () => {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-      render: (status: string) => {
-        let color = status === "Active" ? "green" : "volcano";
-        return <Tag color={color}>{status}</Tag>;
+      render: (status: UserStatus) => {
+        const { colorUserStatus, textUserStatus } = statusUserMap[status] || {
+          color: "black",
+          text: "Không xác định",
+        };
+        return <Tag color={colorUserStatus}>{textUserStatus}</Tag>;
       },
     },
     {
       title: "Vai trò",
-      dataIndex: "role",
-      key: "role",
-      render: (role: { roleName: string; status: string } | null) => {
-        const displayedRole = role ? role.roleName : "Quản lý"; // Use roleName if role is not null
-        const color = role && role.status === "Active" ? "green" : "volcano"; // Check status for color
-        return <Tag color={color}>{displayedRole}</Tag>; // Use displayedRole for the tag
+      dataIndex: ["role","roleId"],
+      key: "roleId",
+      render: (roleId: UserRole) => {
+        const { textRole } = roleMap[roleId] || {
+          color: "black",
+          text: "Không xác định",
+        };
+        return <Tag color="blue">{textRole}</Tag>;
       },
     },
     {

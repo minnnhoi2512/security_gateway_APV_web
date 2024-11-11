@@ -6,24 +6,27 @@ import {
   Space,
   Tag,
   DatePicker,
-  Slider,
   Select,
+  Slider,
   Modal,
 } from "antd";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
 import { TableProps } from "antd";
 import { useNavigate } from "react-router-dom";
-import moment from "moment-timezone";
+import dayjs, { Dayjs } from "dayjs";
+import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
+import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import { Content } from "antd/es/layout/layout";
 import VisitListType from "../../types/visitListType";
-import {
-  useGetListVisitByDepartmentIdQuery,
-  useGetListVisitQuery,
-} from "../../services/visitList.service";
-import dayjs, { Dayjs } from "dayjs";
+import { useGetListVisitByResponsiblePersonIdQuery } from "../../services/visitList.service";
 import { statusMap, VisitStatus } from "../../types/Enum/VisitStatus";
 import { ScheduleType, typeMap } from "../../types/Enum/ScheduleType";
 import ListHistorySessonVisit from "../History/ListHistorySessionVisit";
+
+dayjs.extend(isSameOrAfter);
+dayjs.extend(isSameOrBefore);
+
+const { Option } = Select;
 
 interface Filters {
   expectedStartTime: Dayjs | null;
@@ -32,10 +35,14 @@ interface Filters {
   visitStatus: VisitStatus[];
   scheduleTypeId: any[];
 }
-const { Option } = Select;
-const CustomerVisit = () => {
+
+const CustomerVisitStaff = () => {
   const userRole = localStorage.getItem("userRole");
-  const departmentId = Number(localStorage.getItem("departmentId"));
+  const userId = localStorage.getItem("userId");
+  const navigate = useNavigate();
+  const [selectedVisitId, setSelectedVisitId] = useState<number | null>(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [searchText, setSearchText] = useState<string>("");
   const [filteredData, setFilteredData] = useState<VisitListType[]>([]);
   const [filters, setFilters] = useState<Filters>({
     expectedStartTime: null,
@@ -44,40 +51,16 @@ const CustomerVisit = () => {
     visitStatus: [],
     scheduleTypeId: [],
   });
-  const navigate = useNavigate();
-  const [searchText, setSearchText] = useState<string>("");
-  const [selectedVisitId, setSelectedVisitId] = useState<number | null>(null);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  let data: any = [];
-  let isLoading = true;
-  let refetch;
-  if (userRole === "DepartmentManager") {
-    let {
-      data: managerData,
-      isLoading: managerLoading,
-      refetch: refetchManager,
-    } = useGetListVisitByDepartmentIdQuery({
-      pageNumber: 1,
-      pageSize: 100,
-      departmentId: departmentId,
-    });
-    data = managerData;
-    isLoading = managerLoading;
-    refetch = refetchManager;
-  } else {
-    let {
-      data: allData,
-      isLoading: allLoading,
-      refetch: refetchAll,
-    } = useGetListVisitQuery({
-      pageNumber: 1,
-      pageSize: 100,
-    });
-    data = allData;
-    isLoading = allLoading;
-    refetch = refetchAll;
-  }
-  // console.log(data);
+
+  let { data, isLoading, refetch } = useGetListVisitByResponsiblePersonIdQuery({
+    pageNumber: 1,
+    pageSize: 100,
+    id: Number(userId),
+  });
+  useEffect(() => {
+    refetch();
+  }, []);
+  console.log(data);
   const columns: TableProps<VisitListType>["columns"] = [
     {
       title: "Tiêu đề",
@@ -86,7 +69,7 @@ const CustomerVisit = () => {
       filteredValue: searchText ? [searchText] : null,
       onFilter: (value: any, record: any) =>
         record.visitName.toLowerCase().includes(value.toString().toLowerCase()),
-      sorter: (a: any, b: any) => a.visitName.localeCompare(b.visitName),
+      sorter: (a, b) => a.visitName.localeCompare(b.visitName),
       render: (text) => (
         <span style={{ fontSize: "14px", color: "#000" }}>{text}</span>
       ),
@@ -95,9 +78,8 @@ const CustomerVisit = () => {
       title: "Ngày bắt đầu",
       dataIndex: "expectedStartTime",
       key: "expectedStartTime",
-      render: (date: Date) =>
-        moment.tz(date, "Asia/Ho_Chi_Minh").format("DD/MM/YYYY HH:mm:ss"), // Include time
-      sorter: (a: any, b: any) =>
+      render: (date: Date) => dayjs(date).format("DD/MM/YYYY HH:mm:ss"), // Include time
+      sorter: (a, b) =>
         new Date(a.expectedStartTime).getTime() -
         new Date(b.expectedStartTime).getTime(),
     },
@@ -105,9 +87,8 @@ const CustomerVisit = () => {
       title: "Ngày dự kiến kết thúc",
       dataIndex: "expectedEndTime",
       key: "expectedEndTime",
-      render: (date: Date) =>
-        moment.tz(date, "Asia/Ho_Chi_Minh").format("DD/MM/YYYY HH:mm:ss"), // Include time
-      sorter: (a: any, b: any) =>
+      render: (date: Date) => dayjs(date).format("DD/MM/YYYY HH:mm:ss"), // Include time
+      sorter: (a, b) =>
         new Date(a.expectedEndTime).getTime() -
         new Date(b.expectedEndTime).getTime(),
     },
@@ -115,7 +96,7 @@ const CustomerVisit = () => {
       title: "Số lượng (Người)",
       dataIndex: "visitQuantity",
       key: "visitQuantity",
-      sorter: (a: any, b: any) => a.visitQuantity - b.visitQuantity,
+      sorter: (a, b) => a.visitQuantity - b.visitQuantity,
       render: (text) => (
         <span style={{ fontSize: "14px", color: "#000" }}>{text}</span>
       ),
@@ -125,25 +106,18 @@ const CustomerVisit = () => {
       dataIndex: "visitStatus",
       key: "visitStatus",
       render: (status: VisitStatus) => {
-        const { colorVisitStatus, textVisitStatus } = statusMap[status] || {
-          color: "black",
-          text: "Không xác định",
-        };
+        const { colorVisitStatus, textVisitStatus } = statusMap[status] || { color: "black", text: "Không xác định" };
         return <Tag color={colorVisitStatus}>{textVisitStatus}</Tag>;
-      },
+      }
     },
     {
       title: "Loại",
-      dataIndex: "scheduleUser",
-      key: "scheduleUser",
-      render: (scheduleUser) => {
-        const scheduleTypeId = scheduleUser?.schedule?.scheduleType
-          ?.scheduleTypeId as ScheduleType;
-        if (scheduleTypeId === undefined)
-          return <Tag color="default">Theo ngày</Tag>;
-        const { colorScheduleType, textScheduleType } = typeMap[
-          scheduleTypeId
-        ] || { color: "default", text: "Theo ngày" };
+      dataIndex: "schedule",
+      key: "schedule",
+      render: (schedule) => {
+        const scheduleTypeId = schedule?.scheduleType?.scheduleTypeId as ScheduleType;
+        if (scheduleTypeId === undefined) return <Tag color="default">Theo ngày</Tag>;
+        const { colorScheduleType, textScheduleType } = typeMap[scheduleTypeId] || { color: "default", text: "Theo ngày" };
         return (
           <Tag color={colorScheduleType} style={{ fontSize: "14px" }}>
             {textScheduleType}
@@ -168,16 +142,6 @@ const CustomerVisit = () => {
       ),
     },
     {
-      title: "Tạo bởi",
-      dataIndex: "createBy",
-      key: "createBy",
-      render: (text) => (
-        <span style={{ fontSize: "14px", color: "#000" }}>
-          {text?.fullName || "-"}
-        </span>
-      ),
-    },
-    {
       title: "Hành động",
       key: "action",
       render: (_, record) => (
@@ -196,9 +160,6 @@ const CustomerVisit = () => {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchText(e.target.value);
   };
-  useEffect(() => {
-    refetch();
-  }, []);
   const handleFilterChange = (key: keyof Filters, value: any) => {
     setFilters((prevFilters) => ({
       ...prevFilters,
@@ -233,7 +194,7 @@ const CustomerVisit = () => {
     if (filters.scheduleTypeId.length > 0) {
       filtered = filtered.filter((item: any) =>
         filters.scheduleTypeId.includes(
-          item.scheduleUser?.schedule?.scheduleType?.scheduleTypeId ?? null
+          item.schedule?.scheduleType?.scheduleTypeId ?? null
         )
       );
     }
@@ -243,7 +204,8 @@ const CustomerVisit = () => {
       );
     }
     setFilteredData(filtered);
-  }, [data, isLoading, filters, searchText]);
+  }, [data,isLoading,filters, searchText]);
+
   return (
     <Content className="p-6">
       <div className="flex justify-center mb-4">
@@ -270,16 +232,18 @@ const CustomerVisit = () => {
             borderRadius: 5,
           }}
         />
-
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => navigate("/createNewVisitList")}
-          style={{ borderRadius: 5 }}
-        >
-          Tạo mới
-        </Button>
+        {userRole !== "Security" && (
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => navigate("/createNewVisitList")}
+            style={{ borderRadius: 5 }}
+          >
+            Tạo mới
+          </Button>
+        )}
       </Space>
+
       <Space style={{ marginBottom: 16, display: "flex", flexWrap: "wrap" }}>
         <DatePicker
           placeholder="Ngày bắt đầu"
@@ -300,9 +264,7 @@ const CustomerVisit = () => {
         <Select
           mode="multiple"
           placeholder="Trạng thái"
-          onChange={(value: VisitStatus[]) =>
-            handleFilterChange("visitStatus", value)
-          }
+          onChange={(value: VisitStatus[]) => handleFilterChange("visitStatus", value)}
           style={{ width: 200 }}
         >
           <Option value={VisitStatus.Active}>Còn hiệu lực</Option>
@@ -328,7 +290,7 @@ const CustomerVisit = () => {
         columns={columns}
         dataSource={filteredData}
         pagination={{
-          total: data?.length,
+          total: filteredData?.length,
           showSizeChanger: true,
           pageSizeOptions: ["5", "10", "20"],
           hideOnSinglePage: false,
@@ -338,7 +300,7 @@ const CustomerVisit = () => {
         bordered
         loading={isLoading}
       />
-      <Modal
+       <Modal
         title="Lịch sử lượt ra vào"
         visible={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
@@ -351,4 +313,4 @@ const CustomerVisit = () => {
   );
 };
 
-export default CustomerVisit;
+export default CustomerVisitStaff;

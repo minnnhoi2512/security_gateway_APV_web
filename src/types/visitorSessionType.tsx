@@ -5,6 +5,9 @@ type VisitorSessionType = {
     visitorName: String;
     companyName: String;
   };
+  visit : {
+    visitId: Number;
+  }
   checkinTime: Date;
   checkoutTime: Date;
   qRCardId?: Number;
@@ -22,13 +25,13 @@ type SecurityRes = {
   phoneNumber?: String;
 };
 type GateRes = {
-  gateId?: Number;
+  gateId: Number;
   gateName: String;
 };
 type SessionsImageRes = {
   visitorSessionsImageId?: Number;
   imageType?: String;
-  imageURL: String;
+  imageURL: string;
 };
 
 export default VisitorSessionType;
