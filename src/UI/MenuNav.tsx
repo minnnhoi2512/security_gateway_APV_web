@@ -8,13 +8,16 @@ import {
   AppstoreOutlined,
   BarsOutlined,
   DeploymentUnitOutlined,
+  UserOutlined,
+  UsergroupAddOutlined,
+  SafetyCertificateOutlined,
 } from "@ant-design/icons";
-import { Menu, MenuProps, Modal, MenuTheme, Switch } from "antd";
+import { Menu, Modal } from "antd";
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import SignalR from "../utils/signalR";
 import { useDispatch, useSelector } from "react-redux";
-type MenuItem = Required<MenuProps>["items"][number];
+import { MenuProps } from "antd/lib";
 
 export const routes = [
   { path: "/", breadcrumbName: "Trang chủ" },
@@ -84,9 +87,8 @@ export const routes = [
 ];
 
 
-
-const MenuNav = () => {
-  const [theme, setTheme] = useState<MenuTheme>("dark");
+type MenuItem = Required<MenuProps>["items"][number];
+const MenuNav = ({ theme }: any) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [selectedKey, setSelectedKey] = useState<string>(() => {
@@ -97,13 +99,11 @@ const MenuNav = () => {
 
 
   const userRole = localStorage.getItem("userRole");
-  const changeTheme = (value: boolean) => {
-    setTheme(value ? "dark" : "light");
-  };
   const connection = useSelector<any>(
     (s) => s.hubConnection.connection
   ) as React.MutableRefObject<signalR.HubConnection | null>;
   const dispatch = useDispatch();
+
   const handleCancel = () => setIsModalVisible(true);
 
   const handleOk = () => {
@@ -183,11 +183,11 @@ const MenuNav = () => {
       icon: <SolutionOutlined />,
       label: "Danh sách khách",
       children: [
-        { key: "visitorManager", label: "Khách" },
-        { key: "banVisitorManager", label: "Sổ đen" },
+        { key: "visitorManager", label: "Khách", icon: <UserOutlined />  },
+        { key: "banVisitorManager", label: "Sổ đen", icon: <SafetyCertificateOutlined />  },
       ],
     },
-   
+
     {
       key: "historyManage",
       icon: <HistoryOutlined />,
@@ -201,9 +201,9 @@ const MenuNav = () => {
       icon: <DeploymentUnitOutlined />,
       label: "Cơ sở vật chất",
       children: [
-        { key: "departManager", label: "Phòng ban" },
-        { key: "gate", label: "Cổng ra vào" },
-        { key: "card", label: "Thẻ ra vào" },
+        { key: "departManager", label: "Phòng ban", icon: <TeamOutlined /> },
+        { key: "gate", label: "Cổng ra vào" , icon: <SolutionOutlined />},
+        { key: "card", label: "Thẻ ra vào" , icon: <SafetyCertificateOutlined />},
       ],
     },
     {
@@ -211,8 +211,8 @@ const MenuNav = () => {
       icon: <AppstoreOutlined />,
       label: "Tiện ích",
       children: [
-        { key: "calendar", label: "Lịch hẹn của tôi" },
-        { key: "chat", label: "Nhắn tin" },
+        { key: "calendar", label: "Lịch hẹn của tôi" , icon: <FileTextOutlined />},
+        { key: "chat", label: "Nhắn tin" , icon: <UserOutlined />},
       ],
     },
 
@@ -327,12 +327,11 @@ const MenuNav = () => {
         return (
           <Menu.SubMenu
             key={item.key}
-            icon={item.icon}
-            title={item.label}
-            style={menuItemStyle}
+            icon={<span style={iconStyle}>{item.icon}</span>}
+            title={<span style={titleStyle}>{item.label}</span>}
           >
             {item.children.map((subItem: any) => (
-              <Menu.Item key={subItem.key} style={menuItemStyle}>
+              <Menu.Item key={subItem.key} icon={<span style={iconStyle}>{subItem.icon}</span>} style={subItemStyle} onClick={handleMenuClick}>
                 {subItem.label}
               </Menu.Item>
             ))}
@@ -342,38 +341,62 @@ const MenuNav = () => {
       return (
         <Menu.Item
           key={item.key}
-          icon={item.icon}
-          style={{
-            ...menuItemStyle,
-            ...(selectedKey === item.key ? menuItemSelectedStyle : {}),
-          }}
+          icon={<span style={iconStyle}>{item.icon}</span>}
+          style={itemStyle}
+          onClick={handleMenuClick}
         >
           {item.label}
         </Menu.Item>
       );
     });
 
-  const menuItemStyle = {
-    transition: "background-color 0.3s ease-in-out",
+  const itemStyle = {
     fontSize: "16px",
+    fontWeight: "bold",
+    color: "#FFFFFF",
+    backgroundColor: "#34495e",
+    padding: "10px 20px",
     borderRadius: "8px",
+    marginBottom: "5px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "flex-start",
   };
 
-  const menuItemSelectedStyle = {
-    backgroundColor: "#5E84A2",
-    fontWeight: "600",
+  const titleStyle = {
+    fontSize: "16px",
+    fontWeight: "bold",
+    color: "#FFFFFF",
+    display: "flex",
+    alignItems: "center",
+    paddingLeft: "10px 20px",
+  };
+
+  const iconStyle = {
+    color: "#87a2be",
+    minWidth: "24px",
+    marginRight: "10px",
+    display: "flex",
+    alignItems: "center",
+  };
+
+  const subItemStyle = {
+    fontSize: "14px",
+    backgroundColor: "#2c3e50",
+    color: "#d1d1d1",
+    padding: "8px 20px",
+    display: "flex",
+    alignItems: "center",
+    borderRadius: "8px",
+    marginBottom: "3px",
   };
 
   return (
-    <div className="">
-      <Switch checked={theme === "dark"} onChange={changeTheme} />
-      <br />
-      <br />
+    <div>
       <Menu
-        theme={theme}
         mode="inline"
         selectedKeys={[selectedKey]}
-        onClick={handleMenuClick}
+        style={{ backgroundColor: "#34495e", borderRight: "none" }}
       >
         {renderMenuItems(filteredMenuItems)}
       </Menu>

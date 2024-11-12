@@ -1,21 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { HomeOutlined, MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
+import { HomeOutlined, MenuFoldOutlined, MenuUnfoldOutlined,BulbOutlined } from "@ant-design/icons";
 import { Avatar, Badge, Breadcrumb, Button, Dropdown, Layout, Space } from "antd";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import "@fontsource/inter"; 
 import MenuNav, { routes } from "../UI/MenuNav";
 import { useGetDetailUserQuery } from "../services/user.service";
 import DefaultUserImage from "../assets/default-user-image.png";
-import { MenuProps } from "antd/lib";
+import NotificationDropdown from "../components/Dropdown/NotificationDropdown";
+import { toast, ToastContainer } from "react-toastify";
+import { useGetListNotificationUserQuery, useMarkNotiReadMutation } from "../services/notification.service";
 import { useDispatch, useSelector } from "react-redux";
 import NotificationType from "../types/notificationType";
-import { toast, ToastContainer } from "react-toastify";
 import { reloadNoti } from "../redux/slices/notification.slice";
-import { useGetListNotificationUserQuery, useMarkNotiReadMutation } from "../services/notification.service";
-
-type Props = {
-  children: React.ReactNode;
-};
+import { MenuProps } from "antd/lib";
 
 const { Header, Sider, Content } = Layout;
 
@@ -46,17 +43,19 @@ const generateBreadcrumbItems = (location: any) => {
   return [{ title: <HomeOutlined />}, ...breadcrumbItems];
 };
 
-const LayoutPage = ({ children }: Props) => {
+const LayoutPage = ({ children  } : {children : any}) => {
   const [collapsed, setCollapsed] = useState(false);
+  const [isDarkTheme, setIsDarkTheme] = useState(true); // Toggle for dark/light theme
   const userId = Number(localStorage.getItem("userId"));
   const location = useLocation();
   const [breadcrumbItems, setBreadcrumbItems] = useState(
     generateBreadcrumbItems(location)
   );
-
-  // Assuming getUserDetail is the type of the data returned from the query
-  const { data: data1, refetch } = useGetDetailUserQuery(userId);
-  const getRoleDisplayName = (roleName: string) => {
+  const { data: userData } = useGetDetailUserQuery(userId);
+  const { data: notifications } = useGetListNotificationUserQuery({
+    userId: Number(userId),
+  });
+  const getRoleDisplayName = (roleName : string) => {
     switch (roleName) {
       case "Staff":
         return "Nhân viên";
@@ -99,7 +98,7 @@ const LayoutPage = ({ children }: Props) => {
       toast("Bạn có thông báo mới");
       refetchNoti();
     }
-    refetch();
+    // refetch();
     dispatch(reloadNoti());
   }, [takingNew]);
 
@@ -187,18 +186,18 @@ const LayoutPage = ({ children }: Props) => {
             >
               <img
                 className="w-[40px] h-[40px] rounded-full"
-                src={data1?.image || DefaultUserImage}
+                src={userData?.image || DefaultUserImage}
                 alt="User"
               />
               <div className="ml-3">
                 <h1 className="text-sm font-medium text-white">
-                  {data1?.fullName}
+                  {userData?.fullName}
                 </h1>
                 <h2 className="text-xs text-gray-300">
-                  {getRoleDisplayName(data1?.role.roleName)}
+                  {getRoleDisplayName(userData?.role.roleName)}
                 </h2>
                 <h2 className="text-xs text-gray-300">
-                  {data1?.department?.departmentName}
+                  {userData?.department?.departmentName}
                 </h2>
               </div>
             </div>
@@ -206,12 +205,12 @@ const LayoutPage = ({ children }: Props) => {
           </div>
         )}
 
-        <MenuNav />
+        <MenuNav theme={isDarkTheme ? "dark" : "light"} />
       </Sider>
 
       <Layout>
         <Header
-          className="flex items-center"
+          className="flex items-center justify-between"
           style={{
             backgroundColor: sharedBackgroundColor,
             paddingLeft: 20,
@@ -225,7 +224,7 @@ const LayoutPage = ({ children }: Props) => {
             className="text-white"
             style={{ fontSize: "18px" }}
           />
-          <div className="top-0 right-20 absolute ">
+          {/* <div className="top-0 right-20 absolute ">
             <Dropdown menu={{ items }} trigger={["click"]} overlayClassName="pt-1">
               <a onClick={(e) => e.preventDefault()}>
                 <Space>
@@ -241,9 +240,26 @@ const LayoutPage = ({ children }: Props) => {
                 </Space>
               </a>
             </Dropdown>
-          </div>
+          </div> */}
+
+          <Space>
+            {/* Dark/Light Mode Toggle Icon */}
+            <Button
+              type="text"
+              icon={<BulbOutlined style={{ color: isDarkTheme ? "#ffc107" : "#fff" }} />}
+              onClick={() => setIsDarkTheme(!isDarkTheme)}
+            />
+
+            {/* Notification Dropdown */}
+            {/* <Badge count={notiCount?.length}> */}
+              <NotificationDropdown />
+            {/* </Badge> */}
+          </Space>
         </Header>
         <Breadcrumb items={breadcrumbItems} style={{ margin: "16px" }} />
+
+      
+
         <Content className="m-6 p-6 bg-white rounded shadow min-h-[80vh]">
           {children}
         </Content>

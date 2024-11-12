@@ -1,259 +1,201 @@
 import {
   Layout,
   Button,
-  Table,
   Input,
-  Tag,
-  Modal,
-  Form,
-  Select,
-  DatePicker,
-  message,
-  Row,
-  Col,
-  Divider,
   Dropdown,
+  Menu,
   Space,
-  MenuProps,
+  message,
+  Modal,
+  Divider,
 } from "antd";
-import {
-  SearchOutlined,
-  PlusOutlined,
-  DownOutlined,
-} from "@ant-design/icons";
-import { useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import moment from "moment";
+import { SearchOutlined, PlusOutlined, DownOutlined, FilterOutlined } from "@ant-design/icons";
+import { useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { useDeleteScheduleMutation } from "../../services/schedule.service";
-import { useAssignScheduleMutation, useGetSchedulesUserByStatusQuery } from "../../services/scheduleUser.service";
-import { ScheduleUserType } from "../../types/ScheduleUserType";
+import { useGetSchedulesUserByStatusQuery } from "../../services/scheduleUser.service";
 import TableScheduleUser from "../../components/TableScheduleUser";
-import { isEntityError, isFerchBaseQueryError } from "../../utils/helpers";
 import ScheduleUserDetailModal from "../../components/Modal/ScheduleUserDetailModal";
 
-type FormError =
-  |
-  {
-    [key in keyof ScheduleUserType]: string;
-  }
-  | null;
-
-
 const { Content } = Layout;
+
 type StatusType = 'All' | 'Assigned' | 'Pending' | 'Approved' | 'Rejected' | 'Cancel';
 
 interface StatusOption {
   label: string;
   value: StatusType;
 }
+
 const ScheduleAssignedManager = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedRecord, setSelectedRecord] = useState<ScheduleUserType | null>(null);
-  const userId = Number(localStorage.getItem("userId"));
-
-  const [searchText, setSearchText] = useState<string>("");
+  const [selectedRecord, setSelectedRecord] = useState(null);
+  const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusType>("All");
+  const [actionType, setActionType] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const statusOptions: StatusOption[] = [
     { label: 'Tất cả', value: 'All' },
-    { label: 'Đang chờ xử lý', value: 'Assigned' },
-    { label: 'Đang chờ duyệt', value: 'Pending' },
-    { label: 'Đã chấp nhận', value: 'Approved' },
+    { label: 'Chờ tạo', value: 'Assigned' },
+    { label: 'Chờ phê duyệt', value: 'Pending' },
+    { label: 'Đã phê duyệt', value: 'Approved' },
     { label: 'Đã từ chối', value: 'Rejected' },
     { label: 'Đã hủy', value: 'Cancel' }
   ];
 
   const getStatusColor = (status: StatusType): string => {
     const colors: Record<StatusType, string> = {
-      All: '#f9fafb',
-      Assigned: '#e0f2fe',
-      Pending: '#fef9c3',
-      Approved: '#dcfce7',
-      Rejected: '#fee2e2',
-      Cancel: '#f3e8ff'
+      All: 'bg-gray-100',
+      Assigned: 'bg-blue-100',
+      Pending: 'bg-yellow-100',
+      Approved: 'bg-green-100',
+      Rejected: 'bg-red-100',
+      Cancel: 'bg-purple-100'
     };
-    return colors[status] || colors.All;
+    return colors[status] || 'bg-gray-100';
   };
 
   const getCurrentStatusLabel = (): string => {
     return statusOptions.find(option => option.value === statusFilter)?.label || 'Tất cả';
   };
 
-  const menuItems: MenuProps['items'] = statusOptions.map((option) => ({
+  const menuItems = statusOptions.map((option) => ({
     key: option.value,
     label: option.label,
   }));
 
-  const handleMenuClick: MenuProps['onClick'] = (e) => {
+  const handleMenuClick = (e) => {
     setStatusFilter(e.key as StatusType);
   };
-  //Nhật
-  const {
-    data: schedules,
-    isLoading,
-    isFetching,
-    error,
-    refetch   
-  } = useGetSchedulesUserByStatusQuery({
+
+  const { data: schedules, isLoading, isFetching, error, refetch } = useGetSchedulesUserByStatusQuery({
     pageNumber: 1,
-    pageSize: 100,
-    userId: Number(userId),
+    pageSize: 10,
+    userId: Number(localStorage.getItem("userId")),
     status: statusFilter,
   });
 
-  console.log("TAO LOG RA schedules", schedules);
-  
-  
+  const handleRowClick = useCallback(
+    (record) => {
+      if (actionType === 'view') {
+        setSelectedRecord(record);
+        setIsModalVisible(true);
+      }
+    },
+    [actionType]
+  );
 
-  const handleRowClick = (record: ScheduleUserType) => {
-    setSelectedRecord(record);
-    setIsModalVisible(true);
-    //console.log(record);
-  };
   const handleModalClose = () => {
     setIsModalVisible(false);
     setSelectedRecord(null);
+    setActionType(null);
   };
-  // const errorForm: FormError = useMemo(() => {
-  //   if (isEntityError(error)) {
-  //     return error.data.error as FormError;
-  //   }
-  //   return null;
-  // }, [error]);
-  // console.log(errorForm);
-  // useEffect(() => {
-  //   console.log(statusFilter);
-  //   console.log(schedules);
-  // }, [statusFilter]);
-
-  // const { data: users = [], isLoading: usersLoading } =
-  //   useGetListUsersByDepartmentIdQuery({
-  //     departmentId: departmentIdUser,
-  //     pageNumber: 1,
-  //     pageSize: 100,
-  //   });
-  // console.log(users);
 
   const [deleteSchedule] = useDeleteScheduleMutation();
 
-  const handleDeleteSchedule = (scheduleId: number) => {
-    Modal.confirm({
-      title: "Xác nhận xóa",
-      content: "Bạn có chắc chắn muốn xóa dự án này?",
-      okText: "Có",
-      cancelText: "Không",
-      okType: "danger",
-      onOk: async () => {
-        try {
-          await deleteSchedule(scheduleId).unwrap();
-          message.success("Dự án đã được xóa thành công!");
-        } catch (error) {
-          message.error("Có lỗi xảy ra khi xóa dự án.");
-        }
-      },
+  const handleDeleteSchedule = async (scheduleId: number): Promise<void> => {
+    setActionType('delete'); 
+
+    return new Promise((resolve) => {
+      Modal.confirm({
+        title: "Xác nhận xóa",
+        content: "Bạn có chắc chắn muốn xóa dự án này?",
+        okText: "Có",
+        cancelText: "Không",
+        okType: "danger",
+        onOk: async () => {
+          try {
+            await deleteSchedule(scheduleId).unwrap();
+            message.success("Dự án đã được xóa thành công!");
+            refetch();
+            resolve();
+          } catch (error) {
+            message.error("Có lỗi xảy ra khi xóa dự án.");
+            resolve();
+          }
+        },
+        onCancel: () => resolve(),
+      });
     });
   };
 
-
-  // const handleDateChange = (date: moment.Moment | null) => {
-  //   setAssignData((prev) => ({
-  //     ...prev,
-  //     deadlineTime: date ? date.toISOString() : "",
-  //   }));
-  // };
-
-  // const handleAssignSubmit = async () => {
-  //   try {
-  //     const payload = { ...assignData };
-  //     // console.log("Payload gửi:", payload); // Kiểm tra payload
-  //     await assignSchedule(payload).unwrap();
-  //     message.success("Phân công thành công!");
-  //     setIsModalVisible(false);
-  //   } catch (error) {
-  //     message.error("Có lỗi xảy ra khi phân công.");
-  //   }
-  // };
-
-
+  const handleEditOrView = (record) => {
+    setActionType('view');
+    handleRowClick(record);
+  };
 
   return (
     <Layout className="min-h-screen bg-gray-50">
-    <Content className="p-8">
-      <div className="max-w-7xl mx-auto space-y-8">
-        {/* Header */}
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-green-600">
-              Danh sách lịch trình đã giao
-          </h1>
+      <Content className="p-8">
+        <div className="text-center mb-6">
+          <h1 className="text-3xl font-bold text-titleMain">Danh sách lịch trình đã giao</h1>
         </div>
+        
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-4 space-y-4 sm:space-y-0 sm:space-x-4">
+          <div className="flex items-center gap-4 w-full sm:w-auto">
+            <div className="flex items-center bg-white rounded-full shadow-sm p-2 border border-gray-300 focus-within:border-blue-500 transition-all duration-200 ease-in-out w-[300px]">
+              <SearchOutlined className="text-gray-500 ml-2" />
+              <Input
+                placeholder="Tìm kiếm theo tiêu đề"
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                className="ml-2 bg-transparent border-none focus:outline-none text-gray-700 placeholder-gray-400 w-full"
+              />
+            </div>
 
-        {/* Filters and Actions */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="flex gap-4 w-full sm:w-auto flex-wrap">
-            {/* Status Filter Dropdown */}
-            <Dropdown 
-              menu={{ 
-                items: menuItems,
-                onClick: handleMenuClick,
-                selectedKeys: [statusFilter]
-              }}
+            <Dropdown
+              overlay={
+                <Menu
+                  items={menuItems}
+                  onClick={handleMenuClick}
+                  selectedKeys={[statusFilter]}
+                />
+              }
               trigger={['click']}
             >
               <Button
-                style={{ 
-                  backgroundColor: getStatusColor(statusFilter),
-                  minWidth: '140px'
-                }}
+                className={`${getStatusColor(statusFilter)} flex items-center justify-between text-gray-700 px-4 py-2 rounded-md shadow-sm`}
               >
                 <Space>
-                  {getCurrentStatusLabel()}
-                  <DownOutlined />
+                  <FilterOutlined className="mr-1" />
+                  <span className="font-semibold">{getCurrentStatusLabel()}</span>
                 </Space>
               </Button>
             </Dropdown>
-
-            {/* Search Input */}
-            <Input
-              placeholder="Tìm kiếm theo tiêu đề"
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              prefix={<SearchOutlined className="text-gray-400" />}
-              style={{ width: 300 }}
-            />
           </div>
 
-          {/* Create New Project Button */}
           <Button
             type="primary"
             icon={<PlusOutlined />}
             onClick={() => navigate("/createNewSchedule")}
-            className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
+            className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 shadow-sm"
           >
             Tạo mới dự án
           </Button>
         </div>
+        <Divider />
 
-        {/* Table Component */}
-        <div className="mt-6">
+        <div className="bg-white shadow-lg rounded-md overflow-hidden">
           <TableScheduleUser
             data={schedules}
             isLoading={isLoading || isFetching}
-            onRowClick={handleRowClick}
+            onRowClick={handleEditOrView}
             error={error}
+            deleteSchedule={handleDeleteSchedule}
+            refetch={refetch}
           />
         </div>
-      </div>
 
-      {/* Modal */}
-      <ScheduleUserDetailModal
-        isVisible={isModalVisible}
-        handleClose={handleModalClose}
-        selectedRecord={selectedRecord}
-        refetch={refetch}
-      />
-    </Content>
-  </Layout>
+        {isModalVisible && (
+          <ScheduleUserDetailModal
+            isVisible={isModalVisible}
+            handleClose={handleModalClose}
+            selectedRecord={selectedRecord}
+            refetch={refetch}
+          />
+        )}
+      </Content>
+    </Layout>
   );
 };
 
