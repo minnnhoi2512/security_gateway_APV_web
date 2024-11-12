@@ -186,7 +186,7 @@ const Schedule = () => {
           totalCount={schedules?.totalCount || 0}
           handleDeleteSchedule={handleDeleteSchedule}
           handleAssignUser={handleAssignUser}
-        />
+        />  
 
         <Modal
           title="Phân công nhân viên"
