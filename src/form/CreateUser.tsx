@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { Layout, Button, Form, Input, message, Upload, Select } from "antd";
-import { useNavigate, useLocation } from "react-router-dom"; // Import useLocation
+import { Layout, Button, Form, Input, message, Upload, Select, Card, Typography, Row, Col } from "antd";
+import { useNavigate, useLocation } from "react-router-dom";
 import { UploadOutlined } from "@ant-design/icons";
-import { v4 as uuidv4 } from "uuid"; // Import uuid
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage"; // Import getDownloadURL
-import { imageDB } from "../api/firebase"; // Adjust the path as necessary
-import UserType from "../types/userType"; // Ensure this type is defined
+import { v4 as uuidv4 } from "uuid";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { imageDB } from "../api/firebase";
+import UserType from "../types/userType";
 import {
   useCreateNewUserMutation,
   useGetListStaffByDepartmentManagerQuery,
@@ -15,13 +15,14 @@ import { useGetListDepartmentsQuery } from "../services/department.service";
 import DepartmentType from "../types/departmentType";
 
 const { Content } = Layout;
+const { Title, Text } = Typography;
 
 const CreateUser: React.FC = () => {
   const navigate = useNavigate();
-  const location = useLocation(); // Get the location
-  const roleId = location.state?.roleId; // Access roleId from state
-  const departmentId_local = Number(localStorage.getItem("departmentId")); // Get departmentId from local storage
-  const userRole = localStorage.getItem("userRole"); // Get user role from local storage
+  const location = useLocation();
+  const roleId = location.state?.roleId;
+  const departmentId_local = Number(localStorage.getItem("departmentId"));
+  const userRole = localStorage.getItem("userRole");
   const userId = Number(localStorage.getItem("userId"));
   const [form] = Form.useForm();
   const [username, setUsername] = useState("");
@@ -30,22 +31,8 @@ const CreateUser: React.FC = () => {
   const [fullName, setFullName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [faceImg, setFaceImg] = useState<File[]>([]);
-  const [departmentId, setDepartmentId] = useState<number | undefined>(
-    undefined
-  ); // State for selected department
-  const [createNewUser] = useCreateNewUserMutation(); // Destructure the mutation
-
-  // Determine role based on roleId
-  let role = "";
-  if (roleId === 2) {
-    role = "Manager";
-  } else if (roleId === 3) {
-    role = "DepartmentManager";
-  } else if (roleId === 4) {
-    role = "Staff";
-  } else if (roleId === 5) {
-    role = "Security";
-  }
+  const [departmentId, setDepartmentId] = useState<number | undefined>(undefined);
+  const [createNewUser] = useCreateNewUserMutation();
 
   const { data: listDepartment } = useGetListDepartmentsQuery({
     pageNumber: -1,
@@ -54,175 +41,185 @@ const CreateUser: React.FC = () => {
 
   const { refetch: refetchStaffData } = useGetListStaffByDepartmentManagerQuery(
     { pageNumber: -1, pageSize: -1, departmentManagerId: userId },
-    { skip: userRole !== "DepartmentManager" } // Skip if not Department Manager
+    { skip: userRole !== "DepartmentManager" }
   );
 
   const { refetch: refetchUserList } = useGetListUserByRoleQuery({
     pageNumber: -1,
     pageSize: -1,
-    role: role, // Use the dynamically set role
+    role: roleId === 2 ? "Manager" : roleId === 3 ? "DepartmentManager" : roleId === 4 ? "Staff" : "Security",
   });
 
   const handleCreateUser = async () => {
     try {
       await form.validateFields();
-      // Upload images to Firebase Storage
       const faceImgPromises = faceImg.map((file) => {
-        const uniqueFileName = `${uuidv4()}`; // Use uuid for unique filename
+        const uniqueFileName = `${uuidv4()}`;
         const storageRef = ref(imageDB, `avtImg/${uniqueFileName}`);
-        return uploadBytes(storageRef, file).then((snapshot) => {
-          return getDownloadURL(snapshot.ref); // Get the download URL after upload
-        });
+        return uploadBytes(storageRef, file).then((snapshot) =>
+          getDownloadURL(snapshot.ref)
+        );
       });
-      // Wait for all uploads to complete and get URLs
       const faceImgUrls = await Promise.all(faceImgPromises);
-      // Determine departmentId based on roleId
-      // console.log(roleId);
       const assignedDepartmentId =
-        roleId === 2
-          ? 2
-          : roleId === 5
-          ? 3
-          : departmentId || departmentId_local; // Use departmentId_local if userRole is DepartmentManager
+        roleId === 2 ? 2 : roleId === 5 ? 3 : departmentId || departmentId_local;
+
       const user: UserType = {
         userName: username,
         password: password,
         fullName: fullName,
         email: email,
         phoneNumber: phoneNumber,
-        image: faceImgUrls[0], // Assuming you want to store the first uploaded image
-        roleID: roleId, // Use the roleId from the state
-        departmentId: assignedDepartmentId || departmentId_local, // Set departmentId based on roleId
+        image: faceImgUrls[0],
+        roleID: roleId,
+        departmentId: assignedDepartmentId || departmentId_local,
       };
-      // Call the mutation to create the user
-      await createNewUser(user).unwrap(); // Use unwrap to handle the promise correctly
+
+      await createNewUser(user).unwrap();
       message.success("Tạo người dùng thành công!");
-      console.log(userRole === "DepartmentManager");
       if (userRole === "DepartmentManager") {
         await refetchStaffData();
       } else {
         await refetchUserList();
       }
-      setFaceImg([]); // Clear the uploaded images
-      form.resetFields(); // Reset form fields
-      navigate(-1); // Go back after successful creation
+      setFaceImg([]);
+      form.resetFields();
+      navigate(-1);
     } catch (error) {
       console.error("Failed to create user:", error);
-      const errorMessage = "Tạo người dùng thất bại!";
-      message.error(errorMessage); // Show error message
+      message.error("Tạo người dùng thất bại!");
     }
   };
 
   const handleCancel = () => {
     navigate(-1);
   };
+
   const filteredDepartments = listDepartment?.filter(
     (department: DepartmentType) => ![1, 2, 3].includes(department.departmentId)
   );
 
   return (
-    <Layout className="min-h-screen">
-      <Content className="p-6">
-        <h1 className="text-green-500 text-2xl font-bold">
-          Tạo người dùng mới
-        </h1>
-        <Form form={form} layout="vertical">
-          <Form.Item
-            name="fullName"
-            label="Họ Và Tên"
-            rules={[{ required: true, message: "Vui lòng nhập họ và tên" }]}
-          >
-            <Input
-              placeholder="Nhập tên"
-              onChange={(e) => setFullName(e.target.value)}
-            />
-          </Form.Item>
-          <Form.Item
-            name="email"
-            label="Email"
-            rules={[{ required: true, message: "Vui lòng nhập email" }]}
-          >
-            <Input
-              placeholder="Nhập email"
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </Form.Item>
-          <Form.Item
-            name="username"
-            label="Tên đăng nhập"
-            rules={[{ required: true, message: "Vui lòng nhập tên đăng nhập" }]}
-          >
-            <Input
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Nhập tên đăng nhập"
-            />
-          </Form.Item>
-          <Form.Item
-            name="password"
-            label="Mật khẩu"
-            rules={[{ required: true, message: "Vui lòng nhập mật khẩu" }]}
-          >
-            <Input.Password
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Nhập mật khẩu"
-            />
-          </Form.Item>
-          <Form.Item
-            name="phoneNumber"
-            label="Số điện thoại"
-            rules={[{ required: true, message: "Vui lòng nhập số điện thoại" }]}
-          >
-            <Input
-              placeholder="Nhập số điện thoại"
-              onChange={(e) => setPhoneNumber(e.target.value)}
-            />
-          </Form.Item>
-          {roleId !== 2 &&
-            roleId !== 5 &&
-            !(roleId === 4 && userRole === "DepartmentManager") && (
-              <Form.Item
-                name="departmentId"
-                label="Chọn phòng ban"
-                rules={[{ required: true, message: "Vui lòng chọn phòng ban" }]}
-              >
-                <Select
-                  placeholder="Chọn phòng ban"
-                  onChange={(value) => setDepartmentId(value)}
+    <Layout className="min-h-screen flex justify-center items-center bg-gray-50">
+      <Content className="w-full max-w-2xl">
+        <Card className="shadow-md border border-gray-200 p-6 rounded-lg">
+          <Title level={3} className="text-3xl font-bold text-center text-titleMain mb-6">Tạo Người Dùng Mới</Title>
+          <Text type="secondary" className="text-center block mb-6">
+            Vui lòng nhập thông tin cần thiết để tạo người dùng mới
+          </Text>
+          <Form form={form} layout="vertical">
+            <Row gutter={16}>
+              <Col xs={24} sm={12}>
+                <Form.Item
+                  name="fullName"
+                  label={<Text className="font-medium text-gray-700">Họ và Tên</Text>}
+                  rules={[{ required: true, message: "Vui lòng nhập họ và tên" }]}
                 >
-                  {filteredDepartments?.map((department: DepartmentType) => (
-                    <Select.Option
-                      key={department.departmentId}
-                      value={department.departmentId}
+                  <Input
+                    placeholder="Nhập tên"
+                    onChange={(e) => setFullName(e.target.value)}
+                    className="rounded-md"
+                  />
+                </Form.Item>
+              </Col>
+              <Col xs={24} sm={12}>
+                <Form.Item
+                  name="email"
+                  label={<Text className="font-medium text-gray-700">Email</Text>}
+                  rules={[{ required: true, message: "Vui lòng nhập email" }]}
+                >
+                  <Input
+                    placeholder="Nhập email"
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="rounded-md"
+                  />
+                </Form.Item>
+              </Col>
+              <Col xs={24} sm={12}>
+                <Form.Item
+                  name="username"
+                  label={<Text className="font-medium text-gray-700">Tên đăng nhập</Text>}
+                  rules={[{ required: true, message: "Vui lòng nhập tên đăng nhập" }]}
+                >
+                  <Input
+                    placeholder="Nhập tên đăng nhập"
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="rounded-md"
+                  />
+                </Form.Item>
+              </Col>
+              <Col xs={24} sm={12}>
+                <Form.Item
+                  name="password"
+                  label={<Text className="font-medium text-gray-700">Mật khẩu</Text>}
+                  rules={[{ required: true, message: "Vui lòng nhập mật khẩu" }]}
+                >
+                  <Input.Password
+                    placeholder="Nhập mật khẩu"
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="rounded-md"
+                  />
+                </Form.Item>
+              </Col>
+              <Col xs={24} sm={12}>
+                <Form.Item
+                  name="phoneNumber"
+                  label={<Text className="font-medium text-gray-700">Số điện thoại</Text>}
+                  rules={[{ required: true, message: "Vui lòng nhập số điện thoại" }]}
+                >
+                  <Input
+                    placeholder="Nhập số điện thoại"
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    className="rounded-md"
+                  />
+                </Form.Item>
+              </Col>
+              <Col xs={24} sm={12}>
+                {roleId !== 2 && roleId !== 5 && !(roleId === 4 && userRole === "DepartmentManager") && (
+                  <Form.Item
+                    name="departmentId"
+                    label={<Text className="font-medium text-gray-700">Chọn phòng ban</Text>}
+                    rules={[{ required: true, message: "Vui lòng chọn phòng ban" }]}
+                  >
+                    <Select
+                      placeholder="Chọn phòng ban"
+                      onChange={(value) => setDepartmentId(value)}
+                      className="rounded-md"
                     >
-                      {department.departmentName}
-                    </Select.Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            )}
-
-          <Form.Item label="Ảnh đại diện">
-            <Upload
-              beforeUpload={(file) => {
-                setFaceImg((prev) => [...prev, file]);
-                return false; // Prevent automatic upload
-              }}
-              showUploadList={true}
-            >
-              <Button icon={<UploadOutlined />}>Tải lên ảnh</Button>
-            </Upload>
-          </Form.Item>
-          <Form.Item>
-            <Button type="primary" onClick={handleCreateUser}>
-              Tạo người dùng
-            </Button>
-            <Button onClick={handleCancel} style={{ marginLeft: "10px" }}>
-              Hủy
-            </Button>
-          </Form.Item>
-        </Form>
+                      {filteredDepartments?.map((department: DepartmentType) => (
+                        <Select.Option key={department.departmentId} value={department.departmentId}>
+                          {department.departmentName}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                )}
+              </Col>
+              <Col xs={24}>
+                <Form.Item label={<Text className="font-medium text-gray-700">Ảnh đại diện</Text>}>
+                  <Upload
+                    beforeUpload={(file) => {
+                      setFaceImg((prev) => [...prev, file]);
+                      return false;
+                    }}
+                    showUploadList={true}
+                    className="rounded-md"
+                  >
+                    <Button icon={<UploadOutlined />}>Tải lên ảnh</Button>
+                  </Upload>
+                </Form.Item>
+              </Col>
+            </Row>
+            <div className="flex justify-end space-x-3 mt-6">
+              <Button onClick={handleCancel} className="rounded-md border-gray-300">
+                Hủy
+              </Button>
+              <Button type="primary" onClick={handleCreateUser} className="rounded-md">
+                Tạo người dùng
+              </Button>
+            </div>
+          </Form>
+        </Card>
       </Content>
     </Layout>
   );

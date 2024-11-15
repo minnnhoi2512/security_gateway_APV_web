@@ -1,8 +1,26 @@
-import { Layout, Button, Table, Tag, Input, Modal, message } from "antd";
+import {
+  Layout,
+  Button,
+  Input,
+  Modal,
+  Table,
+  Tag,
+  notification,
+  Divider,
+} from "antd";
+import {
+  SearchOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import UserType from "../../types/userType";
-import { useGetListUserByRoleQuery, useDeleteUserMutation } from "../../services/user.service";
+import {
+  useGetListUserByRoleQuery,
+  useDeleteUserMutation,
+} from "../../services/user.service";
 import { statusUserMap, UserStatus } from "../../types/Enum/UserStatus";
 import { roleMap, UserRole } from "../../types/Enum/UserRole";
 
@@ -10,25 +28,22 @@ const { Content } = Layout;
 
 const Manager = () => {
   const [searchText, setSearchText] = useState<string>("");
+  const [isImageModalVisible, setIsImageModalVisible] = useState(false);
+  const [enlargedImage, setEnlargedImage] = useState<string | undefined>(undefined);
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const [userIdToDelete, setUserIdToDelete] = useState<number | null>(null);
   const navigate = useNavigate();
-  
-  // Fetch data for users with the role of "Manager"
   const { data = [], refetch, isLoading } = useGetListUserByRoleQuery({
     pageNumber: -1,
     pageSize: -1,
     role: "Manager",
   });
+  const [deleteUser] = useDeleteUserMutation();
 
-  const [isModalVisible, setIsModalVisible] = useState(false); // State for modal visibility
-  const [userIdToDelete, setUserIdToDelete] = useState<number | null>(null); // State to store user ID for deletion
-  const [deleteUser] = useDeleteUserMutation(); // Hook for deleting user
-
-  // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchText(e.target.value);
   };
 
-  // Filter the data based on search text
   const filteredData = data.filter((user: UserType) =>
     user.fullName.toLowerCase().includes(searchText.toLowerCase())
   );
@@ -38,26 +53,37 @@ const Manager = () => {
       title: "Ảnh",
       dataIndex: "image",
       key: "image",
+      width: "10%",
       render: (image: string) => (
-        <img src={image} alt="avatar" style={{ width: 32, height: 32 }} />
+        <img
+          src={image}
+          alt="avatar"
+          style={{ width: 32, height: 32, borderRadius: '50%', cursor: 'pointer' }}
+          onClick={() => {
+            setEnlargedImage(image);
+            setIsImageModalVisible(true);
+          }}
+        />
       ),
     },
     {
       title: "Tên",
       dataIndex: "fullName",
       key: "fullName",
-      sorter: (a: UserType, b: UserType) =>
-        a.fullName.localeCompare(b.fullName),
+      width: "20%",
+      sorter: (a: UserType, b: UserType) => a.fullName.localeCompare(b.fullName),
     },
     {
       title: "Số điện thoại",
       dataIndex: "phoneNumber",
       key: "phoneNumber",
+      width: "20%",
     },
     {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
+      width: "20%",
       render: (status: UserStatus) => {
         const { colorUserStatus, textUserStatus } = statusUserMap[status] || {
           color: "black",
@@ -68,43 +94,37 @@ const Manager = () => {
     },
     {
       title: "Vai trò",
-      dataIndex: ["role","roleId"],
+      dataIndex: ["role", "roleId"],
       key: "roleId",
+      width: "20%",
       render: (roleId: UserRole) => {
-        const { textRole } = roleMap[roleId] || {
-          color: "black",
-          text: "Không xác định",
-        };
+        const { textRole } = roleMap[roleId] || { text: "Không xác định" };
         return <Tag color="blue">{textRole}</Tag>;
       },
     },
     {
       title: "Hành động",
       key: "action",
+      width: "10%",
+      align: "center" as const, 
       render: (_: any, record: UserType) => (
-        <>
+        <div className="flex justify-center space-x-1">
           <Button
-            type="primary"
-            className="mr-2"
-            onClick={() =>
-              navigate(`/detailUser/${record.userId}`, {
-                state: record,
-              })
-            }
-          >
-            Chỉnh sửa
-          </Button>
+            type="text"
+            icon={<EditOutlined />}
+            className="text-green-600 hover:text-green-800 p-0"
+            onClick={() => navigate(`/detailUser/${record.userId}`, { state: record })}
+          />
           <Button
-            type="primary"
-            danger
+            type="text"
+            icon={<DeleteOutlined />}
+            className="text-red-500 hover:text-red-700 p-0"
             onClick={() => {
-              setUserIdToDelete(record.userId || null); // Set the user ID to delete
-              setIsModalVisible(true); // Show the confirmation modal
+              setUserIdToDelete(record.userId || null);
+              setIsDeleteModalVisible(true);
             }}
-          >
-            Xóa
-          </Button>
-        </>
+          />
+        </div>
       ),
     },
   ];
@@ -112,63 +132,83 @@ const Manager = () => {
   const handleDeleteUser = async () => {
     if (userIdToDelete) {
       try {
-        await deleteUser(userIdToDelete).unwrap(); // Call the delete mutation
-        message.success("Xóa người dùng thành công");
-        setIsModalVisible(false); // Close the modal
-        setUserIdToDelete(null); // Reset the user ID
-        refetch(); // Refetch the data after deletion
+        await deleteUser(userIdToDelete).unwrap();
+        notification.success({ message: "Xóa người dùng thành công" });
+        setIsDeleteModalVisible(false);
+        setUserIdToDelete(null);
+        refetch();
       } catch (error) {
-        message.error(`Xóa người dùng thất bại`);
+        notification.error({ message: "Xóa người dùng thất bại" });
       }
     }
   };
 
   return (
-    <Layout className="min-h-screen">
-      <Layout>
-        <Content className="p-6">
-          <div className="flex justify-center mb-4">
-            <h1 className="text-green-500 text-2xl font-bold">
-              Danh sách quản lý
-            </h1>
+    <Layout className="min-h-screen bg-gray-50">
+      <Content className="p-8">
+        <h1 className="text-3xl font-bold text-center mb-6 text-titleMain">Danh sách quản lý</h1>
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center bg-white rounded-full shadow-sm p-2 border border-gray-300 focus-within:border-blue-500 transition-all duration-200 ease-in-out">
+            <SearchOutlined className="text-gray-500 ml-2" />
+            <Input
+              placeholder="Tìm kiếm theo tên"
+              value={searchText}
+              onChange={handleSearchChange}
+              className="ml-2 bg-transparent border-none focus:outline-none text-gray-700 placeholder-gray-400"
+              style={{ width: 300 }}
+            />
           </div>
           <Button
             type="primary"
-            className="mb-4 bg-blue-500 hover:bg-blue-600"
+            icon={<PlusOutlined />}
+            className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 shadow-sm"
             onClick={() => navigate("/createUser", { state: { roleId: 2 } })}
           >
             Tạo mới người dùng
           </Button>
-          <Input
-            placeholder="Tìm kiếm theo tên"
-            value={searchText}
-            onChange={handleSearchChange}
-            style={{ marginBottom: 16, width: 300 }}
-          />
-          <Table
-            columns={columns}
-            dataSource={filteredData}
-            pagination={{
-              total: filteredData.length, // Assuming totalCount is provided in the response
-              showSizeChanger: true,
-              pageSizeOptions: ["5", "10", "20"],
-              size: "small",
-            }}
-            loading={isLoading} // Use the loading state from the query
-            rowKey={"userId"}
-          />
-          <Modal
-            title="Xác nhận xóa"
-            visible={isModalVisible}
-            onOk={handleDeleteUser}
-            onCancel={() => setIsModalVisible(false)}
-            okText="Xóa"
-            cancelText="Hủy"
-          >
-            <p>Bạn có chắc chắn muốn xóa người dùng này?</p>
-          </Modal>
-        </Content>
-      </Layout>
+        </div>
+
+        {/* Divider Line */}
+        <Divider className="border-t border-gray-200 mb-4" />
+
+        <Table
+          columns={columns}
+          dataSource={filteredData}
+          pagination={{
+            total: filteredData.length,
+            showSizeChanger: true,
+            pageSizeOptions: ["5", "10", "20"],
+          }}
+          loading={isLoading}
+          rowKey={"userId"}
+          bordered
+          className="bg-white shadow-md rounded-lg"
+        />
+
+        {/* Image Modal */}
+        <Modal
+          title="Ảnh phóng to"
+          visible={isImageModalVisible}
+          footer={null}
+          onCancel={() => setIsImageModalVisible(false)}
+        >
+          <img src={enlargedImage} alt="Enlarged" style={{ width: "100%" }} />
+        </Modal>
+
+        {/* Delete Confirmation Modal */}
+        <Modal
+          title={<span className="text-xl font-semibold">Xác nhận xóa</span>}
+          visible={isDeleteModalVisible}
+          onOk={handleDeleteUser}
+          onCancel={() => setIsDeleteModalVisible(false)}
+          okText="Xóa"
+          cancelText="Hủy"
+          className="rounded-lg"
+          bodyStyle={{ padding: "20px" }}
+        >
+          <p>Bạn có chắc chắn muốn xóa người dùng này?</p>
+        </Modal>
+      </Content>
     </Layout>
   );
 };

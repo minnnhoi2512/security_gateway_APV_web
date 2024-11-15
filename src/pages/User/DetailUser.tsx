@@ -7,21 +7,25 @@ import {
   Upload,
   Spin,
   notification,
+  Card,
+  Typography,
+  Divider,
 } from "antd";
-import { useNavigate, useParams } from "react-router-dom";
 import { UploadOutlined } from "@ant-design/icons";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   useUpdateUserMutation,
   useGetDetailUserQuery,
   useGetListUserByRoleQuery,
 } from "../../services/user.service";
 import User from "../../types/userType";
-import { v4 as uuidv4 } from "uuid"; // Import uuid for unique file names
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage"; // Import Firebase functions
-import { imageDB } from "../../api/firebase"; // Import your Firebase configuration
+import { v4 as uuidv4 } from "uuid";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { imageDB } from "../../api/firebase";
 import { roleMap, UserRole } from "../../types/Enum/UserRole";
 
 const { Content } = Layout;
+const { Title, Text } = Typography;
 
 const DetailUser: React.FC = () => {
   const navigate = useNavigate();
@@ -32,9 +36,7 @@ const DetailUser: React.FC = () => {
   const [faceImg, setFaceImg] = useState<File[]>([]);
   const [updateUser] = useUpdateUserMutation();
 
-  // Fetch user details using the userId
-  const { data: userData, isLoading,refetch } = useGetDetailUserQuery(userId);
-  console.log(userData);
+  const { data: userData, isLoading, refetch } = useGetDetailUserQuery(userId);
   const { refetch: refetchUserList } = useGetListUserByRoleQuery({
     pageNumber: -1,
     pageSize: -1,
@@ -45,7 +47,7 @@ const DetailUser: React.FC = () => {
     color: "black",
     text: "Không xác định",
   };
-  
+
   const handleUpdateStatus = async () => {
     try {
       const faceImgPromises = faceImg.map((file) => {
@@ -92,76 +94,88 @@ const DetailUser: React.FC = () => {
   };
 
   return (
-    <Layout className="min-h-screen">
-      <Content className="p-6">
-        <h1 className="text-green-500 text-2xl font-bold">
-          Chi tiết người dùng
-        </h1>
-        {isLoading ? (
-          <Spin tip="Đang tải dữ liệu..." />
-        ) : (
-          <Form form={form} layout="vertical" initialValues={userData}>
-            <Form.Item
-              name="fullName"
-              label="Tên"
-              rules={[{ required: true, message: "Vui lòng nhập tên!" }]}
-            >
-              <Input disabled={isLoading} />
-            </Form.Item>
-            <Form.Item
-              name="email"
-              label="Email"
-              rules={[{ required: true, message: "Vui lòng nhập email!" }]}
-            >
-              <Input disabled={isLoading} />
-            </Form.Item>
-            <Form.Item label="Vai trò">
-              <Input disabled value={textRole} />
-            </Form.Item>
+    <Layout className="min-h-screen bg-gray-50 flex justify-center items-center">
+      <Content className="w-full max-w-lg">
+        <Card className="shadow-sm border border-gray-200 rounded-lg p-4">
+          {/* Header with Profile Image and Name */}
+          <div className="flex flex-col items-center text-center mb-6">
+            <img
+              src={imgFace || userData?.image || "https://via.placeholder.com/80"}
+              alt="User Avatar"
+              className="w-16 h-16 rounded-full border border-gray-300 mb-2"
+            />
+            <Title level={4} className="m-0 text-gray-800">
+              {userData?.fullName || "Tên người dùng"}
+            </Title>
+            <Text className="text-gray-500">{textRole}</Text>
+          </div>
 
-            <Form.Item label="Hình ảnh mặt">
-              <Upload
-                listType="picture"
-                showUploadList={false}
-                onChange={handleFaceImageChange}
-                maxCount={1}
-                disabled={isLoading}
+          {isLoading ? (
+            <div className="flex justify-center items-center">
+              <Spin tip="Đang tải dữ liệu..." size="large" />
+            </div>
+          ) : (
+            <Form form={form} layout="vertical" initialValues={userData} className="space-y-4">
+              <Form.Item
+                name="fullName"
+                label={<Text className="text-gray-700 font-semibold">Tên</Text>}
+                rules={[{ required: true, message: "Vui lòng nhập tên!" }]}
               >
-                <Button icon={<UploadOutlined />}>Tải lên hình ảnh mặt</Button>
-              </Upload>
-              {userData?.image && (
-                <img
-                  src={userData.image}
-                  alt="User Face"
-                  className="w-16 h-16 rounded-full mt-2"
-                />
-              )}
-              {imgFace && (
-                <img
-                  src={imgFace}
-                  alt="Uploaded Face"
-                  className="w-16 h-16 rounded-full mt-2"
-                />
-              )}
-            </Form.Item>
-            <Form.Item>
-              <Button
-                type="primary"
-                onClick={handleUpdateStatus}
-                disabled={isLoading}
+                <Input placeholder="Nhập tên người dùng" className="rounded-md" />
+              </Form.Item>
+
+              <Form.Item
+                name="email"
+                label={<Text className="text-gray-700 font-semibold">Email</Text>}
+                rules={[{ required: true, message: "Vui lòng nhập email!" }]}
               >
-                Cập nhật
-              </Button>
-              <Button
-                onClick={handleCancel}
-                style={{ marginLeft: "10px" }}
-                disabled={isLoading}
-              >
-                Hủy
-              </Button>
-            </Form.Item>
-          </Form>
-        )}
+                <Input placeholder="Nhập email" className="rounded-md" />
+              </Form.Item>
+
+              <Form.Item label={<Text className="text-gray-700 font-semibold">Vai trò</Text>}>
+                <Input disabled value={textRole} className="rounded-md" />
+              </Form.Item>
+
+              <Form.Item label={<Text className="text-gray-700 font-semibold">Hình ảnh mặt</Text>}>
+                <Upload
+                  listType="picture"
+                  showUploadList={false}
+                  onChange={handleFaceImageChange}
+                  maxCount={1}
+                >
+                  <Button icon={<UploadOutlined />}>Tải lên hình ảnh mặt</Button>
+                </Upload>
+                {imgFace && (
+                  <div className="mt-2">
+                    <img
+                      src={imgFace}
+                      alt="Uploaded Face"
+                      className="w-16 h-16 rounded-full border border-gray-300"
+                    />
+                  </div>
+                )}
+              </Form.Item>
+
+              <Divider className="my-2" />
+
+              <div className="flex justify-end space-x-3">
+                <Button
+                  onClick={handleCancel}
+                  className="border-gray-300 rounded-md"
+                >
+                  Hủy
+                </Button>
+                <Button
+                  type="primary"
+                  onClick={handleUpdateStatus}
+                  className="rounded-md"
+                >
+                  Cập nhật
+                </Button>
+              </div>
+            </Form>
+          )}
+        </Card>
       </Content>
     </Layout>
   );
