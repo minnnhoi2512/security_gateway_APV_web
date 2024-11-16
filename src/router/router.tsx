@@ -29,10 +29,11 @@ import CreateQRCard from "../form/CreateQRCard";
 import GateManager from "../pages/Facility/GateManager";
 import CalendarPage from "../pages/Utility/Calendar";
 import History from "../pages/History/History";
-import Chat from "../pages/Utility/Chat";
+import Chat from "../pages/Utility/Chat/Chat";
 import ChatRoom from "../pages/Utility/ChatRoom";
 import Profile from "../pages/User/Profile";
 import CustomerVisitStaff from "../pages/Visit/CustomerVisitStaff";
+import ChatDetail from "../pages/Utility/Chat/ChatDetail";
 
 
 
@@ -310,10 +311,10 @@ const ContentRouter = () => {
       />
       <Route
         index
-        path="/chat/:id"
+        path="/chat-detail/:id"
         element={
           <LayoutPage>
-            <ChatRoom />
+            <ChatDetail />
           </LayoutPage>
         }
       />

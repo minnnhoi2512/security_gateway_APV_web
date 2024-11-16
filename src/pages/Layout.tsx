@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { HomeOutlined, MenuFoldOutlined, MenuUnfoldOutlined,BulbOutlined } from "@ant-design/icons";
+import { HomeOutlined, MenuFoldOutlined, MenuUnfoldOutlined, BulbOutlined } from "@ant-design/icons";
 import { Avatar, Badge, Breadcrumb, Button, Dropdown, Layout, Space } from "antd";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import "@fontsource/inter"; 
@@ -13,6 +13,15 @@ import { useDispatch, useSelector } from "react-redux";
 import NotificationType from "../types/notificationType";
 import { reloadNoti } from "../redux/slices/notification.slice";
 import { MenuProps } from "antd/lib";
+import {
+  collection,
+  query,
+  onSnapshot,
+  where,
+  orderBy,
+  updateDoc,
+} from "firebase/firestore";
+import { chatDB,message } from "../api/firebase";
 
 const { Header, Sider, Content } = Layout;
 
@@ -34,19 +43,20 @@ const findRouteName = (path: string) => {
 
 const generateBreadcrumbItems = (location: any) => {
   const pathSnippets = location.pathname.split("/").filter((i: string) => i);
-  const breadcrumbItems = pathSnippets.map((_:any, index:any) => {
+  const breadcrumbItems = pathSnippets.map((_: any, index: any) => {
     const url = `/${pathSnippets.slice(0, index + 1).join("/")}`;
     return {
       title: <Link to={url}>{findRouteName(url)}</Link>,
     };
   });
-  return [{ title: <HomeOutlined />}, ...breadcrumbItems];
+  return [{ title: <HomeOutlined /> }, ...breadcrumbItems];
 };
 
-const LayoutPage = ({ children  } : {children : any}) => {
+const LayoutPage = ({ children }: { children: any }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [isDarkTheme, setIsDarkTheme] = useState(true); // Toggle for dark/light theme
   const userId = Number(localStorage.getItem("userId"));
+  const userRole = localStorage.getItem("userRole");
   const location = useLocation();
   const [breadcrumbItems, setBreadcrumbItems] = useState(
     generateBreadcrumbItems(location)
@@ -55,7 +65,7 @@ const LayoutPage = ({ children  } : {children : any}) => {
   const { data: notifications } = useGetListNotificationUserQuery({
     userId: Number(userId),
   });
-  const getRoleDisplayName = (roleName : string) => {
+  const getRoleDisplayName = (roleName: string) => {
     switch (roleName) {
       case "Staff":
         return "Nhân viên";
@@ -105,6 +115,28 @@ const LayoutPage = ({ children  } : {children : any}) => {
   useEffect(() => {
     setBreadcrumbItems(generateBreadcrumbItems(location));
   }, [location]);
+
+  useEffect(() => {
+    const q = query(
+      collection(chatDB, "messages"),
+      where("participants", "array-contains", userId),
+      orderBy("timestamp")
+    );
+
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      querySnapshot.docChanges().forEach((change) => {
+        if (change.type === "added") {
+          const messageData = change.doc.data();
+          if (messageData.userId !== userId && !messageData.read) {
+            toast.info(`New message from ${messageData.userRole} (User ${messageData.userId})`);
+            updateDoc(change.doc.ref, { read: true });
+          }
+        }
+      });
+    });
+
+    return () => unsubscribe();
+  }, [userId]);
 
   const items: MenuProps["items"] = [];
   const handleReadNotification = (id: string, isRead: boolean) => {
