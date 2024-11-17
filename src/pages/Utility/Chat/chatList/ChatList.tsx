@@ -1,32 +1,31 @@
-import { useState } from "react";
-import { Input, Button, List, Avatar } from "antd";
-import { PlusOutlined, MinusOutlined, SearchOutlined } from "@ant-design/icons";
+import { useEffect, useState } from "react";
+import { Input, Button, List, Avatar, Dropdown, Menu } from "antd";
+import { SearchOutlined, DownOutlined } from "@ant-design/icons";
 import "./chatList.css";
 import {
   doc,
   setDoc,
-  getDoc,
   query,
   where,
   collection,
   getDocs,
 } from "firebase/firestore";
 import { chatDB } from "../../../../api/firebase";
-
 import { useGetListUserByRoleQuery } from "../../../../services/user.service";
 import User from "../../../../types/userType";
-import { useNavigate } from "react-router";
 import { v4 as uuidv4 } from "uuid";
+import ChatDetail from "../ChatDetail";
 
 const ChatList = ({ user }: any) => {
-  const { data: securityData } = useGetListUserByRoleQuery({
+  const [roleName, setRoleName] = useState("Security");
+  const { data: dataUser, isLoading } = useGetListUserByRoleQuery({
     pageNumber: 1,
     pageSize: 100,
-    role: "Staff",
+    role: roleName,
   });
-  const [addMode, setAddMode] = useState(false);
+  const [filteredData, setFilteredData] = useState<User[]>([]);
+  const [selectedChat, setSelectedChat] = useState<any>(null); // State to manage the selected chat
   const currentUser = user;
-  const navigate = useNavigate();
 
   const handleSelect = async (security: User) => {
     const chatQuery = query(
@@ -46,9 +45,7 @@ const ChatList = ({ user }: any) => {
     });
 
     if (chatRoomExists) {
-      navigate(`/chat-detail/${chatId}`, {
-        state: { sender: user, receiver: security },
-      });
+      setSelectedChat({ chatId, sender: user, receiver: security });
     } else {
       chatId = uuidv4();
       const chatDocRef = doc(chatDB, "chats", chatId);
@@ -58,42 +55,78 @@ const ChatList = ({ user }: any) => {
         createdAt: new Date(),
         updatedAt: new Date(),
       });
-      navigate(`/chat-detail/${chatId}`, {
-        state: { sender: user, receiver: security },
-      });
+      setSelectedChat({ chatId, sender: user, receiver: security });
     }
   };
 
+  // Filter data to exclude the current user
+  useEffect(() => {
+    if (dataUser) {
+      const filteredData = dataUser.filter(
+        (security: any) => security.userId !== currentUser.userId
+      );
+      setFilteredData(filteredData);
+    }
+  }, [dataUser, isLoading]);
+
+  const handleMenuClick = (e: any) => {
+    setRoleName(e.key);
+  };
+
+  const menu = (
+    <Menu onClick={handleMenuClick}>
+      <Menu.Item key="Security">Bảo vệ</Menu.Item>
+      <Menu.Item key="Staff">Nhân viên</Menu.Item>
+      <Menu.Item key="DepartmentManager">Quản lý phòng ban</Menu.Item>
+      <Menu.Item key="Manager">Quản lý</Menu.Item>
+      <Menu.Item key="Admin">Quản trị viên</Menu.Item>
+    </Menu>
+  );
+
   return (
-    <div className="chatList">
-      <div className="search">
-        <Input
-          prefix={<SearchOutlined />}
-          placeholder="Search"
-          // onChange={(e) => setInput(e.target.value)}
-          style={{ marginBottom: 16 }}
-        />
-        <Button
-          type="primary"
-          icon={addMode ? <MinusOutlined /> : <PlusOutlined />}
-          onClick={() => setAddMode((prev) => !prev)}
+    <div className="chatContainer flex h-full">
+      <div className="chatList w-1/3 border-r overflow-y-auto">
+        <div className="search flex items-center space-x-4 p-4">
+          <Input
+            prefix={<SearchOutlined />}
+            placeholder="Search"
+            style={{ marginBottom: 16 }}
+          />
+          <Dropdown overlay={menu}>
+            <Button>
+              {roleName} <DownOutlined />
+            </Button>
+          </Dropdown>
+        </div>
+        <List
+          itemLayout="horizontal"
+          dataSource={filteredData}
+          renderItem={(security: User) => (
+            <List.Item
+              key={security.userId}
+              onClick={() => handleSelect(security)}
+            >
+              <List.Item.Meta
+                avatar={<Avatar src={security.image || "./avatar.png"} />}
+                title={security.fullName}
+              />
+            </List.Item>
+          )}
         />
       </div>
-      <List
-        itemLayout="horizontal"
-        dataSource={securityData}
-        renderItem={(security: User) => (
-          <List.Item
-            key={security.userId}
-            onClick={() => handleSelect(security)}
-          >
-            <List.Item.Meta
-              avatar={<Avatar src={security.image || "./avatar.png"} />}
-              title={security.fullName}
-            />
-          </List.Item>
+      <div className="chatDetail w-2/3 overflow-y-auto">
+        {selectedChat ? (
+          <ChatDetail
+            chatId={selectedChat.chatId}
+            sender={selectedChat.sender}
+            receiver={selectedChat.receiver}
+          />
+        ) : (
+          <div className="flex items-center justify-center h-full">
+            <p>Select a chat to start messaging</p>
+          </div>
         )}
-      />
+      </div>
     </div>
   );
 };

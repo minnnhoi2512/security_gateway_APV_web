@@ -3,8 +3,7 @@ import EmojiPicker from "emoji-picker-react";
 import { arrayUnion, doc, onSnapshot, updateDoc } from "firebase/firestore";
 import { chatDB } from "../../../api/firebase";
 import upload from "../../../api/upload";
-import { useLocation, useParams, useNavigate } from "react-router";
-import { Button, Input, Upload, Avatar } from "antd";
+import { Button, Input, Upload, Avatar, Image } from "antd";
 import {
   UploadOutlined,
   SendOutlined,
@@ -13,18 +12,16 @@ import {
   VideoCameraOutlined,
   InfoCircleOutlined,
   CloseOutlined,
-  ArrowLeftOutlined,
 } from "@ant-design/icons";
+import { format } from 'timeago.js';
+import "./chatDetail.css"; // Import custom CSS
 
-const ChatDetail = () => {
+const ChatDetail = ({ chatId, sender, receiver }: { chatId: string, sender: any, receiver: any }) => {
   const [chat, setChat] = useState<any>();
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
   const [newImages, setNewImages] = useState<any[]>([]);
-  const { sender, receiver } = useLocation().state;
-  const chatId = useParams().id;
   const endRef = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
   const uploadRef = useRef<any>(null);
 
   useEffect(() => {
@@ -47,27 +44,14 @@ const ChatDetail = () => {
   };
 
   const handleImg = async (e: any) => {
-    const files = e.fileList;
-    console.log(files);
-    const newImagesArray: any = [];
-
-    for (let file of files) {
-      const url = URL.createObjectURL(file.originFileObj);
-      newImagesArray.push({ file: file.originFileObj, url });
-
-      try {
-        const imgUrl = await upload(file.originFileObj);
-        newImagesArray[newImagesArray.length - 1].url = imgUrl;
-      } catch (err) {
-        console.log(err);
-      }
-    }
-
-    setNewImages(newImagesArray);
-
-    // Clear the file input field
-    if (uploadRef.current) {
-      uploadRef.current.fileList = [];
+    const file = e.file;
+    console.log(file);
+    try {
+      const imgUrl = await upload(file);
+      const newImageInput = { url: imgUrl, file: file };
+      setNewImages((prevImages) => [...prevImages, newImageInput]);
+    } catch (err) {
+      console.log(err);
     }
   };
 
@@ -103,19 +87,18 @@ const ChatDetail = () => {
     <div className="chat flex flex-col h-full">
       <div className="top flex items-center justify-between p-4 border-b">
         <div className="user flex items-center">
-          <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)} />
-          <Avatar src={receiver?.image || "./avatar.png"} />
+          <Avatar src={receiver?.image || "./avatar.png"} className="ml-4" />
           <div className="texts ml-4">
             <span className="text-lg font-semibold">{receiver?.fullName}</span>
           </div>
         </div>
         <div className="icons flex space-x-4">
-          <PhoneOutlined />
-          <VideoCameraOutlined />
-          <InfoCircleOutlined />
+          <Button icon={<PhoneOutlined />} />
+          <Button icon={<VideoCameraOutlined />} />
+          <Button icon={<InfoCircleOutlined />} />
         </div>
       </div>
-      <div className="center flex-1 overflow-y-auto p-4 max-h-96">
+      <div className="center flex-1 overflow-y-auto p-4 max-h-96 custom-scrollbar">
         {chat?.messages?.map((message: any) => (
           <div
             className={`message flex ${
@@ -132,22 +115,25 @@ const ChatDetail = () => {
                   : "bg-gray-200 text-black"
               }`}
             >
-              {message.images &&
-                message.images.map((img: string, index: number) => (
-                  <img
-                    key={index}
-                    src={img}
-                    alt=""
-                    className="mb-2 max-h-20 max-w-20"
-                  />
-                ))}
-              <p>{message.text}</p>
+              <div className="mx-4">
+                {message.images &&
+                  message.images.map((img: string, index: number) => (
+                    <Image
+                      key={index}
+                      src={img}
+                      alt=""
+                      className="mb-2 max-w-20 max-h-20 object-cover"
+                    />
+                  ))}
+                <p>{message.text}</p>
+                <span>{format(message.createdAt.toDate())}</span>
+              </div>
             </div>
           </div>
         ))}
         <div ref={endRef}></div>
       </div>
-      <div className="bottom flex items-center p-4 border-t">
+      <div className="bottom flex items-center p-4 border-t relative">
         <div className="icons flex items-center space-x-4">
           <Upload
             ref={uploadRef}
@@ -167,24 +153,26 @@ const ChatDetail = () => {
             onClick={() => setOpen((prev) => !prev)}
           />
           {open && (
-            <div className="picker absolute bottom-16">
+            <div className="absolute bottom-16 bg-white p-2 rounded shadow-lg z-50">
+              <div className="flex justify-end">
+                <Button
+                  type="text"
+                  icon={<CloseOutlined />}
+                  onClick={() => setOpen(false)}
+                />
+              </div>
               <EmojiPicker onEmojiClick={handleEmoji} />
             </div>
           )}
         </div>
         <div className="flex-1 mx-4 relative">
-          <Input
-            placeholder="Type a message..."
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-          />
-          <div className="absolute top-0 left-0 w-full flex flex-wrap">
+          <div className="top-0 left-0 w-full flex flex-wrap">
             {newImages.map((img, index) => (
               <div key={index} className="relative m-1">
-                <img
+                <Image
                   src={img.url}
                   alt="Preview"
-                  className="max-h-20 max-w-20"
+                  className="max-w-20 max-h-20 object-cover"
                 />
                 <Button
                   type="text"
@@ -195,10 +183,17 @@ const ChatDetail = () => {
               </div>
             ))}
           </div>
+          <Input
+            placeholder="Type a message..."
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+          />
         </div>
-        <Button type="primary" icon={<SendOutlined />} onClick={handleSend}>
-          Send
-        </Button>
+        <Button
+          type="primary"
+          icon={<SendOutlined />}
+          onClick={handleSend}
+        ></Button>
       </div>
     </div>
   );
