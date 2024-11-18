@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { Button, Table, Input, Tag, Space, Modal, notification } from "antd";
+import { Button, Table, Input, Tag, Space, Modal, notification, Layout, Divider } from "antd";
 import {
   SearchOutlined,
   PlusOutlined,
   ExclamationCircleOutlined,
+  UnlockOutlined,
+  EyeOutlined,
 } from "@ant-design/icons";
 import moment from "moment-timezone";
 import { Content } from "antd/es/layout/layout";
@@ -95,31 +97,27 @@ const BanVisitorManager = () => {
       key: "actions",
       render: (_: any, record: any) => {
         const status = record.status; // Get the status of the current record
-
+    
         return (
-          <Space>
-            <Button
-              type="primary"
+          <Space size="middle">
+            {/* View Details Icon */}
+            <EyeOutlined
+              className="text-blue-500 hover:text-blue-700 cursor-pointer text-lg"
               onClick={() => showEditModal(record.visitorId)}
-            >
-              Chi tiết
-            </Button>
+            />
+            {/* Conditional Unlock/Block Icon */}
             {userRole !== "Staff" && userRole !== "DepartmentManager" && (
               <>
                 {status === "Active" ? (
-                  <Button
-                    danger
+                  <LockOutlined
+                    className="text-red-500 hover:text-red-700 cursor-pointer text-lg"
                     onClick={() => showDeleteConfirm(record.visitorId)}
-                  >
-                    Cấm
-                  </Button>
+                  />
                 ) : (
-                  <Button 
-                    type="primary" // Set button type to primary for green color
+                  <UnlockOutlined
+                    className="text-green-500 hover:text-green-700 cursor-pointer text-lg"
                     onClick={() => showDeleteConfirm(record.visitorId)}
-                  >
-                    Mở khóa
-                  </Button>
+                  />
                 )}
               </>
             )}
@@ -127,8 +125,7 @@ const BanVisitorManager = () => {
         );
       },
     },
-  ];
-
+  ]
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchText(e.target.value);
   };
@@ -182,74 +179,74 @@ const BanVisitorManager = () => {
   };
 
   return (
-    <Content className="p-6">
-      <div className="flex justify-center mb-4">
-        <h1 className="text-green-500 text-2xl font-bold">Quản lý khách</h1>
-      </div>
-      <Space
-        style={{
-          marginBottom: 16,
-          display: "flex",
-          justifyContent: "space-between",
-        }}
-      >
+<Layout className="min-h-screen bg-gray-50">
+  <Content className="p-8 bg-white rounded-lg shadow-md">
+    <div className="text-center mb-6">
+      <h1 className="text-3xl font-bold text-titleMain">Danh sách khách bị hạn chế</h1>
+    </div>
+    <div className="flex justify-between items-center mb-4">
+      <div className="flex items-center bg-white rounded-full shadow-sm p-2 border border-gray-300 focus-within:border-blue-500 transition-all duration-200 ease-in-out">
+        <SearchOutlined className="text-gray-500 ml-2" />
         <Input
           placeholder="Tìm kiếm theo tên khách"
-          prefix={<SearchOutlined />}
           value={searchText}
           onChange={handleSearchChange}
-          style={{
-            marginBottom: 16,
-            width: 300,
-            borderColor: "#1890ff",
-            borderRadius: 5,
-          }}
+          className="ml-2 bg-transparent border-none focus:outline-none text-gray-700 placeholder-gray-400"
+          style={{ width: 300 }}
         />
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={showCreateModal}
-          style={{ borderRadius: 5 }}
-        >
-          Tạo mới khách
-        </Button>
-      </Space>
-      {isModalVisible && (
-        <CreateNewVisitor
-          isModalVisible={isModalVisible}
-          setIsModalVisible={closeCreateModal}
-          onVisitorCreated={handleVisitorCreated}
-        />
-      )}
-      {isEditModalVisible && (
-        <DetailVisitor
-          isEditModalVisible={isEditModalVisible}
-          setIsEditModalVisible={closeEditModal}
-          id={idVisitor}
-        />
-      )}
+      </div>
+      <Button
+        type="primary"
+        icon={<PlusOutlined />}
+        className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 shadow-sm"
+        onClick={showCreateModal}
+      >
+        Tạo mới khách
+      </Button>
+    </div>
 
-      {error ? (
-        <p>Đã xảy ra lỗi khi tải dữ liệu!</p>
-      ) : (
-        <Table
-          columns={columns}
-          dataSource={filteredData}
-          pagination={{
-            current: currentPage,
-            pageSize,
-            total: totalVisitors,
-            showSizeChanger: true,
-            pageSizeOptions: ["5", "10", "20"],
-            size: "small",
-          }}
-          onChange={handleTableChange}
-          loading={isLoadingData}
-          rowKey="visitorId"
-          bordered
-        />
-      )}
-    </Content>
+    <Divider />
+
+    {isModalVisible && (
+      <CreateNewVisitor
+        isModalVisible={isModalVisible}
+        setIsModalVisible={closeCreateModal}
+        onVisitorCreated={handleVisitorCreated}
+      />
+    )}
+    {isEditModalVisible && (
+      <DetailVisitor
+        isEditModalVisible={isEditModalVisible}
+        setIsEditModalVisible={closeEditModal}
+        id={idVisitor}
+      />
+    )}
+
+    {error ? (
+      <p className="text-red-500 text-center">
+        Đã xảy ra lỗi khi tải dữ liệu!
+      </p>
+    ) : (
+      <Table
+        columns={columns}
+        dataSource={filteredData}
+        pagination={{
+          current: currentPage,
+          pageSize,
+          total: totalVisitors,
+          showSizeChanger: true,
+          pageSizeOptions: ["5", "10", "20"],
+          size: "small",
+        }}
+        onChange={handleTableChange}
+        loading={isLoadingData}
+        rowKey="visitorId"
+        bordered
+        className="bg-white shadow-md rounded-lg"
+      />
+    )}
+  </Content>
+</Layout>
   );
 };
 

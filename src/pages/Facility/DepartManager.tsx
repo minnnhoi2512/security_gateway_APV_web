@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Button, Table, Input, Tag, Space, Modal, Form, notification } from "antd";
-import { SearchOutlined, PlusOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
+import { Button, Table, Input, Tag, Space, Modal, Form, notification, Layout, Divider } from "antd";
+import { SearchOutlined, PlusOutlined, ExclamationCircleOutlined, DeleteOutlined, EyeOutlined, EditOutlined } from "@ant-design/icons";
 import moment from "moment-timezone";
 import { Content } from "antd/es/layout/layout";
 import { useGetListDepartmentsQuery, useCreateDepartmentMutation, useUpdateDepartmentMutation, useDeleteDepartmentMutation } from "../../services/department.service";
@@ -81,28 +81,26 @@ const DepartManager = () => {
       key: "actions",
       render: (_: any, record: any) => (
         <Space>
+          {/* Edit Icon */}
           <Button
-            type="primary"
+            type="text"
+            icon={<EditOutlined style={{ color: "#1890ff" }} />}
             onClick={() => openEditModal(record)}
-            style={{ borderRadius: 5 }}
-          >
-            Chỉnh sửa
-          </Button>
+          />
+    
+          {/* View Details Icon */}
           <Button
-            type="default"
+            type="text"
+            icon={<EyeOutlined style={{ color: "#52c41a" }} />}
             onClick={() => viewUserList(record.departmentId)}
-            style={{ borderRadius: 5 }}
-          >
-            Xem chi tiết
-          </Button>
+          />
+    
+          {/* Delete Icon */}
           <Button
-            type="primary"
-            danger
+            type="text"
+            icon={<DeleteOutlined style={{ color: "#ff4d4f" }} />}
             onClick={() => showDeleteConfirm(record.departmentId)}
-            style={{ borderRadius: 5 }}
-          >
-            Xóa
-          </Button>
+          />
         </Space>
       ),
     },
@@ -205,142 +203,156 @@ const DepartManager = () => {
   };
 
   return (
-    <Content className="p-6">
-      <div className="flex justify-center mb-4">
-        <h1 className="text-green-500 text-2xl font-bold">Quản lý phòng ban</h1>
-      </div>
-      <Space style={{ marginBottom: 16, display: "flex", justifyContent: "space-between" }}>
+<Layout className="min-h-screen bg-gray-50">
+  <Content className="p-8 bg-white rounded-lg shadow-md">
+    <div className="text-center mb-6">
+      <h1 className="text-3xl font-bold text-titleMain">Quản lý phòng ban</h1>
+    </div>
+    <div className="flex justify-between items-center mb-4">
+      <div className="flex items-center bg-white rounded-full shadow-sm p-2 border border-gray-300 focus-within:border-blue-500 transition-all duration-200 ease-in-out">
+        <SearchOutlined className="text-gray-500 ml-2" />
         <Input
           placeholder="Tìm kiếm theo tên phòng ban"
-          prefix={<SearchOutlined />}
           value={searchText}
           onChange={handleSearchChange}
-          style={{ marginBottom: 16, width: 300, borderColor: "#1890ff", borderRadius: 5 }}
+          className="ml-2 bg-transparent border-none focus:outline-none text-gray-700 placeholder-gray-400"
+          style={{ width: 300 }}
         />
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={showModal}
-          style={{ borderRadius: 5 }}
+      </div>
+      <Button
+        type="primary"
+        icon={<PlusOutlined />}
+        className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 shadow-sm"
+        onClick={showModal}
+      >
+        Tạo mới phòng ban
+      </Button>
+    </div>
+
+    <Divider />
+
+    {/* Create Department Modal */}
+    <Modal
+      title={<h2 className="text-lg font-semibold">Tạo mới phòng ban</h2>}
+      open={isModalVisible}
+      onOk={handleOk}
+      confirmLoading={isCreating}
+      onCancel={handleCancel}
+      okText="Tạo mới"
+      cancelText="Hủy"
+      className="rounded-lg"
+    >
+      <Form form={form} layout="vertical">
+        <Form.Item
+          label="Tên Phòng Ban"
+          name="departmentName"
+          rules={[{ required: true, message: "Vui lòng nhập tên phòng ban!" }]}
         >
-          Tạo mới phòng ban
-        </Button>
-      </Space>
+          <Input placeholder="Nhập tên phòng ban" />
+        </Form.Item>
+        <Form.Item
+          label="Mô Tả"
+          name="description"
+          rules={[{ required: true, message: "Vui lòng nhập mô tả!" }]}
+        >
+          <Input placeholder="Nhập mô tả" />
+        </Form.Item>
+        <Form.Item
+          label="Cấp Độ"
+          name="acceptLevel"
+          rules={[{ required: true, message: "Vui lòng nhập cấp độ!" }]}
+        >
+          <Input type="number" placeholder="Nhập cấp độ" />
+        </Form.Item>
+      </Form>
+    </Modal>
 
+    {/* Edit Department Modal */}
+    <Modal
+      title={<h2 className="text-lg font-semibold">Cập nhật phòng ban</h2>}
+      open={isEditModalVisible}
+      onOk={handleUpdate}
+      confirmLoading={isUpdating}
+      onCancel={handleCancel}
+      okText="Cập nhật"
+      cancelText="Hủy"
+      className="rounded-lg"
+    >
+      <Form form={form} layout="vertical">
+        <Form.Item
+          label="Tên Phòng Ban"
+          name="departmentName"
+          rules={[{ required: true, message: "Vui lòng nhập tên phòng ban!" }]}
+        >
+          <Input placeholder="Nhập tên phòng ban" />
+        </Form.Item>
+        <Form.Item
+          label="Mô Tả"
+          name="description"
+          rules={[{ required: true, message: "Vui lòng nhập mô tả!" }]}
+        >
+          <Input placeholder="Nhập mô tả" />
+        </Form.Item>
+        <Form.Item
+          label="Cấp Độ"
+          name="acceptLevel"
+          rules={[{ required: true, message: "Vui lòng nhập cấp độ!" }]}
+        >
+          <Input type="number" placeholder="Nhập cấp độ" />
+        </Form.Item>
+      </Form>
+    </Modal>
 
-      <Modal
-        title="Tạo mới phòng ban"
-        open={isModalVisible}
-        onOk={handleOk}
-        confirmLoading={isCreating}
-        onCancel={handleCancel}
-        okText="Tạo mới"
-        cancelText="Hủy"
-      >
-        <Form form={form} layout="vertical">
-          <Form.Item
-            label="Tên Phòng Ban"
-            name="departmentName"
-            rules={[{ required: true, message: "Vui lòng nhập tên phòng ban!" }]}
-          >
-            <Input placeholder="Nhập tên phòng ban" />
-          </Form.Item>
-          <Form.Item
-            label="Mô Tả"
-            name="description"
-            rules={[{ required: true, message: "Vui lòng nhập mô tả!" }]}
-          >
-            <Input placeholder="Nhập mô tả" />
-          </Form.Item>
-          <Form.Item
-            label="Cấp Độ"
-            name="acceptLevel"
-            rules={[{ required: true, message: "Vui lòng nhập cấp độ!" }]}
-          >
-            <Input type="number" placeholder="Nhập cấp độ" />
-          </Form.Item>
-        </Form>
-      </Modal>
-
-
-      <Modal
-        title="Cập nhật phòng ban"
-        open={isEditModalVisible}
-        onOk={handleUpdate}
-        confirmLoading={isUpdating}
-        onCancel={handleCancel}
-        okText="Cập nhật"
-        cancelText="Hủy"
-      >
-        <Form form={form} layout="vertical">
-          <Form.Item
-            label="Tên Phòng Ban"
-            name="departmentName"
-            rules={[{ required: true, message: "Vui lòng nhập tên phòng ban!" }]}
-          >
-            <Input placeholder="Nhập tên phòng ban" />
-          </Form.Item>
-          <Form.Item
-            label="Mô Tả"
-            name="description"
-            rules={[{ required: true, message: "Vui lòng nhập mô tả!" }]}
-          >
-            <Input placeholder="Nhập mô tả" />
-          </Form.Item>
-          <Form.Item
-            label="Cấp Độ"
-            name="acceptLevel"
-            rules={[{ required: true, message: "Vui lòng nhập cấp độ!" }]}
-          >
-            <Input type="number" placeholder="Nhập cấp độ" />
-          </Form.Item>
-        </Form>
-      </Modal>
-
-      <Modal
-        title="Danh sách người dùng"
-        open={isUserListModalVisible}
-        onCancel={() => setIsUserListModalVisible(false)}
-        footer={null}
-        width={800}
-      >
-        {userListError ? (
-          <p>Đã xảy ra lỗi khi tải danh sách người dùng!</p>
-        ) : (
-          <Table
-            columns={[
-              { title: "Tên đầy đủ", dataIndex: "fullName", key: "fullName" },
-              { title: "Email", dataIndex: "email", key: "email" },
-              { title: "Số điện thoại", dataIndex: "phoneNumber", key: "phoneNumber" },
-              { title: "Vai trò", dataIndex: ["role", "roleName"], key: "roleName" },
-              { title: "Trạng thái", dataIndex: "status", key: "status" }
-            ]}
-            dataSource={userListData}
-            loading={isUserListLoading}
-            pagination={{ pageSize: 5 }}
-            rowKey="userId"
-          />
-        )}
-      </Modal>
-
-      {error ? (
-        <p>Đã xảy ra lỗi khi tải dữ liệu!</p>
+    {/* User List Modal */}
+    <Modal
+      title={<h2 className="text-lg font-semibold">Danh sách người dùng</h2>}
+      open={isUserListModalVisible}
+      onCancel={() => setIsUserListModalVisible(false)}
+      footer={null}
+      width={800}
+      className="rounded-lg"
+    >
+      {userListError ? (
+        <p className="text-red-500">Đã xảy ra lỗi khi tải danh sách người dùng!</p>
       ) : (
         <Table
-          columns={columns}
-          dataSource={filteredData}
-          pagination={{
-            total: totalDepartments,
-            showSizeChanger: true,
-            pageSizeOptions: ["5", "10", "20"],
-            size: "small",
-          }}
-          loading={isLoading}
-          rowKey="departmentId"
+          columns={[
+            { title: "Tên đầy đủ", dataIndex: "fullName", key: "fullName" },
+            { title: "Email", dataIndex: "email", key: "email" },
+            { title: "Số điện thoại", dataIndex: "phoneNumber", key: "phoneNumber" },
+            { title: "Vai trò", dataIndex: ["role", "roleName"], key: "roleName" },
+            { title: "Trạng thái", dataIndex: "status", key: "status" },
+          ]}
+          dataSource={userListData}
+          loading={isUserListLoading}
+          pagination={{ pageSize: 5 }}
+          rowKey="userId"
           bordered
+          className="bg-white shadow-md rounded-lg"
         />
       )}
-    </Content>
+    </Modal>
+
+    {error ? (
+      <p className="text-red-500 text-center">Đã xảy ra lỗi khi tải dữ liệu!</p>
+    ) : (
+      <Table
+        columns={columns}
+        dataSource={filteredData}
+        pagination={{
+          total: totalDepartments,
+          showSizeChanger: true,
+          pageSizeOptions: ["5", "10", "20"],
+          size: "small",
+        }}
+        loading={isLoading}
+        rowKey="departmentId"
+        bordered
+        className="bg-white shadow-md rounded-lg"
+      />
+    )}
+  </Content>
+</Layout>
   );
 };
 
