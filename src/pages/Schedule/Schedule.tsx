@@ -202,7 +202,7 @@ const Schedule = () => {
           totalCount={schedules?.totalCount || 0}
           handleDeleteSchedule={handleDeleteSchedule}
           handleAssignUser={handleAssignUser}
-        />
+        />  
 
         <Modal
           title={<span className="text-xl font-semibold">Phân công nhân viên</span>}
