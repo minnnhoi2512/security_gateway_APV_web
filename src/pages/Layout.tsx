@@ -28,7 +28,7 @@ import {
   orderBy,
   updateDoc,
 } from "firebase/firestore";
-import './layout.css'
+import "./layout.css";
 import { chatDB } from "../api/firebase";
 import { routes } from "../UI/routeConstants";
 
@@ -38,7 +38,7 @@ const findRouteName = (url: string, routes: any): string => {
   for (const route of routes) {
     const routePath = route.path.replace(/:\w+/g, "[^/]+"); // Replace dynamic segments with regex
     const regex = new RegExp(`^${routePath}$`);
-    
+
     if (regex.test(url)) {
       const match = url.match(regex);
       if (match && match.length > 1) {
@@ -66,18 +66,29 @@ const generateBreadcrumbItems = (location: any, routes: any) => {
       title: isLast ? (
         <span className="breadcrumb-link-last">{routeName || snippet}</span>
       ) : (
-        <Link to={url} className="breadcrumb-link">{routeName || snippet}</Link>
+        <Link to={url} className="breadcrumb-link">
+          {routeName || snippet}
+        </Link>
       ),
     };
   });
-  return [{ title: <Link to="/dashboard" className="breadcrumb-link"><HomeOutlined /></Link> }, ...breadcrumbItems];
+  return [
+    {
+      title: (
+        <Link to="/dashboard" className="breadcrumb-link">
+          <HomeOutlined />
+        </Link>
+      ),
+    },
+    ...breadcrumbItems,
+  ];
 };
 const LayoutPage = ({ children }: { children: any }) => {
   const [collapsed, setCollapsed] = useState(false);
   const userId = Number(localStorage.getItem("userId"));
   const location = useLocation();
   const [breadcrumbItems, setBreadcrumbItems] = useState(
-    generateBreadcrumbItems(location,routes)
+    generateBreadcrumbItems(location, routes)
   );
   const { data: userData } = useGetDetailUserQuery(userId);
   const getRoleDisplayName = (roleName: string) => {
@@ -126,7 +137,7 @@ const LayoutPage = ({ children }: { children: any }) => {
   }, [takingNew]);
 
   useEffect(() => {
-    setBreadcrumbItems(generateBreadcrumbItems(location,routes));
+    setBreadcrumbItems(generateBreadcrumbItems(location, routes));
   }, [location]);
 
   useEffect(() => {
@@ -219,6 +230,7 @@ const LayoutPage = ({ children }: { children: any }) => {
                 alt="Logo"
               />
               <Button
+                style={{ zIndex: 200 }}
                 type="text"
                 icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
                 onClick={() => setCollapsed(!collapsed)}
@@ -271,14 +283,22 @@ const LayoutPage = ({ children }: { children: any }) => {
       </Sider>
       <Layout>
         <Content className="bg-white rounded shadow min-h-[80vh]">
-          <Breadcrumb
-
-            items={breadcrumbItems}
-            style={{ margin: "7px", fontSize: "18px", paddingLeft: "16px" }}
-          />
           <div
-            style={{ borderBottom: "1px solid #e0e0e0", marginBottom: "16px" }}
-          ></div>
+            style={{
+              position: "sticky",
+              top: 0,
+              zIndex: 100, // Giá trị cao hơn các component khác
+              backgroundColor: "white", // Đảm bảo nền trong suốt
+              borderBottom: "1px solid #e0e0e0",
+              marginBottom: "16px",
+            }}
+          >
+            <Breadcrumb
+              items={breadcrumbItems}
+              style={{ margin: "7px", fontSize: "18px", paddingLeft: "16px" }}
+            />
+          </div>
+
           {children}
         </Content>
       </Layout>
