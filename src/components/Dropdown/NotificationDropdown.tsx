@@ -69,7 +69,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = () => {
             <a onClick={(e) => e.preventDefault()}>
                 <Space>
                     <Badge count={10}>
-                        <button><Avatar shape="circle" size="default" src="/src/assets/iconNoti.png" /></button>
+                        <button><Avatar shape="circle" size="small" src="/src/assets/iconNoti.png" /></button>
                     </Badge>
                 </Space>
             </a>

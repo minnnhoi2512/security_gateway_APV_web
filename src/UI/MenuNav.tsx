@@ -9,7 +9,6 @@ import {
   BarsOutlined,
   DeploymentUnitOutlined,
   UserOutlined,
-  UsergroupAddOutlined,
   SafetyCertificateOutlined,
 } from "@ant-design/icons";
 import { Menu, Modal } from "antd";
@@ -19,76 +18,9 @@ import SignalR from "../utils/signalR";
 import { useDispatch, useSelector } from "react-redux";
 import { MenuProps } from "antd/lib";
 
-export const routes = [
-  { path: "/", breadcrumbName: "Trang chủ" },
-  { path: "/dashboard", breadcrumbName: "Thông tin chung" },
-  {
-    path: "/customerVisitList",
-    breadcrumbName: "Chuyến thăm",
-    children: [
-      { path: "/customerVisit", breadcrumbName: "Tất cả" },
-      { path: "/customerVisitStaff", breadcrumbName: "Chuyến thăm của tôi" },
-    ],
-  },
-  {
-    path: "/accountManage",
-    breadcrumbName: "Người dùng",
-    children: [
-      { path: "/manager", breadcrumbName: "Quản lý" },
-      { path: "/departmentManager", breadcrumbName: "Quản lý phòng ban" },
-      { path: "/staff", breadcrumbName: "Nhân viên phòng ban" },
-      { path: "/security", breadcrumbName: "Bảo vệ" },
-    ],
-  },
-  {
-    path: "/scheduleManage",
-    breadcrumbName: "Lịch trình",
-    children: [
-      { path: "/schedule", breadcrumbName: "Tất cả lịch trình" },
-      { path: "/schedule-staff", breadcrumbName: "Tạo lịch hẹn" },
-      { path: "/schedule-staff-assigned", breadcrumbName: "Lịch trình được giao" },
-      { path: "/schedule-staff-rejected", breadcrumbName: "Lịch trình bị hủy bỏ" },
-      { path: "/schedule-assigned", breadcrumbName: "Lịch trình đã giao" },
-    ],
-  },
-  {
-    path: "/visitorManage",
-    breadcrumbName: "Danh sách khách",
-    children: [
-      { path: "/visitorManager", breadcrumbName: "Khách" },
-      { path: "/banVisitorManager", breadcrumbName: "Sổ đen" },
-    ],
-  },
-  {
-    path: "/historyManage",
-    breadcrumbName: "Lịch sử",
-    children: [
-      { path: "/history", breadcrumbName: "Lượt ra vào" },
-    ],
-  },
-  {
-    path: "/facilityManage",
-    breadcrumbName: "Cơ sở vật chất",
-    children: [
-      { path: "/departManager", breadcrumbName: "Phòng ban" },
-      { path: "/gate", breadcrumbName: "Cổng ra vào" },
-      { path: "/card", breadcrumbName: "Thẻ ra vào" },
-    ],
-  },
-  {
-    path: "/utility",
-    breadcrumbName: "Tiện ích",
-    children: [
-      { path: "/calendar", breadcrumbName: "Lịch hẹn của tôi" },
-      { path: "/chat", breadcrumbName: "Nhắn tin" },
-    ],
-  },
-  { path: "/logout", breadcrumbName: "Đăng xuất" },
-];
-
-
 type MenuItem = Required<MenuProps>["items"][number];
-const MenuNav = ({ theme }: any) => {
+
+const MenuNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [selectedKey, setSelectedKey] = useState<string>(() => {
@@ -96,7 +28,6 @@ const MenuNav = ({ theme }: any) => {
   });
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [nextLocation, setNextLocation] = useState<string | null>(null);
-
 
   const userRole = localStorage.getItem("userRole");
   const connection = useSelector<any>(
@@ -140,54 +71,39 @@ const MenuNav = ({ theme }: any) => {
   };
 
   useEffect(() => {
-    sessionStorage.setItem("selectedKey", selectedKey);
-  }, [selectedKey]);
+    const path = location.pathname.split("/")[1];
+    setSelectedKey(path);
+    sessionStorage.setItem("selectedKey", path);
+  }, [location.pathname]);
 
-  const allMenuItems: MenuItem[] = [
+  const part1: MenuItem[] = [
     { key: "dashboard", icon: <LineChartOutlined />, label: "Thông tin chung" },
     {
-      key: "customerVisitList",
+      key: "customerVisitStaff",
       icon: <BarsOutlined />,
       label: "Chuyến thăm",
-      children: [
-        { key: "customerVisit", label: "Tất cả" },
-        { key: "customerVisitStaff", label: "Chuyến thăm của tôi" },
-      ],
     },
     {
-      key: "accountManage",
-      icon: <TeamOutlined />,
-      label: "Người dùng",
-      children: [
-        { key: "manager", label: "Quản lý" },
-        { key: "departmentManager", label: "Quản lý phòng ban" },
-        { key: "staff", label: "Nhân viên phòng ban" },
-        { key: "security", label: "Bảo vệ" },
-      ],
-    },
-    {
-      key: "scheduleManage",
+      key: "schedule-staff",
       icon: <FileTextOutlined />,
       label: "Lịch trình",
-      children: [
-        { key: "schedule", label: "Tất cả lịch trình" },
-        { key: "schedule-staff", label: "Tạo lịch hẹn" },
-        { key: "schedule-staff-assigned", label: "Lịch trình được giao" },
-        { key: "schedule-staff-rejected", label: "Lịch trình bị hủy bỏ" },
-        { key: "schedule-assigned", label: "Lịch trình đã giao" },
-      ],
     },
+  ];
+
+  const part2: MenuItem[] = [
 
     {
       key: "visitorManage",
       icon: <SolutionOutlined />,
       label: "Danh sách khách",
       children: [
-        { key: "visitorManager", label: "Khách", icon: <UserOutlined />  },
-        { key: "banVisitorManager", label: "Sổ đen", icon: <SafetyCertificateOutlined />  },
+        { key: "visitorManager", label: "Khách", icon: <UserOutlined /> },
+        { key: "banVisitorManager", label: "Sổ đen", icon: <SafetyCertificateOutlined /> },
       ],
     },
+  ];
 
+  const part3: MenuItem[] = [
     {
       key: "historyManage",
       icon: <HistoryOutlined />,
@@ -202,128 +118,28 @@ const MenuNav = ({ theme }: any) => {
       label: "Cơ sở vật chất",
       children: [
         { key: "departManager", label: "Phòng ban", icon: <TeamOutlined /> },
-        { key: "gate", label: "Cổng ra vào" , icon: <SolutionOutlined />},
-        { key: "card", label: "Thẻ ra vào" , icon: <SafetyCertificateOutlined />},
+        { key: "gate", label: "Cổng ra vào", icon: <SolutionOutlined /> },
+        { key: "card", label: "Thẻ ra vào", icon: <SafetyCertificateOutlined /> },
       ],
     },
+  ];
+
+  const part4: MenuItem[] = [
     {
       key: "utility",
       icon: <AppstoreOutlined />,
       label: "Tiện ích",
       children: [
-        { key: "calendar", label: "Lịch hẹn của tôi" , icon: <FileTextOutlined />},
-        { key: "chat", label: "Nhắn tin" , icon: <UserOutlined />},
+        { key: "calendar", label: "Lịch hẹn của tôi", icon: <FileTextOutlined /> },
+        { key: "chat", label: "Nhắn tin", icon: <UserOutlined /> },
       ],
     },
-
     { key: "", icon: <LogoutOutlined />, label: "Đăng xuất" },
   ];
-  // Filter out "manager" item if userRole is "Manager"
-  const filteredMenuItems = allMenuItems
-    .map((item: any) => {
-      if (userRole === "Admin") {
-        const excludedKeys = [
-          "schedule-staff",
-          "schedule-staff-assigned",
-          "schedule-staff-rejected",
-          "customerVisitStaff"
-        ];
 
-        // Exclude top-level items and children based on excluded keys
-        if (excludedKeys.includes(item.key)) {
-          return null;
-        }
-        if (item.children) {
-          return {
-            ...item,
-            children: item.children.filter(
-              (child: any) => !excludedKeys.includes(child.key)
-            ),
-          };
-        }
-      }
-      if (userRole === "Manager") {
-        const excludedKeys = [
-          "manager",
-          "schedule-staff",
-          "schedule-staff-assigned",
-          "schedule-staff-rejected",
-          "customerVisitStaff"
-        ];
-
-        // Exclude top-level items and children based on excluded keys
-        if (excludedKeys.includes(item.key)) {
-          return null;
-        }
-        if (item.children) {
-          return {
-            ...item,
-            children: item.children.filter(
-              (child: any) => !excludedKeys.includes(child.key)
-            ),
-          };
-        }
-      }
-
-      // Exclude specific items for DepartmentManager role
-      if (userRole === "DepartmentManager") {
-        const excludedKeys = [
-          "dashboard",
-          "manager",
-          "departmentManager",
-          "facilityManage",
-          "schedule-staff",
-          "security",
-          "schedule-staff-assigned",
-          "schedule-staff-rejected",
-          "customerVisitStaff"
-        ];
-
-        // Exclude top-level items and children based on excluded keys
-        if (excludedKeys.includes(item.key)) {
-          return null;
-        }
-        if (item.children) {
-          return {
-            ...item,
-            children: item.children.filter(
-              (child: any) => !excludedKeys.includes(child.key)
-            ),
-          };
-        }
-      }
-      if (userRole === "Staff") {
-        const excludedKeys = [
-          "dashboard",
-          "accountManage",
-          "schedule-assigned",
-          "schedule",
-          "facilityManage",
-          "security",
-          "customerVisit"
-        ];
-
-        // Exclude top-level items and children based on excluded keys
-        if (excludedKeys.includes(item.key)) {
-          return null;
-        }
-        if (item.children) {
-          return {
-            ...item,
-            children: item.children.filter(
-              (child: any) => !excludedKeys.includes(child.key)
-            ),
-          };
-        }
-      }
-
-      return item;
-    })
-    .filter(Boolean); // Remove any null values from the filtered array
-
-  const renderMenuItems = (menuItems: any) =>
+  const renderMenuItems = (menuItems: MenuItem[]) =>
     menuItems.map((item: any) => {
-      if (item.children) {
+      if (item?.children) {
         return (
           <Menu.SubMenu
             key={item.key}
@@ -354,7 +170,6 @@ const MenuNav = ({ theme }: any) => {
     fontSize: "16px",
     fontWeight: "bold",
     color: "#FFFFFF",
-    backgroundColor: "#34495e",
     padding: "10px 20px",
     borderRadius: "8px",
     marginBottom: "5px",
@@ -398,7 +213,16 @@ const MenuNav = ({ theme }: any) => {
         selectedKeys={[selectedKey]}
         style={{ backgroundColor: "#34495e", borderRight: "none" }}
       >
-        {renderMenuItems(filteredMenuItems)}
+        {renderMenuItems(part1)}
+        <Menu.Divider />
+        <div className="border-t-4 border-gray-400"></div>
+        {renderMenuItems(part2)}
+        <Menu.Divider />
+        <div className="border-t-4 border-gray-400"></div>
+        {renderMenuItems(part3)}
+        <Menu.Divider />
+        <div className="border-t-4 border-gray-400"></div>
+        {renderMenuItems(part4)}
       </Menu>
 
       <Modal

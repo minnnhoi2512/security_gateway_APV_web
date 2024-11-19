@@ -11,9 +11,17 @@ import {
   notification,
   Input,
   Modal,
+  Card,
+  Divider,
 } from "antd";
 import { useNavigate, useParams } from "react-router-dom";
-import { CalendarOutlined } from "@ant-design/icons";
+import {
+  CalendarOutlined,
+  ClockCircleOutlined,
+  InfoCircleOutlined,
+  SearchOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
 import dayjs, { Dayjs } from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import customParseFormat from "dayjs/plugin/customParseFormat";
@@ -26,7 +34,11 @@ import {
 } from "../../services/visitDetailList.service";
 import VisitorSearchModal from "../../form/ModalSearchVisitor";
 import { DetailVisitor } from "../../types/detailVisitorForVisit";
-import { convertToVietnamTime, formatDate } from "../../utils/ultil";
+import {
+  convertToVietnamTime,
+  formatDate,
+  formatDateWithourHour,
+} from "../../utils/ultil";
 import ListHistorySesson from "../History/ListHistorySession";
 import { ScheduleType, typeMap } from "../../types/Enum/ScheduleType";
 import { statusMap, VisitStatus } from "../../types/Enum/VisitStatus";
@@ -80,8 +92,12 @@ const DetailCustomerVisit: React.FC = () => {
   };
 
   // Check if the visit is editable based on the expected start time
-  const isEditable = () =>
-    dayjs().isBefore(dayjs(visitData?.expectedStartTime));
+  const isEditable = () => {
+    const endOfExpectedStartTime = dayjs(visitData?.expectedStartTime).endOf(
+      "day"
+    );
+    return dayjs().isSameOrBefore(endOfExpectedStartTime);
+  };
 
   useEffect(() => {
     setSelectedVisitId(Number(id));
@@ -97,7 +113,6 @@ const DetailCustomerVisit: React.FC = () => {
   }, [detailVisitData, visitData, refetchListVisitor, refetchVisit]);
 
   const handleToggleMode = async () => {
-    console.log(scheduleTypeId);
     if (isEditMode) {
       // When switching to edit mode, call the API to save changes
       try {
@@ -193,7 +208,6 @@ const DetailCustomerVisit: React.FC = () => {
     setIsModalVisible(true);
   };
   const showHistoryModal = (record: any) => {
-    console.log(record);
     setSelectedRecord(record);
     setIsHistoryModalVisible(true);
   };
@@ -322,6 +336,11 @@ const DetailCustomerVisit: React.FC = () => {
       key: "visitorName",
     },
     {
+      title: "Số điện thoại",
+      dataIndex: ["visitor", "phoneNumber"],
+      key: "phoneNumber",
+    },
+    {
       title: "Công ty",
       dataIndex: ["visitor", "companyName"],
       key: "companyName",
@@ -380,7 +399,7 @@ const DetailCustomerVisit: React.FC = () => {
           {!isEditMode && (
             <>
               <Button size="middle" onClick={() => showHistoryModal(record)}>
-                Kiểm tra người dùng
+                <SearchOutlined />
               </Button>
             </>
           )}
@@ -399,176 +418,223 @@ const DetailCustomerVisit: React.FC = () => {
     },
   ];
   return (
-    <Layout className="min-h-screen">
-      <Content className="p-6">
-        <h1 className="text-green-500 text-2xl font-bold mb-4 text-center">
-          Chi tiết chuyến thăm
-        </h1>
-        <Row gutter={16} className="mb-4">
-          <Col span={12}>
-            <div className="bg-white border border-gray-200 p-4 rounded-md shadow-sm flex items-start space-x-4">
-              <CalendarOutlined className="text-blue-500 text-2xl mt-1" />
-              <div>
-                <p className="text-sm text-gray-600">Ngày đăng ký:</p>
+    <Layout className="bg-white">
+      <Content>
+        <div className="container mx-auto p-4">
+          <Card className="w-full shadow-lg rounded-xl hover:shadow-xl transition-shadow duration-300">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Cột 1: Thông tin cơ bản */}
+              <div className="space-y-4 bg-gray-50 p-4 rounded-lg">
+                <div className="flex items-center space-x-2 text-blue-600">
+                  <InfoCircleOutlined className="text-xl" />
+                  <h3 className="font-semibold text-lg">Thông tin cơ bản</h3>
+                </div>
+                <Divider className="my-2" />
 
-                <p className="text-base font-semibold text-gray-800">
-                  {formatDate(visitData?.createTime)}
-                </p>
-                <p className="text-sm text-gray-600">Tên danh sách:</p>
-                {isEditMode && isEditable() ? (
-                  <Input
-                    value={editableVisitName}
-                    onChange={(e) => handleNameChange(e)}
-                    className="text-base font-semibold text-gray-800"
-                  />
-                ) : (
-                  <p className="text-base font-semibold text-gray-800">
-                    {editableVisitName}
+                <div>
+                  <p className="text-sm text-gray-500 space-y-2">
+                    Tên danh sách:
                   </p>
-                )}
+                  {isEditMode ? (
+                    <Input
+                      value={editableVisitName}
+                      onChange={handleNameChange}
+                      className="mt-1"
+                      placeholder="Nhập tên danh sách"
+                    />
+                  ) : (
+                    <p className="text-base font-semibold text-gray-800">
+                      {editableVisitName}
+                    </p>
+                  )}
+                </div>
+                <div className="flex items-center space-x-4 ">
+                  <div>
+                    <p className="text-sm text-gray-500 space-y-2 ">
+                      Trạng thái:
+                    </p>
+                    <Tag color={colorVisitStatus} className="text-sm mt-1">
+                      {textVisitStatus}
+                    </Tag>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 ">Loại:</p>
+                    <Tag
+                      color={
+                        scheduleTypeId === undefined
+                          ? "default"
+                          : colorScheduleType
+                      }
+                      className="text-sm mt-1"
+                    >
+                      {scheduleTypeId === undefined
+                        ? "Theo ngày"
+                        : textScheduleType}
+                    </Tag>
+                  </div>
+                </div>
+              </div>
 
-                <p className="text-sm text-gray-600">Thời gian:</p>
-                {isEditMode ? (
-                  <>
-                    {isEditable() || scheduleTypeId !== undefined ? (
-                      <>
-                        {!isEditable() && (
-                          <p className="text-base font-semibold text-gray-800">
-                            Từ {formatDate(editableStartDate)}
-                          </p>
-                        )}
-                        {isEditable() && (
-                          <DatePicker
-                            value={editableStartDate}
-                            onChange={handleStartDateChange}
-                            format="DD/MM/YYYY"
-                            placeholder="Chọn ngày bắt đầu"
-                            disabledDate={(date) =>
-                              date && date.isBefore(new Date(), "day")
-                            } // Prevents selection before today
-                            style={{ marginRight: 8 }}
-                          />
-                        )}
+              {/* Cột 2: Thời gian và Trạng thái */}
+              <div className="space-y-4 bg-gray-50 p-4 rounded-lg">
+                <div className="flex items-center space-x-2 text-green-600">
+                  <ClockCircleOutlined className="text-xl" />
+                  <h3 className="font-semibold text-lg">Thời gian</h3>
+                </div>
+                <Divider className="my-2" />
 
-                        {/* Render end date picker only if scheduleTypeId is defined */}
-                        {scheduleTypeId !== undefined && (
-                          <>
-                            <p className="text-base font-semibold text-gray-800">
-                              đến
-                            </p>
-                            <DatePicker
-                              value={editableEndDate}
-                              onChange={handleEndDateChange}
-                              format="DD/MM/YYYY"
-                              placeholder="Chọn ngày kết thúc"
-                              disabledDate={(date) =>
-                                date && date.isBefore(editableStartDate, "day")
-                              }
-                            />
-                          </>
-                        )}
-                      </>
-                    ) : (
-                      <>
-                        {/* Non-editable view of start date */}
-                        <p className="text-base font-semibold text-gray-800">
-                          Ngày {formatDate(visitData?.expectedStartTime)}
-                        </p>
-                      </>
+                <div>
+                  <div>
+                    <p className="text-sm text-gray-500">Ngày đăng ký:</p>
+                    <p className="text-base font-semibold text-gray-800">
+                      {formatDateWithourHour(visitData?.createTime)}
+                    </p>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-4">Thời gian:</p>
+                  {isEditMode ? (
+                    <div className="space-y-2">
+                      <DatePicker
+                        value={editableStartDate}
+                        onChange={(date) => setEditableStartDate(date)}
+                        format="DD/MM/YYYY"
+                        placeholder="Ngày bắt đầu"
+                        className="w-full"
+                        disabledDate={(date) =>
+                          date && date.isBefore(dayjs(), "day")
+                        }
+                      />
+                      {scheduleTypeId !== undefined && (
+                        <DatePicker
+                          value={editableEndDate}
+                          onChange={(date) => setEditableEndDate(date)}
+                          format="DD/MM/YYYY"
+                          placeholder="Ngày kết thúc"
+                          className="w-full"
+                          disabledDate={(date) =>
+                            date &&
+                            (date.isBefore(editableStartDate, "day") ||
+                              date.isBefore(dayjs(), "day"))
+                          }
+                        />
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-base font-semibold text-gray-800">
+                      {scheduleTypeId === undefined
+                        ? `Ngày ${formatDateWithourHour(
+                            visitData?.expectedStartTime
+                          )} `
+                        : `Từ ${formatDateWithourHour(
+                            visitData?.expectedStartTime
+                          )} Đến ${formatDateWithourHour(
+                            visitData?.expectedEndTime
+                          )}`}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Cột 3: Thông tin người dùng */}
+              <div className="space-y-4 bg-gray-50 p-4 rounded-lg">
+                <div className="flex items-center space-x-2 text-purple-600">
+                  <UserOutlined className="text-xl" />
+                  <h3 className="font-semibold text-lg">
+                    Thông tin lượt ra/vào
+                  </h3>
+                </div>
+                <Divider className="my-2" />
+
+                <div>
+                  <p className="text-sm text-gray-500">Số khách:</p>
+                  <p className="text-base font-semibold text-gray-800">
+                    {visitQuantity} khách
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-sm text-gray-500">Tổng lượt ra vào:</p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-base font-semibold text-gray-800">
+                      {visitData?.visitorSessionCount} lượt
+                    </p>
+                    {!isEditMode && (
+                      <Button
+                        type="link"
+                        className="text-blue-600 hover:text-blue-800 text-base"
+                        onClick={() => setIsHistoryAllModalVisible(true)}
+                      >
+                        Xem chi tiết
+                      </Button>
                     )}
-                  </>
-                ) : (
-                  <>
-                    {/* View-only mode */}
-                    {scheduleTypeId === undefined ? (
-                      <p className="text-base font-semibold text-gray-800">
-                        Ngày {formatDate(visitData?.expectedStartTime)}
-                      </p>
-                    ) : (
-                      <p className="text-base font-semibold text-gray-800">
-                        Từ {formatDate(visitData?.expectedStartTime)} Đến{" "}
-                        {formatDate(visitData?.expectedEndTime)}
-                      </p>
-                    )}
-                  </>
-                )}
-
-                <p className="text-sm text-gray-600">Số lượng:</p>
-                <p className="text-base font-semibold text-gray-800">
-                  {visitQuantity} người
-                </p>
-                <p className="text-sm text-gray-600">Tổng lượt ra vào:</p>
-                <p className="text-base font-semibold text-gray-800">
-                  {visitData?.visitorSessionCount} lượt
-                </p>
-                <Button onClick={() => setIsHistoryAllModalVisible(true)}>
-                  Xem
-                </Button>
-                <p className="text-sm text-gray-600">Trạng thái:</p>
-                <p className="text-base font-semibold text-gray-800">
-                  <Tag color={colorVisitStatus} style={{ fontSize: "14px" }}>
-                    {textVisitStatus}
-                  </Tag>
-                </p>
-                <p className="text-sm text-gray-600">Loại:</p>
-                {scheduleTypeId === undefined ? (
-                  <Tag color="default" style={{ fontSize: "14px" }}>
-                    Theo ngày
-                  </Tag>
-                ) : (
-                  <Tag color={colorScheduleType} style={{ fontSize: "14px" }}>
-                    {textScheduleType}
-                  </Tag>
-                )}
+                  </div>
+                </div>
               </div>
             </div>
-          </Col>
-          <Col span={12}>
+          </Card>
+        </div>
+        <div className="p-6">
+          <Table
+            dataSource={visitors}
+            columns={columns}
+            loading={loadingDetailVisitData}
+            rowKey="visitorId"
+            pagination={false}
+          />
+          <div
+            style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}
+            className="mt-4"
+          >
+            {status === "ActiveTemporary" && (
+              <>
+                <Button
+                  className="bg-yellow-500 text-white"
+                  onClick={handleReport}
+                >
+                  Báo cáo
+                </Button>
+                <Button
+                  className="bg-green-500 text-white"
+                  onClick={handleApprove}
+                >
+                  Chấp thuận
+                </Button>
+              </>
+            )}
+            {status === "Active" && !isEditMode && (
+              <div className="bg-red">
+                <Button
+                  className="bg-red-500 text-white"
+                  onClick={handleCancel}
+                >
+                  Hủy chuyến thăm
+                </Button>
+              </div>
+            )}
             {isEditMode && (
-              <Button
-                type="default"
-                onClick={handleAddGuest}
-                className="mb-4 ml-2"
-              >
+              <Button type="default" onClick={handleAddGuest} className="mb-4">
                 Thêm khách
               </Button>
             )}
-          </Col>
-        </Row>
-        <Table
-          dataSource={visitors}
-          columns={columns}
-          loading={loadingDetailVisitData}
-          rowKey="visitorId"
-        />
-        <Button
-          type="default"
-          onClick={() => navigate(-1)}
-          className="mb-4 ml-2"
-        >
-          Quay lại
-        </Button>
-        {status === "ActiveTemporary" && (
-          <>
-            <Button onClick={handleApprove}>Chấp thuận</Button>
-            <Button onClick={handleReport}>Báo cáo</Button>
-          </>
-        )}
-        {status === "Active" && (
-          <div className="bg-red">
-            <Button className="bg-red text-red" onClick={handleCancel}>Hủy chuyến thăm</Button>
+            {(isEditable() && scheduleTypeId == undefined && (
+              <Button
+                type="primary"
+                onClick={handleToggleMode}
+                className="mb-4"
+              >
+                {isEditMode ? "Lưu" : "Chỉnh sửa"}
+              </Button>
+            )) ||
+              (scheduleTypeId != undefined && (
+                <Button
+                  type="primary"
+                  onClick={handleToggleMode}
+                  className="mb-4"
+                >
+                  {isEditMode ? "Lưu" : "Chỉnh sửa"}
+                </Button>
+              ))}
           </div>
-        )}
-        {(isEditable() && scheduleTypeId == undefined && (
-          <Button type="primary" onClick={handleToggleMode} className="mb-4">
-            {isEditMode ? "Lưu" : "Chỉnh sửa"}
-          </Button>
-        )) ||
-          (scheduleTypeId != undefined && (
-            <Button type="primary" onClick={handleToggleMode} className="mb-4">
-              {isEditMode ? "Lưu" : "Chỉnh sửa"}
-            </Button>
-          ))}
+        </div>
 
         <VisitorSearchModal
           isModalVisible={isModalVisible}

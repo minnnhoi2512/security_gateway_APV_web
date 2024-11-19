@@ -1,0 +1,13 @@
+.breadcrumb-link {
+    color: inherit !important; /* Ensure it inherits the default color */
+    text-decoration: none !important; /* Remove underline */
+  }
+  
+  .breadcrumb-link:hover {
+    color: blue !important; /* Change color to blue on hover */
+    background-color: white !important; /* Highlight background with light blue on hover */
+  }
+  
+  .breadcrumb-link-last {
+    color: blue !important; /* Make the last breadcrumb item blue */
+  }

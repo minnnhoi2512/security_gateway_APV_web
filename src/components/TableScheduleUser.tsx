@@ -11,8 +11,7 @@ interface ScheduleAssignedTableProps {
   isLoading: boolean;
   onRowClick: (record: ScheduleUserType) => void;
   error: any | null;
-  deleteSchedule: (scheduleId: number) => Promise<void>;
-  refetch: () => void;
+
 }
 
 const TableScheduleUser: React.FC<ScheduleAssignedTableProps> = ({
@@ -20,8 +19,6 @@ const TableScheduleUser: React.FC<ScheduleAssignedTableProps> = ({
   isLoading,
   onRowClick,
   error,
-  deleteSchedule,
-  refetch
 }) => {
   const navigate = useNavigate();
   const userRole = localStorage.getItem("userRole");

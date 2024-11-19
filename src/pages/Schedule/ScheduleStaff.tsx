@@ -41,9 +41,6 @@ const ScheduleStaff: React.FC<SchedulePageProps> = ({ status }) => {
   return (
     <Layout className="min-h-screen bg-gray-50">
       <Content className="p-8">
-        <h1 className="text-3xl font-bold text-green-600 text-center mb-4">
-          Danh sách 
-        </h1>
         <Row justify="space-between" align="middle" className="mb-4">
           <Col>
             <Input
