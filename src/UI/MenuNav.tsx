@@ -84,7 +84,7 @@ const MenuNav = () => {
       label: "Chuyến thăm",
     },
     {
-      key: "schedule-staff-assigned",
+      key: "schedule-staff",
       icon: <FileTextOutlined />,
       label: "Nhiệm vụ",
     },

@@ -311,9 +311,10 @@ const CustomerVisitStaff = () => {
         </Space>
         <Button
           type="primary"
+          size="large"
           icon={<PlusOutlined />}
           onClick={() => setIsCreateModalVisible(true)}
-          style={{ borderRadius: 5 }}
+          style={{ borderRadius: 12 }}
         >
           Tạo mới
         </Button>
@@ -421,7 +422,7 @@ const CustomerVisitStaff = () => {
         pagination={{
           total: filteredData?.length,
           showSizeChanger: true,
-          pageSizeOptions: ["5", "10", "20"],
+          pageSizeOptions: ["5", "10"],
           hideOnSinglePage: false,
           size: "small",
         }}
