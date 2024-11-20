@@ -251,7 +251,15 @@ const CustomerVisitStaff = () => {
     }
     setFilteredData(filtered);
   }, [data, isLoading, filters, searchText]);
-
+  const handleClearFilters = () => {
+    setFilters({
+      expectedStartTime: null,
+      expectedEndTime: null,
+      visitQuantity: [1, 100],
+      visitStatus: [],
+      scheduleTypeId: [],
+    });
+  };
   const filterContent = (
     <Space direction="vertical">
       <DatePicker
@@ -270,6 +278,9 @@ const CustomerVisitStaff = () => {
         onChange={(value) => handleFilterChange("visitQuantity", value)}
         style={{ width: 200 }}
       />
+      <Button type="default" onClick={handleClearFilters}>
+        Xóa bộ lọc
+      </Button>
     </Space>
   );
 

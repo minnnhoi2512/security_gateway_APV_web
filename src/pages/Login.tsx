@@ -6,9 +6,9 @@ import { useLoginUserMutation } from "../services/user.service";
 import { jwtDecode } from "jwt-decode"; // Import jwt-decode
 import { toast } from "react-toastify"; // Import toast for notification
 import "react-toastify/dist/ReactToastify.css"; // Import toast styles
-import SetSignalR from '../utils/signalR';
-import UserConnectionHubType from '../types/userConnectionHubType';
-import { useDispatch } from 'react-redux';
+import SetSignalR from "../utils/signalR";
+import UserConnectionHubType from "../types/userConnectionHubType";
+import { useDispatch } from "react-redux";
 
 function Login() {
   const [rememberMe, setRememberMe] = useState(false);
@@ -17,7 +17,7 @@ function Login() {
   const navigate = useNavigate();
   const [loginUser, { isLoading }] = useLoginUserMutation();
   const connection = useRef<signalR.HubConnection | null>(null);
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
   // Check for existing token on component mount
   useEffect(() => {
@@ -56,17 +56,14 @@ function Login() {
       localStorage.setItem("departmentId", decodedToken.departmentId);
       // Success toast notification
       toast.success("Đăng nhập thành công!");
-      const user : UserConnectionHubType = {
-        userId : result.userId,
-        role : decodedToken.role
-      }
+      const user: UserConnectionHubType = {
+        userId: result.userId,
+        role: decodedToken.role,
+      };
       await SetSignalR.SetSignalR(user, connection, dispatch);
       // Navigate to dashboard after successful login
       navigate("/dashboard");
-    } catch (error) {
-      console.error("Login failed:", error);
-      toast.error("Đăng nhập thất bại. Vui lòng thử lại.");
-    }
+    } catch (error) {}
   };
 
   return (
@@ -94,7 +91,7 @@ function Login() {
                 htmlFor="email"
                 className="block text-sm font-medium text-gray-700"
               >
-                Địa chỉ email
+                Tên đăng nhập
               </label>
               <div className="mt-1 relative rounded-md shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -106,7 +103,7 @@ function Login() {
                   type="text"
                   required
                   className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Email"
+                  placeholder="Tên đăng nhập"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                 />
@@ -129,7 +126,7 @@ function Login() {
                   type="password"
                   required
                   className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Password"
+                  placeholder="Nhập mật khẩu"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />

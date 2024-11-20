@@ -3,8 +3,6 @@ import {
   Layout,
   Table,
   Button,
-  Row,
-  Col,
   TimePicker,
   DatePicker,
   Tag,
@@ -14,12 +12,12 @@ import {
   Card,
   Divider,
 } from "antd";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import {
-  CalendarOutlined,
   ClockCircleOutlined,
   InfoCircleOutlined,
   SearchOutlined,
+  StopOutlined,
   UserOutlined,
 } from "@ant-design/icons";
 import dayjs, { Dayjs } from "dayjs";
@@ -34,15 +32,14 @@ import {
 } from "../../services/visitDetailList.service";
 import VisitorSearchModal from "../../form/ModalSearchVisitor";
 import { DetailVisitor } from "../../types/detailVisitorForVisit";
-import {
-  convertToVietnamTime,
-  formatDate,
-  formatDateWithourHour,
-} from "../../utils/ultil";
+import { convertToVietnamTime, formatDateWithourHour } from "../../utils/ultil";
 import ListHistorySesson from "../History/ListHistorySession";
 import { ScheduleType, typeMap } from "../../types/Enum/ScheduleType";
 import { statusMap, VisitStatus } from "../../types/Enum/VisitStatus";
 import ListHistorySessonVisit from "../History/ListHistorySessionVisit";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
+import { HtmlContent } from "../../components/Description/description";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(customParseFormat);
@@ -56,7 +53,6 @@ const DetailCustomerVisit: React.FC = () => {
     useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const { data: visitData, refetch: refetchVisit } = useGetDetailVisitQuery({
     visitId: Number(id),
   });
@@ -80,10 +76,12 @@ const DetailCustomerVisit: React.FC = () => {
   const [updateVisitBeforeStartDate] = useUpdateVisitBeforeStartDateMutation();
   const [updateVisitAfterStartDate] = useUpdateVisitAfterStartDateMutation();
   const [editableStartDate, setEditableStartDate] = useState<Dayjs>();
+  const [editableDescription, setEditableDescription] = useState<string>("");
   const [editableEndDate, setEditableEndDate] = useState<Dayjs>();
   const [scheduleTypeId, setScheduleTypeId] = useState<ScheduleType | null>(
     null
   );
+  const [isDescriptionModalVisible, setIsDescriptionModalVisible] = useState(false);
   const [status, setStatusVisit] = useState<VisitStatus | String>("");
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
   const [isHistoryModalVisible, setIsHistoryModalVisible] = useState(false);
@@ -102,8 +100,9 @@ const DetailCustomerVisit: React.FC = () => {
   useEffect(() => {
     setSelectedVisitId(Number(id));
     setVisitors(detailVisitData);
-    setVisitQuantity(detailVisitData.length);
+    setVisitQuantity(detailVisitData?.length);
     setEditableVisitName(visitData?.visitName);
+    setEditableDescription(visitData?.description);
     setEditableStartDate(convertToDayjs(visitData?.expectedStartTime));
     setEditableEndDate(convertToDayjs(visitData?.expectedEndTime));
     setScheduleTypeId(
@@ -137,7 +136,7 @@ const DetailCustomerVisit: React.FC = () => {
             convertToVietnamTime(editableStartDate?.toDate()) ||
             visitData?.expectedStartTime,
           expectedEndTime: convertToVietnamTime(expectedEndTimeFinally),
-          description: visitData?.description,
+          description: editableDescription,
           visitDetail: visitDetail,
           updateById: userId,
           visitQuantity: visitDetail.length,
@@ -174,6 +173,11 @@ const DetailCustomerVisit: React.FC = () => {
       notification.error({ message: "Chấp thuận thất bại!" });
     }
   };
+  const truncatedDescription =
+    editableDescription.length > 100
+      ? `${editableDescription.substring(0, 100)}...`
+      : editableDescription;
+
   const handleCancel = async () => {
     try {
       await updateVisitStatus({
@@ -185,6 +189,10 @@ const DetailCustomerVisit: React.FC = () => {
     } catch (error) {
       notification.error({ message: "Hủy thất bại!" });
     }
+  };
+
+  const handleDescriptionChange = (value: string) => {
+    setEditableDescription(value);
   };
   const handleReport = async () => {
     try {
@@ -282,14 +290,6 @@ const DetailCustomerVisit: React.FC = () => {
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEditableVisitName(e.target.value);
   };
-
-  const handleStartDateChange = (date: Dayjs) => {
-    setEditableStartDate(date);
-  };
-
-  const handleEndDateChange = (date: Dayjs) => {
-    setEditableEndDate(date);
-  };
   const handleEndHourChange = (time: any, index: any, record: any) => {
     const startHour = dayjs(record.expectedStartHour, "HH:mm");
 
@@ -300,6 +300,13 @@ const DetailCustomerVisit: React.FC = () => {
     }
 
     getHourString(time, "expectedEndHour", index); // Update end hour
+  };
+  const handleDescriptionDoubleClick = () => {
+    setIsDescriptionModalVisible(true);
+  };
+
+  const handleDescriptionModalClose = () => {
+    setIsDescriptionModalVisible(false);
   };
   const getHourString = (
     value: Dayjs | null,
@@ -410,7 +417,7 @@ const DetailCustomerVisit: React.FC = () => {
               onClick={() => handleDeleteVisitor(record.visitor.visitorId)}
               style={{ marginLeft: 8 }}
             >
-              Xóa người dùng
+              <StopOutlined />
             </Button>
           )}
         </>
@@ -447,6 +454,32 @@ const DetailCustomerVisit: React.FC = () => {
                       {editableVisitName}
                     </p>
                   )}
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 space-y-2">Mô tả:</p>
+                  {isEditMode ? (
+                    <ReactQuill
+                      value={editableDescription}
+                      onChange={handleDescriptionChange}
+                      className="mt-1"
+                      placeholder="Nhập mô tả"
+                    />
+                  ) : (
+                    <p
+                      className="text-base font-semibold text-gray-800"
+                      onDoubleClick={handleDescriptionDoubleClick}
+                    >
+                      <HtmlContent htmlString={truncatedDescription} />
+                    </p>
+                  )}
+                  <Modal
+                    title="Chi tiết mô tả"
+                    visible={isDescriptionModalVisible}
+                    onCancel={handleDescriptionModalClose}
+                    footer={null}
+                  >
+                    <HtmlContent htmlString={editableDescription} />
+                  </Modal>
                 </div>
                 <div className="flex items-center space-x-4 ">
                   <div>
@@ -493,6 +526,7 @@ const DetailCustomerVisit: React.FC = () => {
                   <p className="text-sm text-gray-500 mt-4">Thời gian:</p>
                   {isEditMode ? (
                     <div className="space-y-2">
+                      <span>Ngày bắt đầu</span>
                       <DatePicker
                         value={editableStartDate}
                         onChange={(date) => setEditableStartDate(date)}
@@ -504,18 +538,21 @@ const DetailCustomerVisit: React.FC = () => {
                         }
                       />
                       {scheduleTypeId !== undefined && (
-                        <DatePicker
-                          value={editableEndDate}
-                          onChange={(date) => setEditableEndDate(date)}
-                          format="DD/MM/YYYY"
-                          placeholder="Ngày kết thúc"
-                          className="w-full"
-                          disabledDate={(date) =>
-                            date &&
-                            (date.isBefore(editableStartDate, "day") ||
-                              date.isBefore(dayjs(), "day"))
-                          }
-                        />
+                        <div>
+                          <span>Ngày hết hạn</span>
+                          <DatePicker
+                            value={editableEndDate}
+                            onChange={(date) => setEditableEndDate(date)}
+                            format="DD/MM/YYYY"
+                            placeholder="Ngày kết thúc"
+                            className="w-full"
+                            disabledDate={(date) =>
+                              date &&
+                              (date.isBefore(editableStartDate, "day") ||
+                                date.isBefore(dayjs(), "day"))
+                            }
+                          />
+                        </div>
                       )}
                     </div>
                   ) : (

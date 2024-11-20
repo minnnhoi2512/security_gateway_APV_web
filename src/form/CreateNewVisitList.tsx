@@ -2,8 +2,6 @@ import {
   Form,
   Input,
   DatePicker,
-  InputNumber,
-  Steps,
   Button,
   message,
   Table,
@@ -12,7 +10,7 @@ import {
   Image,
   notification,
 } from "antd";
-import { Editor } from "react-draft-wysiwyg";
+import "./customerScrollBar.css";
 import "react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -21,15 +19,14 @@ import {
   useCreateNewListDetailVisitMutation,
   useCreateNewScheduleVisitMutation,
 } from "../services/visitDetailList.service";
-import moment from "moment";
-import { EditorState } from "draft-js";
-import { stateToHTML } from "draft-js-export-html";
 import ReadOnlyWeekCalendar from "../components/ReadOnlyWeekCalendar";
 import ReadOnlyMonthCalendar from "../components/ReadOnlyMonthCalendar";
 import VisitorSearchModal from "./ModalSearchVisitor";
 import { convertToVietnamTime } from "../utils/ultil";
 import { useGetDetailScheduleStaffQuery } from "../services/scheduleStaff.service";
-const { Step } = Steps;
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
+import { DeleteOutlined } from "@ant-design/icons";
 
 interface FormValues {
   title: string;
@@ -49,7 +46,7 @@ const CreateNewVisitList: React.FC = () => {
   const location = useLocation();
   const { state } = location;
   // console.log(state);
-  const {refetch} = useGetDetailScheduleStaffQuery(state?.from?.id);
+  const { refetch } = useGetDetailScheduleStaffQuery(state?.from?.id);
   let daysOfSchedule: string = "";
   let scheduleTypeName: string = "";
   try {
@@ -61,7 +58,6 @@ const CreateNewVisitList: React.FC = () => {
   }
   const [form] = Form.useForm<FormValues>();
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
-  const [currentStep, setCurrentStep] = useState<number>(0);
   const userId = Number(localStorage.getItem("userId"));
   const [selectedVisitors, setSelectedVisitors] = useState<
     {
@@ -76,7 +72,7 @@ const CreateNewVisitList: React.FC = () => {
   >([]);
   const [createNewListDetailVisit] = useCreateNewListDetailVisitMutation();
   const [createNewScheduleVisit] = useCreateNewScheduleVisitMutation();
-  const [editorState, setEditorState] = useState(EditorState.createEmpty());
+  const [editorState, setEditorState] = useState<string>("");
   const [isModalCalendarVisible, setIsModalCalendarVisible] = useState(false);
   const [startHourForAll, setStartHourForAll] = useState<string | null>(null);
   const [endHourForAll, setEndHourForAll] = useState<string | null>(null);
@@ -89,10 +85,8 @@ const CreateNewVisitList: React.FC = () => {
   const showModalCalendar = (type: any) => {
     setIsModalCalendarVisible(true);
     if (type === "ProcessWeek") {
-      setIsWeekCalendarVisible(true);
       setIsMonthCalendarVisible(false);
     } else if (type === "ProcessMonth") {
-      setIsMonthCalendarVisible(true);
       setIsWeekCalendarVisible(false);
     }
   };
@@ -154,16 +148,11 @@ const CreateNewVisitList: React.FC = () => {
   const [isMonthCalendarVisible, setIsMonthCalendarVisible] = useState(false);
   const [isWeekCalendarVisible, setIsWeekCalendarVisible] = useState(false);
 
-  const onEditorStateChange = (newState: EditorState) => {
-    setEditorState(newState);
-  };
-
   const handleCancel = () => {
     Modal.confirm({
-      title: "Bạn có muốn hủy quá trình tạo mới lịch?",
       content: "Hành động này sẽ xóa hết dữ liệu.",
       okText: "Đồng ý",
-      cancelText: "Quay lại",
+      cancelText: "Tiếp tục tạo mới",
       onOk() {
         navigate(-1); // Navigate back
       },
@@ -239,8 +228,8 @@ const CreateNewVisitList: React.FC = () => {
   const handleSubmit = async () => {
     try {
       const visitQuantity = form.getFieldValue("visitQuantity");
-      const contentState = editorState.getCurrentContent();
-      const htmlContent = stateToHTML(contentState);
+      // const contentState = editorState.getCurrentContent();
+      // const htmlContent = stateToHTML(contentState);
       // console.log(htmlContent);
       // Check if the selected visitors count matches the required visit quantity
       if (selectedVisitors.length < visitQuantity) {
@@ -266,7 +255,7 @@ const CreateNewVisitList: React.FC = () => {
       const formData = form.getFieldsValue(true);
       const requestData = {
         visitName: formData.title,
-        visitQuantity: Number(formData.visitQuantity),
+        visitQuantity: selectedVisitors.length,
         expectedStartTime: formData.expectedStartTime
           ? convertToVietnamTime(formData.expectedStartTime.toDate())
           : null,
@@ -274,7 +263,7 @@ const CreateNewVisitList: React.FC = () => {
           ? convertToVietnamTime(formData.expectedStartTime.toDate())
           : null,
         createById: userId,
-        description: htmlContent,
+        description: editorState,
         scheduleId: null,
         scheduleUserId: null,
         visitDetail: selectedVisitors.map((visitor) => ({
@@ -311,29 +300,18 @@ const CreateNewVisitList: React.FC = () => {
             newVisitDetailList: requestData,
           }).unwrap(); // unwrapping for better error handling
         }
-        message.success("Lịch hẹn đã được tạo thành công!");
+        notification.success({ message: "Lịch hẹn đã được tạo thành công!" });
         refetch();
         navigate(-1);
       } catch (error: any) {
         // console.log(error.data.message);
-        message.error("Đã có lỗi xảy ra khi tạo lịch hẹn. Vui lòng thử lại.");
+        notification.error({
+          message: "Đã có lỗi xảy ra khi tạo lịch hẹn. Vui lòng thử lại.",
+        });
       }
     } catch (error) {
-      message.error("Vui lòng kiểm tra thông tin đã nhập.");
+      notification.error({ message: "Vui lòng kiểm tra thông tin đã nhập." });
     }
-  };
-
-  const next = () => {
-    form
-      .validateFields()
-      .then(() => setCurrentStep(currentStep + 1))
-      .catch(() =>
-        message.error("Vui lòng điền đủ thông tin trước khi tiếp tục.")
-      );
-  };
-
-  const prev = () => {
-    setCurrentStep(currentStep - 1);
   };
 
   const handleAddVisitor = () => {
@@ -416,10 +394,9 @@ const CreateNewVisitList: React.FC = () => {
   };
 
   const renderVisitorsTable = () => {
-    const visitQuantity = form.getFieldValue("visitQuantity");
     const columns = [
       {
-        title: "Số thứ tự",
+        title: "STT",
         dataIndex: "index",
         key: "index",
         render: (_: any, record: any, index: number) => (
@@ -522,229 +499,273 @@ const CreateNewVisitList: React.FC = () => {
               onClick={() => handleClearVisitor(index)}
               danger
             >
-              Xóa thông tin
+              <DeleteOutlined />
             </Button>
           ) : null;
         },
       },
     ];
 
-    const visitorsData = Array.from({ length: visitQuantity }, (_, index) => {
-      const visitor = selectedVisitors[index];
-      return {
-        id: index + 1,
-        visitorName: visitor?.visitorName,
-        startHour: visitor?.startHour,
-        endHour: visitor?.endHour,
-        companyName: visitor?.companyName,
-        credentialsCard: visitor?.credentialsCard,
-        visitorCredentialImage: visitor?.visitorCredentialImage,
-      };
-    });
+    const visitorsData = selectedVisitors.map((visitor, index) => ({
+      id: index + 1,
+      visitorName: visitor?.visitorName,
+      startHour: visitor?.startHour,
+      endHour: visitor?.endHour,
+      companyName: visitor?.companyName,
+      credentialsCard: visitor?.credentialsCard,
+      visitorCredentialImage: visitor?.visitorCredentialImage,
+    }));
 
     return (
       <>
         {selectedVisitors.length === 0 && (
-          <p style={{ color: "red" }}>Chưa có khách nào được chọn!</p>
+          <p className="mb-4 text-red-500">Chưa có khách nào được chọn!</p>
         )}
-        <Table dataSource={visitorsData} columns={columns} rowKey="id" />
+        <div className="overflow-auto custom-scrollbar">
+          <Table
+            dataSource={visitorsData}
+            columns={columns}
+            rowKey="id"
+            pagination={false}
+          />
+        </div>
       </>
     );
   };
 
   return (
-    <div className="p-6">
-      <h1 className="text-green-500 text-2xl font-bold">Tạo mới lịch hẹn</h1>
-      <Steps current={currentStep}>
-        <Step title="Thông tin lịch thăm" />
-        <Step title="Thông tin khách đến thăm" />
-      </Steps>
+    <div>
+      <div className="max-w mx-auto px-4 py-6">
+        <Form form={form} layout="vertical">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {/* Left Column - Basic Information - Now smaller */}
+            <div className="lg:col-span-1 flex flex-col">
+              <div className="bg-white rounded-lg shadow-2xl p-6 flex-grow">
+                <h2 className="text-lg font-medium text-gray-900 mb-6">
+                  Thông tin cơ bản
+                </h2>
 
-      <Form form={form} layout="vertical">
-        {currentStep === 0 && (
-          <>
-            <Form.Item
-              name="title"
-              label="Tiêu đề"
-              rules={[{ required: true, message: "Vui lòng nhập tiêu đề" }]}
-            >
-              <Input placeholder="Nhập tiêu đề" />
-            </Form.Item>
-            <Form.Item
-              name="visitQuantity"
-              label="Số lượng khách"
-              rules={[
-                { required: true, message: "Vui lòng nhập số lượng khách" },
-                {
-                  validator: (_, value) => {
-                    if (value <= 0 && value != null) {
-                      return Promise.reject("Số lượng khách phải lớn hơn 0");
-                    }
-                    if (value > 20) {
-                      return Promise.reject(
-                        "Số lượng khách không được vượt quá 20"
-                      );
-                    }
-                    return Promise.resolve();
-                  },
-                },
-              ]}
-            >
-              <InputNumber />
-            </Form.Item>
-            {scheduleTypeName !== "ProcessWeek" &&
-              scheduleTypeName !== "ProcessMonth" && (
                 <Form.Item
-                  name="expectedStartTime"
-                  label="Ngày đến thăm"
+                  required
+                  name="title"
+                  label="Tên chuyến thăm"
                   rules={[
-                    { required: true, message: "Vui lòng chọn thời gian" },
+                    {
+                      required: true,
+                      message: "Vui lòng nhập tên chuyến thăm",
+                    },
                   ]}
                 >
-                  <DatePicker
-                    format={"DD/MM/YYYY"}
-                    disabledDate={(current) =>
-                      current && current < moment().startOf("day")
-                    }
+                  <Input
+                    placeholder="Nhập tên chuyến thăm"
+                    className="rounded border-gray-300"
                   />
                 </Form.Item>
-              )}
-            <>
-              {(scheduleTypeName === "ProcessWeek" ||
-                scheduleTypeName === "ProcessMonth") && (
-                <Button
-                  className="mx-2"
-                  type="primary"
-                  onClick={() => showModalCalendar(scheduleTypeName)}
+
+                {scheduleTypeName !== "ProcessWeek" &&
+                  scheduleTypeName !== "ProcessMonth" && (
+                    <Form.Item
+                      required
+                      name="expectedStartTime"
+                      label="Ngày đến thăm"
+                      rules={[
+                        { required: true, message: "Vui lòng chọn thời gian" },
+                      ]}
+                    >
+                      <DatePicker
+                        format="DD/MM/YYYY"
+                        placeholder="Chọn thời gian"
+                        className="w-full rounded border-gray-300"
+                        disabledDate={(current) =>
+                          current && current < dayjs().startOf("day")
+                        }
+                      />
+                    </Form.Item>
+                  )}
+
+                {(scheduleTypeName === "ProcessWeek" ||
+                  scheduleTypeName === "ProcessMonth") && (
+                  <div className="space-y-2 ">
+                    <Button
+                      type="primary"
+                      onClick={() => showModalCalendar(scheduleTypeName)}
+                      className="w-full bg-blue-600 hover:bg-blue-700 mt-2"
+                    >
+                      Chọn ngày và xem lịch
+                    </Button>
+
+                    {expectedStartTime && expectedEndTime && (
+                      <div className="p-3 bg-gray-50 rounded text-gray-600 text-sm">
+                        Từ {formatDateTime(expectedStartTime?.toDate())} Đến{" "}
+                        {formatDateTime(expectedEndTime?.toDate())}
+                      </div>
+                    )}
+                    {!expectedStartTime && !expectedEndTime && (
+                      <div className="text-red-500">
+                        Vui lòng chọn thời gian
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Description moved to its own card with full width */}
+              <div className="bg-white rounded-lg shadow-2xl p-6 mt-4 flex-grow">
+                <Form.Item
+                  required
+                  name="description"
+                  label="Mô tả"
+                  rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}
                 >
-                  Chọn ngày và xem lịch
-                </Button>
-              )}
-              {expectedStartTime && expectedEndTime && (
-                <div>
-                  Từ {formatDateTime(expectedStartTime?.toDate())} Đến{" "}
-                  {formatDateTime(expectedEndTime?.toDate())}
-                </div>
-              )}
-              <Modal
-                title="Xem lịch"
-                visible={isModalCalendarVisible}
-                onCancel={handleCancelCalendar}
-                cancelText="Quay lại"
-                onOk={handleOk}
-                // footer={null} // You can customize the footer if needed
-              >
-                {isMonthCalendarVisible && (
-                  <ReadOnlyMonthCalendar
-                    daysOfSchedule={daysOfSchedule}
-                    setExpectedStartTime={setExpectedStartTime}
-                    setExpectedEndTime={setExpectedEndTime}
+                  <ReactQuill
+                    theme="snow"
+                    value={editorState}
+                    onChange={setEditorState}
+                    className="h-64 mb-10" // Increased height
+                    modules={{
+                      toolbar: [
+                        [{ header: [1, 2, false] }],
+                        ["bold", "italic", "underline", "strike"],
+                        [{ list: "ordered" }, { list: "bullet" }],
+                        ["link", "image", "clean"],
+                      ],
+                    }}
                   />
-                )}
+                </Form.Item>
+              </div>
+            </div>
 
-                {isWeekCalendarVisible && (
-                  <ReadOnlyWeekCalendar
-                    daysOfSchedule={daysOfSchedule}
-                    setExpectedStartTime={setExpectedStartTime}
-                    setExpectedEndTime={setExpectedEndTime}
-                  />
-                )}
-              </Modal>
-            </>
-            <Form.Item
-              name="description"
-              label="Mô tả"
-              rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}
-            >
-              <Editor
-                editorState={editorState}
-                onEditorStateChange={onEditorStateChange}
-                toolbarClassName="flex justify-between px-2"
-                wrapperClassName="border border-gray-300 rounded-lg"
-                editorClassName="p-4 h-40 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </Form.Item>
-          </>
-        )}
-        {currentStep === 1 && (
-          <>
-            {selectedVisitors.length !== visitQuantity && (
-              <Button type="primary" onClick={handleAddVisitor}>
-                Thêm khách
-              </Button>
-            )}
+            {/* Right Column - Visitor Details - Now wider */}
+            {
+              <div className="lg:col-span-2 flex flex-col">
+                <div className="bg-white rounded-lg shadow-2xl p-6 flex-grow">
+                  <h2 className="text-lg font-medium text-gray-900 mb-6">
+                    Chi tiết khách thăm
+                  </h2>
 
-            {isModalVisible && (
-              <VisitorSearchModal
-                isModalVisible={isModalVisible}
-                setIsModalVisible={setIsModalVisible}
-                onVisitorSelected={handleVisitorSelection} // Pass the callback here
-              />
-            )}
-            {selectedVisitors.length === visitQuantity && (
-              <div className="flex flex-col mt-4">
-                <h3 className="text-lg font-semibold mb-2">
-                  {" "}
-                  {/* Add margin-bottom for spacing */}
-                  Chọn giờ cho tất cả khách:
-                </h3>
-                <div className="flex space-x-4">
-                  {/* Flex container for TimePickers */}
-                  <div className="flex flex-col w-full">
-                    <label className="mb-1" htmlFor="startHour">
-                      Giờ vào
-                    </label>
-                    <TimePicker
-                      id="startHour" // Add id for accessibility
-                      format="HH:mm:ss"
-                      placeholder="Giờ vào"
-                      value={
-                        startHourForAll
-                          ? dayjs(startHourForAll, "HH:mm:ss")
-                          : null
-                      }
-                      className="w-full"
-                      onChange={handleStartHourChangeForAll}
-                    />
-                  </div>
+                  <Button
+                    type="primary"
+                    onClick={handleAddVisitor}
+                    className="mb-4 bg-blue-600 hover:bg-blue-700"
+                  >
+                    Thêm khách
+                  </Button>
 
-                  <div className="flex flex-col w-full">
-                    <label className="mb-1" htmlFor="endHour">
-                      Giờ ra
-                    </label>
-                    <TimePicker
-                      id="endHour" // Add id for accessibility
-                      format="HH:mm:ss"
-                      placeholder="Giờ ra"
-                      value={
-                        endHourForAll ? dayjs(endHourForAll, "HH:mm:ss") : null
-                      }
-                      className="w-full"
-                      onChange={handleEndHourChangeForAll}
-                    />
-                  </div>
+                  {selectedVisitors.length > 0 && (
+                    <div className="mb-6">
+                      <h3 className="text-base font-medium text-gray-900 mb-3">
+                        Chọn giờ cho tất cả khách:
+                      </h3>
+                      <div className="grid grid-cols-4 gap-4">
+                        <div className="col-span-2 flex flex-col">
+                          <label className="text-sm text-gray-700 mb-1">
+                            Giờ vào tất cả khách
+                          </label>
+                          <TimePicker
+                            format="HH:mm:ss"
+                            placeholder="Giờ vào"
+                            className="w-full rounded border-gray-300"
+                            value={
+                              startHourForAll
+                                ? dayjs(startHourForAll, "HH:mm:ss")
+                                : null
+                            }
+                            onChange={handleStartHourChangeForAll}
+                            style={{ width: "100%" }}
+                          />
+                        </div>
+                        <div className="col-span-2 flex flex-col">
+                          <label className="text-sm text-gray-700 mb-1">
+                            Giờ ra tất cả khách
+                          </label>
+                          <TimePicker
+                            format="HH:mm:ss"
+                            placeholder="Giờ ra"
+                            className="w-full rounded border-gray-300"
+                            value={
+                              endHourForAll
+                                ? dayjs(endHourForAll, "HH:mm:ss")
+                                : null
+                            }
+                            onChange={handleEndHourChangeForAll}
+                            style={{ width: "100%" }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div style={{ height: "420px" }}>{renderVisitorsTable()}</div>
                 </div>
               </div>
-            )}
-            {renderVisitorsTable()}
-          </>
-        )}
-      </Form>
+            }
+          </div>
 
-      <div className="flex justify-between mt-4">
-        {currentStep == 0 && <Button onClick={handleCancel}>Hủy</Button>}
-        {currentStep > 0 && <Button onClick={prev}>Trở về</Button>}
-        {currentStep < 1 && (
-          <Button type="primary" onClick={next}>
-            Tiếp theo
-          </Button>
-        )}
-        {currentStep === 1 && (
-          <Button type="primary" onClick={handleSubmit}>
-            Tạo mới
-          </Button>
-        )}
+          {/* Bottom Actions */}
+          <div className="flex justify-end space-x-4 mt-6">
+            <Button
+              onClick={handleCancel}
+              className="px-4 py-2 border border-gray-300 rounded-md "
+            >
+              Quay lại
+            </Button>
+            <Button
+              onClick={() => {
+                form.resetFields();
+                setSelectedVisitors([]);
+                setStartHourForAll(null);
+                setEndHourForAll(null);
+              }}
+              className="px-4 py-2 border border-gray-300 rounded-md bg-red-500 text-white hover:bg-red-600"
+            >
+              Xóa hết thông tin
+            </Button>
+            <Button
+              type="primary"
+              onClick={handleSubmit}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md"
+            >
+              Tạo mới
+            </Button>
+          </div>
+        </Form>
       </div>
+
+      {/* Modals */}
+      <Modal
+        title={<span className="text-lg font-medium">Xem lịch</span>}
+        visible={isModalCalendarVisible}
+        onCancel={handleCancelCalendar}
+        onOk={handleOk}
+        cancelText="Quay lại"
+        className="rounded-lg"
+        width={720}
+      >
+        <div className="min-h-[400px]">
+          {scheduleTypeName === "ProcessMonth" && (
+            <ReadOnlyMonthCalendar
+              daysOfSchedule={daysOfSchedule}
+              setExpectedStartTime={setExpectedStartTime}
+              setExpectedEndTime={setExpectedEndTime}
+            />
+          )}
+          {scheduleTypeName === "ProcessWeek" && (
+            <ReadOnlyWeekCalendar
+              daysOfSchedule={daysOfSchedule}
+              setExpectedStartTime={setExpectedStartTime}
+              setExpectedEndTime={setExpectedEndTime}
+            />
+          )}
+        </div>
+      </Modal>
+
+      {isModalVisible && (
+        <VisitorSearchModal
+          isModalVisible={isModalVisible}
+          setIsModalVisible={setIsModalVisible}
+          onVisitorSelected={handleVisitorSelection}
+        />
+      )}
     </div>
   );
 };

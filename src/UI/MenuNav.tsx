@@ -84,9 +84,9 @@ const MenuNav = () => {
       label: "Chuyến thăm",
     },
     {
-      key: "schedule-staff",
+      key: "schedule-staff-assigned",
       icon: <FileTextOutlined />,
-      label: "Lịch trình",
+      label: "Nhiệm vụ",
     },
   ];
 
@@ -226,7 +226,7 @@ const MenuNav = () => {
       </Menu>
 
       <Modal
-        title="Bạn có muốn hủy quá trình tạo mới lịch?"
+        title="Bạn có muốn hủy quá trình tạo mới chuyến thăm?"
         visible={isModalVisible}
         onOk={handleOk}
         onCancel={handleCancelNavigation}
