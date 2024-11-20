@@ -74,7 +74,7 @@ const DetailCustomerVisit: React.FC = () => {
     pageNumber: -1,
     pageSize: -1,
   });
- 
+
   const [visitors, setVisitors] = useState<DetailVisitor[]>([]);
   const [visitQuantity, setVisitQuantity] = useState<number>(
     visitData?.visitQuantity || 0
@@ -472,7 +472,16 @@ const DetailCustomerVisit: React.FC = () => {
                     <ReactQuill
                       value={editableDescription}
                       onChange={handleDescriptionChange}
-                      className="mt-1"
+                      className="mt-1 mb-12 h-80"
+                      theme="snow"
+                      modules={{
+                        toolbar: [
+                          [{ header: [1, 2, false] }],
+                          ["bold", "italic", "underline", "strike"],
+                          [{ list: "ordered" }, { list: "bullet" }],
+                          ["link", "image", "clean"],
+                        ],
+                      }}
                       placeholder="Nhập mô tả"
                     />
                   ) : (

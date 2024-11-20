@@ -77,7 +77,7 @@ const CustomerVisitStaff = () => {
       title: "STT",
       dataIndex: "index",
       key: "index",
-      width: 50, // Adjust the width as needed
+      width: 50,
       render: (text, record, index) => index + 1,
     },
     {
@@ -97,7 +97,7 @@ const CustomerVisitStaff = () => {
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
-              maxWidth: "150px", // Adjust the max-width as needed
+              maxWidth: "150px",
               display: "inline-block",
             }}
           >
@@ -110,7 +110,7 @@ const CustomerVisitStaff = () => {
       title: "Ngày bắt đầu",
       dataIndex: "expectedStartTime",
       key: "expectedStartTime",
-      render: (date: Date) => dayjs(date).format("DD/MM/YYYY"), // Include time
+      render: (date: Date) => dayjs(date).format("DD/MM/YYYY"),
       sorter: (a, b) =>
         new Date(a.expectedStartTime).getTime() -
         new Date(b.expectedStartTime).getTime(),
@@ -119,7 +119,7 @@ const CustomerVisitStaff = () => {
       title: "Ngày hết hạn",
       dataIndex: "expectedEndTime",
       key: "expectedEndTime",
-      render: (date: Date) => dayjs(date).format("DD/MM/YYYY"), // Include time
+      render: (date: Date) => dayjs(date).format("DD/MM/YYYY"),
       sorter: (a, b) =>
         new Date(a.expectedEndTime).getTime() -
         new Date(b.expectedEndTime).getTime(),
@@ -177,7 +177,10 @@ const CustomerVisitStaff = () => {
           return <Tag color="default">Theo ngày</Tag>;
         const { colorScheduleType, textScheduleType } = typeMap[
           scheduleTypeId
-        ] || { color: "default", text: "Theo ngày" };
+        ] || {
+          color: "default",
+          text: "Theo ngày",
+        };
         return (
           <Tag color={colorScheduleType} style={{ fontSize: "14px" }}>
             {textScheduleType}
@@ -319,102 +322,148 @@ const CustomerVisitStaff = () => {
           Tạo mới
         </Button>
       </Space>
-      <Space style={{ marginBottom: 16, display: "flex", flexWrap: "wrap" }}>
-        <Button
-          type={filters.scheduleTypeId.includes(null) ? "primary" : "default"}
-          onClick={() => handleTypeFilter(null)}
-        >
-          Theo ngày
-        </Button>
-        <Button
-          type={
-            filters.scheduleTypeId.includes(ScheduleType.Weekly)
-              ? "primary"
-              : "default"
-          }
-          onClick={() => handleTypeFilter(ScheduleType.Weekly)}
-        >
-          Theo tuần
-        </Button>
-        <Button
-          type={
-            filters.scheduleTypeId.includes(ScheduleType.Monthly)
-              ? "primary"
-              : "default"
-          }
-          onClick={() => handleTypeFilter(ScheduleType.Monthly)}
-        >
-          Theo tháng
-        </Button>
-      </Space>
-      <Space style={{ marginBottom: 16, display: "flex", flexWrap: "wrap" }}>
-        <Button
-          type={
-            filters.visitStatus.includes(VisitStatus.ActiveTemporary)
-              ? "primary"
-              : "default"
-          }
-          onClick={handleTemporaryStatusClick}
-          className={
-            animationActive && getCountByStatus(VisitStatus.ActiveTemporary) > 0
-              ? "animated-button"
-              : ""
-          }
-        >
-          Cần duyệt ({getCountByStatus(VisitStatus.ActiveTemporary)})
-        </Button>
-        <Button
-          type={
-            filters.visitStatus.includes(VisitStatus.Pending)
-              ? "primary"
-              : "default"
-          }
-          onClick={() => handleStatusFilter(VisitStatus.Pending)}
-        >
-          Chờ phê duyệt ({getCountByStatus(VisitStatus.Pending)})
-        </Button>
-        <Button
-          type={
-            filters.visitStatus.includes(VisitStatus.Active)
-              ? "primary"
-              : "default"
-          }
-          onClick={() => handleStatusFilter(VisitStatus.Active)}
-        >
-          Còn hiệu lực ({getCountByStatus(VisitStatus.Active)})
-        </Button>
-        <Button
-          type={
-            filters.visitStatus.includes(VisitStatus.Violation)
-              ? "primary"
-              : "default"
-          }
-          onClick={() => handleStatusFilter(VisitStatus.Violation)}
-        >
-          Vi phạm ({getCountByStatus(VisitStatus.Violation)})
-        </Button>
-        <Button
-          type={
-            filters.visitStatus.includes(VisitStatus.Cancelled)
-              ? "primary"
-              : "default"
-          }
-          onClick={() => handleStatusFilter(VisitStatus.Cancelled)}
-        >
-          Đã hủy ({getCountByStatus(VisitStatus.Cancelled)})
-        </Button>
-
-        <Button
-          type={
-            filters.visitStatus.includes(VisitStatus.Inactive)
-              ? "primary"
-              : "default"
-          }
-          onClick={() => handleStatusFilter(VisitStatus.Inactive)}
-        >
-          Đã hết hạn ({getCountByStatus(VisitStatus.Inactive)})
-        </Button>
-      </Space>
+      <>
+        <Space style={{ marginBottom: 16, display: "flex", flexWrap: "wrap" }}>
+          <Button
+            type={filters.scheduleTypeId.includes(null) ? "primary" : "default"}
+            onClick={() => handleTypeFilter(null)}
+            className={`px-4 py-2 rounded-md ${
+              filters.scheduleTypeId.includes(null)
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 text-gray-700"
+            } hover:bg-blue-600`}
+          >
+            Theo ngày
+          </Button>
+          <Button
+            type={
+              filters.scheduleTypeId.includes(ScheduleType.Weekly)
+                ? "primary"
+                : "default"
+            }
+            onClick={() => handleTypeFilter(ScheduleType.Weekly)}
+            className={`px-4 py-2 rounded-md ${
+              filters.scheduleTypeId.includes(ScheduleType.Weekly)
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 text-gray-700"
+            } hover:bg-blue-600`}
+          >
+            Theo tuần
+          </Button>
+          <Button
+            type={
+              filters.scheduleTypeId.includes(ScheduleType.Monthly)
+                ? "primary"
+                : "default"
+            }
+            onClick={() => handleTypeFilter(ScheduleType.Monthly)}
+            className={`px-4 py-2 rounded-md ${
+              filters.scheduleTypeId.includes(ScheduleType.Monthly)
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 text-gray-700"
+            } hover:bg-blue-600`}
+          >
+            Theo tháng
+          </Button>
+        </Space>
+        <Space style={{ marginBottom: 16, display: "flex", flexWrap: "wrap" }}>
+          <Button
+            type={
+              filters.visitStatus.includes(VisitStatus.ActiveTemporary)
+                ? "primary"
+                : "default"
+            }
+            onClick={handleTemporaryStatusClick}
+            className={`px-4 py-2 rounded-md ${
+              filters.visitStatus.includes(VisitStatus.ActiveTemporary)
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 text-gray-700"
+            } hover:bg-blue-600 ${
+              animationActive &&
+              getCountByStatus(VisitStatus.ActiveTemporary) > 0
+                ? "animated-button"
+                : ""
+            }`}
+          >
+            Cần duyệt ({getCountByStatus(VisitStatus.ActiveTemporary)})
+          </Button>
+          <Button
+            type={
+              filters.visitStatus.includes(VisitStatus.Pending)
+                ? "primary"
+                : "default"
+            }
+            onClick={() => handleStatusFilter(VisitStatus.Pending)}
+            className={`px-4 py-2 rounded-md ${
+              filters.visitStatus.includes(VisitStatus.Pending)
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 text-gray-700"
+            } hover:bg-blue-600`}
+          >
+            Chờ phê duyệt ({getCountByStatus(VisitStatus.Pending)})
+          </Button>
+          <Button
+            type={
+              filters.visitStatus.includes(VisitStatus.Active)
+                ? "primary"
+                : "default"
+            }
+            onClick={() => handleStatusFilter(VisitStatus.Active)}
+            className={`px-4 py-2 rounded-md ${
+              filters.visitStatus.includes(VisitStatus.Active)
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 text-gray-700"
+            } hover:bg-blue-600`}
+          >
+            Còn hiệu lực ({getCountByStatus(VisitStatus.Active)})
+          </Button>
+          <Button
+            type={
+              filters.visitStatus.includes(VisitStatus.Violation)
+                ? "primary"
+                : "default"
+            }
+            onClick={() => handleStatusFilter(VisitStatus.Violation)}
+            className={`px-4 py-2 rounded-md ${
+              filters.visitStatus.includes(VisitStatus.Violation)
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 text-gray-700"
+            } hover:bg-blue-600`}
+          >
+            Vi phạm ({getCountByStatus(VisitStatus.Violation)})
+          </Button>
+          <Button
+            type={
+              filters.visitStatus.includes(VisitStatus.Cancelled)
+                ? "primary"
+                : "default"
+            }
+            onClick={() => handleStatusFilter(VisitStatus.Cancelled)}
+            className={`px-4 py-2 rounded-md ${
+              filters.visitStatus.includes(VisitStatus.Cancelled)
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 text-gray-700"
+            } hover:bg-blue-600`}
+          >
+            Đã vô hiệu hóa ({getCountByStatus(VisitStatus.Cancelled)})
+          </Button>
+          <Button
+            type={
+              filters.visitStatus.includes(VisitStatus.Inactive)
+                ? "primary"
+                : "default"
+            }
+            onClick={() => handleStatusFilter(VisitStatus.Inactive)}
+            className={`px-4 py-2 rounded-md ${
+              filters.visitStatus.includes(VisitStatus.Inactive)
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 text-gray-700"
+            } hover:bg-blue-600`}
+          >
+            Đã hết hạn ({getCountByStatus(VisitStatus.Inactive)})
+          </Button>
+        </Space>
+      </>
 
       <Table
         columns={columns}
@@ -464,7 +513,7 @@ const CustomerVisitStaff = () => {
               type="primary"
               onClick={() => {
                 setIsCreateModalVisible(false);
-                navigate("/createNewVisitList");
+                navigate("/customerVisitStaff/createNewVisitList");
               }}
               style={{
                 width: "150px", // Set a fixed width to control wrapping

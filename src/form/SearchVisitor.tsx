@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { useGetVisitorByCredentialCardQuery } from "../services/visitor.service";
+import LoadingState from "../components/State/LoadingState";
 
 interface SearchVisitorProps {
   credentialCard: string; // Receive credential card as a prop
@@ -15,7 +16,7 @@ const SearchVisitor: React.FC<SearchVisitorProps> = ({
     isSuccess,
     isError,
   } = useGetVisitorByCredentialCardQuery({ CredentialCard: credentialCard });
-
+ 
   useEffect(() => {
     if (isSuccess && visitorData) {
       onVisitorFound([visitorData]); // Trigger only when data is successfully fetched
@@ -23,7 +24,6 @@ const SearchVisitor: React.FC<SearchVisitorProps> = ({
       onVisitorFound([]); // Trigger callback with an empty array on error
     }
   }, [isSuccess, isError, visitorData, onVisitorFound]);
-
   return null; // No UI rendering, only data handling
 };
 

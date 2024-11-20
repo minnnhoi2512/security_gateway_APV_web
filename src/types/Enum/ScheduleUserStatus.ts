@@ -12,5 +12,5 @@ export const statusMap: { [key in ScheduleUserStatus]: { color: string; text: st
     [ScheduleUserStatus.Pending]: { color: "orange", text: "Chờ phê duyệt" },
     [ScheduleUserStatus.Approved]: { color: "blue", text: "Đã phê duyệt" },
     [ScheduleUserStatus.Rejected]: { color: "red", text: "Đã từ chối" },
-    [ScheduleUserStatus.Cancelled]: { color: "gray", text: "Đã hủy" },
+    [ScheduleUserStatus.Cancelled]: { color: "gray", text: "Đã vô hiệu hóa" },
 };

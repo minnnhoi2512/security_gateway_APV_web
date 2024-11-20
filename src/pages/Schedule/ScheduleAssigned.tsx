@@ -70,7 +70,7 @@ const ScheduleAssignedManager = () => {
 
   const { data: schedules, isLoading, isFetching, error, refetch } = useGetSchedulesUserByStatusQuery({
     pageNumber: 1,
-    pageSize: 10,
+    pageSize: 100,
     userId: Number(localStorage.getItem("userId")),
     status: statusFilter,
   });

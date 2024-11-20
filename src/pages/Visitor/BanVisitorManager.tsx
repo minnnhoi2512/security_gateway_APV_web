@@ -6,6 +6,7 @@ import {
   ExclamationCircleOutlined,
   UnlockOutlined,
   EyeOutlined,
+  LockOutlined,
 } from "@ant-design/icons";
 import moment from "moment-timezone";
 import { Content } from "antd/es/layout/layout";

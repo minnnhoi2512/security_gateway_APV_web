@@ -10,11 +10,11 @@ export const routes = [
   },
   { path: "/dashboard", breadcrumbName: "Thông tin chung" },
   {
-    path: "/createNewVisitList",
-    breadcrumbName: "Tạo mới chuyến thăm",
+    path: "/customerVisitStaff/createNewVisitList",
+    breadcrumbName: "Tạo mới chuyến thăm trong ngày",
   },
   {
-    path: "/schedule-staff-assigned",
+    path: "/schedule-staff",
     breadcrumbName: "Nhiệm vụ được giao",
   },
 

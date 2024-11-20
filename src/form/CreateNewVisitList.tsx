@@ -618,10 +618,10 @@ const CreateNewVisitList: React.FC = () => {
                   rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}
                 >
                   <ReactQuill
-                    theme="snow"
                     value={editorState}
                     onChange={setEditorState}
                     className="h-64 mb-10" // Increased height
+                    theme="snow"
                     modules={{
                       toolbar: [
                         [{ header: [1, 2, false] }],
@@ -639,17 +639,19 @@ const CreateNewVisitList: React.FC = () => {
             {
               <div className="lg:col-span-2 flex flex-col">
                 <div className="bg-white rounded-lg shadow-2xl p-6 flex-grow">
-                  <h2 className="text-lg font-medium text-gray-900 mb-6">
-                    Chi tiết khách thăm
-                  </h2>
+                  <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-lg font-medium text-gray-900">
+                      Chi tiết khách thăm
+                    </h2>
 
-                  <Button
-                    type="primary"
-                    onClick={handleAddVisitor}
-                    className="mb-4 bg-blue-600 hover:bg-blue-700"
-                  >
-                    Thêm khách
-                  </Button>
+                    <Button
+                      type="primary"
+                      onClick={handleAddVisitor}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      Thêm khách
+                    </Button>
+                  </div>
 
                   {selectedVisitors.length > 0 && (
                     <div className="mb-6">
