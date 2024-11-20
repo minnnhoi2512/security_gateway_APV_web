@@ -71,7 +71,7 @@ const DetailCustomerVisit: React.FC = () => {
   const [visitQuantity, setVisitQuantity] = useState<number>(
     visitData?.visitQuantity || 0
   );
-
+// console.log(visitData);
   const [editableVisitName, setEditableVisitName] = useState<string>("");
   const [updateVisitBeforeStartDate] = useUpdateVisitBeforeStartDateMutation();
   const [updateVisitAfterStartDate] = useUpdateVisitAfterStartDateMutation();
@@ -100,7 +100,7 @@ const DetailCustomerVisit: React.FC = () => {
   useEffect(() => {
     setSelectedVisitId(Number(id));
     setVisitors(detailVisitData);
-    setVisitQuantity(detailVisitData?.length);
+    setVisitQuantity(visitData?.visitQuantity);
     setEditableVisitName(visitData?.visitName);
     setEditableDescription(visitData?.description);
     setEditableStartDate(convertToDayjs(visitData?.expectedStartTime));
@@ -174,7 +174,7 @@ const DetailCustomerVisit: React.FC = () => {
     }
   };
   const truncatedDescription =
-    editableDescription.length > 100
+    editableDescription?.length > 100
       ? `${editableDescription.substring(0, 100)}...`
       : editableDescription;
 
@@ -270,7 +270,7 @@ const DetailCustomerVisit: React.FC = () => {
         });
       });
     } else {
-      if (visitors.length === 1) {
+      if (visitors?.length === 1) {
         return notification.warning({
           message: "Danh sách không thể trống khách.",
         });
