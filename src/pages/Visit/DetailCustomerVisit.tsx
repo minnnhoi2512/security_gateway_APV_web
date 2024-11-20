@@ -654,7 +654,7 @@ const DetailCustomerVisit: React.FC = () => {
                   className="bg-red-500 text-white"
                   onClick={handleCancel}
                 >
-                  Hủy chuyến thăm
+                  Vô hiệu hóa
                 </Button>
               </div>
             )}
