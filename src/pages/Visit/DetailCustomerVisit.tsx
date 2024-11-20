@@ -40,6 +40,7 @@ import ListHistorySessonVisit from "../History/ListHistorySessionVisit";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { HtmlContent } from "../../components/Description/description";
+import LoadingState from "../../components/State/LoadingState";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(customParseFormat);
@@ -53,9 +54,16 @@ const DetailCustomerVisit: React.FC = () => {
     useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const { id } = useParams<{ id: string }>();
-  const { data: visitData, refetch: refetchVisit } = useGetDetailVisitQuery({
+  const {
+    data: visitData,
+    refetch: refetchVisit,
+    isLoading,
+  } = useGetDetailVisitQuery({
     visitId: Number(id),
   });
+  const [updateVisitBeforeStartDate] = useUpdateVisitBeforeStartDateMutation();
+  const [updateVisitAfterStartDate] = useUpdateVisitAfterStartDateMutation();
+  const [updateVisitStatus] = useUpdateStatusVisitMutation();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const {
     data: detailVisitData = [],
@@ -66,30 +74,26 @@ const DetailCustomerVisit: React.FC = () => {
     pageNumber: -1,
     pageSize: -1,
   });
-  const [updateVisitStatus] = useUpdateStatusVisitMutation();
+ 
   const [visitors, setVisitors] = useState<DetailVisitor[]>([]);
   const [visitQuantity, setVisitQuantity] = useState<number>(
     visitData?.visitQuantity || 0
   );
-// console.log(visitData);
   const [editableVisitName, setEditableVisitName] = useState<string>("");
-  const [updateVisitBeforeStartDate] = useUpdateVisitBeforeStartDateMutation();
-  const [updateVisitAfterStartDate] = useUpdateVisitAfterStartDateMutation();
   const [editableStartDate, setEditableStartDate] = useState<Dayjs>();
   const [editableDescription, setEditableDescription] = useState<string>("");
   const [editableEndDate, setEditableEndDate] = useState<Dayjs>();
   const [scheduleTypeId, setScheduleTypeId] = useState<ScheduleType | null>(
     null
   );
-  const [isDescriptionModalVisible, setIsDescriptionModalVisible] = useState(false);
+  const [isDescriptionModalVisible, setIsDescriptionModalVisible] =
+    useState(false);
   const [status, setStatusVisit] = useState<VisitStatus | String>("");
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
   const [isHistoryModalVisible, setIsHistoryModalVisible] = useState(false);
   const convertToDayjs = (date: string | Date | Dayjs): Dayjs => {
     return dayjs(date);
   };
-
-  // Check if the visit is editable based on the expected start time
   const isEditable = () => {
     const endOfExpectedStartTime = dayjs(visitData?.expectedStartTime).endOf(
       "day"
@@ -424,6 +428,13 @@ const DetailCustomerVisit: React.FC = () => {
       ),
     },
   ];
+  if (isLoading && loadingDetailVisitData) {
+    return (
+      <div>
+        <LoadingState />
+      </div>
+    );
+  }
   return (
     <Layout className="bg-white">
       <Content>
