@@ -12,6 +12,7 @@ import {
   Divider,
   notification,
   Table,
+  Space,
 } from "antd";
 import {
   SearchOutlined,
@@ -55,19 +56,18 @@ const Schedule = () => {
   });
   const [searchText, setSearchText] = useState<string>("");
   const navigate = useNavigate();
-
+  const [filteredData, setFilteredData] = useState<any[]>([]);
   const {
     data: schedules,
     isLoading: schedulesIsLoading,
     refetch: scheduleUserRefetch,
-  } =
-    userRole === "DepartmentManager"
-      ? useGetDepartmentSchedulesQuery({
+  } = userRole === "DepartmentManager"
+    ? useGetDepartmentSchedulesQuery({
         departmenManagerId: userId,
         pageNumber: -1,
         pageSize: -1,
       })
-      : useGetListScheduleQuery({
+    : useGetListScheduleQuery({
         pageNumber: -1,
         pageSize: -1,
       });
@@ -85,9 +85,19 @@ const Schedule = () => {
   useEffect(() => {
     scheduleUserRefetch();
   }, []);
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchText(e.target.value);
+  };
 
   const staffData = users.filter((user: any) => user.role?.roleId === 4);
-
+  useEffect(() => {
+    if (schedules) {
+      const filtered = schedules.filter((item: any) =>
+        item?.scheduleName.toLowerCase().includes(searchText.toLowerCase())
+      );
+      setFilteredData(filtered);
+    }
+  }, [schedules, searchText]);
   const handleDeleteSchedule = (scheduleId: number) => {
     Modal.confirm({
       title: "Xác nhận xóa",
@@ -132,7 +142,7 @@ const Schedule = () => {
     try {
       const payload = { ...assignData };
       await assignSchedule(payload).unwrap();
-      notification.success({ message: "Phân công thành công!" });
+      notification.success({ message: "Giao nhiệm vụ thành công!" });
       setAssignData({
         title: "",
         description: "",
@@ -147,10 +157,9 @@ const Schedule = () => {
       if (isEntityError(error)) {
         setMysit(error.data.errors as FormError);
       }
-      //notification.error({ message: "Có lỗi xảy ra khi phân công." });
+      notification.error({ message: "Có lỗi xảy ra khi giao nhiệm vụ." });
     }
   };
-
 
   const handleCancelAssigned = () => {
     setAssignData({
@@ -165,47 +174,58 @@ const Schedule = () => {
   };
 
   return (
-    <Layout className="min-h-screen bg-gray-50">
-      <Content className="p-8">
-        <h1 className="text-3xl font-bold text-titleMain text-center mb-4">
-          Danh sách Dự án của phòng ban
-        </h1>
-        <Row justify="space-between" align="middle" className="mb-4">
-          <Col>
-            <div className="flex items-center bg-white rounded-full shadow-sm p-2 border border-gray-300 focus-within:border-blue-500 transition-all duration-200 ease-in-out">
-              <SearchOutlined className="text-gray-500 ml-2" />
-              <Input
-                placeholder="Tìm kiếm theo tiêu đề"
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                className="ml-2 bg-transparent border-none focus:outline-none text-gray-700 placeholder-gray-400"
-                style={{ width: 300 }}
-              />
-            </div>
-          </Col>
-          <Col>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 shadow-sm"
-              onClick={() => navigate("/createNewSchedule")}
-            >
-              Tạo mới dự án
-            </Button>
-          </Col>
-        </Row>
-
-        <Divider />
+    <Layout className="min-h-screen bg-white">
+      <Content className="px-6">
+        <Space
+          style={{
+            marginBottom: 16,
+            display: "flex",
+            justifyContent: "space-between",
+          }}
+        >
+          <Input
+            placeholder="Tìm kiếm theo tên lịch trình"
+            prefix={<SearchOutlined />}
+            value={searchText}
+            onChange={handleSearchChange}
+            style={{
+              width: 300,
+              borderColor: "#1890ff",
+              borderRadius: 5,
+            }}
+          />
+          <Button
+            type="primary"
+            size="large"
+            icon={<PlusOutlined />}
+            onClick={() => console.log("Haha")}
+            style={{ borderRadius: 12 }}
+          >
+            Tạo mới
+          </Button>
+        </Space>
+        <Space style={{ marginBottom: 16, display: "flex", flexWrap: "wrap" }}>
+          <Button>Theo tuần</Button>
+          <Button>Theo tháng</Button>
+        </Space>
+        <Space style={{ marginBottom: 16, display: "flex", flexWrap: "wrap" }}>
+          <Button>Còn hiệu lực</Button>
+          <Button>Hết hiệu lực</Button>
+        </Space>
         <TableSchedule
-          schedules={schedules || []}
+          schedules={filteredData || []}
           schedulesIsLoading={schedulesIsLoading}
           totalCount={schedules?.totalCount || 0}
           handleDeleteSchedule={handleDeleteSchedule}
           handleAssignUser={handleAssignUser}
-        />  
+        />
 
         <Modal
-          title={<span className="text-xl font-semibold">Phân công nhân viên</span>}
+          title={
+            <span className="text-xl font-semibold">
+              Giao nhiệm vụ cho nhân viên
+            </span>
+          }
           visible={isModalVisible}
           onCancel={handleCancelAssigned}
           footer={[
@@ -222,7 +242,7 @@ const Schedule = () => {
               onClick={handleAssignSubmit}
               className="rounded-full px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white"
             >
-              Phân công
+              Giao nhiệm vụ
             </Button>,
           ]}
           className="rounded-lg p-6 shadow-xl"
@@ -238,12 +258,15 @@ const Schedule = () => {
             initialValues={assignData}
           >
             <Form.Item
-              label="Tiêu đề"
+              label="Tên nhiệm vụ"
               name="title"
               className="text-base font-medium"
               rules={[
-                { required: true, message: "Tiêu đề không được để trống." },
-                { min: 5, message: "Tiêu đề phải có ít nhất 5 ký tự." },
+                {
+                  required: true,
+                  message: "Tên nhiệm vụ không được để trống.",
+                },
+                { min: 5, message: "Tên nhiệm vụ phải có ít nhất 5 ký tự." },
               ]}
             >
               <Input
@@ -302,7 +325,9 @@ const Schedule = () => {
                     if (value && moment(value).isSameOrAfter(moment(), "day")) {
                       return Promise.resolve();
                     }
-                    return Promise.reject("Thời hạn phải là ngày trong tương lai.");
+                    return Promise.reject(
+                      "Thời hạn phải là ngày trong tương lai."
+                    );
                   },
                 },
               ]}
@@ -311,7 +336,6 @@ const Schedule = () => {
                   ? errorAssignSchedule.deadlineTime[0]
                   : ""
               }
-
             >
               <DatePicker
                 onChange={handleDateChange}
@@ -328,7 +352,9 @@ const Schedule = () => {
                 { required: true, message: "Vui lòng chọn nhân viên." },
                 {
                   validator: (_, value) =>
-                    value && value !== 0 ? Promise.resolve() : Promise.reject("Vui lòng chọn nhân viên hợp lệ."),
+                    value && value !== 0
+                      ? Promise.resolve()
+                      : Promise.reject("Vui lòng chọn nhân viên hợp lệ."),
                 },
               ]}
             >

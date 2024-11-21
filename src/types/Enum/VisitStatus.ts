@@ -7,7 +7,7 @@ export enum VisitStatus {
     Inactive = "Inactive",
 }
 
-export const statusMap: { [key in VisitStatus]: { colorVisitStatus: string; textVisitStatus: string } } = {
+export const visitStatusMap: { [key in VisitStatus]: { colorVisitStatus: string; textVisitStatus: string } } = {
     [VisitStatus.Active]: { colorVisitStatus: "green", textVisitStatus: "Còn hiệu lực" },
     [VisitStatus.Pending]: { colorVisitStatus: "orange", textVisitStatus: "Chờ phê duyệt" },
     [VisitStatus.Cancelled]: { colorVisitStatus: "red", textVisitStatus: "Đã vô hiệu hóa" },

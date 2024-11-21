@@ -35,7 +35,7 @@ import { DetailVisitor } from "../../types/detailVisitorForVisit";
 import { convertToVietnamTime, formatDateWithourHour } from "../../utils/ultil";
 import ListHistorySesson from "../History/ListHistorySession";
 import { ScheduleType, typeMap } from "../../types/Enum/ScheduleType";
-import { statusMap, VisitStatus } from "../../types/Enum/VisitStatus";
+import { VisitStatus, visitStatusMap } from "../../types/Enum/VisitStatus";
 import ListHistorySessonVisit from "../History/ListHistorySessionVisit";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
@@ -336,7 +336,7 @@ const DetailCustomerVisit: React.FC = () => {
     color: "default",
     text: "Theo ngày",
   };
-  const { colorVisitStatus, textVisitStatus } = statusMap[statusType] || {
+  const { colorVisitStatus, textVisitStatus } = visitStatusMap[statusType] || {
     color: "black",
     text: "Không xác định",
   };
@@ -472,7 +472,7 @@ const DetailCustomerVisit: React.FC = () => {
                     <ReactQuill
                       value={editableDescription}
                       onChange={handleDescriptionChange}
-                      className="mt-1 mb-12 h-80"
+                      className="mt-1 mb-12 h-60"
                       theme="snow"
                       modules={{
                         toolbar: [
@@ -501,7 +501,7 @@ const DetailCustomerVisit: React.FC = () => {
                     <HtmlContent htmlString={editableDescription} />
                   </Modal>
                 </div>
-                <div className="flex items-center space-x-4 ">
+                <div className="flex items-center pt-6 ">
                   <div>
                     <p className="text-sm text-gray-500 space-y-2 ">
                       Trạng thái:

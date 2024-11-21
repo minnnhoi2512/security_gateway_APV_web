@@ -84,22 +84,27 @@ const MenuNav = () => {
       label: "Chuyến thăm",
     },
     {
+      key: "customerVisit",
+      icon: <BarsOutlined />,
+      label: "Chuyến thăm",
+    },
+    {
       key: "schedule-staff",
+      icon: <FileTextOutlined />,
+      label: "Nhiệm vụ",
+    },
+    {
+      key: "schedule-assigned",
       icon: <FileTextOutlined />,
       label: "Nhiệm vụ",
     },
   ];
 
   const part2: MenuItem[] = [
-
     {
-      key: "visitorManage",
-      icon: <SolutionOutlined />,
-      label: "Danh sách khách",
-      children: [
-        { key: "visitorManager", label: "Khách", icon: <UserOutlined /> },
-        { key: "banVisitorManager", label: "Sổ đen", icon: <SafetyCertificateOutlined /> },
-      ],
+      key: "schedule",
+      icon: <FileTextOutlined />,
+      label: "Lịch trình",
     },
   ];
 
@@ -108,9 +113,7 @@ const MenuNav = () => {
       key: "historyManage",
       icon: <HistoryOutlined />,
       label: "Lịch sử",
-      children: [
-        { key: "history", label: "Lượt ra vào" },
-      ],
+      children: [{ key: "history", label: "Lượt ra vào" }],
     },
     {
       key: "facilityManage",
@@ -119,7 +122,11 @@ const MenuNav = () => {
       children: [
         { key: "departManager", label: "Phòng ban", icon: <TeamOutlined /> },
         { key: "gate", label: "Cổng ra vào", icon: <SolutionOutlined /> },
-        { key: "card", label: "Thẻ ra vào", icon: <SafetyCertificateOutlined /> },
+        {
+          key: "card",
+          label: "Thẻ ra vào",
+          icon: <SafetyCertificateOutlined />,
+        },
       ],
     },
   ];
@@ -130,7 +137,11 @@ const MenuNav = () => {
       icon: <AppstoreOutlined />,
       label: "Tiện ích",
       children: [
-        { key: "calendar", label: "Lịch hẹn của tôi", icon: <FileTextOutlined /> },
+        {
+          key: "calendar",
+          label: "Lịch hẹn của tôi",
+          icon: <FileTextOutlined />,
+        },
         { key: "chat", label: "Nhắn tin", icon: <UserOutlined /> },
       ],
     },
@@ -147,7 +158,12 @@ const MenuNav = () => {
             title={<span style={titleStyle}>{item.label}</span>}
           >
             {item.children.map((subItem: any) => (
-              <Menu.Item key={subItem.key} icon={<span style={iconStyle}>{subItem.icon}</span>} style={subItemStyle} onClick={handleMenuClick}>
+              <Menu.Item
+                key={subItem.key}
+                icon={<span style={iconStyle}>{subItem.icon}</span>}
+                style={subItemStyle}
+                onClick={handleMenuClick}
+              >
                 {subItem.label}
               </Menu.Item>
             ))}

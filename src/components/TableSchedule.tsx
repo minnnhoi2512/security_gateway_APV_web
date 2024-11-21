@@ -28,7 +28,9 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({
   handleAssignUser,
 }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedScheduleId, setSelectedScheduleId] = useState<number | null>(null);
+  const [selectedScheduleId, setSelectedScheduleId] = useState<number | null>(
+    null
+  );
   const navigate = useNavigate(); // Define navigate
 
   const showModal = (scheduleId: number) => {
@@ -39,35 +41,59 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({
   const handleCancel = () => {
     setIsModalVisible(false);
   };
-
+  console.log(schedules);
   const columns: ColumnsType<Schedule> = [
     {
-      title: "Tiêu đề",
+      title: "Tên lịch trình",
       dataIndex: "scheduleName",
       key: "scheduleName",
-      align: "left",
-      width: "40%",
       sorter: (a, b) => a.scheduleName?.localeCompare(b.scheduleName),
     },
     {
       title: "Lịch trình",
       dataIndex: "scheduleType",
       key: "scheduleType",
-      align: "left",
-      width: "15%",
       render: (text) => {
         const scheduleTypeName = text.scheduleTypeName;
         let tagColor = "default";
 
         switch (scheduleTypeName) {
           case "VisitDaily":
-            return <Tag color="blue" style={{ minWidth: "80px", textAlign: "center" }}>Theo ngày</Tag>;
+            return (
+              <Tag
+                color="blue"
+                style={{ minWidth: "80px", textAlign: "center" }}
+              >
+                Theo ngày
+              </Tag>
+            );
           case "ProcessWeek":
-            return <Tag color="green" style={{ minWidth: "80px", textAlign: "center" }}>Theo tuần</Tag>;
+            return (
+              <Tag
+                color="green"
+                style={{ minWidth: "80px", textAlign: "center" }}
+              >
+                Theo tuần
+              </Tag>
+            );
           case "ProcessMonth":
-            return <Tag color="orange" style={{ minWidth: "80px", textAlign: "center" }}>Theo tháng</Tag>;
+            return (
+              <Tag
+                color="orange"
+                style={{ minWidth: "80px", textAlign: "center" }}
+              >
+                Theo tháng
+              </Tag>
+            );
           default:
-            return <Tag color={tagColor} style={{ minWidth: "80px", textAlign: "center" }}>{scheduleTypeName}</Tag>;
+            return (
+              <Tag
+                color={tagColor}
+                style={{ minWidth: "80px", textAlign: "center" }}
+              >
+                {scheduleTypeName}
+              </Tag>
+            );
         }
       },
     },
@@ -75,10 +101,11 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-      align: "left",
-      width: "15%",
       render: (status: boolean) => (
-        <Tag color={status ? "green" : "red"} style={{ minWidth: "80px", textAlign: "center" }}>
+        <Tag
+          color={status ? "green" : "red"}
+          style={{ minWidth: "80px", textAlign: "center" }}
+        >
           {status ? "Còn hiệu lực" : "Hết hiệu lực"}
         </Tag>
       ),
@@ -87,32 +114,33 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({
       title: <div style={{ textAlign: "left" }}>Ngày tạo</div>,
       dataIndex: "createTime",
       key: "createTime",
-      align: "left",
-      width: "10%",
       render: (createDate: string) => (
         <div>{moment(createDate).format("DD/MM/YYYY")}</div>
       ),
     },
     {
-      title: <div style={{ textAlign: "left" }}>Số lịch hẹn đã tạo</div>,
+      title: <div style={{ textAlign: "left" }}>Ngày cập nhập</div>,
+      dataIndex: "updateTime",
+      key: "updateTime",
+      render: (createDate: string) => (
+        <div>{moment(createDate).format("DD/MM/YYYY")}</div>
+      ),
+    },
+    {
+      title: <div style={{ textAlign: "left" }}>Số chuyến thăm đã tạo</div>,
       dataIndex: "scheduleUser",
       key: "scheduleUser",
-      align: "center",
-      width: "10%",
       render: (scheduleUser: any) => (
         <div>
-          <div>{scheduleUser.length}</div>
-          {scheduleUser.length !== 0 ? <button>xem</button> : null}
+          <div>{scheduleUser.length} chuyến thăm</div>
         </div>
       ),
     },
     {
       title: <div style={{ textAlign: "left" }}>Hành động</div>,
       key: "action",
-      align: "center",
-      width: "10%",
       render: (_, record: any) => (
-                <div className="flex justify-center space-x-2">
+        <div className="flex justify-center space-x-2">
           {record.scheduleUser.length === 0 && (
             <Button
               type="text"
@@ -144,21 +172,29 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({
         pagination={{
           total: totalCount,
           showSizeChanger: true,
-          pageSizeOptions: ["5", "10", "20"],
+          pageSizeOptions: ["5", "10"],
+          size: "small",
         }}
         bordered
         className="bg-white shadow-md rounded-lg"
       />
       <Modal
-        title={<h1 className="text-3xl font-bold text-titleMain text-center mb-6">Cập nhật Lịch trình</h1>}
+        title={
+          <h1 className="text-3xl font-bold text-titleMain text-center mb-6">
+            Cập nhật lịch trình
+          </h1>
+        }
         centered
         width="68vw"
-        bodyStyle={{ padding: '20px', maxHeight: '90vh', overflowY: 'auto' }}
+        bodyStyle={{ padding: "20px", maxHeight: "90vh", overflowY: "auto" }}
         visible={isModalVisible}
         onCancel={handleCancel}
         footer={null}
       >
-        <DetailSchedule scheduleId={selectedScheduleId} onUpdateSuccess={handleCancel} />
+        <DetailSchedule
+          scheduleId={selectedScheduleId}
+          onUpdateSuccess={handleCancel}
+        />
       </Modal>
     </>
   );

@@ -26,7 +26,7 @@ import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import { Content } from "antd/es/layout/layout";
 import VisitListType from "../../types/visitListType";
 import { useGetListVisitByResponsiblePersonIdQuery } from "../../services/visitList.service";
-import { statusMap, VisitStatus } from "../../types/Enum/VisitStatus";
+import {  VisitStatus, visitStatusMap } from "../../types/Enum/VisitStatus";
 import { ScheduleType, typeMap } from "../../types/Enum/ScheduleType";
 import ListHistorySessonVisit from "../History/ListHistorySessionVisit";
 
@@ -43,6 +43,7 @@ interface Filters {
 
 const CustomerVisitStaff = () => {
   const userId = localStorage.getItem("userId");
+  const userRole = localStorage.getItem("userRole");
   const navigate = useNavigate();
   const [selectedVisitId, setSelectedVisitId] = useState<number | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -68,6 +69,7 @@ const CustomerVisitStaff = () => {
   useEffect(() => {
     refetch();
   }, []);
+  console.log(data);
   const handleTemporaryStatusClick = () => {
     handleStatusFilter(VisitStatus.ActiveTemporary);
     setAnimationActive(false);
@@ -81,7 +83,7 @@ const CustomerVisitStaff = () => {
       render: (text, record, index) => index + 1,
     },
     {
-      title: "Tiêu đề",
+      title: "Tên chuyến thăm",
       dataIndex: "visitName",
       key: "visitName",
       filteredValue: searchText ? [searchText] : null,
@@ -159,7 +161,7 @@ const CustomerVisitStaff = () => {
       dataIndex: "visitStatus",
       key: "visitStatus",
       render: (status: VisitStatus) => {
-        const { colorVisitStatus, textVisitStatus } = statusMap[status] || {
+        const { colorVisitStatus, textVisitStatus } = visitStatusMap[status] || {
           color: "black",
           text: "Không xác định",
         };
@@ -298,7 +300,7 @@ const CustomerVisitStaff = () => {
       >
         <Space>
           <Input
-            placeholder="Tìm kiếm theo tiêu đề"
+            placeholder="Tìm kiếm theo tên chuyến thăm"
             prefix={<SearchOutlined />}
             value={searchText}
             onChange={handleSearchChange}

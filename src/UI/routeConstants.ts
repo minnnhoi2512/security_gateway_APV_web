@@ -5,6 +5,10 @@ export const routes = [
     breadcrumbName: "Danh sách chuyến thăm",
   },
   {
+    path: "/customerVisit",
+    breadcrumbName: "Danh sách chuyến thăm",
+  },
+  {
     path: "/customerVisitStaff/detailVisit",
     breadcrumbName: "Chi tiết chuyến thăm",
   },
@@ -17,8 +21,18 @@ export const routes = [
     path: "/schedule-staff",
     breadcrumbName: "Nhiệm vụ được giao",
   },
-
-
+  {
+    path: "/schedule-staff/createNewVisitList",
+    breadcrumbName: "Tạo mới chuyến thăm theo lịch trình",
+  },
+  {
+    path: "/schedule-assigned",
+    breadcrumbName: "Danh sách nhiệm vụ",
+  },
+  {
+    path: "/schedule",
+    breadcrumbName: "Danh sách lịch trình",
+  },
   // {
   //   path: "/accountManage",
   //   breadcrumbName: "Người dùng",

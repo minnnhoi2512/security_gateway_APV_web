@@ -3,8 +3,8 @@ import { Button, Table, Tag, Space } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useNavigate } from "react-router";
 import {
+  scheduleStatusMap,
   ScheduleUserStatus,
-  statusMap,
 } from "../types/Enum/ScheduleUserStatus";
 import { ScheduleUserType } from "../types/ScheduleUserType";
 import { formatDateWithourHour } from "../utils/ultil";
@@ -65,7 +65,7 @@ const TableScheduleUser: React.FC<ScheduleAssignedTableProps> = ({
       render: (text, record, index) => index + 1,
     },
     {
-      title: "Tiêu đề",
+      title: "Tên nhiệm vụ",
       dataIndex: "title",
       key: "title",
       align: "left",
@@ -105,7 +105,7 @@ const TableScheduleUser: React.FC<ScheduleAssignedTableProps> = ({
       key: "status",
       align: "left",
       render: (status: ScheduleUserStatus) => {
-        const { color, text } = statusMap[status] || {
+        const { color, text } = scheduleStatusMap[status] || {
           color: "black",
           text: "Không xác định",
         };
@@ -211,40 +211,40 @@ const TableScheduleUser: React.FC<ScheduleAssignedTableProps> = ({
       <Space style={{ marginBottom: 16, display: "flex", flexWrap: "wrap" }}>
         <Button
           type={
-            filters.visitStatus.includes(ScheduleUserStatus.Assigned)
+            filters.visitStatus.includes(ScheduleUserStatus.Pending)
               ? "primary"
               : "default"
           }
           onClick={() => {
             setAnimationActive(false);
-            handleStatusFilter(ScheduleUserStatus.Assigned);
+            handleStatusFilter(ScheduleUserStatus.Pending);
           }}
           className={`px-4 py-2 rounded-md ${
-            filters.visitStatus.includes(ScheduleUserStatus.Assigned)
+            filters.visitStatus.includes(ScheduleUserStatus.Pending)
               ? "bg-blue-500 text-white"
               : "bg-gray-200 text-gray-700"
           } hover:bg-blue-600 ${
-            animationActive && getCountByStatus(ScheduleUserStatus.Assigned) > 0
+            animationActive && getCountByStatus(ScheduleUserStatus.Pending) > 0
               ? "animated-button"
               : ""
           }`}
         >
-          Chờ tạo ({getCountByStatus(ScheduleUserStatus.Assigned)})
+          Chờ phê duyệt ({getCountByStatus(ScheduleUserStatus.Pending)})
         </Button>
         <Button
           type={
-            filters.visitStatus.includes(ScheduleUserStatus.Pending)
+            filters.visitStatus.includes(ScheduleUserStatus.Assigned)
               ? "primary"
               : "default"
           }
-          onClick={() => handleStatusFilter(ScheduleUserStatus.Pending)}
+          onClick={() => handleStatusFilter(ScheduleUserStatus.Assigned)}
           className={`px-4 py-2 rounded-md ${
-            filters.visitStatus.includes(ScheduleUserStatus.Pending)
+            filters.visitStatus.includes(ScheduleUserStatus.Assigned)
               ? "bg-blue-500 text-white"
               : "bg-gray-200 text-gray-700"
           } hover:bg-blue-600`}
         >
-          Chờ phê duyệt ({getCountByStatus(ScheduleUserStatus.Pending)})
+          Chờ tạo ({getCountByStatus(ScheduleUserStatus.Assigned)})
         </Button>
         <Button
           type={
@@ -311,7 +311,9 @@ const TableScheduleUser: React.FC<ScheduleAssignedTableProps> = ({
           bordered
           loading={isLoading}
           onRow={(record) => ({
-            onDoubleClick: () => {
+            onDoubleClick: (event) => {
+              event.preventDefault(); // Prevent default behavior
+              event.stopPropagation(); // Stop event propagation
               onRowClick(record);
             },
           })}

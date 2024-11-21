@@ -4,10 +4,15 @@ import { useEffect, useState } from "react";
 import { useGetSchedulesUserByStatusQuery } from "../../services/scheduleUser.service";
 import TableScheduleUser from "../../components/TableScheduleUser";
 import { ScheduleUserType } from "../../types/ScheduleUserType";
+import ScheduleUserDetailModal from "../../components/Modal/ScheduleUserDetailModal";
+import NotFoundState from "../../components/State/NotFoundState";
+
 const { Content } = Layout;
+
 interface SchedulePageProps {
   status: "Assigned" | "Rejected" | "All";
 }
+
 const ScheduleStaff: React.FC<SchedulePageProps> = ({ status }) => {
   const [selectedRecord, setSelectedRecord] = useState<ScheduleUserType | null>(
     null
@@ -15,8 +20,11 @@ const ScheduleStaff: React.FC<SchedulePageProps> = ({ status }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const userRole = localStorage.getItem("userRole");
   const userId = localStorage.getItem("userId");
-  // console.log(userRole !== "Staff");
   const [searchText, setSearchText] = useState<string>("");
+  const [filteredSchedules, setFilteredSchedules] = useState<
+    ScheduleUserType[]
+  >([]);
+
   const {
     data: schedules,
     isLoading,
@@ -28,17 +36,40 @@ const ScheduleStaff: React.FC<SchedulePageProps> = ({ status }) => {
     userId: Number(userId),
     status: status,
   });
+
   useEffect(() => {
     refetch();
-  }, []);
+  }, [refetch]);
+
+  useEffect(() => {
+    if (schedules) {
+      setFilteredSchedules(
+        schedules.filter((schedule: any) =>
+          schedule.title.toLowerCase().includes(searchText.toLowerCase())
+        )
+      );
+    }
+  }, [schedules, searchText]);
+
   const handleRowClick = (record: ScheduleUserType) => {
     setSelectedRecord(record);
     setIsModalVisible(true);
-    console.log(record)
+    console.log(record);
   };
+
+  const handleModalClose = () => {
+    setIsModalVisible(false);
+    setSelectedRecord(null);
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchText(e.target.value);
+  };
+
   if (userRole !== "Staff") {
-    return <div>This page is only for staff.</div>;
+    return <div><NotFoundState></NotFoundState></div>;
   }
+
   return (
     <Content className="px-6">
       <Space
@@ -52,7 +83,7 @@ const ScheduleStaff: React.FC<SchedulePageProps> = ({ status }) => {
           placeholder="Tìm kiếm theo tiêu đề"
           prefix={<SearchOutlined />}
           value={searchText}
-          // onChange={handleSearchChange}
+          onChange={handleSearchChange}
           style={{
             width: 300,
             borderColor: "#1890ff",
@@ -70,11 +101,20 @@ const ScheduleStaff: React.FC<SchedulePageProps> = ({ status }) => {
       </Space>
 
       <TableScheduleUser
-        data={schedules}
+        data={filteredSchedules}
         isLoading={isLoading}
         onRowClick={handleRowClick}
         error={error}
       />
+
+      {selectedRecord && (
+        <ScheduleUserDetailModal
+          selectedRecord={selectedRecord}
+          isVisible={isModalVisible}
+          handleClose={handleModalClose}
+          refetch={() => console.log("")}
+        />
+      )}
     </Content>
   );
 };

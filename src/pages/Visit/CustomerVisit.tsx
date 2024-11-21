@@ -9,8 +9,14 @@ import {
   Slider,
   Select,
   Modal,
+  Tooltip,
+  Popover,
 } from "antd";
-import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
+import {
+  SearchOutlined,
+  PlusOutlined,
+  FilterOutlined,
+} from "@ant-design/icons";
 import { TableProps } from "antd";
 import { useNavigate } from "react-router-dom";
 import moment from "moment-timezone";
@@ -21,7 +27,7 @@ import {
   useGetListVisitQuery,
 } from "../../services/visitList.service";
 import dayjs, { Dayjs } from "dayjs";
-import { statusMap, VisitStatus } from "../../types/Enum/VisitStatus";
+import { VisitStatus, visitStatusMap } from "../../types/Enum/VisitStatus";
 import { ScheduleType, typeMap } from "../../types/Enum/ScheduleType";
 import ListHistorySessonVisit from "../History/ListHistorySessionVisit";
 
@@ -77,47 +83,87 @@ const CustomerVisit = () => {
     isLoading = allLoading;
     refetch = refetchAll;
   }
-  // console.log(data);
+  console.log(data);
   const columns: TableProps<VisitListType>["columns"] = [
     {
-      title: "Tiêu đề",
+      title: "STT",
+      dataIndex: "index",
+      key: "index",
+      width: 50,
+      render: (text, record, index) => index + 1,
+    },
+    {
+      title: "Tên chuyến thăm",
       dataIndex: "visitName",
       key: "visitName",
       filteredValue: searchText ? [searchText] : null,
       onFilter: (value: any, record: any) =>
         record.visitName.toLowerCase().includes(value.toString().toLowerCase()),
-      sorter: (a: any, b: any) => a.visitName.localeCompare(b.visitName),
+      sorter: (a, b) => a.visitName.localeCompare(b.visitName),
       render: (text) => (
-        <span style={{ fontSize: "14px", color: "#000" }}>{text}</span>
+        <Tooltip title={text}>
+          <span
+            style={{
+              fontSize: "14px",
+              color: "#000",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              maxWidth: "150px",
+              display: "inline-block",
+            }}
+          >
+            {text}
+          </span>
+        </Tooltip>
       ),
     },
     {
       title: "Ngày bắt đầu",
       dataIndex: "expectedStartTime",
       key: "expectedStartTime",
-      render: (date: Date) =>
-        moment.tz(date, "Asia/Ho_Chi_Minh").format("DD/MM/YYYY HH:mm:ss"), // Include time
-      sorter: (a: any, b: any) =>
+      render: (date: Date) => dayjs(date).format("DD/MM/YYYY"),
+      sorter: (a, b) =>
         new Date(a.expectedStartTime).getTime() -
         new Date(b.expectedStartTime).getTime(),
     },
     {
-      title: "Ngày dự kiến kết thúc",
+      title: "Ngày hết hạn",
       dataIndex: "expectedEndTime",
       key: "expectedEndTime",
-      render: (date: Date) =>
-        moment.tz(date, "Asia/Ho_Chi_Minh").format("DD/MM/YYYY HH:mm:ss"), // Include time
-      sorter: (a: any, b: any) =>
+      render: (date: Date) => dayjs(date).format("DD/MM/YYYY"),
+      sorter: (a, b) =>
         new Date(a.expectedEndTime).getTime() -
         new Date(b.expectedEndTime).getTime(),
     },
     {
-      title: "Số lượng (Người)",
+      title: "Số khách",
       dataIndex: "visitQuantity",
       key: "visitQuantity",
-      sorter: (a: any, b: any) => a.visitQuantity - b.visitQuantity,
+      sorter: (a, b) => a.visitQuantity - b.visitQuantity,
       render: (text) => (
-        <span style={{ fontSize: "14px", color: "#000" }}>{text}</span>
+        <span style={{ fontSize: "14px", color: "#000" }}>{text} Khách</span>
+      ),
+    },
+    {
+      title: "Lượt ra vào",
+      dataIndex: "visitorSessionCount",
+      key: "visitorSessionCount",
+      render: (text, record) => (
+        <span
+          style={{
+            fontSize: "14px",
+            color: "#000",
+            cursor: "pointer",
+            textDecoration: "underline",
+          }}
+          onClick={() => {
+            setSelectedVisitId(record.visitId);
+            setIsModalVisible(true);
+          }}
+        >
+          {text} Lượt
+        </span>
       ),
     },
     {
@@ -125,7 +171,9 @@ const CustomerVisit = () => {
       dataIndex: "visitStatus",
       key: "visitStatus",
       render: (status: VisitStatus) => {
-        const { colorVisitStatus, textVisitStatus } = statusMap[status] || {
+        const { colorVisitStatus, textVisitStatus } = visitStatusMap[
+          status
+        ] || {
           color: "black",
           text: "Không xác định",
         };
@@ -134,38 +182,27 @@ const CustomerVisit = () => {
     },
     {
       title: "Loại",
-      dataIndex: "scheduleUser",
-      key: "scheduleUser",
-      render: (scheduleUser) => {
-        const scheduleTypeId = scheduleUser?.schedule?.scheduleType
-          ?.scheduleTypeId as ScheduleType;
-        if (scheduleTypeId === undefined)
-          return <Tag color="default">Theo ngày</Tag>;
-        const { colorScheduleType, textScheduleType } = typeMap[
-          scheduleTypeId
-        ] || { color: "default", text: "Theo ngày" };
+      dataIndex: "[scheduleUser,schedule,scheduleType,scheduleTypeId]",
+      key: "scheduleTypeId",
+      render: (scheduleTypeIdRaw) => {
+        const scheduleTypeId = scheduleTypeIdRaw as ScheduleType;
+        // if (scheduleTypeId === undefined)
+        //   return <Tag color="default">Theo ngày</Tag>;
+        // const { colorScheduleType, textScheduleType } = typeMap[
+        //   scheduleTypeId
+        // ] || {
+        //   color: "default",
+        //   text: "Theo ngày",
+        // };
         return (
-          <Tag color={colorScheduleType} style={{ fontSize: "14px" }}>
-            {textScheduleType}
-          </Tag>
+          <div>
+            {/* <Tag color={colorScheduleType} style={{ fontSize: "14px" }}>
+              {textScheduleType} {scheduleTypeIdRaw}
+            </Tag> */}
+            <div>{scheduleTypeIdRaw}</div>
+          </div>
         );
       },
-    },
-    {
-      title: "Lượt ra vào",
-      dataIndex: "visitorSessionCount",
-      key: "visitorSessionCount",
-      render: (text, record) => (
-        <span
-          style={{ fontSize: "14px", color: "#000", cursor: "pointer", textDecoration: "underline" }}
-          onClick={() => {
-            setSelectedVisitId(record.visitId);
-            setIsModalVisible(true);
-          }}
-        >
-          {text} lượt
-        </span>
-      ),
     },
     {
       title: "Tạo bởi",
@@ -177,24 +214,19 @@ const CustomerVisit = () => {
         </span>
       ),
     },
-    {
-      title: "Hành động",
-      key: "action",
-      render: (_, record) => (
-        <Button
-          size="middle"
-          onClick={() =>
-            navigate(`/detailVisit/${record.visitId}`, { state: { record } })
-          }
-        >
-          Chi tiết
-        </Button>
-      ),
-    },
   ];
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchText(e.target.value);
+  };
+  const handleClearFilters = () => {
+    setFilters({
+      expectedStartTime: null,
+      expectedEndTime: null,
+      visitQuantity: [1, 100],
+      visitStatus: [],
+      scheduleTypeId: [],
+    });
   };
   useEffect(() => {
     refetch();
@@ -205,6 +237,29 @@ const CustomerVisit = () => {
       [key]: value,
     }));
   };
+  const filterContent = (
+    <Space direction="vertical">
+      <DatePicker
+        placeholder="Ngày bắt đầu"
+        onChange={(date) => handleFilterChange("expectedStartTime", date)}
+      />
+      <DatePicker
+        placeholder="Ngày kết thúc"
+        onChange={(date) => handleFilterChange("expectedEndTime", date)}
+      />
+      <Slider
+        range
+        min={1}
+        max={100}
+        defaultValue={[1, 100]}
+        onChange={(value) => handleFilterChange("visitQuantity", value)}
+        style={{ width: 200 }}
+      />
+      <Button type="default" onClick={handleClearFilters}>
+        Xóa bộ lọc
+      </Button>
+    </Space>
+  );
   useEffect(() => {
     if (isLoading || !data) return;
     let filtered = data;
@@ -244,13 +299,24 @@ const CustomerVisit = () => {
     }
     setFilteredData(filtered);
   }, [data, isLoading, filters, searchText]);
+  const handleTypeFilter = (type: ScheduleType | null) => {
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      scheduleTypeId: prevFilters.scheduleTypeId.includes(type) ? [] : [type],
+    }));
+  };
+  const getCountByStatus = (status: VisitStatus) => {
+    return data?.filter((item: any) => item.visitStatus === status).length || 0;
+  };
+  const handleStatusFilter = (status: VisitStatus) => {
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      visitStatus: prevFilters.visitStatus.includes(status) ? [] : [status],
+    }));
+  };
+
   return (
-    <Content className="p-6">
-      <div className="flex justify-center mb-4">
-        <h1 className="text-green-500 text-2xl font-bold">
-          Danh sách khách đến công ty
-        </h1>
-      </div>
+    <Content className="px-6">
       <Space
         style={{
           marginBottom: 16,
@@ -258,71 +324,170 @@ const CustomerVisit = () => {
           justifyContent: "space-between",
         }}
       >
-        <Input
-          placeholder="Tìm kiếm theo tiêu đề"
-          prefix={<SearchOutlined />}
-          value={searchText}
-          onChange={handleSearchChange}
-          style={{
-            marginBottom: 16,
-            width: 300,
-            borderColor: "#1890ff",
-            borderRadius: 5,
-          }}
-        />
-
+        <Space>
+          <Input
+            placeholder="Tìm kiếm theo tên chuyến thăm"
+            prefix={<SearchOutlined />}
+            value={searchText}
+            onChange={handleSearchChange}
+            style={{
+              width: 300,
+              borderColor: "#1890ff",
+              borderRadius: 5,
+            }}
+          />
+          <Popover content={filterContent} title="Bộ lọc" trigger="click">
+            <Button icon={<FilterOutlined />} />
+          </Popover>
+        </Space>
         <Button
           type="primary"
+          size="large"
           icon={<PlusOutlined />}
-          onClick={() => navigate("/createNewVisitList")}
-          style={{ borderRadius: 5 }}
+          onClick={() => console.log("haha")}
+          style={{ borderRadius: 12 }}
         >
           Tạo mới
         </Button>
       </Space>
-      <Space style={{ marginBottom: 16, display: "flex", flexWrap: "wrap" }}>
-        <DatePicker
-          placeholder="Ngày bắt đầu"
-          onChange={(date) => handleFilterChange("expectedStartTime", date)}
-        />
-        <DatePicker
-          placeholder="Ngày kết thúc"
-          onChange={(date) => handleFilterChange("expectedEndTime", date)}
-        />
-        <Slider
-          range
-          min={1}
-          max={100}
-          defaultValue={[1, 100]}
-          onChange={(value) => handleFilterChange("visitQuantity", value)}
-          style={{ width: 200 }}
-        />
-        <Select
-          mode="multiple"
-          placeholder="Trạng thái"
-          onChange={(value: VisitStatus[]) =>
-            handleFilterChange("visitStatus", value)
-          }
-          style={{ width: 200 }}
-        >
-          <Option value={VisitStatus.Active}>Còn hiệu lực</Option>
-          <Option value={VisitStatus.Pending}>Chờ phê duyệt</Option>
-          <Option value={VisitStatus.Cancelled}>Đã hủy</Option>
-          <Option value={VisitStatus.ActiveTemporary}>Tạm thời</Option>
-          <Option value={VisitStatus.Violation}>Vi phạm</Option>
-          <Option value={VisitStatus.Inactive}>Đã hết hạn</Option>
-        </Select>
-        <Select
-          mode="multiple"
-          placeholder="Loại"
-          onChange={(value) => handleFilterChange("scheduleTypeId", value)}
-          style={{ width: 200 }}
-        >
-          <Option value={null}>Theo ngày</Option>
-          <Option value={ScheduleType.Weekly}>Theo tuần</Option>
-          <Option value={ScheduleType.Monthly}>Theo tháng</Option>
-        </Select>
-      </Space>
+      <>
+        <Space style={{ marginBottom: 16, display: "flex", flexWrap: "wrap" }}>
+          <Button
+            type={filters.scheduleTypeId.includes(null) ? "primary" : "default"}
+            onClick={() => handleTypeFilter(null)}
+            className={`px-4 py-2 rounded-md ${
+              filters.scheduleTypeId.includes(null)
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 text-gray-700"
+            } hover:bg-blue-600`}
+          >
+            Theo ngày
+          </Button>
+          <Button
+            type={
+              filters.scheduleTypeId.includes(ScheduleType.Weekly)
+                ? "primary"
+                : "default"
+            }
+            onClick={() => handleTypeFilter(ScheduleType.Weekly)}
+            className={`px-4 py-2 rounded-md ${
+              filters.scheduleTypeId.includes(ScheduleType.Weekly)
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 text-gray-700"
+            } hover:bg-blue-600`}
+          >
+            Theo tuần
+          </Button>
+          <Button
+            type={
+              filters.scheduleTypeId.includes(ScheduleType.Monthly)
+                ? "primary"
+                : "default"
+            }
+            onClick={() => handleTypeFilter(ScheduleType.Monthly)}
+            className={`px-4 py-2 rounded-md ${
+              filters.scheduleTypeId.includes(ScheduleType.Monthly)
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 text-gray-700"
+            } hover:bg-blue-600`}
+          >
+            Theo tháng
+          </Button>
+        </Space>
+        <Space style={{ marginBottom: 16, display: "flex", flexWrap: "wrap" }}>
+          <Button
+            type={
+              filters.visitStatus.includes(VisitStatus.ActiveTemporary)
+                ? "primary"
+                : "default"
+            }
+            onClick={() => handleStatusFilter(VisitStatus.ActiveTemporary)}
+            className={`px-4 py-2 rounded-md ${
+              filters.visitStatus.includes(VisitStatus.ActiveTemporary)
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 text-gray-700"
+            } hover:bg-blue-600 
+            }`}
+          >
+            Cần duyệt ({getCountByStatus(VisitStatus.ActiveTemporary)})
+          </Button>
+          <Button
+            type={
+              filters.visitStatus.includes(VisitStatus.Pending)
+                ? "primary"
+                : "default"
+            }
+            onClick={() => handleStatusFilter(VisitStatus.Pending)}
+            className={`px-4 py-2 rounded-md ${
+              filters.visitStatus.includes(VisitStatus.Pending)
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 text-gray-700"
+            } hover:bg-blue-600`}
+          >
+            Chờ phê duyệt ({getCountByStatus(VisitStatus.Pending)})
+          </Button>
+          <Button
+            type={
+              filters.visitStatus.includes(VisitStatus.Active)
+                ? "primary"
+                : "default"
+            }
+            onClick={() => handleStatusFilter(VisitStatus.Active)}
+            className={`px-4 py-2 rounded-md ${
+              filters.visitStatus.includes(VisitStatus.Active)
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 text-gray-700"
+            } hover:bg-blue-600`}
+          >
+            Còn hiệu lực ({getCountByStatus(VisitStatus.Active)})
+          </Button>
+          <Button
+            type={
+              filters.visitStatus.includes(VisitStatus.Violation)
+                ? "primary"
+                : "default"
+            }
+            onClick={() => handleStatusFilter(VisitStatus.Violation)}
+            className={`px-4 py-2 rounded-md ${
+              filters.visitStatus.includes(VisitStatus.Violation)
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 text-gray-700"
+            } hover:bg-blue-600`}
+          >
+            Vi phạm ({getCountByStatus(VisitStatus.Violation)})
+          </Button>
+          <Button
+            type={
+              filters.visitStatus.includes(VisitStatus.Cancelled)
+                ? "primary"
+                : "default"
+            }
+            onClick={() => handleStatusFilter(VisitStatus.Cancelled)}
+            className={`px-4 py-2 rounded-md ${
+              filters.visitStatus.includes(VisitStatus.Cancelled)
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 text-gray-700"
+            } hover:bg-blue-600`}
+          >
+            Đã vô hiệu hóa ({getCountByStatus(VisitStatus.Cancelled)})
+          </Button>
+          <Button
+            type={
+              filters.visitStatus.includes(VisitStatus.Inactive)
+                ? "primary"
+                : "default"
+            }
+            onClick={() => handleStatusFilter(VisitStatus.Inactive)}
+            className={`px-4 py-2 rounded-md ${
+              filters.visitStatus.includes(VisitStatus.Inactive)
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 text-gray-700"
+            } hover:bg-blue-600`}
+          >
+            Đã hết hạn ({getCountByStatus(VisitStatus.Inactive)})
+          </Button>
+        </Space>
+      </>
 
       <Table
         columns={columns}
@@ -345,7 +510,9 @@ const CustomerVisit = () => {
         footer={null}
         width={800}
       >
-        {selectedVisitId && <ListHistorySessonVisit visitId={selectedVisitId} />}
+        {selectedVisitId && (
+          <ListHistorySessonVisit visitId={selectedVisitId} />
+        )}
       </Modal>
     </Content>
   );
