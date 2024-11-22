@@ -9,10 +9,12 @@ export interface ScheduleUserType {
     assignFrom: {
       userId: number;
       userName: string;
+      fullName : string;
     };
     assignTo: {
       userId: number;
       userName: string;
+      fullName : string;
     };
     schedule: {
       scheduleId: number;

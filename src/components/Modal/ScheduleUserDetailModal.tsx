@@ -266,14 +266,14 @@ const ScheduleUserDetailModal: React.FC<ScheduleUserModalDetailProps> = ({
                   <UserOutlined className="mr-2 text-orange-500" />
                   <strong>Người giao:</strong>{" "}
                   <span className="ml-1">
-                    {selectedRecord.assignFrom.userName}
+                    {selectedRecord.assignFrom.fullName}
                   </span>
                 </div>
                 <div className="flex items-center">
                   <UserOutlined className="mr-2 text-purple-500" />
                   <strong>Người nhận:</strong>{" "}
                   <span className="ml-1">
-                    {selectedRecord.assignTo.userName}
+                    {selectedRecord.assignTo.fullName}
                   </span>
                 </div>
                 <div className="flex items-center">

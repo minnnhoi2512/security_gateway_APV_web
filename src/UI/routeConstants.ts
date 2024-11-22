@@ -41,6 +41,15 @@ export const routes = [
     path: "/schedule",
     breadcrumbName: "Danh sách lịch trình",
   },
+  {
+    path: "/schedule/createNewSchedule",
+    breadcrumbName: "Tạo mới lịch trình",
+  },
+ 
+  {
+    path: "/history",
+    breadcrumbName: "Lịch sử ra vào",
+  },
   // {
   //   path: "/accountManage",
   //   breadcrumbName: "Người dùng",

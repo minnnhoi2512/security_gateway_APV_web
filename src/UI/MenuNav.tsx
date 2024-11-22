@@ -106,44 +106,43 @@ const MenuNav = () => {
       icon: <FileTextOutlined />,
       label: "Lịch trình",
     },
+    {
+      key: "history",
+      icon: <HistoryOutlined />,
+      label: "Lịch sử",
+    },
+    {
+      key: "departManager",
+      label: "Phòng ban",
+      icon: <TeamOutlined />,
+    },
+    {
+      key: "calendar",
+      label: "Lịch hẹn của tôi",
+      icon: <FileTextOutlined />,
+    },
+    {
+      key: "chat",
+      label: "Nhắn tin",
+      icon: <UserOutlined />,
+    },
+    {
+      key: "staff",
+      label: "Người dùng",
+      icon: <UserOutlined />,
+    },
   ];
 
   const part3: MenuItem[] = [
     {
-      key: "historyManage",
-      icon: <HistoryOutlined />,
-      label: "Lịch sử",
-      children: [{ key: "history", label: "Lượt ra vào" }],
+      key: "gate",
+      label: "Cổng ra vào",
+      icon: <SolutionOutlined />,
     },
     {
-      key: "facilityManage",
-      icon: <DeploymentUnitOutlined />,
-      label: "Cơ sở vật chất",
-      children: [
-        { key: "departManager", label: "Phòng ban", icon: <TeamOutlined /> },
-        { key: "gate", label: "Cổng ra vào", icon: <SolutionOutlined /> },
-        {
-          key: "card",
-          label: "Thẻ ra vào",
-          icon: <SafetyCertificateOutlined />,
-        },
-      ],
-    },
-  ];
-
-  const part4: MenuItem[] = [
-    {
-      key: "utility",
-      icon: <AppstoreOutlined />,
-      label: "Tiện ích",
-      children: [
-        {
-          key: "calendar",
-          label: "Lịch hẹn của tôi",
-          icon: <FileTextOutlined />,
-        },
-        { key: "chat", label: "Nhắn tin", icon: <UserOutlined /> },
-      ],
+      key: "card",
+      label: "Thẻ ra vào",
+      icon: <SafetyCertificateOutlined />,
     },
     { key: "", icon: <LogoutOutlined />, label: "Đăng xuất" },
   ];
@@ -238,7 +237,6 @@ const MenuNav = () => {
         {renderMenuItems(part3)}
         <Menu.Divider />
         <div className="border-t-4 border-gray-400"></div>
-        {renderMenuItems(part4)}
       </Menu>
 
       <Modal

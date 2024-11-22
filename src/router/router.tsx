@@ -34,6 +34,7 @@ import ChatRoom from "../pages/Utility/ChatRoom";
 import Profile from "../pages/User/Profile";
 import CustomerVisitStaff from "../pages/Visit/CustomerVisitStaff";
 import ChatDetail from "../pages/Utility/Chat/ChatDetail";
+import NotFoundState from "../components/State/NotFoundState";
 
 
 
@@ -228,6 +229,24 @@ const ContentRouter = () => {
           </LayoutPage>
         }
       />
+       <Route
+        index
+        path="/customerVisitStaff/detailVisit"
+        element={
+          <LayoutPage>
+            <NotFoundState />
+          </LayoutPage>
+        }
+      />
+       <Route
+        index
+        path="/customerVisit/detailVisit"
+        element={
+          <LayoutPage>
+            <NotFoundState />
+          </LayoutPage>
+        }
+      />
       <Route
         index
         path="/customerVisit/detailVisit/:id"
@@ -276,7 +295,7 @@ const ContentRouter = () => {
       />
       <Route
         index
-        path="/createNewSchedule"
+        path="/schedule/createNewSchedule"
         element={
           <LayoutPage>
             <CreateNewSchedule />

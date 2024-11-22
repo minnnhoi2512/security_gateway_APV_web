@@ -4,13 +4,12 @@ import {
   Button,
   Select,
   message,
-  Steps,
   Checkbox,
   Modal,
+  Card,
+  Typography,
 } from "antd";
-import {
-  useCreateNewScheduleMutation,
-} from "../services/schedule.service";
+import { useCreateNewScheduleMutation } from "../services/schedule.service";
 import ScheduleType from "../types/scheduleType";
 import { useNavigate } from "react-router-dom";
 import { useGetListScheduleTypeQuery } from "../services/scheduleType.service";
@@ -21,20 +20,19 @@ import { Editor } from "react-draft-wysiwyg";
 import { EditorState } from "draft-js";
 import { stateToHTML } from "draft-js-export-html";
 import { useGetListStaffByDepartmentManagerQuery } from "../services/user.service";
+import ReactQuill from "react-quill";
 
 const { Option } = Select;
-const { Step } = Steps;
+const { Title } = Typography;
 
 const CreateNewSchedule: React.FC = () => {
   const [form] = Form.useForm();
   const [createNewSchedule, { isLoading }] = useCreateNewScheduleMutation();
-  // const {refetch} = useGetListStaffByDepartmentManagerQuery()
   const userId = localStorage.getItem("userId");
   const userRole = localStorage.getItem("userRole");
   const navigate = useNavigate();
   const { data } = useGetListScheduleTypeQuery();
- 
-  const [currentStep, setCurrentStep] = useState(0);
+
   const [selectedScheduleType, setSelectedScheduleType] = useState<
     number | null
   >(null);
@@ -44,7 +42,7 @@ const CreateNewSchedule: React.FC = () => {
   const [daysOfSchedule, setDaysOfSchedule] = useState<string>("");
   const [selectedDays, setSelectedDays] = useState<number[]>([]);
   const [showCalendarModal, setShowCalendarModal] = useState(false);
-  const [editorState, setEditorState] = useState(EditorState.createEmpty());
+  const [editorState, setEditorState] = useState<string>("");
   const dayOptions = [
     { label: "Hai", value: 1 },
     { label: "Ba", value: 2 },
@@ -58,7 +56,7 @@ const CreateNewSchedule: React.FC = () => {
   const handlePreviewCalendar = () => {
     setShowCalendarModal(true);
   };
-  const onEditorStateChange = (newState: EditorState) => {
+  const onEditorStateChange = (newState: string) => {
     setEditorState(newState);
   };
   const handleCloseModal = () => {
@@ -88,42 +86,14 @@ const CreateNewSchedule: React.FC = () => {
   const handleDaysOfScheduleChange = (checkedValues: any) => {
     const dayString = checkedValues.join(",");
     setDaysOfSchedule(dayString);
-    // console.log(daysOfSchedule);
     setSelectedDays(checkedValues);
-  };
-
-  const next = async () => {
-    try {
-      if (currentStep === 0 && isVisitDaily) {
-        setCurrentStep(2); // Go to step 2 if VisitDaily
-      } else {
-        if (currentStep === 0) {
-          await form.validateFields(["scheduleTypeId", "duration"]);
-        } else if (currentStep === 1) {
-          await form.validateFields(["daysOfSchedule"]);
-        }
-        setCurrentStep(currentStep + 1);
-      }
-    } catch (error) {
-      console.error("Validation failed:", error);
-    }
-  };
-
-  const prev = () => {
-    if (currentStep === 2 && isVisitDaily) {
-      setCurrentStep(0); // Go back to step 0 if VisitDaily
-    } else {
-      setCurrentStep(currentStep - 1); // Otherwise, go to the previous step
-    }
   };
 
   const handleFinish = async (values: ScheduleType) => {
     try {
-      const contentState = editorState.getCurrentContent();
-      const htmlContent = stateToHTML(contentState);
       const parsedValues: any = {
         ...values,
-        description : htmlContent,
+        description: editorState,
         duration: 1,
         status: true,
         createById: parseInt(userId || "0", 10),
@@ -141,144 +111,119 @@ const CreateNewSchedule: React.FC = () => {
   };
 
   return (
-    <>
-      <Steps current={currentStep}>
-        <Step title="Chọn loại dự án và ngày thực hiện" />
-        <Step title="Nhập thông tin dự án" />
-      </Steps>
+    <Card style={{ maxWidth: 800, margin: "auto", padding: 24 }}>
       <Form form={form} layout="vertical" onFinish={handleFinish}>
-        {currentStep === 0 && (
-          <>
-            <Form.Item
-              label="Loại dự án"
-              name="scheduleTypeId"
-              rules={[
-                { required: true, message: "Vui lòng chọn loại lịch trình!" },
-              ]}
-            >
-              <Select
-                placeholder="Chọn loại lịch trình"
-                onChange={handleScheduleTypeChange}
+        <Form.Item
+          label="Loại dự án"
+          name="scheduleTypeId"
+          rules={[
+            { required: true, message: "Vui lòng chọn loại lịch trình!" },
+          ]}
+        >
+          <Select
+            placeholder="Chọn loại lịch trình"
+            onChange={handleScheduleTypeChange}
+          >
+            {filteredScheduleTypes?.map((scheduleType) => (
+              <Option
+                key={scheduleType.scheduleTypeId}
+                value={scheduleType.scheduleTypeId}
               >
-                {filteredScheduleTypes?.map((scheduleType) => (
-                  <Option
-                    key={scheduleType.scheduleTypeId}
-                    value={scheduleType.scheduleTypeId}
-                  >
-                    {scheduleType.scheduleTypeName === "ProcessWeek"
-                      ? "Theo tuần"
-                      : scheduleType.scheduleTypeName === "ProcessMonth"
-                      ? "Theo tháng"
-                      : scheduleType.scheduleTypeName === "Project"
-                      ? "Dự án"
-                      : scheduleType.scheduleTypeName}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
-            <Form.Item
-              label={
-                isProcessWeek
-                  ? "Chọn thứ trong tuần"
-                  : isProcessMonth
-                  ? "Chọn ngày trong tháng"
-                  : "Ngày thực hiện"
-              }
-              name="daysOfSchedule"
-              rules={[
-                {
-                  required: true,
-                  message: "Vui lòng chọn ngày!",
-                },
-              ]}
+                {scheduleType.scheduleTypeName === "ProcessWeek"
+                  ? "Theo tuần"
+                  : scheduleType.scheduleTypeName === "ProcessMonth"
+                  ? "Theo tháng"
+                  : scheduleType.scheduleTypeName === "Project"
+                  ? "Dự án"
+                  : scheduleType.scheduleTypeName}
+              </Option>
+            ))}
+          </Select>
+        </Form.Item>
+        <Form.Item
+          label={
+            isProcessWeek
+              ? "Chọn thứ trong tuần"
+              : isProcessMonth
+              ? "Chọn ngày trong tháng"
+              : "Ngày thực hiện"
+          }
+          name="daysOfSchedule"
+        >
+          {isProcessWeek ? (
+            <Checkbox.Group
+              options={dayOptions}
+              value={selectedDays}
+              onChange={handleDaysOfScheduleChange}
+            />
+          ) : isProcessMonth ? (
+            <Checkbox.Group
+              value={selectedDays}
+              onChange={handleDaysOfScheduleChange}
+              className="grid grid-cols-7 gap-2"
             >
-              {isProcessWeek ? (
-                <Checkbox.Group
-                  options={dayOptions}
-                  value={selectedDays} // Bind the selectedDays state here
-                  onChange={handleDaysOfScheduleChange}
-                />
-              ) : isProcessMonth ? (
-                <Checkbox.Group
-                  value={selectedDays} // Bind the selectedDays state here
-                  onChange={handleDaysOfScheduleChange}
-                  className="grid grid-cols-7 gap-2"
-                >
-                  {Array.from({ length: 31 }, (_, index) => (
-                    <Checkbox key={index + 1} value={index + 1}>
-                      Ngày {index + 1}
-                    </Checkbox>
-                  ))}
-                </Checkbox.Group>
-              ) : null}
+              {Array.from({ length: 31 }, (_, index) => (
+                <Checkbox key={index + 1} value={index + 1}>
+                  Ngày {index + 1}
+                </Checkbox>
+              ))}
+            </Checkbox.Group>
+          ) : null}
 
-              {/* Button to preview the calendar - only show if `daysOfSchedule` is not empty */}
-              {daysOfSchedule.length > 0 && (
-                <Button
-                  type="primary"
-                  onClick={handlePreviewCalendar}
-                  className="mt-4"
-                >
-                  Xem trước lịch
-                </Button>
-              )}
-
-              {/* Modal to show the calendar */}
-              <Modal
-                visible={showCalendarModal}
-                onCancel={handleCloseModal}
-                footer={null}
-                title="Xem lịch"
-              >
-                {isProcessMonth ? (
-                  <ReadOnlyMonthCalendar daysOfSchedule={daysOfSchedule}/>
-                ) : isProcessWeek ? (
-                  <ReadOnlyWeekCalendar daysOfSchedule={daysOfSchedule} />
-                ) : null}
-              </Modal>
-            </Form.Item>
-          </>
-        )}
-
-        {currentStep === 1 && (
-          <>
-            <Form.Item
-              label="Tiêu đề"
-              name="scheduleName"
-              rules={[{ required: true, message: "Vui lòng nhập tiêu đề!" }]}
+          {daysOfSchedule.length > 0 && (
+            <Button
+              type="primary"
+              onClick={handlePreviewCalendar}
+              className="mt-4"
             >
-              <Input placeholder="Nhập tiêu đề dự án" />
-            </Form.Item>
-            <Form.Item
-              name="description"
-              label="Mô tả"
-              rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}
-            >
-              <Editor
-                editorState={editorState}
-                onEditorStateChange={onEditorStateChange}
-                toolbarClassName="flex justify-between px-2"
-                wrapperClassName="border border-gray-300 rounded-lg"
-                editorClassName="p-4 h-40 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </Form.Item>
-          </>
-        )}
+              Xem trước lịch
+            </Button>
+          )}
+
+          <Modal
+            visible={showCalendarModal}
+            onCancel={handleCloseModal}
+            footer={null}
+            title="Xem lịch"
+          >
+            {isProcessMonth ? (
+              <ReadOnlyMonthCalendar daysOfSchedule={daysOfSchedule} />
+            ) : isProcessWeek ? (
+              <ReadOnlyWeekCalendar daysOfSchedule={daysOfSchedule} />
+            ) : null}
+          </Modal>
+        </Form.Item>
+        <Form.Item
+          label="Tiêu đề"
+          name="scheduleName"
+          rules={[{ required: true, message: "Vui lòng nhập tiêu đề!" }]}
+        >
+          <Input placeholder="Nhập tiêu đề dự án" />
+        </Form.Item>
+        <Form.Item
+          name="description"
+          label="Mô tả"
+          rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}
+        >
+          <ReactQuill
+            value={editorState}
+            onChange={setEditorState}
+            className="h-64 mb-10" // Increased height
+            theme="snow"
+            modules={{
+              toolbar: [
+                [{ header: [1, 2, false] }],
+                ["bold", "italic", "underline", "strike"],
+                [{ list: "ordered" }, { list: "bullet" }],
+                ["link", "image", "clean"],
+              ],
+            }}
+          />
+        </Form.Item>
         <Form.Item>
-          {currentStep > 0 && (
-            <Button style={{ marginRight: 8 }} onClick={prev}>
-              Quay lại
-            </Button>
-          )}
-          {currentStep < 1 ? (
-            <Button type="primary" onClick={next}>
-              Tiếp tục
-            </Button>
-          ) : (
-            <Button type="primary" htmlType="submit" loading={isLoading}>
-              Tạo mới dự án
-            </Button>
-          )}
+          <Button type="primary" htmlType="submit" loading={isLoading}>
+            Tạo mới dự án
+          </Button>
           <Button
             type="default"
             onClick={() => {
@@ -290,7 +235,7 @@ const CreateNewSchedule: React.FC = () => {
           </Button>
         </Form.Item>
       </Form>
-    </>
+    </Card>
   );
 };
 

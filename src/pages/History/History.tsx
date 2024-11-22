@@ -1,4 +1,15 @@
-import { Table, Tag, Button, Input, Modal, DatePicker, Select, Spin } from "antd";
+import {
+  Table,
+  Tag,
+  Button,
+  Input,
+  Modal,
+  DatePicker,
+  Select,
+  Spin,
+  Space,
+  Popover,
+} from "antd";
 import { useEffect, useState } from "react";
 import type { TableProps } from "antd";
 import { useGetVisitGraphqlMutation } from "../../services/visitGraphql.service";
@@ -8,8 +19,19 @@ import VisitorSessionType from "../../types/visitorSessionType";
 import { formatDate } from "../../utils/ultil";
 import HistoryDetail from "./HistoryDetail";
 import dayjs, { Dayjs } from "dayjs";
-import { useGetListVisitQuery, useGetListVisitByDepartmentIdQuery, useGetListVisitByResponsiblePersonIdQuery } from "../../services/visitList.service";
+import {
+  useGetListVisitQuery,
+  useGetListVisitByDepartmentIdQuery,
+  useGetListVisitByResponsiblePersonIdQuery,
+} from "../../services/visitList.service";
 import VisitList from "../../types/visitListType";
+import LoadingState from "../../components/State/LoadingState";
+import { Content } from "antd/es/layout/layout";
+import {
+  FilterOutlined,
+  PlusOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
 
 const { Option } = Select;
 
@@ -19,8 +41,12 @@ const History = () => {
   const userRole = localStorage.getItem("userRole");
   const [searchText, setSearchText] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("");
-  const [checkinTimeFilter, setCheckinTimeFilter] = useState<Dayjs | null>(null);
-  const [checkoutTimeFilter, setCheckoutTimeFilter] = useState<Dayjs | null>(null);
+  const [checkinTimeFilter, setCheckinTimeFilter] = useState<Dayjs | null>(
+    null
+  );
+  const [checkoutTimeFilter, setCheckoutTimeFilter] = useState<Dayjs | null>(
+    null
+  );
   const [gateInFilter, setGateInFilter] = useState<string>("");
   const [gateOutFilter, setGateOutFilter] = useState<string>("");
   const [visitIdFilter, setVisitIdFilter] = useState<number | null>(null);
@@ -34,35 +60,80 @@ const History = () => {
   ) as VisitorSessionType[];
   const [updatedData, setUpdatedData] = useState<VisitorSessionType[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedRecord, setSelectedRecord] = useState<VisitorSessionType | null>(null);
+  const [selectedRecord, setSelectedRecord] =
+    useState<VisitorSessionType | null>(null);
 
   let dataVisit, isLoadingVisit;
 
   if (userRole === "Staff") {
-    ({ data: dataVisit, isLoading: isLoadingVisit } = useGetListVisitByResponsiblePersonIdQuery({ id: Number(userId), pageNumber: 1, pageSize: 100 }));
+    ({ data: dataVisit, isLoading: isLoadingVisit } =
+      useGetListVisitByResponsiblePersonIdQuery({
+        id: Number(userId),
+        pageNumber: 1,
+        pageSize: 100,
+      }));
   } else if (userRole === "DepartmentManager") {
-    ({ data: dataVisit, isLoading: isLoadingVisit } = useGetListVisitByDepartmentIdQuery({ departmentId: Number(departmentId), pageNumber: 1, pageSize: 100 }));
+    ({ data: dataVisit, isLoading: isLoadingVisit } =
+      useGetListVisitByDepartmentIdQuery({
+        departmentId: Number(departmentId),
+        pageNumber: 1,
+        pageSize: 100,
+      }));
   } else {
-    ({ data: dataVisit, isLoading: isLoadingVisit } = useGetListVisitQuery({pageNumber: 1, pageSize: 100 }));
+    ({ data: dataVisit, isLoading: isLoadingVisit } = useGetListVisitQuery({
+      pageNumber: 1,
+      pageSize: 100,
+    }));
   }
 
   const applyFilters = () => {
     const filtered = updatedData.filter((entry) => {
       const matchesStatus = statusFilter ? entry.status === statusFilter : true;
-      const matchesCheckinTime = checkinTimeFilter ? dayjs(entry.checkinTime).isSame(checkinTimeFilter, 'day') : true;
-      const matchesCheckoutTime = checkoutTimeFilter ? dayjs(entry.checkoutTime).isSame(checkoutTimeFilter, 'day') : true;
-      const matchesGateIn = gateInFilter ? entry.gateIn?.gateName === gateInFilter : true;
-      const matchesGateOut = gateOutFilter ? entry.gateOut?.gateName === gateOutFilter : true;
-      const matchesSearchText = searchText ? entry.visitor.visitorName.toLowerCase().includes(searchText.toLowerCase()) : true;
-      const matchesVisitId = visitIdFilter ? entry.visit.visitId === visitIdFilter : true;
-      return matchesStatus && matchesCheckinTime && matchesCheckoutTime && matchesGateIn && matchesGateOut && matchesSearchText && matchesVisitId;
+      const matchesCheckinTime = checkinTimeFilter
+        ? dayjs(entry.checkinTime).isSame(checkinTimeFilter, "day")
+        : true;
+      const matchesCheckoutTime = checkoutTimeFilter
+        ? dayjs(entry.checkoutTime).isSame(checkoutTimeFilter, "day")
+        : true;
+      const matchesGateIn = gateInFilter
+        ? entry.gateIn?.gateName === gateInFilter
+        : true;
+      const matchesGateOut = gateOutFilter
+        ? entry.gateOut?.gateName === gateOutFilter
+        : true;
+      const matchesSearchText = searchText
+        ? entry.visitor.visitorName
+            .toLowerCase()
+            .includes(searchText.toLowerCase())
+        : true;
+      const matchesVisitId = visitIdFilter
+        ? entry.visit.visitId === visitIdFilter
+        : true;
+      return (
+        matchesStatus &&
+        matchesCheckinTime &&
+        matchesCheckoutTime &&
+        matchesGateIn &&
+        matchesGateOut &&
+        matchesSearchText &&
+        matchesVisitId
+      );
     });
     setFilteredData(filtered);
   };
 
   useEffect(() => {
     applyFilters();
-  }, [statusFilter, checkinTimeFilter, checkoutTimeFilter, gateInFilter, gateOutFilter, searchText, visitIdFilter, updatedData]);
+  }, [
+    statusFilter,
+    checkinTimeFilter,
+    checkoutTimeFilter,
+    gateInFilter,
+    gateOutFilter,
+    searchText,
+    visitIdFilter,
+    updatedData,
+  ]);
 
   const handleStatusFilter = (status: string) => {
     setStatusFilter(status);
@@ -277,17 +348,14 @@ const History = () => {
   };
 
   // Get unique gate names for gateIn and gateOut
-  const uniqueGateInNames = Array.from(new Set(updatedData.map(entry => entry.gateIn?.gateName).filter(Boolean)));
-  const uniqueGateOutNames = Array.from(new Set(updatedData.map(entry => entry.gateOut?.gateName).filter(Boolean)));
-
-  return (
-    <div>
-      <Input
-        placeholder="Tìm kiếm theo tên khách"
-        value={searchText}
-        onChange={handleSearchTextChange}
-        style={{ marginBottom: 16, width: 300 }}
-      />
+  const uniqueGateInNames = Array.from(
+    new Set(updatedData.map((entry) => entry.gateIn?.gateName).filter(Boolean))
+  );
+  const uniqueGateOutNames = Array.from(
+    new Set(updatedData.map((entry) => entry.gateOut?.gateName).filter(Boolean))
+  );
+  const filterContent = (
+    <Space direction="vertical">
       <DatePicker
         placeholder="Chọn ngày vào"
         value={checkinTimeFilter}
@@ -307,9 +375,7 @@ const History = () => {
         style={{ marginBottom: 16, marginRight: 8, width: 200 }}
       >
         {uniqueGateInNames.map((gateName) => (
-          <Option value={gateName}>
-            {gateName}
-          </Option>
+          <Option value={gateName}>{gateName}</Option>
         ))}
       </Select>
       <Select
@@ -319,9 +385,7 @@ const History = () => {
         style={{ marginBottom: 16, marginRight: 8, width: 200 }}
       >
         {uniqueGateOutNames.map((gateName) => (
-          <Option value={gateName}>
-            {gateName}
-          </Option>
+          <Option value={gateName}>{gateName}</Option>
         ))}
       </Select>
       <Select
@@ -354,11 +418,47 @@ const History = () => {
       <Button onClick={clearFilters} style={{ marginBottom: 16 }}>
         Xóa bộ lọc
       </Button>
-      <Table
-        columns={columns}
-        dataSource={filteredData}
-        loading={loading}
-      />{" "}
+    </Space>
+  );
+  if (loading) return <LoadingState />;
+  return (
+    <Content className="px-6">
+      <Space
+        style={{
+          marginBottom: 16,
+          display: "flex",
+          justifyContent: "space-between",
+        }}
+      >
+        <Space>
+          <Input
+            placeholder="Tìm kiếm theo tên khách"
+            value={searchText}
+            onChange={handleSearchTextChange}
+            prefix={<SearchOutlined />}
+            style={{
+              width: 300,
+              borderColor: "#1890ff",
+              borderRadius: 5,
+            }}
+          />
+          <Popover content={filterContent} title="Bộ lọc" trigger="click">
+            <Button icon={<FilterOutlined />} />
+          </Popover>
+        </Space>
+
+        <Button
+          type="primary"
+          size="large"
+          icon={<PlusOutlined />}
+          className="invisible"
+          onClick={() => console.log("Haha")}
+          style={{ borderRadius: 12 }}
+        >
+          Tạo mới
+        </Button>
+      </Space>
+      <Table columns={columns} dataSource={filteredData} loading={loading} />{" "}
       {/* Apply loading here */}
       <Modal
         title="Chi tiết lịch sử"
@@ -368,7 +468,7 @@ const History = () => {
       >
         {selectedRecord && <HistoryDetail data={selectedRecord} />}
       </Modal>
-    </div>
+    </Content>
   );
 };
 

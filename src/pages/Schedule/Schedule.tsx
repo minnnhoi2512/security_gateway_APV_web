@@ -35,6 +35,7 @@ import { convertToVietnamTime } from "../../utils/ultil";
 import { useAssignScheduleMutation } from "../../services/scheduleUser.service";
 import { isEntityError } from "../../utils/helpers";
 import TableSchedule from "../../components/TableSchedule";
+import NotFoundState from "../../components/State/NotFoundState";
 
 const { Content } = Layout;
 const { Option } = Select;
@@ -175,7 +176,9 @@ const Schedule = () => {
     });
     setIsModalVisible(false);
   };
-
+  if (userRole === "Staff") {
+    return <div><NotFoundState/></div>;
+  }
   return (
     <Layout className="min-h-screen bg-white">
       <Content className="px-6">
@@ -201,7 +204,7 @@ const Schedule = () => {
             type="primary"
             size="large"
             icon={<PlusOutlined />}
-            onClick={() => console.log("Haha")}
+            onClick={() => navigate("/schedule/createNewSchedule")}
             style={{ borderRadius: 12 }}
           >
             Tạo mới

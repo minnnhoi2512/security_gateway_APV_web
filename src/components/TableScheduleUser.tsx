@@ -138,8 +138,8 @@ const TableScheduleUser: React.FC<ScheduleAssignedTableProps> = ({
       ? [
           {
             title: "Người giao",
-            dataIndex: ["assignFrom", "userName"],
-            key: "assignFromUserName",
+            dataIndex: ["assignFrom", "fullName"],
+            key: "fullName",
             render: (text: string) => <span>{text}</span>,
           },
         ]
@@ -148,8 +148,8 @@ const TableScheduleUser: React.FC<ScheduleAssignedTableProps> = ({
       ? [
           {
             title: "Người nhận",
-            dataIndex: ["assignTo", "userName"],
-            key: "assignToUserName",
+            dataIndex: ["assignTo", "fullName"],
+            key: "fullName",
             render: (text: string) => <span>{text}</span>,
           },
         ]

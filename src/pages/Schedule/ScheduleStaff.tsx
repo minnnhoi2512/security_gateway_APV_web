@@ -80,7 +80,7 @@ const ScheduleStaff: React.FC<SchedulePageProps> = ({ status }) => {
         }}
       >
         <Input
-          placeholder="Tìm kiếm theo tiêu đề"
+          placeholder="Tìm kiếm theo tên nhiệm vụ"
           prefix={<SearchOutlined />}
           value={searchText}
           onChange={handleSearchChange}
