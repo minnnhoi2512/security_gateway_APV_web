@@ -26,7 +26,7 @@ import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import { Content } from "antd/es/layout/layout";
 import VisitListType from "../../types/visitListType";
 import { useGetListVisitByResponsiblePersonIdQuery } from "../../services/visitList.service";
-import {  VisitStatus, visitStatusMap } from "../../types/Enum/VisitStatus";
+import { VisitStatus, visitStatusMap } from "../../types/Enum/VisitStatus";
 import { ScheduleType, typeMap } from "../../types/Enum/ScheduleType";
 import ListHistorySessonVisit from "../History/ListHistorySessionVisit";
 import NotFoundState from "../../components/State/NotFoundState";
@@ -70,7 +70,6 @@ const CustomerVisitStaff = () => {
   useEffect(() => {
     refetch();
   }, []);
-  console.log(data);
   const handleTemporaryStatusClick = () => {
     handleStatusFilter(VisitStatus.ActiveTemporary);
     setAnimationActive(false);
@@ -162,7 +161,9 @@ const CustomerVisitStaff = () => {
       dataIndex: "visitStatus",
       key: "visitStatus",
       render: (status: VisitStatus) => {
-        const { colorVisitStatus, textVisitStatus } = visitStatusMap[status] || {
+        const { colorVisitStatus, textVisitStatus } = visitStatusMap[
+          status
+        ] || {
           color: "black",
           text: "Không xác định",
         };
@@ -174,7 +175,8 @@ const CustomerVisitStaff = () => {
       dataIndex: "scheduleUser",
       key: "scheduleUser",
       render: (scheduleUser) => {
-        const scheduleTypeId = scheduleUser?.schedule.scheduleType.scheduleTypeId as ScheduleType;
+        const scheduleTypeId = scheduleUser?.schedule.scheduleType
+          .scheduleTypeId as ScheduleType;
         if (scheduleTypeId === undefined)
           return <Tag color="default">Theo ngày</Tag>;
         const { colorScheduleType, textScheduleType } = typeMap[
@@ -197,6 +199,7 @@ const CustomerVisitStaff = () => {
   };
 
   const handleFilterChange = (key: keyof Filters, value: any) => {
+    console.log(key);
     setFilters((prevFilters) => ({
       ...prevFilters,
       [key]: value,
@@ -211,10 +214,12 @@ const CustomerVisitStaff = () => {
   };
 
   const handleTypeFilter = (type: ScheduleType | null) => {
-    setFilters((prevFilters) => ({
-      ...prevFilters,
-      scheduleTypeId: prevFilters.scheduleTypeId.includes(type) ? [] : [type],
-    }));
+    setFilters((prevFilters) => {
+      return {
+        ...prevFilters,
+        scheduleTypeId: prevFilters.scheduleTypeId.includes(type) ? [] : [type],
+      };
+    });
   };
 
   useEffect(() => {
@@ -242,10 +247,11 @@ const CustomerVisitStaff = () => {
         filters.visitStatus?.includes(item.visitStatus)
       );
     }
+    console.log(filtered);
     if (filters.scheduleTypeId.length > 0) {
       filtered = filtered.filter((item: any) =>
         filters.scheduleTypeId.includes(
-          item.schedule?.scheduleType?.scheduleTypeId ?? null
+          item.scheduleUser?.schedule?.scheduleType?.scheduleTypeId ?? null
         )
       );
     }
@@ -289,7 +295,11 @@ const CustomerVisitStaff = () => {
     </Space>
   );
   if (userRole !== "Staff") {
-    return <div><NotFoundState></NotFoundState></div>;
+    return (
+      <div>
+        <NotFoundState></NotFoundState>
+      </div>
+    );
   }
   return (
     <Content className="px-6">

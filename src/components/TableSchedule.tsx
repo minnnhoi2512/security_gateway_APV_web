@@ -127,16 +127,6 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({
       ),
     },
     {
-      title: <div style={{ textAlign: "left" }}>Số chuyến thăm đã tạo</div>,
-      dataIndex: "scheduleUser",
-      key: "scheduleUser",
-      render: (scheduleUser: any) => (
-        <div>
-          <div>{scheduleUser.length} chuyến thăm</div>
-        </div>
-      ),
-    },
-    {
       title: <div style={{ textAlign: "left" }}>Hành động</div>,
       key: "action",
       render: (_, record: any) => (
