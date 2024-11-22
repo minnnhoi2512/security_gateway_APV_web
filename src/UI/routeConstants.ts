@@ -12,9 +12,17 @@ export const routes = [
     path: "/customerVisitStaff/detailVisit",
     breadcrumbName: "Chi tiết chuyến thăm",
   },
+  {
+    path: "/customerVisit/detailVisit",
+    breadcrumbName: "Chi tiết chuyến thăm",
+  },
   { path: "/dashboard", breadcrumbName: "Thông tin chung" },
   {
     path: "/customerVisitStaff/createNewVisitList",
+    breadcrumbName: "Tạo mới chuyến thăm trong ngày",
+  },
+  {
+    path: "/customerVisit/createNewVisitList",
     breadcrumbName: "Tạo mới chuyến thăm trong ngày",
   },
   {

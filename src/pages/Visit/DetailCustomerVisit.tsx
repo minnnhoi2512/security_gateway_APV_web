@@ -100,7 +100,7 @@ const DetailCustomerVisit: React.FC = () => {
     );
     return dayjs().isSameOrBefore(endOfExpectedStartTime);
   };
-
+  // console.log();
   useEffect(() => {
     setSelectedVisitId(Number(id));
     setVisitors(detailVisitData);
@@ -110,7 +110,8 @@ const DetailCustomerVisit: React.FC = () => {
     setEditableStartDate(convertToDayjs(visitData?.expectedStartTime));
     setEditableEndDate(convertToDayjs(visitData?.expectedEndTime));
     setScheduleTypeId(
-      visitData?.scheduleUser?.schedule.scheduleType.scheduleTypeId as ScheduleType
+      visitData?.scheduleUser?.schedule.scheduleType
+        .scheduleTypeId as ScheduleType
     );
     setStatusVisit(visitData?.visitStatus);
   }, [detailVisitData, visitData, refetchListVisitor, refetchVisit]);
@@ -134,6 +135,7 @@ const DetailCustomerVisit: React.FC = () => {
           visitorId: v.visitor.visitorId,
           status: v.status,
         }));
+
         const updatedVisitData = {
           visitName: editableVisitName || visitData?.visitName, // Include other necessary fields
           expectedStartTime:
@@ -145,6 +147,7 @@ const DetailCustomerVisit: React.FC = () => {
           updateById: userId,
           visitQuantity: visitDetail.length,
         };
+        console.log(isEditable());
         if (isEditable()) {
           await updateVisitBeforeStartDate({
             visitId: visitId,
@@ -453,7 +456,7 @@ const DetailCustomerVisit: React.FC = () => {
                   <p className="text-sm text-gray-500 space-y-2">
                     Tên danh sách:
                   </p>
-                  {isEditMode ? (
+                  {isEditMode && isEditable() ? (
                     <Input
                       value={editableVisitName}
                       onChange={handleNameChange}
@@ -468,7 +471,7 @@ const DetailCustomerVisit: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500 space-y-2">Mô tả:</p>
-                  {isEditMode ? (
+                  {isEditMode && isEditable() ? (
                     <ReactQuill
                       value={editableDescription}
                       onChange={handleDescriptionChange}
@@ -553,6 +556,7 @@ const DetailCustomerVisit: React.FC = () => {
                         format="DD/MM/YYYY"
                         placeholder="Ngày bắt đầu"
                         className="w-full"
+                        disabled={!isEditable()}
                         disabledDate={(date) =>
                           date && date.isBefore(dayjs(), "day")
                         }
@@ -672,15 +676,17 @@ const DetailCustomerVisit: React.FC = () => {
                 Thêm khách
               </Button>
             )}
-            {(isEditable() && scheduleTypeId == undefined && (
-              <Button
-                type="primary"
-                onClick={handleToggleMode}
-                className="mb-4"
-              >
-                {isEditMode ? "Lưu" : "Chỉnh sửa"}
-              </Button>
-            )) ||
+            {(isEditable() &&
+              scheduleTypeId == undefined &&
+              visitData.visitStatus != "ActiveTemporary" && (
+                <Button
+                  type="primary"
+                  onClick={handleToggleMode}
+                  className="mb-4"
+                >
+                  {isEditMode ? "Lưu" : "Chỉnh sửa"}
+                </Button>
+              )) ||
               (scheduleTypeId != undefined && (
                 <Button
                   type="primary"

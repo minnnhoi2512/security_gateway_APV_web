@@ -219,6 +219,24 @@ const ContentRouter = () => {
           </LayoutPage>
         }
       />
+       <Route
+        index
+        path="/customerVisit/createNewVisitList"
+        element={
+          <LayoutPage>
+            <CreateNewVisitList />
+          </LayoutPage>
+        }
+      />
+      <Route
+        index
+        path="/customerVisit/detailVisit/:id"
+        element={
+          <LayoutPage>
+            <DetailCustomerVisit />
+          </LayoutPage>
+        }
+      />
       <Route
         index
         path="customerVisitStaff/detailVisit/:id"

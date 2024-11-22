@@ -182,24 +182,24 @@ const CustomerVisit = () => {
     },
     {
       title: "Loại",
-      dataIndex: "[scheduleUser,schedule,scheduleType,scheduleTypeId]",
-      key: "scheduleTypeId",
-      render: (scheduleTypeIdRaw) => {
-        const scheduleTypeId = scheduleTypeIdRaw as ScheduleType;
-        // if (scheduleTypeId === undefined)
-        //   return <Tag color="default">Theo ngày</Tag>;
-        // const { colorScheduleType, textScheduleType } = typeMap[
-        //   scheduleTypeId
-        // ] || {
-        //   color: "default",
-        //   text: "Theo ngày",
-        // };
+      dataIndex: "scheduleUser",
+      key: "scheduleUser",
+      render: (scheduleUser) => {
+        const scheduleTypeId = scheduleUser?.schedule.scheduleType.scheduleTypeId as ScheduleType;
+        if (scheduleTypeId === undefined)
+          return <Tag color="default">Theo ngày</Tag>;
+        const { colorScheduleType, textScheduleType } = typeMap[
+          scheduleTypeId
+        ] || {
+          color: "default",
+          text: "Theo ngày",
+        };
         return (
           <div>
-            {/* <Tag color={colorScheduleType} style={{ fontSize: "14px" }}>
-              {textScheduleType} {scheduleTypeIdRaw}
-            </Tag> */}
-            <div>{scheduleTypeIdRaw}</div>
+            <Tag color={colorScheduleType} style={{ fontSize: "14px" }}>
+              {textScheduleType}
+            </Tag>
+        
           </div>
         );
       },
@@ -344,7 +344,7 @@ const CustomerVisit = () => {
           type="primary"
           size="large"
           icon={<PlusOutlined />}
-          onClick={() => console.log("haha")}
+          onClick={() => navigate("/customerVisit/createNewVisitList")}
           style={{ borderRadius: 12 }}
         >
           Tạo mới
@@ -502,6 +502,13 @@ const CustomerVisit = () => {
         rowKey="visitId"
         bordered
         loading={isLoading}
+        onRow={(record) => ({
+          onDoubleClick: () => {
+            navigate(`/customerVisit/detailVisit/${record.visitId}`, {
+              state: { record },
+            });
+          },
+        })}
       />
       <Modal
         title="Lịch sử lượt ra vào"

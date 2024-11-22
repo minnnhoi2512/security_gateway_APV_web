@@ -29,6 +29,7 @@ import { useGetListVisitByResponsiblePersonIdQuery } from "../../services/visitL
 import {  VisitStatus, visitStatusMap } from "../../types/Enum/VisitStatus";
 import { ScheduleType, typeMap } from "../../types/Enum/ScheduleType";
 import ListHistorySessonVisit from "../History/ListHistorySessionVisit";
+import NotFoundState from "../../components/State/NotFoundState";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -287,7 +288,9 @@ const CustomerVisitStaff = () => {
       </Button>
     </Space>
   );
-
+  if (userRole !== "Staff") {
+    return <div><NotFoundState></NotFoundState></div>;
+  }
   return (
     <Content className="px-6">
       <Space
