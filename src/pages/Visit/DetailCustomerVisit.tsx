@@ -100,6 +100,10 @@ const DetailCustomerVisit: React.FC = () => {
     );
     return dayjs().isSameOrBefore(endOfExpectedStartTime);
   };
+  const isEditableToday = () => {
+    const startOfExpectedStartTime = dayjs(visitData?.expectedStartTime).startOf("day");
+    return !dayjs().isSame(startOfExpectedStartTime, "day");
+  };
   // console.log();
   useEffect(() => {
     setSelectedVisitId(Number(id));
@@ -456,7 +460,7 @@ const DetailCustomerVisit: React.FC = () => {
                   <p className="text-sm text-gray-500 space-y-2">
                     Tên danh sách:
                   </p>
-                  {isEditMode && isEditable() ? (
+                  {isEditMode && isEditableToday() ? (
                     <Input
                       value={editableVisitName}
                       onChange={handleNameChange}
@@ -471,7 +475,7 @@ const DetailCustomerVisit: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500 space-y-2">Mô tả:</p>
-                  {isEditMode && isEditable() ? (
+                  {isEditMode && isEditableToday() ? (
                     <ReactQuill
                       value={editableDescription}
                       onChange={handleDescriptionChange}
@@ -556,7 +560,7 @@ const DetailCustomerVisit: React.FC = () => {
                         format="DD/MM/YYYY"
                         placeholder="Ngày bắt đầu"
                         className="w-full"
-                        disabled={!isEditable()}
+                        disabled={!isEditable() || !isEditableToday()}
                         disabledDate={(date) =>
                           date && date.isBefore(dayjs(), "day")
                         }

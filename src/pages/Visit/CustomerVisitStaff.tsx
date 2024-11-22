@@ -247,7 +247,6 @@ const CustomerVisitStaff = () => {
         filters.visitStatus?.includes(item.visitStatus)
       );
     }
-    console.log(filtered);
     if (filters.scheduleTypeId.length > 0) {
       filtered = filtered.filter((item: any) =>
         filters.scheduleTypeId.includes(
