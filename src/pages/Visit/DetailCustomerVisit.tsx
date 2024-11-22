@@ -110,7 +110,7 @@ const DetailCustomerVisit: React.FC = () => {
     setEditableStartDate(convertToDayjs(visitData?.expectedStartTime));
     setEditableEndDate(convertToDayjs(visitData?.expectedEndTime));
     setScheduleTypeId(
-      visitData?.schedule?.scheduleType?.scheduleTypeId as ScheduleType
+      visitData?.scheduleUser?.schedule.scheduleType.scheduleTypeId as ScheduleType
     );
     setStatusVisit(visitData?.visitStatus);
   }, [detailVisitData, visitData, refetchListVisitor, refetchVisit]);

@@ -170,11 +170,10 @@ const CustomerVisitStaff = () => {
     },
     {
       title: "Loại",
-      dataIndex: "schedule",
-      key: "schedule",
-      render: (schedule) => {
-        const scheduleTypeId = schedule?.scheduleType
-          ?.scheduleTypeId as ScheduleType;
+      dataIndex: "scheduleUser",
+      key: "scheduleUser",
+      render: (scheduleUser) => {
+        const scheduleTypeId = scheduleUser?.schedule.scheduleType.scheduleTypeId as ScheduleType;
         if (scheduleTypeId === undefined)
           return <Tag color="default">Theo ngày</Tag>;
         const { colorScheduleType, textScheduleType } = typeMap[

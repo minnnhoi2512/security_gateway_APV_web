@@ -95,6 +95,9 @@ const Schedule = () => {
       const filtered = schedules.filter((item: any) =>
         item?.scheduleName.toLowerCase().includes(searchText.toLowerCase())
       );
+
+
+
       setFilteredData(filtered);
     }
   }, [schedules, searchText]);
