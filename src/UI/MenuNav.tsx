@@ -5,9 +5,7 @@ import {
   HistoryOutlined,
   LogoutOutlined,
   LineChartOutlined,
-  AppstoreOutlined,
   BarsOutlined,
-  DeploymentUnitOutlined,
   UserOutlined,
   SafetyCertificateOutlined,
 } from "@ant-design/icons";
@@ -147,6 +145,21 @@ const MenuNav = () => {
     { key: "", icon: <LogoutOutlined />, label: "Đăng xuất" },
   ];
 
+  const filterMenuItemsByRole = (menuItems: MenuItem[], role: string) => {
+    if (role === "Staff") {
+      return menuItems.filter(
+        (item: any) =>
+          item.key !== "customerVisit" &&
+          item.key !== "schedule-assigned"
+      );
+    } else {
+      return menuItems.filter(
+        (item: any) =>
+          item.key !== "customerVisitStaff" &&
+          item.key !== "schedule-staff"
+      );
+    }
+  };
   const renderMenuItems = (menuItems: MenuItem[]) =>
     menuItems.map((item: any) => {
       if (item?.children) {
@@ -228,13 +241,13 @@ const MenuNav = () => {
         selectedKeys={[selectedKey]}
         style={{ backgroundColor: "#34495e", borderRight: "none" }}
       >
-        {renderMenuItems(part1)}
+        {renderMenuItems(filterMenuItemsByRole(part1, userRole || ""))}
         <Menu.Divider />
         <div className="border-t-4 border-gray-400"></div>
-        {renderMenuItems(part2)}
+        {renderMenuItems(filterMenuItemsByRole(part2, userRole || ""))}
         <Menu.Divider />
         <div className="border-t-4 border-gray-400"></div>
-        {renderMenuItems(part3)}
+        {renderMenuItems(filterMenuItemsByRole(part3, userRole || ""))}
         <Menu.Divider />
         <div className="border-t-4 border-gray-400"></div>
       </Menu>
