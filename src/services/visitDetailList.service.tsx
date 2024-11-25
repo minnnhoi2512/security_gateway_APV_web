@@ -1,7 +1,7 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import baseAPI from "../api/baseAPI";
 import { getToken } from "../utils/jwtToken";
-import VisitDetailList from "../types/VisitDetailListType";
+import VisitDetailList from "../types/visitDetailListType";
 
 export const visitDetailListAPI = createApi({
   reducerPath: "visitDetailListAPI",

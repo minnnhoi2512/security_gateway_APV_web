@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Button, Table, Tag, Space } from "antd";
+import { Button, Table, Tag, Space, Tooltip } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useNavigate } from "react-router";
 import {
@@ -70,6 +70,11 @@ const TableScheduleUser: React.FC<ScheduleAssignedTableProps> = ({
       key: "title",
       align: "left",
       sorter: (a, b) => a.title?.localeCompare(b.title),
+      render: (text) => (
+        <Tooltip title={text}>
+          {text.length > 50 ? `${text.substring(0, 50)}...` : text}
+        </Tooltip>
+      ),
     },
     {
       title: "Ghi chú",

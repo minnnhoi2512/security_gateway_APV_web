@@ -99,7 +99,7 @@ const DetailVisitor: React.FC<DetailVisitorProps> = ({
     setIsEditModalVisible(false);
   };
 
-  const isEditable = userRole !== "Staff" && userRole !== "DepartmentManager";
+  const isEditable = userRole !== "Staff";
 
   return (
     <Modal

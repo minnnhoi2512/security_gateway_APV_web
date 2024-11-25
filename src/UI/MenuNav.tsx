@@ -110,6 +110,16 @@ const MenuNav = () => {
       label: "Lịch sử",
     },
     {
+      key: "user",
+      label: "Người dùng",
+      icon: <UserOutlined />,
+    },
+    {
+      key: "visitorManager",
+      label: "Khách",
+      icon: <UserOutlined />,
+    },
+    {
       key: "departManager",
       label: "Phòng ban",
       icon: <TeamOutlined />,
@@ -122,16 +132,6 @@ const MenuNav = () => {
     {
       key: "chat",
       label: "Nhắn tin",
-      icon: <UserOutlined />,
-    },
-    {
-      key: "user",
-      label: "Người dùng",
-      icon: <UserOutlined />,
-    },
-    {
-      key: "visitorManager",
-      label: "Khách",
       icon: <UserOutlined />,
     },
   ];
@@ -155,13 +155,26 @@ const MenuNav = () => {
       return menuItems.filter(
         (item: any) =>
           item.key !== "customerVisit" &&
+          item.key !== "user" &&
+          item.key !== "departManager" &&
+          item.key !== "schedule" &&
+          item.key !== "gate" &&
+          item.key !== "card" &&
           item.key !== "schedule-assigned"
+      );
+    } else if (role === "DepartmentManager") {
+      return menuItems.filter(
+        (item: any) =>
+          item.key !== "customerVisitStaff" &&
+          item.key !== "departManager" &&
+          item.key !== "gate" &&
+          item.key !== "card" &&
+          item.key !== "schedule-staff"
       );
     } else {
       return menuItems.filter(
         (item: any) =>
-          item.key !== "customerVisitStaff" &&
-          item.key !== "schedule-staff"
+          item.key !== "customerVisitStaff" && item.key !== "schedule-staff"
       );
     }
   };

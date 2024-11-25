@@ -18,6 +18,7 @@ import visitorSessionReducer from "./slices/visitorSession.slice";
 import { scheduleUserAPI } from "../services/scheduleUser.service";
 import { rtkQueryErrorLogger } from "../middleware";
 import { scheduleStaffAPI } from "../services/scheduleStaff.service";
+import { gateAPI } from "../services/gate.service";
 
 
 export const store = configureStore({
@@ -34,6 +35,7 @@ export const store = configureStore({
     [visitGrapqlAPI.reducerPath] : visitGrapqlAPI.reducer,
     [notificationAPI.reducerPath] : notificationAPI.reducer,
     [scheduleStaffAPI.reducerPath] : scheduleStaffAPI.reducer,
+    [gateAPI.reducerPath] : gateAPI.reducer,
     filterTabs: filterTabReducer,
     visitDetailList : visitDetailListReducer,
     visitorSession : visitorSessionReducer,
@@ -56,6 +58,7 @@ export const store = configureStore({
       .concat(departmentAPI.middleware)
       .concat(notificationAPI.middleware)
       .concat(visitGrapqlAPI.middleware)
+      .concat(gateAPI.middleware)
       .concat(scheduleStaffAPI.middleware),
 });
 

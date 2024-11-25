@@ -11,14 +11,26 @@ import {
   cancelFilter,
   setListOfVisitList,
 } from "../redux/slices/visitDetailList.slice";
-import VisitDetailList from "../types/VisitDetailListType";
+import VisitDetailList from "../types/visitDetailListType";
 
 const FilterVisit: React.FC = () => {
   const statusTabs = useSelector<any>((s) => s.filterTabs.isOpen);
-  const [expectedStartTime, SetExpectedStartTime] = useState<Dayjs>(dayjs().startOf('day'));
-  const [expectedEndTime, SetExpectedEndTime] = useState<Dayjs>(dayjs().endOf('day'));
-  const [visitQuantity, SetVisitQuantity] = useState<[number, number]>([1, 100]);
-  const [scheduleTypeId, SetScheduleTypeId] = useState<any[]>([null,1, 2, 3, 4]);
+  const [expectedStartTime, SetExpectedStartTime] = useState<Dayjs>(
+    dayjs().startOf("day")
+  );
+  const [expectedEndTime, SetExpectedEndTime] = useState<Dayjs>(
+    dayjs().endOf("day")
+  );
+  const [visitQuantity, SetVisitQuantity] = useState<[number, number]>([
+    1, 100,
+  ]);
+  const [scheduleTypeId, SetScheduleTypeId] = useState<any[]>([
+    null,
+    1,
+    2,
+    3,
+    4,
+  ]);
   const [visitStatus, SetVisitStatus] = useState<string[]>([
     "Active",
     "Pending",
@@ -53,22 +65,18 @@ const FilterVisit: React.FC = () => {
       });
   };
   const handleCancelFilter = () => {
-    SetExpectedStartTime(dayjs().startOf('day'));
-    SetExpectedEndTime(dayjs().endOf('day'));
+    SetExpectedStartTime(dayjs().startOf("day"));
+    SetExpectedEndTime(dayjs().endOf("day"));
     SetScheduleTypeId([1, 2, 3, 4]);
     SetScheduleTypeIdDisplay([]);
     SetVisitStatusDisplay([]);
     SetVisitStatus(["Active", "Pending"]);
     dispatch(cancelFilter());
   };
-  const handleStartDateChange: DatePickerProps["onChange"] = (
-    date,
-  ) => {
+  const handleStartDateChange: DatePickerProps["onChange"] = (date) => {
     SetExpectedStartTime(date);
   };
-  const handleEndDateChange: DatePickerProps["onChange"] = (
-    date,
-  ) => {
+  const handleEndDateChange: DatePickerProps["onChange"] = (date) => {
     SetExpectedEndTime(date);
   };
   const handleVisitScheduleType: GetProp<typeof Checkbox.Group, "onChange"> = (
@@ -107,13 +115,15 @@ const FilterVisit: React.FC = () => {
         where:  {
             expectedStartTime:  {
         gte: "${
-          expectedStartTime.format()?.toString().split("T")[0] + "T00:00:00+07:00"
+          expectedStartTime.format()?.toString().split("T")[0] +
+          "T00:00:00+07:00"
         }"
             },
              and: [ {
              expectedEndTime:  {
                 lte: "${
-                  expectedEndTime.format()?.toString().split("T")[0] + "T23:59:59+07:00"
+                  expectedEndTime.format()?.toString().split("T")[0] +
+                  "T23:59:59+07:00"
                 }"
             }
             }],

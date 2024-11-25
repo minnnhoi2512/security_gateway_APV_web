@@ -3,11 +3,11 @@ import baseAPI from "../api/baseAPI";
 
 export const qrCardAPI = createApi({
   reducerPath: "qrCardAPI",
-  baseQuery: fetchBaseQuery({ baseUrl: `${baseAPI}/api/QRCode/` }),
+  baseQuery: fetchBaseQuery({ baseUrl: `${baseAPI}/api/` }),
   endpoints: (builder) => ({
     getListQRCard: builder.query<any, { pageNumber: number; pageSize: number }>({
       query: ({ pageNumber, pageSize }) => ({
-        url: "GetAllQrCardPaging",
+        url: "Card",
         method: "GET",
         params: { pageNumber, pageSize },
       }),

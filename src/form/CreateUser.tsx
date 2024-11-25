@@ -33,6 +33,7 @@ interface CreateUserProps {
 
 const CreateUser: React.FC<CreateUserProps> = ({ onSuccess }) => {
   const userRole = localStorage.getItem("userRole");
+  const departmentId_local = localStorage.getItem("departmentId");
   const [form] = Form.useForm();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -44,6 +45,7 @@ const CreateUser: React.FC<CreateUserProps> = ({ onSuccess }) => {
   const [departmentId, setDepartmentId] = useState<number | undefined>(
     undefined
   );
+  const [editDisable, setEditDisabled] = useState(false);
   const [createNewUser] = useCreateNewUserMutation();
 
   const { data: listDepartment } = useGetListDepartmentsQuery({
@@ -59,7 +61,6 @@ const CreateUser: React.FC<CreateUserProps> = ({ onSuccess }) => {
 
   const handleCreateUser = async () => {
     try {
-      console.log(departmentId);
       await form.validateFields();
       const faceImgPromises = faceImg.map((file) => {
         const uniqueFileName = `${uuidv4()}`;
@@ -77,10 +78,12 @@ const CreateUser: React.FC<CreateUserProps> = ({ onSuccess }) => {
         email: email,
         phoneNumber: phoneNumber,
         image: faceImgUrls[0],
-        roleID: Number(roleId),
-        departmentId: departmentId,
+        roleID: userRole === "DepartmentManager" ? 4 : Number(roleId), // Force Staff role
+        departmentId:
+          userRole === "DepartmentManager"
+            ? Number(departmentId_local)
+            : departmentId, // Force department match
       };
-
       await createNewUser(user).unwrap();
       setFaceImg([]);
       form.resetFields();
@@ -188,55 +191,93 @@ const CreateUser: React.FC<CreateUserProps> = ({ onSuccess }) => {
                 />
               </Form.Item>
             </Col>
-            <Col xs={24} sm={12}>
-              <Form.Item
-                name="departmentId"
-                label={
-                  <Text className="font-medium text-gray-700">
-                    Chọn phòng ban
-                  </Text>
-                }
-                rules={[{ required: true, message: "Vui lòng chọn phòng ban" }]}
-              >
-                <Select
-                  placeholder="Chọn phòng ban"
-                  onChange={(value) => setDepartmentId(value)}
-                  className="rounded-md"
+            {userRole !== "DepartmentManager" && (
+              <Col xs={24} sm={12}>
+                <Form.Item
+                  name="departmentId"
+                  label={
+                    <Text className="font-medium text-gray-700">
+                      Chọn phòng ban
+                    </Text>
+                  }
+                  rules={[
+                    { required: true, message: "Vui lòng chọn phòng ban" },
+                  ]}
                 >
-                  {listDepartment?.map((department: DepartmentType) => (
-                    <Select.Option
-                      key={department.departmentId}
-                      value={department.departmentId}
+                  <Select
+                    placeholder="Chọn phòng ban"
+                    onChange={(value) => {
+                      setDepartmentId(value);
+                      const selectedDepartment = listDepartment.find(
+                        (dept) => dept.departmentId === value
+                      );
+                      if (selectedDepartment?.departmentName === "Security") {
+                        setRoleId("5");
+                        setEditDisabled(true);
+                      } else {
+                        setEditDisabled(false);
+                      }
+                    }}
+                    className="rounded-md"
+                  >
+                    {listDepartment
+                      ?.filter((department: DepartmentType) => {
+                        if (userRole === "Manager") {
+                          return (
+                            department.departmentName !== "Admin" &&
+                            department.departmentName !== "Manager"
+                          );
+                        }
+                        return true;
+                      })
+                      ?.map((department: DepartmentType) => (
+                        <Select.Option
+                          key={department.departmentId}
+                          value={department.departmentId}
+                        >
+                          {department.departmentName === "Manager"
+                            ? "Phòng Quản lý"
+                            : department.departmentName === "Security"
+                            ? "Phòng Bảo vệ"
+                            : department.departmentName}
+                        </Select.Option>
+                      ))}
+                  </Select>
+                </Form.Item>
+              </Col>
+            )}
+
+            {userRole !== "DepartmentManager" && !editDisable && (
+              <Col xs={24} sm={12}>
+                <Form.Item
+                  name="roleId"
+                  label={
+                    <Text className="font-medium text-gray-700">
+                      Chọn vai trò
+                    </Text>
+                  }
+                  rules={[{ required: true, message: "Vui lòng chọn vai trò" }]}
+                >
+                  {
+                    <Select
+                      placeholder="Chọn vai trò"
+                      onChange={(value) => setRoleId(value)}
+                      className="rounded-md"
                     >
-                      {department.departmentName}
-                    </Select.Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={12}>
-              <Form.Item
-                name="roleId"
-                label={
-                  <Text className="font-medium text-gray-700">
-                    Chọn vai trò
-                  </Text>
-                }
-                rules={[{ required: true, message: "Vui lòng chọn vai trò" }]}
-              >
-                <Select
-                  placeholder="Chọn vai trò"
-                  onChange={(value) => setRoleId(value)}
-                  className="rounded-md"
-                >
-                  <Select.Option value={1}>Quản trị viên</Select.Option>
-                  <Select.Option value={2}>Quản lý</Select.Option>
-                  <Select.Option value={3}>Quản lý phòng ban</Select.Option>
-                  <Select.Option value={4}>Nhân viên</Select.Option>
-                  <Select.Option value={5}>Bảo vệ</Select.Option>
-                </Select>
-              </Form.Item>
-            </Col>
+                      {userRole === "Admin" && (
+                        <Select.Option value={1}>Quản trị viên</Select.Option>
+                      )}
+                      {userRole === "Admin" && (
+                        <Select.Option value={2}>Quản lý</Select.Option>
+                      )}
+                      <Select.Option value={3}>Quản lý phòng ban</Select.Option>
+                      <Select.Option value={4}>Nhân viên</Select.Option>
+                    </Select>
+                  }
+                </Form.Item>
+              </Col>
+            )}
+
             <Col xs={24}>
               <Form.Item
                 label={

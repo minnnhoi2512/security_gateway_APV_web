@@ -18,6 +18,7 @@ import {
   InfoCircleOutlined,
   SearchOutlined,
   StopOutlined,
+  UndoOutlined,
   UserOutlined,
 } from "@ant-design/icons";
 import dayjs, { Dayjs } from "dayjs";
@@ -101,7 +102,9 @@ const DetailCustomerVisit: React.FC = () => {
     return dayjs().isSameOrBefore(endOfExpectedStartTime);
   };
   const isEditableToday = () => {
-    const startOfExpectedStartTime = dayjs(visitData?.expectedStartTime).startOf("day");
+    const startOfExpectedStartTime = dayjs(
+      visitData?.expectedStartTime
+    ).startOf("day");
     return !dayjs().isSame(startOfExpectedStartTime, "day");
   };
   // console.log();
@@ -132,13 +135,14 @@ const DetailCustomerVisit: React.FC = () => {
             editableStartDate?.toDate() || visitData?.expectedStartTime;
         }
         // console.log("Visitors list luc put : ",visitors);
-        const visitDetail = visitors.map((v) => ({
-          // console.log(v)
-          expectedStartHour: v.expectedStartHour,
-          expectedEndHour: v.expectedEndHour,
-          visitorId: v.visitor.visitorId,
-          status: v.status,
-        }));
+        const visitDetail = visitors
+          .filter((v) => !v.isDeleted)
+          .map((v) => ({
+            expectedStartHour: v.expectedStartHour,
+            expectedEndHour: v.expectedEndHour,
+            visitorId: v.visitor.visitorId,
+            status: v.status,
+          }));
 
         const updatedVisitData = {
           visitName: editableVisitName || visitData?.visitName, // Include other necessary fields
@@ -148,10 +152,9 @@ const DetailCustomerVisit: React.FC = () => {
           expectedEndTime: convertToVietnamTime(expectedEndTimeFinally),
           description: editableDescription,
           visitDetail: visitDetail,
-          updateById: userId,
+          updateById: Number(userId),
           visitQuantity: visitDetail.length,
         };
-        console.log(isEditable());
         if (isEditable()) {
           await updateVisitBeforeStartDate({
             visitId: visitId,
@@ -163,11 +166,12 @@ const DetailCustomerVisit: React.FC = () => {
             updateVisit: updatedVisitData,
           }).unwrap();
         }
+
         refetchVisit();
         refetchListVisitor();
         notification.success({ message: "Chỉnh sửa thành công!" });
       } catch (error) {
-        return notification.error({ message: "Chỉnh sửa thất bại!" });
+        return;
       }
     }
     setIsEditMode((prev) => !prev); // Toggle edit mode
@@ -264,14 +268,11 @@ const DetailCustomerVisit: React.FC = () => {
       notification.warning({ message: "Khách này đã có trong danh sách." });
     }
   };
-
   const handleDeleteVisitor = (visitorId: string) => {
     if (!isEditable()) {
       setVisitors((prevVisitors: DetailVisitor[]) => {
         return prevVisitors.map((v: DetailVisitor) => {
           if (v.visitor.visitorId === Number(visitorId)) {
-            // console.log("data before change : ", v);
-            // Change the status of the specific visitor
             return {
               ...v,
               status: !v.status,
@@ -286,18 +287,38 @@ const DetailCustomerVisit: React.FC = () => {
           message: "Danh sách không thể trống khách.",
         });
       }
-      setVisitors((prevVisitors: DetailVisitor[]) =>
-        prevVisitors.filter(
-          (v: DetailVisitor) => v.visitor.visitorId !== Number(visitorId)
-        )
-      );
-      setVisitQuantity((prevQuantity) => Math.max(prevQuantity - 1, 0));
+      setVisitors((prevVisitors: DetailVisitor[]) => {
+        return prevVisitors.map((v: DetailVisitor) => {
+          if (v.visitor.visitorId === Number(visitorId)) {
+            return {
+              ...v,
+              isDeleted: true,
+            };
+          }
+          return v;
+        });
+      });
       notification.success({
-        message: "Xóa khách ra khỏi danh sách thành công.",
+        message: "Đánh dấu xóa khách thành công.",
       });
     }
   };
-
+  const handleUndoDeleteVisitor = (visitorId: string) => {
+    setVisitors((prevVisitors: DetailVisitor[]) => {
+      return prevVisitors.map((v: DetailVisitor) => {
+        if (v.visitor.visitorId === Number(visitorId)) {
+          return {
+            ...v,
+            isDeleted: false,
+          };
+        }
+        return v;
+      });
+    });
+    notification.success({
+      message: "Khôi phục khách thành công.",
+    });
+  };
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEditableVisitName(e.target.value);
   };
@@ -352,16 +373,25 @@ const DetailCustomerVisit: React.FC = () => {
       title: "Họ và tên",
       dataIndex: ["visitor", "visitorName"],
       key: "visitorName",
+      render: (text: string, record: DetailVisitor) => (
+        <span className={record.isDeleted ? "line-through" : ""}>{text}</span>
+      ),
     },
     {
       title: "Số điện thoại",
       dataIndex: ["visitor", "phoneNumber"],
       key: "phoneNumber",
+      render: (text: string, record: DetailVisitor) => (
+        <span className={record.isDeleted ? "line-through" : ""}>{text}</span>
+      ),
     },
     {
       title: "Công ty",
       dataIndex: ["visitor", "companyName"],
       key: "companyName",
+      render: (text: string, record: DetailVisitor) => (
+        <span className={record.isDeleted ? "line-through" : ""}>{text}</span>
+      ),
     },
     {
       title: "Giờ vào dự kiến",
@@ -373,7 +403,7 @@ const DetailCustomerVisit: React.FC = () => {
           <TimePicker
             value={text ? dayjs(text, "HH:mm:ss") : null}
             onChange={(time) => getHourString(time, "expectedStartHour", index)}
-            disabled={!isEditMode}
+            disabled={!isEditMode || record.isDeleted}
             format="HH:mm:ss"
             style={isError ? timePickerStyles.error : undefined} // Apply error style
             key={record.visitor.visitorId}
@@ -391,7 +421,7 @@ const DetailCustomerVisit: React.FC = () => {
           <TimePicker
             value={text ? dayjs(text, "HH:mm:ss") : null}
             onChange={(time) => handleEndHourChange(time, index, record)}
-            disabled={!isEditMode}
+            disabled={!isEditMode || record.isDeleted}
             format="HH:mm:ss"
             style={isError ? timePickerStyles.error : undefined} // Apply error style
             key={record.visitor.visitorId}
@@ -403,7 +433,7 @@ const DetailCustomerVisit: React.FC = () => {
       title: "Trạng thái",
       key: "status",
       dataIndex: "status",
-      render: (status: boolean) => (
+      render: (status: boolean, record: DetailVisitor) => (
         <Tag color={status ? "green" : "volcano"}>
           {status ? "Còn hiệu lực" : "Hết hiệu lực"}
         </Tag>
@@ -422,14 +452,28 @@ const DetailCustomerVisit: React.FC = () => {
             </>
           )}
           {isEditMode && (
-            <Button
-              size="middle"
-              danger
-              onClick={() => handleDeleteVisitor(record.visitor.visitorId)}
-              style={{ marginLeft: 8 }}
-            >
-              <StopOutlined />
-            </Button>
+            <>
+              <Button
+                size="middle"
+                danger
+                onClick={() => handleDeleteVisitor(record.visitor.visitorId)}
+                style={{ marginLeft: 8 }}
+                disabled={record.isDeleted}
+              >
+                <StopOutlined />
+              </Button>
+              {record.isDeleted && (
+                <Button
+                  size="middle"
+                  onClick={() =>
+                    handleUndoDeleteVisitor(record.visitor.visitorId)
+                  }
+                  style={{ marginLeft: 8 }}
+                >
+                  <UndoOutlined />
+                </Button>
+              )}
+            </>
           )}
         </>
       ),
@@ -639,7 +683,10 @@ const DetailCustomerVisit: React.FC = () => {
         </div>
         <div className="p-6">
           <Table
-            dataSource={visitors}
+            dataSource={visitors.map((visitor) => ({
+              ...visitor,
+              className: visitor.isDeleted ? "blur opacity-50" : "",
+            }))}
             columns={columns}
             loading={loadingDetailVisitData}
             rowKey="visitorId"
@@ -682,7 +729,7 @@ const DetailCustomerVisit: React.FC = () => {
             )}
             {(isEditable() &&
               scheduleTypeId == undefined &&
-              visitData.visitStatus != "ActiveTemporary" && (
+              visitData?.visitStatus != "ActiveTemporary" && (
                 <Button
                   type="primary"
                   onClick={handleToggleMode}

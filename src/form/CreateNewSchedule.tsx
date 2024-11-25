@@ -8,6 +8,7 @@ import {
   Modal,
   Card,
   Typography,
+  notification,
 } from "antd";
 import { useCreateNewScheduleMutation } from "../services/schedule.service";
 import ScheduleType from "../types/scheduleType";
@@ -101,12 +102,12 @@ const CreateNewSchedule: React.FC = () => {
         scheduleTypeId: selectedScheduleType,
       };
       await createNewSchedule(parsedValues).unwrap();
-      message.success("Dự án đã được tạo thành công!");
+      notification.success({ message: "Lịch trình đã được tạo thành công!" });
       form.resetFields();
       navigate("/schedule");
     } catch (error) {
       console.error("Error creating new schedule:", error);
-      message.error("Đã xảy ra lỗi khi tạo dự án.");
+      notification.error({ message: "Đã xảy ra lỗi khi tạo lịch trình." });
     }
   };
 
@@ -114,7 +115,7 @@ const CreateNewSchedule: React.FC = () => {
     <Card style={{ maxWidth: 800, margin: "auto", padding: 24 }}>
       <Form form={form} layout="vertical" onFinish={handleFinish}>
         <Form.Item
-          label="Loại dự án"
+          label="Loại lịch trình"
           name="scheduleTypeId"
           rules={[
             { required: true, message: "Vui lòng chọn loại lịch trình!" },
@@ -133,8 +134,6 @@ const CreateNewSchedule: React.FC = () => {
                   ? "Theo tuần"
                   : scheduleType.scheduleTypeName === "ProcessMonth"
                   ? "Theo tháng"
-                  : scheduleType.scheduleTypeName === "Project"
-                  ? "Dự án"
                   : scheduleType.scheduleTypeName}
               </Option>
             ))}
@@ -198,7 +197,7 @@ const CreateNewSchedule: React.FC = () => {
           name="scheduleName"
           rules={[{ required: true, message: "Vui lòng nhập tiêu đề!" }]}
         >
-          <Input placeholder="Nhập tiêu đề dự án" />
+          <Input placeholder="Nhập tiêu đề lịch trình" />
         </Form.Item>
         <Form.Item
           name="description"
@@ -222,7 +221,7 @@ const CreateNewSchedule: React.FC = () => {
         </Form.Item>
         <Form.Item>
           <Button type="primary" htmlType="submit" loading={isLoading}>
-            Tạo mới dự án
+            Tạo mới lịch trình
           </Button>
           <Button
             type="default"

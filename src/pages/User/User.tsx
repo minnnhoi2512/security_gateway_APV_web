@@ -33,6 +33,7 @@ const { Option } = Select;
 
 const User = () => {
   const userRole = localStorage.getItem("userRole");
+  const departmentId = localStorage.getItem("departmentId");
   const [searchText, setSearchText] = useState<string>("");
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isImageModalVisible, setIsImageModalVisible] = useState(false);
@@ -73,13 +74,23 @@ const User = () => {
     const matchesDepartment =
       department === "All" || user.department?.departmentName === department;
 
-    // Filter for Manager role
+    // For DepartmentManager - only show Staff from their department
+    if (userRole === "DepartmentManager") {
+      return (
+        matchesSearchText &&
+        matchesDepartment &&
+        user.role?.roleId === 4 && // Only show Staff (roleId 4)
+        user.department?.departmentId === Number(departmentId) // Match department
+      );
+    }
+
+    // Existing Manager filter
     if (userRole === "Manager" && role === "All") {
       return (
         matchesSearchText &&
         matchesDepartment &&
-        user.role?.roleId !== 1 && // Filter out Admin
-        user.role?.roleId !== 2 // Filter out Manager
+        user.role?.roleId !== 1 &&
+        user.role?.roleId !== 2
       );
     }
 
@@ -245,46 +256,57 @@ const User = () => {
         </div>
 
         <div className="flex items-center mb-4">
-          <Select
-            value={role}
-            onChange={(value) => setRole(value)}
-            style={{ width: 200 }}
-          >
-            <Option value="All">Tất cả</Option>
-            {userRole !== "Manager" && <Option value="Manager">Quản lý</Option>}
-            <Option value="DepartmentManager">Quản lý phòng ban</Option>
-            <Option value="Staff">Nhân viên</Option>
-            <Option value="Security">Bảo vệ</Option>
-          </Select>
-          <Select
-            value={department}
-            onChange={(value) => setDepartment(value)}
-            style={{ width: 200 }}
-          >
-            <Option value="All">Tất cả phòng ban</Option>
-            {departmentData
-              ?.filter((dept: any) => {
-                if (userRole === "Admin") {
-                  return dept.departmentName !== "Admin";
-                }
-                if (userRole === "Manager") {
-                  return (
-                    dept.departmentName !== "Admin" &&
-                    dept.departmentName !== "Manager"
-                  );
-                }
-                return true;
-              })
-              ?.map((dept: any) => (
-                <Option key={dept.departmentId} value={dept.departmentName}>
-                  {dept.departmentName === "Manager"
-                    ? "Phòng Quản lý"
-                    : dept.departmentName === "Security"
-                    ? "Phòng Bảo vệ"
-                    : dept.departmentName}
-                </Option>
-              ))}
-          </Select>
+          {userRole !== "DepartmentManager" && (
+            <Select
+              value={role}
+              onChange={(value) => setRole(value)}
+              style={{ width: 200 }}
+            >
+              <Option value="All">Tất cả</Option>
+              {userRole === "Admin" && <Option value="Manager">Quản lý</Option>}
+              {userRole !== "DepartmentManager" && (
+                <Option value="DepartmentManager">Quản lý phòng ban</Option>
+              )}
+              <Option value="Staff">Nhân viên</Option>
+              <Option value="Security">Bảo vệ</Option>
+            </Select>
+          )}
+
+          {userRole !== "DepartmentManager" && (
+            <Select
+              value={department}
+              onChange={(value) => setDepartment(value)}
+              style={{ width: 200 }}
+              disabled={userRole === "DepartmentManager"} // Disable for DepartmentManager
+            >
+              <Option value="All">Tất cả phòng ban</Option>
+              {departmentData
+                ?.filter((dept: any) => {
+                  if (userRole === "Admin") {
+                    return dept.departmentName !== "Admin";
+                  }
+                  if (userRole === "Manager") {
+                    return (
+                      dept.departmentName !== "Admin" &&
+                      dept.departmentName !== "Manager"
+                    );
+                  }
+                  if (userRole === "DepartmentManager") {
+                    return dept.departmentId === Number(departmentId);
+                  }
+                  return true;
+                })
+                ?.map((dept: any) => (
+                  <Option key={dept.departmentId} value={dept.departmentName}>
+                    {dept.departmentName === "Manager"
+                      ? "Phòng Quản lý"
+                      : dept.departmentName === "Security"
+                      ? "Phòng Bảo vệ"
+                      : dept.departmentName}
+                  </Option>
+                ))}
+            </Select>
+          )}
         </div>
 
         {/* Divider Line */}

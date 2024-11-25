@@ -2,15 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 
 import visitListType from "../../types/visitListType";
 
-const initialState: visitListType = {
-    visitId: 0,
-    visitName: "",
-    visitQuantity: 0,
-    description: "",
-    visitType: "",
-    createdBy: undefined, // Optional, can be undefined
-    updatedBy: undefined, // Optional, can be undefined
-};
+const initialState: visitListType = {} as visitListType;
 
 const visitListSlice = createSlice({
   name: "visitList",

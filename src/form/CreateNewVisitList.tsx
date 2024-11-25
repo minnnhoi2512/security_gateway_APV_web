@@ -170,7 +170,7 @@ const CreateNewVisitList: React.FC = () => {
       new Date(expectedStartTime).toDateString() === currentDate.toDateString();
 
     // Define the minimum start time if today (current time + 30 minutes)
-    const minStartHour = new Date(currentDate.getTime() + 30 * 60000);
+    const minStartHour = new Date(currentDate.getTime() + 0 * 60000);
 
     if (nameValue === "startHour") {
       if (isToday) {
@@ -328,7 +328,7 @@ const CreateNewVisitList: React.FC = () => {
       new Date(expectedStartTime).toDateString() === currentDate.toDateString();
 
     // Define the minimum start time if today (current time + 30 minutes)
-    const minStartHour = new Date(currentDate.getTime() + 30 * 60000);
+    const minStartHour = new Date(currentDate.getTime() + 0 * 60000);
 
     if (isToday) {
       const [selectedHours, selectedMinutes] = startHour.split(":").map(Number);

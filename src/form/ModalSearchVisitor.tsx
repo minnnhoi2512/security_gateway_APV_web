@@ -58,7 +58,7 @@ const VisitorSearchModal: React.FC<VisitorSearchModalProps> = ({
         <Input
           value={credentialCard}
           onChange={handleCredentialCardChange}
-          placeholder="Nhập mã căn cước hoặc giấy phép lái xe (12 số)"
+          placeholder="Nhập mã căn cước (12 số)"
         />
         {credentialCard.length === 12 && (
           <SearchVisitor

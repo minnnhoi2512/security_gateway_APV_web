@@ -83,7 +83,6 @@ const CustomerVisit = () => {
     isLoading = allLoading;
     refetch = refetchAll;
   }
-  console.log(data);
   const columns: TableProps<VisitListType>["columns"] = [
     {
       title: "STT",

@@ -1,4 +1,5 @@
-import VisitDetailList from "./VisitDetailListType"
+
+import VisitDetailList from "./visitDetailListType"
 import VisitorSessionType from "./visitorSessionType"
 
 type GrapqlResponseType ={

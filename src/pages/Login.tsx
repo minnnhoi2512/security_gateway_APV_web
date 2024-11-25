@@ -67,11 +67,11 @@ function Login() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-white">
       {/* Left side - Image */}
       <div className="hidden lg:block lg:w-1/2">
         <img
-          className="object-contain w-full h-full"
+          className="contain w-full h-full"
           src={LoginImg}
           alt="Modern office building"
         />
