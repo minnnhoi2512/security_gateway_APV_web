@@ -125,8 +125,13 @@ const MenuNav = () => {
       icon: <UserOutlined />,
     },
     {
-      key: "staff",
+      key: "user",
       label: "Người dùng",
+      icon: <UserOutlined />,
+    },
+    {
+      key: "visitorManager",
+      label: "Khách",
       icon: <UserOutlined />,
     },
   ];

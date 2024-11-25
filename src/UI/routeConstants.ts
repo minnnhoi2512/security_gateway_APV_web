@@ -50,6 +50,22 @@ export const routes = [
     path: "/history",
     breadcrumbName: "Lịch sử ra vào",
   },
+  {
+    path: "/user",
+    breadcrumbName: "Người dùng",
+  },
+  {
+    path: "/chat",
+    breadcrumbName: "Nhắn tin",
+  },
+  {
+    path: "/departManager",
+    breadcrumbName: "Danh sách phòng ban",
+  },
+  {
+    path: "/visitorManager",
+    breadcrumbName: "Danh sách khách",
+  },
   // {
   //   path: "/accountManage",
   //   breadcrumbName: "Người dùng",

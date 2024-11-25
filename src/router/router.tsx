@@ -10,7 +10,6 @@ import Manager from "../pages/User/Manager";
 import DepartManager from "../pages/Facility/DepartManager";
 import DepartmentManager from "../pages/User/DepartmentManager";
 import Security from "../pages/User/Security";
-import Staff from "../pages/User/Staff";
 import ScheduleStaff from "../pages/Schedule/ScheduleStaff";
 import ScheduleAssignedManager from "../pages/Schedule/ScheduleAssigned";
 import DetailScheduleStaff from "../pages/Schedule/DetailScheduleStaff";
@@ -30,11 +29,11 @@ import GateManager from "../pages/Facility/GateManager";
 import CalendarPage from "../pages/Utility/Calendar";
 import History from "../pages/History/History";
 import Chat from "../pages/Utility/Chat/Chat";
-import ChatRoom from "../pages/Utility/ChatRoom";
 import Profile from "../pages/User/Profile";
 import CustomerVisitStaff from "../pages/Visit/CustomerVisitStaff";
 import ChatDetail from "../pages/Utility/Chat/ChatDetail";
 import NotFoundState from "../components/State/NotFoundState";
+import User from "../pages/User/User";
 
 
 
@@ -104,10 +103,10 @@ const ContentRouter = () => {
 
       <Route
         index
-        path="/staff"
+        path="/user"
         element={
           <LayoutPage>
-            <Staff />
+            <User />
           </LayoutPage>
         }
       />
@@ -144,24 +143,6 @@ const ContentRouter = () => {
         element={
           <LayoutPage>
             <ScheduleAssignedManager />
-          </LayoutPage>
-        }
-      />
-      <Route
-        index
-        path="/detail-schedule-staff/:id"
-        element={
-          <LayoutPage>
-            <DetailScheduleStaff />
-          </LayoutPage>
-        }
-      />
-      <Route
-        index
-        path="/detailUser/:id"
-        element={
-          <LayoutPage>
-            <DetailUser />
           </LayoutPage>
         }
       />
@@ -355,15 +336,7 @@ const ContentRouter = () => {
           </LayoutPage>
         }
       />
-      <Route
-        index
-        path="/chat-detail/:id"
-        element={
-          <LayoutPage>
-            <ChatDetail />
-          </LayoutPage>
-        }
-      />
+     
       <Route
         index
         path="/profile/:idUser"

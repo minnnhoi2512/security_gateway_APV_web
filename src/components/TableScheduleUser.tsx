@@ -291,6 +291,21 @@ const TableScheduleUser: React.FC<ScheduleAssignedTableProps> = ({
         >
           Đã vô hiệu hóa ({getCountByStatus(ScheduleUserStatus.Cancelled)})
         </Button>
+        <Button
+          type={
+            filters.visitStatus.includes(ScheduleUserStatus.Expired)
+              ? "primary"
+              : "default"
+          }
+          onClick={() => handleStatusFilter(ScheduleUserStatus.Expired)}
+          className={`px-4 py-2 rounded-md ${
+            filters.visitStatus.includes(ScheduleUserStatus.Expired)
+              ? "bg-blue-500 text-white"
+              : "bg-gray-200 text-gray-700"
+          } hover:bg-blue-600`}
+        >
+          Đã hết hạn ({getCountByStatus(ScheduleUserStatus.Expired)})
+        </Button>
       </Space>
       {error ? (
         <p className="text-red-500 text-center">

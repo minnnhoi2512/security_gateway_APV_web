@@ -186,9 +186,6 @@ const VisitorManager = () => {
   return (
 <Layout className="min-h-screen bg-gray-50">
   <Content className="p-8 bg-white rounded-lg shadow-md">
-    <div className="text-center mb-6">
-    <h1 className="text-3xl font-bold text-center mb-6 text-titleMain">Danh sách khách</h1>
-    </div>
     <div className="flex justify-between items-center mb-4">
       <div className="flex items-center bg-white rounded-full shadow-sm p-2 border border-gray-300 focus-within:border-blue-500 transition-all duration-200 ease-in-out">
         <SearchOutlined className="text-gray-500 ml-2" />

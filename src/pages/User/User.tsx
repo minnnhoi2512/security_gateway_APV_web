@@ -1,68 +1,106 @@
-import { Layout, Button, Table, Tag, Input, Modal, message, Divider } from "antd";
+import {
+  Layout,
+  Button,
+  Table,
+  Tag,
+  Input,
+  Modal,
+  message,
+  Divider,
+  Select,
+} from "antd";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import UserType from "../../types/userType";
 import {
-  useGetListStaffByDepartmentManagerQuery,
   useGetListUserByRoleQuery,
   useDeleteUserMutation,
 } from "../../services/user.service";
 import { statusUserMap, UserStatus } from "../../types/Enum/UserStatus";
 import { roleMap, UserRole } from "../../types/Enum/UserRole";
-import { SearchOutlined, EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+import {
+  SearchOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
+
+import { useGetListDepartmentsQuery } from "../../services/department.service";
+import CreateUser from "../../form/CreateUser";
+import DetailUser from "./DetailUser";
 
 const { Content } = Layout;
+const { Option } = Select;
 
-const Staff = () => {
+const User = () => {
   const userRole = localStorage.getItem("userRole");
-  const userId = Number(localStorage.getItem("userId"));
   const [searchText, setSearchText] = useState<string>("");
-  const [data, setData] = useState<UserType[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isImageModalVisible, setIsImageModalVisible] = useState(false);
-  const [enlargedImage, setEnlargedImage] = useState<string | undefined>(undefined);
-  const [userIdToDelete, setUserIdToDelete] = useState<number | null>(null);
-  const navigate = useNavigate();
-
-  // Fetch data based on user role
-  const {
-    data: staffData,
-    refetch: refetchStaffData,
-    isLoading: isLoadingStaff,
-  } = useGetListStaffByDepartmentManagerQuery(
-    { pageNumber: -1, pageSize: -1, departmentManagerId: userId },
-    { skip: userRole !== "DepartmentManager" }
+  const [enlargedImage, setEnlargedImage] = useState<string | undefined>(
+    undefined
   );
+  const [userIdToDelete, setUserIdToDelete] = useState<number | null>(null);
+  const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
+  const [isCreateUserModalVisible, setIsCreateUserModalVisible] =
+    useState(false);
+  const [role, setRole] = useState<string>("All");
+  const [department, setDepartment] = useState<string>("All");
 
   const {
     data: userData,
     refetch: refetchUserData,
     isLoading: isLoadingUser,
-  } = useGetListUserByRoleQuery(
-    { pageNumber: -1, pageSize: -1, role: "Staff" },
-    { skip: userRole === "DepartmentManager" }
-  );
+  } = useGetListUserByRoleQuery({ pageNumber: -1, pageSize: -1, role: role });
 
-  const isLoading = isLoadingStaff || isLoadingUser;
+  const { data: departmentData } = useGetListDepartmentsQuery({
+    pageNumber: -1,
+    pageSize: -1,
+  });
 
   useEffect(() => {
-    if (staffData) {
-      setData(staffData);
-    } else if (userData) {
-      setData(userData);
-    }
-  }, [staffData, userData]);
+    refetchUserData();
+  }, [role, department, refetchUserData]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchText(e.target.value);
   };
 
-  const filteredData = data.filter((user: UserType) =>
-    user.fullName.toLowerCase().includes(searchText.toLowerCase())
-  );
+  const filteredData = userData?.filter((user: UserType) => {
+    const matchesSearchText = user.fullName
+      .toLowerCase()
+      .includes(searchText.toLowerCase());
+    const matchesDepartment =
+      department === "All" || user.department?.departmentName === department;
+
+    // Filter for Manager role
+    if (userRole === "Manager" && role === "All") {
+      return (
+        matchesSearchText &&
+        matchesDepartment &&
+        user.role?.roleId !== 1 && // Filter out Admin
+        user.role?.roleId !== 2 // Filter out Manager
+      );
+    }
+
+    // Existing Admin filter
+    if (userRole === "Admin" && role === "All") {
+      return matchesSearchText && matchesDepartment && user.role?.roleId !== 1;
+    }
+
+    return matchesSearchText && matchesDepartment;
+  });
 
   const [deleteUser] = useDeleteUserMutation();
+  const handleCreateSuccess = () => {
+    setIsCreateUserModalVisible(false);
+    refetchUserData();
+  };
 
+  const handleUpdateSuccess = () => {
+    setIsDetailModalVisible(false);
+    refetchUserData();
+  };
   const handleDeleteUser = async () => {
     if (userIdToDelete) {
       try {
@@ -70,11 +108,7 @@ const Staff = () => {
         message.success("Xóa người dùng thành công");
         setIsModalVisible(false);
         setUserIdToDelete(null);
-        if (userRole === "DepartmentManager") {
-          refetchStaffData();
-        } else {
-          refetchUserData();
-        }
+        refetchUserData();
       } catch (error) {
         message.error("Xóa người dùng thất bại");
       }
@@ -91,7 +125,12 @@ const Staff = () => {
         <img
           src={image}
           alt="avatar"
-          style={{ width: 32, height: 32, borderRadius: "50%", cursor: "pointer" }}
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: "50%",
+            cursor: "pointer",
+          }}
           onClick={() => {
             setEnlargedImage(image);
             setIsImageModalVisible(true);
@@ -104,7 +143,8 @@ const Staff = () => {
       dataIndex: "fullName",
       key: "fullName",
       width: "20%",
-      sorter: (a: UserType, b: UserType) => a.fullName.localeCompare(b.fullName),
+      sorter: (a: UserType, b: UserType) =>
+        a.fullName.localeCompare(b.fullName),
     },
     {
       title: "Số điện thoại",
@@ -119,7 +159,11 @@ const Staff = () => {
       width: "20%",
       render: (text: any) => (
         <span style={{ fontSize: "14px", color: "#000" }}>
-          {text ? text.departmentName : "Không có phòng ban"}
+          {text.departmentName === "Manager"
+            ? "Phòng Quản lý"
+            : text.departmentName === "Security"
+            ? "Phòng Bảo vệ"
+            : text.departmentName}
         </span>
       ),
     },
@@ -157,7 +201,10 @@ const Staff = () => {
             type="text"
             icon={<EditOutlined />}
             className="text-green-600 hover:text-green-800 p-0"
-            onClick={() => navigate(`/detailUser/${record.userId}`, { state: record })}
+            onClick={() => {
+              setSelectedUser(record);
+              setIsDetailModalVisible(true);
+            }}
           />
           <Button
             type="text"
@@ -174,11 +221,8 @@ const Staff = () => {
   ];
 
   return (
-    <Layout className="min-h-screen bg-gray-50">
+    <Layout className="min-h-screen bg-white">
       <Content className="p-8">
-        <h1 className="text-3xl font-bold text-center mb-6 text-titleMain">
-          Danh sách nhân viên
-        </h1>
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center bg-white rounded-full shadow-sm p-2 border border-gray-300 focus-within:border-blue-500 transition-all duration-200 ease-in-out">
             <SearchOutlined className="text-gray-500 ml-2" />
@@ -194,14 +238,57 @@ const Staff = () => {
             type="primary"
             icon={<PlusOutlined />}
             className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 shadow-sm"
-            onClick={() => navigate("/createUser", { state: { roleId: 4 } })}
+            onClick={() => setIsCreateUserModalVisible(true)}
           >
             Tạo mới người dùng
           </Button>
         </div>
 
+        <div className="flex items-center mb-4">
+          <Select
+            value={role}
+            onChange={(value) => setRole(value)}
+            style={{ width: 200 }}
+          >
+            <Option value="All">Tất cả</Option>
+            {userRole !== "Manager" && <Option value="Manager">Quản lý</Option>}
+            <Option value="DepartmentManager">Quản lý phòng ban</Option>
+            <Option value="Staff">Nhân viên</Option>
+            <Option value="Security">Bảo vệ</Option>
+          </Select>
+          <Select
+            value={department}
+            onChange={(value) => setDepartment(value)}
+            style={{ width: 200 }}
+          >
+            <Option value="All">Tất cả phòng ban</Option>
+            {departmentData
+              ?.filter((dept: any) => {
+                if (userRole === "Admin") {
+                  return dept.departmentName !== "Admin";
+                }
+                if (userRole === "Manager") {
+                  return (
+                    dept.departmentName !== "Admin" &&
+                    dept.departmentName !== "Manager"
+                  );
+                }
+                return true;
+              })
+              ?.map((dept: any) => (
+                <Option key={dept.departmentId} value={dept.departmentName}>
+                  {dept.departmentName === "Manager"
+                    ? "Phòng Quản lý"
+                    : dept.departmentName === "Security"
+                    ? "Phòng Bảo vệ"
+                    : dept.departmentName}
+                </Option>
+              ))}
+          </Select>
+        </div>
+
         {/* Divider Line */}
-        <Divider/>
+        <Divider />
 
         <Table
           columns={columns}
@@ -212,7 +299,7 @@ const Staff = () => {
             pageSizeOptions: ["5", "10", "20"],
             size: "small",
           }}
-          loading={isLoading}
+          loading={isLoadingUser}
           rowKey={"userId"}
           bordered
           className="bg-white shadow-md rounded-lg"
@@ -226,7 +313,11 @@ const Staff = () => {
           onCancel={() => setIsImageModalVisible(false)}
           className="rounded-lg"
         >
-          <img src={enlargedImage} alt="Enlarged" className="w-full h-auto rounded" />
+          <img
+            src={enlargedImage}
+            alt="Enlarged"
+            className="w-full h-auto rounded"
+          />
         </Modal>
 
         {/* Delete Confirmation Modal */}
@@ -242,9 +333,35 @@ const Staff = () => {
         >
           <p>Bạn có chắc chắn muốn xóa người dùng này?</p>
         </Modal>
+
+        {/* User Detail Modal */}
+        <Modal
+          title="Chi tiết người dùng"
+          visible={isDetailModalVisible}
+          footer={null}
+          onCancel={() => setIsDetailModalVisible(false)}
+          className="rounded-lg"
+        >
+          {selectedUser && (
+            <DetailUser
+              userId={Number(selectedUser.userId)}
+              onSuccess={handleUpdateSuccess}
+            />
+          )}
+        </Modal>
+
+        {/* Create User Modal */}
+        <Modal
+          visible={isCreateUserModalVisible}
+          footer={null}
+          onCancel={() => setIsCreateUserModalVisible(false)}
+          className="rounded-lg"
+        >
+          <CreateUser onSuccess={handleCreateSuccess} />
+        </Modal>
       </Content>
     </Layout>
   );
 };
 
-export default Staff;
+export default User;

@@ -5,6 +5,7 @@ export enum ScheduleUserStatus {
     Approved = "Approved",
     Rejected = "Rejected",
     Cancelled = "Cancelled",
+    Expired = "Expired",
 }
 
 export const scheduleStatusMap: { [key in ScheduleUserStatus]: { color: string; text: string } } = {
@@ -13,4 +14,5 @@ export const scheduleStatusMap: { [key in ScheduleUserStatus]: { color: string; 
     [ScheduleUserStatus.Approved]: { color: "blue", text: "Đã phê duyệt" },
     [ScheduleUserStatus.Rejected]: { color: "red", text: "Đã từ chối" },
     [ScheduleUserStatus.Cancelled]: { color: "gray", text: "Đã vô hiệu hóa" },
+    [ScheduleUserStatus.Expired]: { color: "purple", text: "Đã hết hạn" },
 };
