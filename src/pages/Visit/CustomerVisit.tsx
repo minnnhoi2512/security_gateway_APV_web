@@ -11,11 +11,17 @@ import {
   Modal,
   Tooltip,
   Popover,
+  Layout,
+  Card,
+  Badge,
 } from "antd";
 import {
   SearchOutlined,
   PlusOutlined,
   FilterOutlined,
+  CalendarOutlined,
+  ClockCircleOutlined,
+  UserSwitchOutlined,
 } from "@ant-design/icons";
 import { TableProps } from "antd";
 import { useNavigate } from "react-router-dom";
@@ -30,6 +36,7 @@ import dayjs, { Dayjs } from "dayjs";
 import { VisitStatus, visitStatusMap } from "../../types/Enum/VisitStatus";
 import { ScheduleType, typeMap } from "../../types/Enum/ScheduleType";
 import ListHistorySessonVisit from "../History/ListHistorySessionVisit";
+import { CalendarDays, CalendarRange, Clock4 } from "lucide-react";
 
 interface Filters {
   expectedStartTime: Dayjs | null;
@@ -184,7 +191,8 @@ const CustomerVisit = () => {
       dataIndex: "scheduleUser",
       key: "scheduleUser",
       render: (scheduleUser) => {
-        const scheduleTypeId = scheduleUser?.schedule.scheduleType.scheduleTypeId as ScheduleType;
+        const scheduleTypeId = scheduleUser?.schedule.scheduleType
+          .scheduleTypeId as ScheduleType;
         if (scheduleTypeId === undefined)
           return <Tag color="default">Theo ngày</Tag>;
         const { colorScheduleType, textScheduleType } = typeMap[
@@ -198,7 +206,6 @@ const CustomerVisit = () => {
             <Tag color={colorScheduleType} style={{ fontSize: "14px" }}>
               {textScheduleType}
             </Tag>
-        
           </div>
         );
       },
@@ -315,66 +322,100 @@ const CustomerVisit = () => {
   };
 
   return (
-    <Content className="px-6">
-      <Space
-        style={{
-          marginBottom: 16,
-          display: "flex",
-          justifyContent: "space-between",
-        }}
-      >
-        <Space>
-          <Input
-            placeholder="Tìm kiếm theo tên chuyến thăm"
-            prefix={<SearchOutlined />}
-            value={searchText}
-            onChange={handleSearchChange}
-            style={{
-              width: 300,
-              borderColor: "#1890ff",
-              borderRadius: 5,
-            }}
-          />
-          <Popover content={filterContent} title="Bộ lọc" trigger="click">
-            <Button icon={<FilterOutlined />} />
-          </Popover>
-        </Space>
+    <Content className="p-4 max-w-[1400px] mx-auto">
+  
+
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold text-mainColor">
+          Quản lý chuyến thăm
+        </h1>
         <Button
-          type="primary"
-          size="large"
           icon={<PlusOutlined />}
           onClick={() => navigate("/customerVisit/createNewVisitList")}
-          style={{ borderRadius: 12 }}
+          className="px-4 py-4 text-lg   rounded-lg bg-mainColor hover:bg-opacity-90 transition-all   shadow-md text-white flex items-center justify-center"
         >
-          Tạo mới
+          <span className="mb-[2px]">Tạo mới</span>
         </Button>
-      </Space>
-      <>
-        <Space style={{ marginBottom: 16, display: "flex", flexWrap: "wrap" }}>
-          <Button
-            type={filters.scheduleTypeId.includes(null) ? "primary" : "default"}
-            onClick={() => handleTypeFilter(null)}
-            className={`px-4 py-2 rounded-md ${
-              filters.scheduleTypeId.includes(null)
-                ? "bg-blue-500 text-white"
-                : "bg-gray-200 text-gray-700"
-            } hover:bg-blue-600`}
+      </div>
+
+ 
+      <div className="flex gap-4 mb-4">
+        <div className="flex flex-1 gap-2">
+          <Input
+            placeholder="Tìm kiếm chuyến thăm..."
+            prefix={<SearchOutlined className="text-gray-400" />}
+            value={searchText}
+            onChange={handleSearchChange}
+            className="max-w-xs"
+          />
+          <Popover
+            content={
+              <Space direction="vertical" className="w-64">
+                <DatePicker
+                  placeholder="Ngày bắt đầu"
+                  className="w-full"
+                  onChange={(date) =>
+                    handleFilterChange("expectedStartTime", date)
+                  }
+                />
+                <DatePicker
+                  placeholder="Ngày kết thúc"
+                  className="w-full"
+                  onChange={(date) =>
+                    handleFilterChange("expectedEndTime", date)
+                  }
+                />
+                <div className="mt-1">
+                  <small className="text-gray-500">Số lượng khách</small>
+                  <Slider
+                    range
+                    min={1}
+                    max={100}
+                    defaultValue={[1, 100]}
+                    onChange={(value) =>
+                      handleFilterChange("visitQuantity", value)
+                    }
+                  />
+                </div>
+                <Button
+                  type="default"
+                  block
+                  onClick={handleClearFilters}
+                  size="small"
+                >
+                  Xóa bộ lọc
+                </Button>
+              </Space>
+            }
+            trigger="click"
+            placement="bottomRight"
           >
+            <Button icon={<FilterOutlined />} />
+          </Popover>
+        </div>
+
+        {/* Type Filter */}
+        <div className="flex gap-2">
+          <Button
+            onClick={() => handleTypeFilter(null)}
+            className={`min-w-[120px] border-2 ${
+              filters.scheduleTypeId.includes(null)
+                ? "border-green-500 text-green-600 bg-green-50"
+                : "border-green-500 text-green-600 hover:bg-green-50"
+            }`}
+          >
+            <Clock4 size={17} />
             Theo ngày
           </Button>
           <Button
-            type={
-              filters.scheduleTypeId.includes(ScheduleType.Weekly)
-                ? "primary"
-                : "default"
-            }
             onClick={() => handleTypeFilter(ScheduleType.Weekly)}
-            className={`px-4 py-2 rounded-md ${
+            className={`min-w-[120px] border-2 ${
               filters.scheduleTypeId.includes(ScheduleType.Weekly)
-                ? "bg-blue-500 text-white"
-                : "bg-gray-200 text-gray-700"
-            } hover:bg-blue-600`}
+                ? "border-yellow-500 text-yellow-600 bg-yellow-50"
+                : "border-yellow-500 text-yellow-600 hover:bg-yellow-50"
+            }`}
           >
+            <CalendarDays size={17} />
             Theo tuần
           </Button>
           <Button
@@ -384,131 +425,69 @@ const CustomerVisit = () => {
                 : "default"
             }
             onClick={() => handleTypeFilter(ScheduleType.Monthly)}
-            className={`px-4 py-2 rounded-md ${
+            className={`min-w-[120px] border-2 ${
               filters.scheduleTypeId.includes(ScheduleType.Monthly)
-                ? "bg-blue-500 text-white"
-                : "bg-gray-200 text-gray-700"
-            } hover:bg-blue-600`}
-          >
-            Theo tháng
-          </Button>
-        </Space>
-        <Space style={{ marginBottom: 16, display: "flex", flexWrap: "wrap" }}>
-          <Button
-            type={
-              filters.visitStatus.includes(VisitStatus.ActiveTemporary)
-                ? "primary"
-                : "default"
-            }
-            onClick={() => handleStatusFilter(VisitStatus.ActiveTemporary)}
-            className={`px-4 py-2 rounded-md ${
-              filters.visitStatus.includes(VisitStatus.ActiveTemporary)
-                ? "bg-blue-500 text-white"
-                : "bg-gray-200 text-gray-700"
-            } hover:bg-blue-600 
+                ? "border-purple-500 text-purple-600 bg-purple-50"
+                : "border-purple-500 text-purple-600 hover:bg-purple-50"
             }`}
           >
-            Cần duyệt ({getCountByStatus(VisitStatus.ActiveTemporary)})
+            <CalendarRange size={17} />
+            Theo tháng
           </Button>
-          <Button
-            type={
-              filters.visitStatus.includes(VisitStatus.Pending)
-                ? "primary"
-                : "default"
-            }
-            onClick={() => handleStatusFilter(VisitStatus.Pending)}
-            className={`px-4 py-2 rounded-md ${
-              filters.visitStatus.includes(VisitStatus.Pending)
-                ? "bg-blue-500 text-white"
-                : "bg-gray-200 text-gray-700"
-            } hover:bg-blue-600`}
-          >
-            Chờ phê duyệt ({getCountByStatus(VisitStatus.Pending)})
-          </Button>
-          <Button
-            type={
-              filters.visitStatus.includes(VisitStatus.Active)
-                ? "primary"
-                : "default"
-            }
-            onClick={() => handleStatusFilter(VisitStatus.Active)}
-            className={`px-4 py-2 rounded-md ${
-              filters.visitStatus.includes(VisitStatus.Active)
-                ? "bg-blue-500 text-white"
-                : "bg-gray-200 text-gray-700"
-            } hover:bg-blue-600`}
-          >
-            Còn hiệu lực ({getCountByStatus(VisitStatus.Active)})
-          </Button>
-          <Button
-            type={
-              filters.visitStatus.includes(VisitStatus.Violation)
-                ? "primary"
-                : "default"
-            }
-            onClick={() => handleStatusFilter(VisitStatus.Violation)}
-            className={`px-4 py-2 rounded-md ${
-              filters.visitStatus.includes(VisitStatus.Violation)
-                ? "bg-blue-500 text-white"
-                : "bg-gray-200 text-gray-700"
-            } hover:bg-blue-600`}
-          >
-            Vi phạm ({getCountByStatus(VisitStatus.Violation)})
-          </Button>
-          <Button
-            type={
-              filters.visitStatus.includes(VisitStatus.Cancelled)
-                ? "primary"
-                : "default"
-            }
-            onClick={() => handleStatusFilter(VisitStatus.Cancelled)}
-            className={`px-4 py-2 rounded-md ${
-              filters.visitStatus.includes(VisitStatus.Cancelled)
-                ? "bg-blue-500 text-white"
-                : "bg-gray-200 text-gray-700"
-            } hover:bg-blue-600`}
-          >
-            Đã vô hiệu hóa ({getCountByStatus(VisitStatus.Cancelled)})
-          </Button>
-          <Button
-            type={
-              filters.visitStatus.includes(VisitStatus.Inactive)
-                ? "primary"
-                : "default"
-            }
-            onClick={() => handleStatusFilter(VisitStatus.Inactive)}
-            className={`px-4 py-2 rounded-md ${
-              filters.visitStatus.includes(VisitStatus.Inactive)
-                ? "bg-blue-500 text-white"
-                : "bg-gray-200 text-gray-700"
-            } hover:bg-blue-600`}
-          >
-            Đã hết hạn ({getCountByStatus(VisitStatus.Inactive)})
-          </Button>
-        </Space>
-      </>
+        </div>
+      </div>
 
-      <Table
-        columns={columns}
-        dataSource={filteredData}
-        pagination={{
-          total: data?.length,
-          showSizeChanger: true,
-          pageSizeOptions: ["5", "10", "20"],
-          hideOnSinglePage: false,
-          size: "small",
-        }}
-        rowKey="visitId"
-        bordered
-        loading={isLoading}
-        onRow={(record) => ({
-          onDoubleClick: () => {
-            navigate(`/customerVisit/detailVisit/${record.visitId}`, {
-              state: { record },
-            });
-          },
-        })}
-      />
+      <Card className="shadow-sm">
+        <div className="">
+          {Object.values(VisitStatus).map((status) => {
+            const { colorVisitStatus, textVisitStatus } =
+              visitStatusMap[status];
+            const count = getCountByStatus(status);
+            return (
+              <Button
+                key={status}
+                onClick={() => handleStatusFilter(status)}
+                className={`rounded-t-3xl mr-[2px] relative ${
+                  filters.visitStatus.includes(status)
+                    ? "bg-mainColor text-white border-none hover:bg-mainColor"
+                    : "bg-white border-mainColor text-mainColor hover:text-mainColor hover:border-mainColor"
+                }`}
+              >
+                {textVisitStatus}
+                {count > 0 && (
+                  <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center bg-red-500 text-white text-xs rounded-full">
+                    {count}
+                  </div>
+                )}
+              </Button>
+            );
+          })}
+          <Table
+            columns={columns}
+            dataSource={filteredData}
+            pagination={{
+              total: data?.length,
+              showSizeChanger: true,
+              pageSizeOptions: ["5", "10", "20"],
+              showTotal: (total) => `Tổng ${total} chuyến thăm`,
+              size: "small",
+            }}
+            rowKey="visitId"
+            bordered={false}
+            loading={isLoading}
+            onRow={(record) => ({
+              onDoubleClick: () => {
+                navigate(`/customerVisit/detailVisit/${record.visitId}`, {
+                  state: { record },
+                });
+              },
+              className: "cursor-pointer hover:bg-gray-50 transition-colors",
+            })}
+            size="middle"
+          />
+        </div>
+      </Card>
+
       <Modal
         title="Lịch sử lượt ra vào"
         visible={isModalVisible}

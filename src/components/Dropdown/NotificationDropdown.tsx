@@ -10,6 +10,7 @@ import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 import moment from "moment";
 import { useNavigate } from "react-router";
+import { BellFilled } from "@ant-design/icons";
 const { Text } = Typography;
 
 interface NotificationDropdownProps {}
@@ -50,7 +51,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = () => {
       navigate(`/schedule-staff`);
     }
   };
- 
+
   const items: MenuProps["items"] = [];
   if (notificaitionData) {
     const reverseArray = [...notificaitionData].reverse().slice(0, 10);
@@ -111,26 +112,36 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = () => {
   }
   return (
     <Dropdown menu={{ items }} trigger={["click"]} overlayClassName="pt-1">
-      <a onClick={(e) => e.preventDefault()}>
-        <Space>
-          <Badge
-            count={
-              notificaitionData?.filter(
-                (notification: any) => !notification.readStatus
-              ).length
-            }
-          >
-            <button>
-              <Avatar
-                shape="circle"
-                size="small"
-                src="/src/assets/iconNoti.png"
-              />
-            </button>
-          </Badge>
-        </Space>
-      </a>
-    </Dropdown>
+    <a onClick={(e) => e.preventDefault()}>
+      <Space>
+        <Badge
+          count={
+            notificaitionData?.filter(
+              (notification: any) => !notification.readStatus
+            ).length
+          }
+          offset={[-5, -5]}  
+          size="small"       
+          style={{
+            marginTop: 5,
+            backgroundColor: '#ff4d4f',  
+            color: 'white',
+            fontSize: 10,
+          }}
+        >
+          <button>
+            <BellFilled
+              style={{
+                color: "#FFD700",  
+                fontSize: 23,
+  
+              }}
+            />
+          </button>
+        </Badge>
+      </Space>
+    </a>
+  </Dropdown>
   );
 };
 

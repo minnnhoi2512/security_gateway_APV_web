@@ -13,6 +13,9 @@ import {
   notification,
   Table,
   Space,
+  Card,
+  Slider,
+  Popover,
 } from "antd";
 import {
   SearchOutlined,
@@ -20,6 +23,8 @@ import {
   DeleteOutlined,
   UserAddOutlined,
   PlusOutlined,
+  FilterOutlined,
+  CalendarOutlined,
 } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -36,6 +41,7 @@ import { useAssignScheduleMutation } from "../../services/scheduleUser.service";
 import { isEntityError } from "../../utils/helpers";
 import TableSchedule from "../../components/TableSchedule";
 import NotFoundState from "../../components/State/NotFoundState";
+import { CalendarDays, CalendarRange, Clock4 } from "lucide-react";
 
 const { Content } = Layout;
 const { Option } = Select;
@@ -96,8 +102,6 @@ const Schedule = () => {
       const filtered = schedules.filter((item: any) =>
         item?.scheduleName.toLowerCase().includes(searchText.toLowerCase())
       );
-
-
 
       setFilteredData(filtered);
     }
@@ -177,47 +181,135 @@ const Schedule = () => {
     setIsModalVisible(false);
   };
   if (userRole === "Staff") {
-    return <div><NotFoundState/></div>;
+    return (
+      <div>
+        <NotFoundState />
+      </div>
+    );
   }
   return (
-    <Layout className="min-h-screen bg-white">
-      <Content className="px-6">
-        <Space
-          style={{
-            marginBottom: 16,
-            display: "flex",
-            justifyContent: "space-between",
-          }}
+    <Content className="p-4 max-w-[1400px] mx-auto">
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold text-mainColor">
+          Quản lý lịch trình
+        </h1>
+        <Button
+          icon={<PlusOutlined />}
+          onClick={() => navigate("/schedule/createNewSchedule")}
+          className="px-4 py-4 text-lg   rounded-lg bg-mainColor hover:bg-opacity-90 transition-all   shadow-md text-white flex items-center justify-center"
         >
+          <span className="mb-[2px]">Tạo mới</span>
+        </Button>
+      </div>
+
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center gap-2 flex-1">
           <Input
-            placeholder="Tìm kiếm theo tên lịch trình"
-            prefix={<SearchOutlined />}
+            placeholder="Tìm kiếm chuyến thăm..."
+            prefix={<SearchOutlined className="text-gray-400" />}
             value={searchText}
             onChange={handleSearchChange}
-            style={{
-              width: 300,
-              borderColor: "#1890ff",
-              borderRadius: 5,
-            }}
+            className="max-w-xs"
           />
-          <Button
-            type="primary"
-            size="large"
-            icon={<PlusOutlined />}
-            onClick={() => navigate("/schedule/createNewSchedule")}
-            style={{ borderRadius: 12 }}
+          <Popover
+            content={
+              <Space direction="vertical" className="w-64">
+                <DatePicker
+                  placeholder="Ngày bắt đầu"
+                  className="w-full"
+                  // onChange={(date) =>
+                  //   handleFilterChange("expectedStartTime", date)
+                  // }
+                />
+                <DatePicker
+                  placeholder="Ngày kết thúc"
+                  className="w-full"
+                  // onChange={(date) =>
+                  //   handleFilterChange("expectedEndTime", date)
+                  // }
+                />
+                <div className="mt-1">
+                  <small className="text-gray-500">Số lượng khách</small>
+                  <Slider
+                    range
+                    min={1}
+                    max={100}
+                    defaultValue={[1, 100]}
+                    // onChange={(value) =>
+                    //   handleFilterChange("visitQuantity", value)
+                    // }
+                  />
+                </div>
+                <Button
+                  type="default"
+                  block
+                  // onClick={handleClearFilters}
+                  size="small"
+                >
+                  Xóa bộ lọc
+                </Button>
+              </Space>
+            }
+            trigger="click"
+            placement="bottomRight"
           >
-            Tạo mới
+            <Button icon={<FilterOutlined />} />
+          </Popover>
+        </div>
+
+        <div className="flex gap-2">
+          <Button
+            className={`min-w-[120px] border-2   bg-green-50
+               border-green-500 text-green-600 hover:bg-green-50
+          `}
+          >
+            <Clock4 size={17} />
+            Theo ngày
           </Button>
-        </Space>
-        <Space style={{ marginBottom: 16, display: "flex", flexWrap: "wrap" }}>
-          <Button>Theo tuần</Button>
-          <Button>Theo tháng</Button>
-        </Space>
-        <Space style={{ marginBottom: 16, display: "flex", flexWrap: "wrap" }}>
-          <Button>Còn hiệu lực</Button>
-          <Button>Hết hiệu lực</Button>
-        </Space>
+          <Button
+            className={`min-w-[120px] border-2  bg-yellow-50
+             border-yellow-500 text-yellow-600 hover:bg-yellow-50
+          `}
+          >
+            <CalendarDays size={17} />
+            Theo tuần
+          </Button>
+          <Button
+            className={`min-w-[120px] border-2   bg-purple-50
+              border-purple-500 text-purple-600 hover:bg-purple-50"
+            `}
+          >
+            <CalendarRange size={17} />
+            Theo tháng
+          </Button>
+        </div>
+      </div>
+
+      <Card className="shadow-sm">
+        {/* Status Filter Tabs */}
+        <div className="">
+          <Button
+            className={`rounded-t-3xl mr-[2px] relative bg-mainColor text-white   border-none hover:bg-mainColor
+            border-mainColor   hover:text-mainColor hover:border-mainColor
+          `}
+          >
+            Còn hiệu lực
+            <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center bg-red-500 text-white text-xs rounded-full">
+              2
+            </div>
+          </Button>
+          <Button
+            className={`rounded-t-3xl mr-[2px] relative bg-mainColor text-white   border-none hover:bg-mainColor
+            border-mainColor   hover:text-mainColor hover:border-mainColor
+          `}
+          >
+            Chờ phê duyệt
+            <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center bg-red-500 text-white text-xs rounded-full">
+              0
+            </div>
+          </Button>
+        </div>
+
         <TableSchedule
           schedules={filteredData || []}
           schedulesIsLoading={schedulesIsLoading}
@@ -225,167 +317,167 @@ const Schedule = () => {
           handleDeleteSchedule={handleDeleteSchedule}
           handleAssignUser={handleAssignUser}
         />
+      </Card>
 
-        <Modal
-          title={
-            <span className="text-xl font-semibold">
-              Giao nhiệm vụ cho nhân viên
-            </span>
-          }
-          visible={isModalVisible}
-          onCancel={handleCancelAssigned}
-          footer={[
-            <Button
-              key="cancel"
-              onClick={handleCancelAssigned}
-              className="rounded-full px-4 py-2 border-gray-300"
-            >
-              Hủy
-            </Button>,
-            <Button
-              key="submit"
-              type="primary"
-              onClick={handleAssignSubmit}
-              className="rounded-full px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              Giao nhiệm vụ
-            </Button>,
-          ]}
-          className="rounded-lg p-6 shadow-xl"
-          bodyStyle={{
-            padding: "20px",
-            borderRadius: "12px",
-          }}
-        >
-          <Form
-            layout="vertical"
-            className="space-y-4"
-            onFinish={handleAssignSubmit}
-            initialValues={assignData}
+      <Modal
+        title={
+          <span className="text-xl font-semibold">
+            Giao nhiệm vụ cho nhân viên
+          </span>
+        }
+        visible={isModalVisible}
+        onCancel={handleCancelAssigned}
+        footer={[
+          <Button
+            key="cancel"
+            onClick={handleCancelAssigned}
+            className="rounded-full px-4 py-2 border-gray-300"
           >
-            <Form.Item
-              label="Tên nhiệm vụ"
-              name="title"
-              className="text-base font-medium"
-              rules={[
-                {
-                  required: true,
-                  message: "Tên nhiệm vụ không được để trống.",
-                },
-                { min: 5, message: "Tên nhiệm vụ phải có ít nhất 5 ký tự." },
-              ]}
-            >
-              <Input
-                value={assignData.title}
-                onChange={(e) =>
-                  setAssignData((prev) => ({ ...prev, title: e.target.value }))
-                }
-                className="rounded-lg px-4 py-2 border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-              />
-            </Form.Item>
-            <Form.Item
-              label="Miêu tả"
-              name="description"
-              className="text-base font-medium"
-              rules={[
-                { required: true, message: "Miêu tả không được để trống." },
-                { max: 500, message: "Miêu tả không được vượt quá 500 ký tự." },
-              ]}
-            >
-              <Input
-                value={assignData.description}
-                onChange={(e) =>
-                  setAssignData((prev) => ({
-                    ...prev,
-                    description: e.target.value,
-                  }))
-                }
-                className="rounded-lg px-4 py-2 border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-              />
-            </Form.Item>
-            <Form.Item
-              label="Ghi chú"
-              name="note"
-              className="text-base font-medium"
-              rules={[
-                { required: true, message: "Ghi chú không được để trống." },
-                { max: 300, message: "Ghi chú không được vượt quá 300 ký tự." },
-              ]}
-            >
-              <Input
-                value={assignData.note}
-                onChange={(e) =>
-                  setAssignData((prev) => ({ ...prev, note: e.target.value }))
-                }
-                className="rounded-lg px-4 py-2 border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-              />
-            </Form.Item>
-            <Form.Item
-              label="Thời hạn"
-              name="deadlineTime"
-              className="text-base font-medium"
-              rules={[
-                { required: true, message: "Vui lòng chọn thời hạn." },
-                {
-                  validator: (_, value) => {
-                    if (value && moment(value).isSameOrAfter(moment(), "day")) {
-                      return Promise.resolve();
-                    }
-                    return Promise.reject(
-                      "Thời hạn phải là ngày trong tương lai."
-                    );
-                  },
-                },
-              ]}
-              help={
-                errorAssignSchedule?.deadlineTime
-                  ? errorAssignSchedule.deadlineTime[0]
-                  : ""
+            Hủy
+          </Button>,
+          <Button
+            key="submit"
+            type="primary"
+            onClick={handleAssignSubmit}
+            className="rounded-full px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            Giao nhiệm vụ
+          </Button>,
+        ]}
+        className="rounded-lg p-6 shadow-xl"
+        bodyStyle={{
+          padding: "20px",
+          borderRadius: "12px",
+        }}
+      >
+        <Form
+          layout="vertical"
+          className="space-y-4"
+          onFinish={handleAssignSubmit}
+          initialValues={assignData}
+        >
+          <Form.Item
+            label="Tên nhiệm vụ"
+            name="title"
+            className="text-base font-medium"
+            rules={[
+              {
+                required: true,
+                message: "Tên nhiệm vụ không được để trống.",
+              },
+              { min: 5, message: "Tên nhiệm vụ phải có ít nhất 5 ký tự." },
+            ]}
+          >
+            <Input
+              value={assignData.title}
+              onChange={(e) =>
+                setAssignData((prev) => ({ ...prev, title: e.target.value }))
               }
-            >
-              <DatePicker
-                onChange={handleDateChange}
-                style={{ width: "100%" }}
-                format="DD/MM/YYYY"
-                className="rounded-lg px-4 py-2 border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-              />
-            </Form.Item>
-            <Form.Item
-              label="Chọn nhân viên"
-              name="assignToId"
-              className="text-base font-medium"
-              rules={[
-                { required: true, message: "Vui lòng chọn nhân viên." },
-                {
-                  validator: (_, value) =>
-                    value && value !== 0
-                      ? Promise.resolve()
-                      : Promise.reject("Vui lòng chọn nhân viên hợp lệ."),
+              className="rounded-lg px-4 py-2 border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            />
+          </Form.Item>
+          <Form.Item
+            label="Miêu tả"
+            name="description"
+            className="text-base font-medium"
+            rules={[
+              { required: true, message: "Miêu tả không được để trống." },
+              { max: 500, message: "Miêu tả không được vượt quá 500 ký tự." },
+            ]}
+          >
+            <Input
+              value={assignData.description}
+              onChange={(e) =>
+                setAssignData((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
+              }
+              className="rounded-lg px-4 py-2 border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            />
+          </Form.Item>
+          <Form.Item
+            label="Ghi chú"
+            name="note"
+            className="text-base font-medium"
+            rules={[
+              { required: true, message: "Ghi chú không được để trống." },
+              { max: 300, message: "Ghi chú không được vượt quá 300 ký tự." },
+            ]}
+          >
+            <Input
+              value={assignData.note}
+              onChange={(e) =>
+                setAssignData((prev) => ({ ...prev, note: e.target.value }))
+              }
+              className="rounded-lg px-4 py-2 border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            />
+          </Form.Item>
+          <Form.Item
+            label="Thời hạn"
+            name="deadlineTime"
+            className="text-base font-medium"
+            rules={[
+              { required: true, message: "Vui lòng chọn thời hạn." },
+              {
+                validator: (_, value) => {
+                  if (value && moment(value).isSameOrAfter(moment(), "day")) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(
+                    "Thời hạn phải là ngày trong tương lai."
+                  );
                 },
-              ]}
+              },
+            ]}
+            help={
+              errorAssignSchedule?.deadlineTime
+                ? errorAssignSchedule.deadlineTime[0]
+                : ""
+            }
+          >
+            <DatePicker
+              onChange={handleDateChange}
+              style={{ width: "100%" }}
+              format="DD/MM/YYYY"
+              className="rounded-lg px-4 py-2 border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            />
+          </Form.Item>
+          <Form.Item
+            label="Chọn nhân viên"
+            name="assignToId"
+            className="text-base font-medium"
+            rules={[
+              { required: true, message: "Vui lòng chọn nhân viên." },
+              {
+                validator: (_, value) =>
+                  value && value !== 0
+                    ? Promise.resolve()
+                    : Promise.reject("Vui lòng chọn nhân viên hợp lệ."),
+              },
+            ]}
+          >
+            <Select
+              placeholder="Chọn nhân viên"
+              value={assignData.assignToId}
+              onChange={(value) =>
+                setAssignData((prev) => ({ ...prev, assignToId: value || 0 }))
+              }
+              className="rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
             >
-              <Select
-                placeholder="Chọn nhân viên"
-                value={assignData.assignToId}
-                onChange={(value) =>
-                  setAssignData((prev) => ({ ...prev, assignToId: value || 0 }))
-                }
-                className="rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-              >
-                <Option value={0} disabled>
-                  Chọn nhân viên
+              <Option value={0} disabled>
+                Chọn nhân viên
+              </Option>
+              {staffData.map((user: any) => (
+                <Option key={user.userId} value={user.userId}>
+                  {user.fullName}
                 </Option>
-                {staffData.map((user: any) => (
-                  <Option key={user.userId} value={user.userId}>
-                    {user.fullName}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
-          </Form>
-        </Modal>
-      </Content>
-    </Layout>
+              ))}
+            </Select>
+          </Form.Item>
+        </Form>
+      </Modal>
+    </Content>
   );
 };
 

@@ -208,7 +208,8 @@ const LayoutPage = ({ children }: { children: any }) => {
         });
       });
   }
-  const sharedBackgroundColor = "#34495e";
+  const sharedBackgroundColor = "#1b347b";
+  // const sharedBackgroundColor = "#34495e";
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -217,88 +218,80 @@ const LayoutPage = ({ children }: { children: any }) => {
         trigger={null}
         collapsible
         collapsed={collapsed}
-        width={240}
+        width={280}
         style={{ backgroundColor: sharedBackgroundColor }}
+        className="relative"
       >
-        <div className="relative"></div>
-        <div className="flex flex-col items-center mt-7">
-          <div className="flex justify-between items-center">
-            <div className="flex justify-between items-center">
+        <div className="py-4 px-6 relative">
+          <Button
+            type="text"
+            icon={
+              collapsed ? (
+                <MenuUnfoldOutlined className="text-sm" />
+              ) : (
+                <MenuFoldOutlined className="text-sm" />
+              )
+            }
+            onClick={() => setCollapsed(!collapsed)}
+            className={`absolute -right-3 top-4 z-50 bg-white shadow-md hover:bg-gray-50 border border-gray-200
+      ${collapsed ? "w-8 h-8 min-w-0 p-0" : "w-8 h-8 min-w-0 p-0"}`}
+          />
+
+          <div className="flex items-center gap-4 mb-6">
+            <div className="relative">
               <img
-                className="w-[75px] h-[75px] mt-2"
+                className="w-10 h-10"
                 src="https://vietnetco.vn/wp-content/uploads/2020/04/Secure-Web-Gateway-01-1024x844.png"
                 alt="Logo"
               />
-              <Button
-                style={{ zIndex: 200 }}
-                type="text"
-                icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-                onClick={() => setCollapsed(!collapsed)}
-                className="absolute top-1 -right-4 shadow-2xl bg-white border-r border-2 shadow-[1px_1px_0px_0.5px_gray]"
-              />
             </div>
-            <div className="absolute top-1 left-7 mt-2">
-              <NotificationDropdown />
-            </div>
+            {!collapsed && (
+              <div>
+                <h1 className="text-white text-lg font-bold leading-tight">
+                  SECURITY GATE
+                </h1>
+                <h2 className="text-gray-400 text-xs">APV System</h2>
+              </div>
+            )}
           </div>
 
           {!collapsed && (
-            <div className="text-center">
-              <h1 className="text-white text-lg font-bold leading-tight">
-                SECURITY GATE
-              </h1>
-              <h2 className="text-white text-sm ">APV</h2>
+            <div className="rounded-lg bg-[#1c2f6c] p-4 cursor-pointer hover:bg-slate-700/70 transition-colors shadow-xl relative">
+              <div className="absolute -top-2 -right-2 z-10">
+                <NotificationDropdown />
+              </div>
+
+              <div className="flex items-center gap-3">
+                <img
+                  className="w-10 h-10 rounded-full object-cover border-2 border-gray-600"
+                  src={userData?.image || DefaultUserImage}
+                  alt="User"
+                  onClick={handleProfileClick}
+                />
+                <div className="flex-1">
+                  <h3 className="text-white text-sm font-medium">
+                    {userData?.fullName}
+                  </h3>
+                  <p className="text-gray-400 text-xs truncate">
+                    {getRoleDisplayName(userData?.role.roleName)}
+                  </p>
+                  <p className="text-gray-400 text-xs truncate">
+                    {userData?.department?.departmentName}
+                  </p>
+                </div>
+              </div>
             </div>
           )}
         </div>
 
-        {!collapsed && (
-          <div className="px-4 py-2">
-            <div className="flex items-center mb-4 cursor-pointer">
-              <img
-                className="w-[40px] h-[40px] rounded-full"
-                src={userData?.image || DefaultUserImage}
-                alt="User"
-                onClick={handleProfileClick}
-              />
-              <div className="ml-3 flex items-center justify-between w-full">
-                <div>
-                  <h1 className="text-sm font-medium text-white">
-                    {userData?.fullName}
-                  </h1>
-                  <h2 className="text-xs text-gray-300">
-                    {getRoleDisplayName(userData?.role.roleName)}
-                  </h2>
-                  <h2 className="text-xs text-gray-300">
-                    {userData?.department?.departmentName}
-                  </h2>
-                </div>
-              </div>
-            </div>
-            <div className="border-t border-gray-400"></div>
-          </div>
-        )}
-
         <MenuNav />
       </Sider>
+
       <Layout>
         <Content className="bg-white rounded shadow min-h-[80vh]">
-          <div
-            style={{
-              position: "sticky",
-              top: 0,
-              zIndex: 100, // Giá trị cao hơn các component khác
-              backgroundColor: "white", // Đảm bảo nền trong suốt
-              borderBottom: "1px solid #e0e0e0",
-              marginBottom: "16px",
-            }}
-          >
-            <Breadcrumb
-              items={breadcrumbItems}
-              style={{ margin: "7px", fontSize: "18px", paddingLeft: "16px" }}
-            />
+          <div className="sticky top-0 z-20 bg-white border-b border-gray-200">
+            <Breadcrumb items={breadcrumbItems} className="p-4 text-lg" />
           </div>
-
           {children}
         </Content>
       </Layout>

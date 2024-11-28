@@ -9,6 +9,7 @@ import "react-toastify/dist/ReactToastify.css"; // Import toast styles
 import SetSignalR from "../utils/signalR";
 import UserConnectionHubType from "../types/userConnectionHubType";
 import { useDispatch } from "react-redux";
+import { Building2, Camera, Lock, ShieldCheck, User } from "lucide-react";
 
 function Login() {
   const [rememberMe, setRememberMe] = useState(false);
@@ -67,106 +68,79 @@ function Login() {
   };
 
   return (
-    <div className="flex h-screen bg-white">
-      {/* Left side - Image */}
-      <div className="hidden lg:block lg:w-1/2">
-        <img
-          className="contain w-full h-full"
-          src={LoginImg}
-          alt="Modern office building"
-        />
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center px-4">
+      <div className="absolute inset-0">
+        <div className="absolute inset-0 bg-[radial-gradient(circle,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[length:24px_24px]"></div>
       </div>
-      {/* Right side - Login form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
-        <div className="w-full max-w-md">
-          <div className="text-center mb-8">
-            <LockOutlined className="text-4xl text-blue-500" />
-            <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-              Security Gate Apache
-            </h2>
+
+      <div className="w-full max-w-4xl flex bg-slate-800/80 backdrop-blur-md rounded-lg shadow-2xl relative">
+        <div className="w-full md:w-1/2 p-8">
+          <div className="flex items-center justify-start gap-4 mb-8">
+            <img
+              src="https://vietnetco.vn/wp-content/uploads/2020/04/Secure-Web-Gateway-01-1024x844.png"
+              alt="Security Gate Logo"
+              className="w-12 h-12 object-contain"
+            />
+            <h1 className="text-2xl font-bold text-white">APACHE VIET NAM SECURITY GATE</h1>
           </div>
-          <form className="space-y-6" onSubmit={handleSubmit}>
+
+          {/* <h2 className="text-2xl font-bold text-white mb-1">Security Gate</h2> */}
+          <p className="text-gray-400 mb-6">
+            Hệ thống kiểm soát ra vào
+          </p>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700"
-              >
+              <label className="text-xs font-bold text-gray-300 uppercase mb-1 block">
                 Tên đăng nhập
               </label>
-              <div className="mt-1 relative rounded-md shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <UserOutlined className="text-gray-400" />
-                </div>
-                <input
-                  id="email"
-                  name="email"
-                  type="text"
-                  required
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Tên đăng nhập"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                />
-              </div>
+              <input
+                type="text"
+                required
+                className="w-full p-2.5 rounded bg-slate-900/80 text-white border border-slate-700 focus:ring-2 focus:ring-blue-500"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
             </div>
+
             <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700"
-              >
+              <label className="text-xs font-bold text-gray-300 uppercase mb-1 block">
                 Mật khẩu
               </label>
-              <div className="mt-1 relative rounded-md shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <LockOutlined className="text-gray-400" />
-                </div>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Nhập mật khẩu"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
+              <input
+                type="password"
+                required
+                className="w-full p-2.5 rounded bg-slate-900/80 text-white border border-slate-700 focus:ring-2 focus:ring-blue-500"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
             </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                />
-                <label
-                  htmlFor="remember-me"
-                  className="ml-2 block text-sm text-gray-900"
-                >
-                  Ghi nhớ
-                </label>
-              </div>
-              <div className="text-sm">
-                <a
-                  href="#"
-                  className="font-medium text-blue-600 hover:text-blue-500"
-                >
-                  Quên mật khẩu?
-                </a>
-              </div>
-            </div>
-            <div>
-              <button
-                type="submit"
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                {isLoading ? "Đang đăng nhập..." : "Đăng nhập"}
-              </button>
-            </div>
+
+            <a href="#" className="text-sm text-blue-400 hover:underline block">
+              Quên mật khẩu?
+            </a>
+
+            <button
+              type="submit"
+              className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded transition-colors"
+              disabled={isLoading}
+            >
+              {isLoading ? "Đang xử lý..." : "Đăng nhập"}
+            </button>
           </form>
+
+          <p className="text-sm text-center text-gray-500 mt-6">
+            © 2024 Apache Vietnam
+          </p>
+        </div>
+
+        <div className="hidden md:block md:w-1/2 relative">
+          <img
+            src="https://www.vietthanhcorp.vn/files/2023/05/25/101823-cat%20uni.jpg"
+            alt="Login background"
+            className="h-full w-full object-cover rounded-r-lg"
+          />
+          <div className="absolute inset-0 bg-gradient-to-br from-black/30 to-transparent rounded-r-lg"></div>
         </div>
       </div>
     </div>

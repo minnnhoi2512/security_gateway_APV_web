@@ -311,15 +311,11 @@ const CustomerVisitStaff = () => {
       >
         <Space>
           <Input
-            placeholder="Tìm kiếm theo tên chuyến thăm"
-            prefix={<SearchOutlined />}
+            placeholder="Tìm kiếm chuyến thăm..."
+            prefix={<SearchOutlined className="text-gray-400" />}
             value={searchText}
             onChange={handleSearchChange}
-            style={{
-              width: 300,
-              borderColor: "#1890ff",
-              borderRadius: 5,
-            }}
+            className="max-w-xs"
           />
           <Popover content={filterContent} title="Bộ lọc" trigger="click">
             <Button icon={<FilterOutlined />} />
