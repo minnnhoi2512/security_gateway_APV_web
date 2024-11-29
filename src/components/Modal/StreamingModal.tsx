@@ -22,7 +22,7 @@ const StreamingModal: React.FC<StreamingModalProps> = ({
             <div key={index} className="mb-4">
               <div className="text-lg font-semibold mb-2">{camera.description}</div>
               <ReactPlayer
-                url={camera.streamURL}
+                url={`${camera.captureURL}libs/index.m3u8`}
                 playing
                 controls
                 width="100%"

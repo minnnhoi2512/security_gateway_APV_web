@@ -26,6 +26,13 @@ export const gateAPI = createApi({
         body: gate,
       }),
     }),
+    updateGate: builder.mutation<void, { gate: Gate }>({
+      query: ({ gate }) => ({
+        url: "",
+        method: "PUT",
+        body: gate,
+      }),
+    }),
   }),
 });
 
@@ -33,4 +40,5 @@ export const {
   useGetListGateQuery,
   useGetListCameraTypeQuery,
   useCreateGateMutation,
+  useUpdateGateMutation
 } = gateAPI;

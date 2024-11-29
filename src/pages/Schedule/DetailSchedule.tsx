@@ -13,6 +13,7 @@ import {
   useUpdateScheduleMutation,
   useGetDetailScheduleQuery,
   useGetDepartmentSchedulesQuery,
+  useGetListScheduleQuery,
 } from "../../services/schedule.service";
 import { Editor } from "react-draft-wysiwyg";
 import { EditorState } from "draft-js";
@@ -42,6 +43,10 @@ const DetailSchedule = ({ scheduleId, onUpdateSuccess }: any) => {
     pageNumber: -1,
     pageSize: -1,
   });
+  const { refetch: refetchAll } = useGetListScheduleQuery({
+    pageNumber: -1,
+    pageSize: -1,
+  });
   const [showCalendarModal, setShowCalendarModal] = useState(false);
   const [daysOfSchedule, setDaysOfSchedule] = useState<string>("");
   const [selectedDays, setSelectedDays] = useState<number[]>([]);
@@ -58,6 +63,7 @@ const DetailSchedule = ({ scheduleId, onUpdateSuccess }: any) => {
         ? scheduleData.daysOfSchedule.split(",").map(Number)
         : [];
       setSelectedDays(daysArray);
+      setEditableDescription(scheduleData.description || "");
       form.setFieldsValue({
         ...scheduleData,
         status: scheduleData.status.toString(),
@@ -142,11 +148,11 @@ const DetailSchedule = ({ scheduleId, onUpdateSuccess }: any) => {
 
   const handleFinish = async (values: { status: string }) => {
     // console.log(scheduleData);
-    const scheduleNewName = form.getFieldValue('scheduleName');
+    const scheduleNewName = form.getFieldValue("scheduleName");
     try {
       const parsedValues = {
         ...scheduleData,
-        scheduleName : scheduleNewName,
+        scheduleName: scheduleNewName,
         duration: 1,
         description: editableDescription,
         createById: scheduleData!.createBy.userId,
@@ -162,6 +168,7 @@ const DetailSchedule = ({ scheduleId, onUpdateSuccess }: any) => {
       }).unwrap();
       refetch();
       scheduleUserRefetch();
+      refetchAll();
       notification.success({ message: "Dự án đã được cập nhật thành công!" });
       onUpdateSuccess(); // Call the callback to close the modal
     } catch (error) {
@@ -189,7 +196,8 @@ const DetailSchedule = ({ scheduleId, onUpdateSuccess }: any) => {
               { min: 5, message: "tên lịch trình phải có ít nhất 5 ký tự" },
               {
                 pattern: /^[\p{L}\d\s.,!?;:()-]+$/u,
-                message: "tên lịch trình chỉ chứa chữ cái, số và dấu câu cơ bản",
+                message:
+                  "tên lịch trình chỉ chứa chữ cái, số và dấu câu cơ bản",
               },
             ]}
           >

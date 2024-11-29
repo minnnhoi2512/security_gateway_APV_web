@@ -67,6 +67,14 @@ export const routes = [
     breadcrumbName: "Danh sách cổng ra vào",
   },
   {
+    path: "/gate/createGate",
+    breadcrumbName: "Tạo mới cổng ra vào",
+  },
+  {
+    path: "/gate/detailGate",
+    breadcrumbName: "Chi tiết cổng ra vào",
+  },
+  {
     path: "/card",
     breadcrumbName: "Danh sách thẻ ra vào",
   },

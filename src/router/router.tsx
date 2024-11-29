@@ -34,6 +34,8 @@ import CustomerVisitStaff from "../pages/Visit/CustomerVisitStaff";
 import ChatDetail from "../pages/Utility/Chat/ChatDetail";
 import NotFoundState from "../components/State/NotFoundState";
 import User from "../pages/User/User";
+import CreateGate from "../form/CreateGate";
+import GateDetail from "../pages/Facility/GateDetail";
 
 
 
@@ -306,6 +308,24 @@ const ContentRouter = () => {
         element={
           <LayoutPage>
             <GateManager />
+          </LayoutPage>
+        }
+      />
+       <Route
+        index
+        path="/gate/createGate"
+        element={
+          <LayoutPage>
+            <CreateGate />
+          </LayoutPage>
+        }
+      />
+       <Route
+        index
+        path="/gate/detailGate"
+        element={
+          <LayoutPage>
+            <GateDetail />
           </LayoutPage>
         }
       />

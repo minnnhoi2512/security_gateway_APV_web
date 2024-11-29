@@ -48,8 +48,13 @@ const { Option } = Select;
 
 const Schedule = () => {
   type FormError = { [key in keyof typeof assignData]: string } | null;
+  const [filterStatus, setFilterStatus] = useState<boolean | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [errorAssignSchedule, setMysit] = useState<FormError>();
+  const [filterScheduleTypeId, setFilterScheduleTypeId] = useState<
+    number | null
+  >(null);
+  const [staffData, setStaffData] = useState<any[]>([]);
   const userRole = localStorage.getItem("userRole");
   const userId = Number(localStorage.getItem("userId"));
   const departmentIdUser = Number(localStorage.getItem("departmentId"));
@@ -88,7 +93,6 @@ const Schedule = () => {
 
   const [deleteSchedule] = useDeleteScheduleMutation();
   const [assignSchedule] = useAssignScheduleMutation();
-
   useEffect(() => {
     scheduleUserRefetch();
   }, []);
@@ -96,16 +100,41 @@ const Schedule = () => {
     setSearchText(e.target.value);
   };
 
-  const staffData = users.filter((user: any) => user.role?.roleId === 4);
   useEffect(() => {
+    setStaffData(users.filter((user: any) => user.role?.roleId === 4));
     if (schedules) {
-      const filtered = schedules.filter((item: any) =>
-        item?.scheduleName.toLowerCase().includes(searchText.toLowerCase())
-      );
+      let filtered = schedules;
+
+      if (filterStatus !== null) {
+        filtered = filtered.filter((item: any) => item.status === filterStatus);
+      }
+
+      if (filterScheduleTypeId !== null) {
+        filtered = filtered.filter(
+          (item: any) =>
+            item.scheduleType.scheduleTypeId === filterScheduleTypeId
+        );
+      }
+
+      if (searchText) {
+        filtered = filtered.filter((item: any) =>
+          item?.scheduleName.toLowerCase().includes(searchText.toLowerCase())
+        );
+      }
 
       setFilteredData(filtered);
     }
-  }, [schedules, searchText]);
+  }, [schedules, searchText, filterStatus, filterScheduleTypeId]);
+
+  const handleFilterStatus = (status: boolean | null) => {
+    setFilterStatus((prevStatus) => (prevStatus === status ? null : status));
+  };
+
+  const handleFilterScheduleTypeId = (scheduleTypeId: number | null) => {
+    setFilterScheduleTypeId((prevTypeId) =>
+      prevTypeId === scheduleTypeId ? null : scheduleTypeId
+    );
+  };
   const handleDeleteSchedule = (scheduleId: number) => {
     Modal.confirm({
       title: "Xác nhận xóa",
@@ -117,9 +146,9 @@ const Schedule = () => {
         try {
           await deleteSchedule(scheduleId).unwrap();
           scheduleUserRefetch();
-          message.success("Dự án đã được xóa thành công!");
+          notification.success({ message: "Dự án đã được xóa thành công!" });
         } catch (error) {
-          message.error("Có lỗi xảy ra khi xóa dự án.");
+          notification.error({ message: "Có lỗi xảy ra khi xóa dự án." });
         }
       },
     });
@@ -127,7 +156,7 @@ const Schedule = () => {
 
   const handleAssignUser = (scheduleId?: number) => {
     if (!scheduleId) {
-      message.error("Lỗi: Không tìm thấy ID dự án.");
+      notification.error({ message: "Lỗi: Không tìm thấy dự án." });
       return;
     }
     setAssignData((prev) => ({ ...prev, scheduleId }));
@@ -140,7 +169,18 @@ const Schedule = () => {
       deadlineTime: date ? convertToVietnamTime(date).toISOString() : "",
     }));
   };
-
+  const handleStartDateChange = (date: moment.Moment | null) => {
+    setAssignData((prev) => ({
+      ...prev,
+      startDate: date ? convertToVietnamTime(date).toISOString() : "",
+    }));
+  };
+  const handleEndDateChange = (date: moment.Moment | null) => {
+    setAssignData((prev) => ({
+      ...prev,
+      endDate: date ? convertToVietnamTime(date).toISOString() : "",
+    }));
+  };
   const handleAssignSubmit = async () => {
     if (assignData.assignToId === 0) {
       message.error("Vui lòng chọn nhân viên.");
@@ -259,25 +299,15 @@ const Schedule = () => {
 
         <div className="flex gap-2">
           <Button
-            className={`min-w-[120px] border-2   bg-green-50
-               border-green-500 text-green-600 hover:bg-green-50
-          `}
-          >
-            <Clock4 size={17} />
-            Theo ngày
-          </Button>
-          <Button
-            className={`min-w-[120px] border-2  bg-yellow-50
-             border-yellow-500 text-yellow-600 hover:bg-yellow-50
-          `}
+            className={`min-w-[120px] border-2 bg-yellow-50 border-yellow-500 text-yellow-600 hover:bg-yellow-50`}
+            onClick={() => handleFilterScheduleTypeId(2)} // Assuming 1 is the ScheduleTypeId for "Theo tuần"
           >
             <CalendarDays size={17} />
             Theo tuần
           </Button>
           <Button
-            className={`min-w-[120px] border-2   bg-purple-50
-              border-purple-500 text-purple-600 hover:bg-purple-50"
-            `}
+            className={`min-w-[120px] border-2 bg-purple-50 border-purple-500 text-purple-600 hover:bg-purple-50`}
+            onClick={() => handleFilterScheduleTypeId(3)} // Assuming 2 is the ScheduleTypeId for "Theo tháng"
           >
             <CalendarRange size={17} />
             Theo tháng
@@ -289,23 +319,21 @@ const Schedule = () => {
         {/* Status Filter Tabs */}
         <div className="">
           <Button
-            className={`rounded-t-3xl mr-[2px] relative bg-mainColor text-white   border-none hover:bg-mainColor
-            border-mainColor   hover:text-mainColor hover:border-mainColor
-          `}
+            className={`rounded-t-3xl mr-[2px] relative bg-mainColor text-white border-none hover:bg-mainColor border-mainColor hover:text-mainColor hover:border-mainColor`}
+            onClick={() => handleFilterStatus(true)}
           >
             Còn hiệu lực
             <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center bg-red-500 text-white text-xs rounded-full">
-              2
+              {schedules?.filter((item) => item?.status === true).length}
             </div>
           </Button>
           <Button
-            className={`rounded-t-3xl mr-[2px] relative bg-mainColor text-white   border-none hover:bg-mainColor
-            border-mainColor   hover:text-mainColor hover:border-mainColor
-          `}
+            className={`rounded-t-3xl mr-[2px] relative bg-mainColor text-white border-none hover:bg-mainColor border-mainColor hover:text-mainColor hover:border-mainColor`}
+            onClick={() => handleFilterStatus(false)}
           >
-            Chờ phê duyệt
+            Hết hiệu lực
             <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center bg-red-500 text-white text-xs rounded-full">
-              0
+              {schedules?.filter((item) => item?.status === false).length}
             </div>
           </Button>
         </div>
@@ -438,6 +466,45 @@ const Schedule = () => {
           >
             <DatePicker
               onChange={handleDateChange}
+              style={{ width: "100%" }}
+              format="DD/MM/YYYY"
+              className="rounded-lg px-4 py-2 border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="Ngày bắt đầu"
+            name="startDate"
+            className="text-base font-medium"
+            rules={[{ required: true, message: "Vui lòng chọn ngày bắt đầu." }]}
+          >
+            <DatePicker
+              onChange={handleStartDateChange}
+              style={{ width: "100%" }}
+              format="DD/MM/YYYY"
+              className="rounded-lg px-4 py-2 border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            />
+          </Form.Item>
+          <Form.Item
+            label="Ngày kết thúc"
+            name="endDate"
+            className="text-base font-medium"
+            rules={[
+              { required: true, message: "Vui lòng chọn ngày kết thúc." },
+              {
+                validator: (_, value) => {
+                  if (value && moment(value).isSameOrAfter(moment(), "day")) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(
+                    "Thời hạn phải là ngày trong tương lai."
+                  );
+                },
+              },
+            ]}
+          >
+            <DatePicker
+              onChange={handleEndDateChange}
               style={{ width: "100%" }}
               format="DD/MM/YYYY"
               className="rounded-lg px-4 py-2 border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"

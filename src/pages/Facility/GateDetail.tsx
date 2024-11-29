@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Form,
   Input,
@@ -15,18 +15,26 @@ import {
   EyeOutlined,
 } from "@ant-design/icons";
 import ReactPlayer from "react-player";
+
+import { useLocation, useNavigate } from "react-router";
 import {
   useCreateGateMutation,
   useGetListCameraTypeQuery,
   useGetListGateQuery,
-} from "../services/gate.service";
-import { useNavigate } from "react-router";
+} from "../../services/gate.service";
+import Gate from "../../types/gateType";
 
 const { Option } = Select;
 
-const CreateGate: React.FC = () => {
+interface GateDetailProps {
+  selectedGate: Gate;
+}
+const GateDetail: React.FC = () => {
   const [form] = Form.useForm();
   const [cameraForm] = Form.useForm();
+  const location = useLocation();
+  const { selectedGate } = location.state || {};
+  console.log(selectedGate);
   const { data: cameraTypes } = useGetListCameraTypeQuery({});
   const [createGate] = useCreateGateMutation();
   const { refetch } = useGetListGateQuery({});
@@ -43,7 +51,9 @@ const CreateGate: React.FC = () => {
       notification.warning({ message: "Please input URL first!" });
     }
   };
-
+  useEffect(() => {
+    form.setFieldsValue(selectedGate);
+  }, [selectedGate]);
   const handleAddCamera = () => {
     cameraForm
       .validateFields()
@@ -181,7 +191,7 @@ const CreateGate: React.FC = () => {
                     <div style={{ flex: "1 1 100%", marginTop: 8 }}>
                       <ReactPlayer
                         url={
-                          form.getFieldValue(["cameras", index, "URL"]) +
+                          form.getFieldValue(["cameras", index, "captureURL"]) +
                           "libs/index.m3u8"
                         }
                         playing
@@ -295,4 +305,4 @@ const CreateGate: React.FC = () => {
   );
 };
 
-export default CreateGate;
+export default GateDetail;
