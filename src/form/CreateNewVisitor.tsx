@@ -22,45 +22,84 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
     visitorName: "",
     companyName: "",
     phoneNumber: "",
-    credentialCardTypeId: 2,
+    credentialCardTypeId: 1,
     credentialsCard: "",
-    visitorCredentialImageFromRequest: null as File | null,
+    visitorCredentialFrontImageFromRequest: null as File | null,
+    visitorCredentialBackImageFromRequest: null as File | null,
   });
   const [isDetecting, setIsDetecting] = useState(false);
 
   const [createVisitor, { isLoading: isCreating }] = useCreateVisitorMutation();
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    typeImage: string
+  ) => {
     const file = e.target.files?.[0];
     if (file) {
-      setFormData((prevData) => ({
-        ...prevData,
-        visitorCredentialImageFromRequest: file,
-      }));
-      setIsDetecting(true);
-      try {
-        const formData = new FormData();
-        formData.append("file", file);
-        const response = await detectAPI.post("/IdentityCard", formData, {
+      setFormData((prev) => {
+        const updatedFormData = {
+          ...prev,
+          ...(typeImage === "front" && {
+            visitorCredentialFrontImageFromRequest: file,
+          }),
+          ...(typeImage === "back" && {
+            visitorCredentialBackImageFromRequest: file,
+          }),
+        };
+
+        // Check if both images are present
+        if (
+          updatedFormData.visitorCredentialFrontImageFromRequest &&
+          updatedFormData.visitorCredentialBackImageFromRequest
+        ) {
+          callDetectAPI(updatedFormData);
+        }
+
+        return updatedFormData;
+      });
+    }
+  };
+
+  const callDetectAPI = async (formData: any) => {
+    setIsDetecting(true);
+    try {
+      const formDataDetect = new FormData();
+      formDataDetect.append(
+        "file",
+        formData.visitorCredentialFrontImageFromRequest
+      );
+      let response = null;
+      if (formData.credentialCardTypeId === 1) {
+        response = await detectAPI.post("/IdentityCard", formDataDetect, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
-
-        const { id, name } = response.data;
-        setFormData((prevData) => ({
-          ...prevData,
-          visitorName: name,
-          credentialsCard: id,
-        }));
-      } catch (error) {
-        return;
-      } finally {
-        setIsDetecting(false);
+      } else if (formData.credentialCardTypeId === 2) {
+        response = await detectAPI.post("/DrivingLicense", formDataDetect, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
       }
+
+      const { id, name } = response.data;
+      setFormData((prevData) => ({
+        ...prevData,
+        visitorName: name,
+        credentialsCard: id,
+      }));
+    } catch (error) {
+      console.error("Error detecting identity card:", error);
+      notification.error({
+        message: `Lỗi ${error.response.status}`,
+        description: "Sai định dạng thẻ.",
+      });
+    } finally {
+      setIsDetecting(false);
     }
   };
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
@@ -77,7 +116,7 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
   };
 
   const handleOk = async () => {
-    if (!formData.visitorCredentialImageFromRequest) {
+    if (!formData.visitorCredentialFrontImageFromRequest) {
       notification.error({ message: "Vui lòng nhập hình ảnh thẻ!" });
       return;
     }
@@ -92,7 +131,8 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
         phoneNumber: "",
         credentialCardTypeId: 0,
         credentialsCard: "",
-        visitorCredentialImageFromRequest: null as File | null,
+        visitorCredentialFrontImageFromRequest: null as File | null,
+        visitorCredentialBackImageFromRequest: null as File | null,
       });
       notification.success({
         message: "Thành công",
@@ -114,17 +154,21 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
       phoneNumber: "",
       credentialCardTypeId: 0,
       credentialsCard: "",
-      visitorCredentialImageFromRequest: null,
+      visitorCredentialFrontImageFromRequest: null as File | null,
+      visitorCredentialBackImageFromRequest: null as File | null,
     });
   };
 
-  const handleFileDrop = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleFileDrop = (
+    e: React.DragEvent<HTMLDivElement>,
+    typeImage: string
+  ) => {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
     const event = {
       target: { files: [file] },
     } as unknown as React.ChangeEvent<HTMLInputElement>;
-    handleFileChange(event);
+    handleFileChange(event, typeImage);
   };
 
   return (
@@ -139,25 +183,82 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
     >
       <div className="flex">
         <div className="w-1/2 p-4">
+          <div>
+            <label>Loại nhận dạng</label>
+            <Select
+              value={formData.credentialCardTypeId}
+              onChange={handleSelectChange}
+              placeholder="Chọn loại thẻ"
+            >
+              <Option value={1}>Căn cước công dân</Option>
+              <Option value={2}>Giấy phép lái xe</Option>
+            </Select>
+          </div>
           <div
             className="border-dashed border-2 border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 transition-colors"
-            onDrop={handleFileDrop}
+            onDrop={(e) => {
+              handleFileDrop(e, "front");
+            }}
             onDragOver={(e) => e.preventDefault()}
-            onClick={() => document.getElementById('fileInput')?.click()}
+            onClick={() => document.getElementById("fileFrontInput")?.click()}
           >
-            {formData.visitorCredentialImageFromRequest ? (
+            {formData.visitorCredentialFrontImageFromRequest ? (
               <Image
-                src={URL.createObjectURL(formData.visitorCredentialImageFromRequest)}
+                src={URL.createObjectURL(
+                  formData.visitorCredentialFrontImageFromRequest
+                )}
                 alt="Selected Image"
                 preview={false}
                 className="max-h-64"
               />
             ) : (
               <p className="text-center text-gray-500">
-                Kéo và thả hình ảnh thẻ vào đây hoặc <span className="text-blue-500 underline">nhấp để chọn</span>
+                Kéo và thả mặt trước ảnh thẻ vào đây hoặc{" "}
+                <span className="text-blue-500 underline">nhấp để chọn</span>
               </p>
             )}
-            <Input id="fileInput" type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
+            <Input
+              id="fileFrontInput"
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                handleFileChange(e, "front");
+              }}
+              className="hidden"
+            />
+          </div>
+          <div
+            className="border-dashed border-2 border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 transition-colors"
+            onDrop={(e) => {
+              handleFileDrop(e, "back");
+            }}
+            onDragOver={(e) => e.preventDefault()}
+            onClick={() => document.getElementById("fileBackInput")?.click()}
+          >
+            {formData.visitorCredentialBackImageFromRequest ? (
+              <Image
+                src={URL.createObjectURL(
+                  formData.visitorCredentialBackImageFromRequest
+                )}
+                alt="Selected Image"
+                preview={false}
+                className="max-h-64"
+              />
+            ) : (
+              <p className="text-center text-gray-500">
+                Kéo và thả mặt sau ảnh thẻ vào đây hoặc{" "}
+                <span className="text-blue-500 underline">nhấp để chọn</span>
+              </p>
+            )}
+            <Input
+              id="fileBackInput"
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                handleFileChange(e, "back");
+              }}
+              className="hidden"
+            />
           </div>
         </div>
         <div className="w-1/2 p-4 space-y-4">
@@ -208,16 +309,7 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
               </p>
             )}
           </div>
-          <div>
-            <label>Loại nhận dạng</label>
-            <Select
-              value={formData.credentialCardTypeId}
-              onChange={handleSelectChange}
-              placeholder="Chọn loại thẻ"
-            >
-              <Option value={2}>Căn cước công dân</Option>
-            </Select>
-          </div>
+
           {formData.credentialCardTypeId && (
             <div>
               <label>Số thẻ</label>

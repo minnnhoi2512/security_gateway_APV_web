@@ -45,7 +45,7 @@ const CreateNewVisitList: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { state } = location;
-  // console.log(state);
+  console.log(state);
   const { refetch } = useGetDetailScheduleStaffQuery(state?.from?.id);
   let daysOfSchedule: string = "";
   let scheduleTypeName: string = "";

@@ -6,6 +6,8 @@ export interface ScheduleUserType {
     assignTime: string;
     deadlineTime: string;
     status: string;
+    startDate : Date;
+    startTime : Date;
     assignFrom: {
       userId: number;
       userName: string;

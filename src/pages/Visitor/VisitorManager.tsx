@@ -1,5 +1,15 @@
 import { useState } from "react";
-import { Button, Table, Input, Tag, Space, Modal, notification, Layout, Divider } from "antd";
+import {
+  Button,
+  Table,
+  Input,
+  Tag,
+  Space,
+  Modal,
+  notification,
+  Layout,
+  Divider,
+} from "antd";
 import {
   SearchOutlined,
   PlusOutlined,
@@ -36,9 +46,9 @@ const VisitorManager = () => {
     error,
     refetch,
   } = useGetAllVisitorsQuery({ pageNumber: -1, pageSize: -1 }); // Fetch all visitors
-  let visitors: Visitor[] = data ? data.filter(
-    (visitor: Visitor) => visitor.status === "Active"
-  ): [];
+  let visitors: Visitor[] = data
+    ? data.filter((visitor: Visitor) => visitor.status === "Active")
+    : [];
 
   // Filter visitors based on userRole after fetching
   // if (userRole === "Staff" || userRole === "DepartmentManager") {
@@ -66,9 +76,17 @@ const VisitorManager = () => {
       sorter: (a: any, b: any) => a.companyName.localeCompare(b.companyName),
     },
     {
-      title: "CCCD/CMND",
+      title: "Số thẻ",
       dataIndex: "credentialsCard",
       key: "credentialsCard",
+    },
+    {
+      title: "Loại thẻ",
+      dataIndex: "credentialCardType",
+      key: "credentialCardType",
+      render: (credentialCardType: any) => {
+        return credentialCardType.credentialCardTypeName;
+      },
     },
     {
       title: "Ngày tạo",
@@ -184,71 +202,71 @@ const VisitorManager = () => {
   };
 
   return (
-<Layout className="min-h-screen bg-gray-50">
-  <Content className="p-8 bg-white rounded-lg shadow-md">
-    <div className="flex justify-between items-center mb-4">
-      <div className="flex items-center bg-white rounded-full shadow-sm p-2 border border-gray-300 focus-within:border-blue-500 transition-all duration-200 ease-in-out">
-        <SearchOutlined className="text-gray-500 ml-2" />
-        <Input
-          placeholder="Tìm kiếm theo CCCD/CMND khách"
-          value={searchText}
-          onChange={handleSearchChange}
-          className="ml-2 bg-transparent border-none focus:outline-none text-gray-700 placeholder-gray-400"
-          style={{ width: 300 }}
-        />
-      </div>
-      <Button
-        type="primary"
-        icon={<PlusOutlined />}
-        className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 shadow-sm"
-        onClick={showCreateModal}
-      >
-        Tạo mới khách
-      </Button>
-    </div>
+    <Layout className="min-h-screen bg-gray-50">
+      <Content className="p-8 bg-white rounded-lg shadow-md">
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center bg-white rounded-full shadow-sm p-2 border border-gray-300 focus-within:border-blue-500 transition-all duration-200 ease-in-out">
+            <SearchOutlined className="text-gray-500 ml-2" />
+            <Input
+              placeholder="Tìm kiếm theo CCCD/CMND khách"
+              value={searchText}
+              onChange={handleSearchChange}
+              className="ml-2 bg-transparent border-none focus:outline-none text-gray-700 placeholder-gray-400"
+              style={{ width: 300 }}
+            />
+          </div>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 shadow-sm"
+            onClick={showCreateModal}
+          >
+            Tạo mới khách
+          </Button>
+        </div>
 
-    <Divider />
+        <Divider />
 
-    {isModalVisible && (
-      <CreateNewVisitor
-        isModalVisible={isModalVisible}
-        setIsModalVisible={closeCreateModal}
-        onVisitorCreated={handleVisitorCreated}
-      />
-    )}
-    {isEditModalVisible && (
-      <DetailVisitor
-        isEditModalVisible={isEditModalVisible}
-        setIsEditModalVisible={closeEditModal}
-        id={idVisitor}
-      />
-    )}
+        {isModalVisible && (
+          <CreateNewVisitor
+            isModalVisible={isModalVisible}
+            setIsModalVisible={closeCreateModal}
+            onVisitorCreated={handleVisitorCreated}
+          />
+        )}
+        {isEditModalVisible && (
+          <DetailVisitor
+            isEditModalVisible={isEditModalVisible}
+            setIsEditModalVisible={closeEditModal}
+            id={idVisitor}
+          />
+        )}
 
-    {error ? (
-      <p className="text-red-500 text-center">
-        Đã xảy ra lỗi khi tải dữ liệu!
-      </p>
-    ) : (
-      <Table
-        columns={columns}
-        dataSource={filteredData}
-        pagination={{
-          current: currentPage,
-          pageSize,
-          total: totalVisitors,
-          showSizeChanger: true,
-          pageSizeOptions: ["5", "10", "20"],
-          size: "small",
-        }}
-        onChange={handleTableChange}
-        loading={isLoadingData}
-        rowKey="visitorId"
-        bordered
-        className="bg-white shadow-md rounded-lg"
-      />
-    )}
-  </Content>
-</Layout>
+        {error ? (
+          <p className="text-red-500 text-center">
+            Đã xảy ra lỗi khi tải dữ liệu!
+          </p>
+        ) : (
+          <Table
+            columns={columns}
+            dataSource={filteredData}
+            pagination={{
+              current: currentPage,
+              pageSize,
+              total: totalVisitors,
+              showSizeChanger: true,
+              pageSizeOptions: ["5", "10", "20"],
+              size: "small",
+            }}
+            onChange={handleTableChange}
+            loading={isLoadingData}
+            rowKey="visitorId"
+            bordered
+            className="bg-white shadow-md rounded-lg"
+          />
+        )}
+      </Content>
+    </Layout>
   );
 };
 
