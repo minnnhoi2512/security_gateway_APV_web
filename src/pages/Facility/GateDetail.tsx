@@ -44,22 +44,37 @@ const GateDetail: React.FC = () => {
   const navigate = useNavigate();
   const handlePreview = () => {
     const camera = cameraForm.getFieldsValue();
-    if (camera?.URL) {
-      setPreviewUrl(`${camera.URL}libs/index.m3u8`);
+    if (camera?.cameraURL) {
+      setPreviewUrl(`${camera.cameraURL}libs/index.m3u8`);
       setIsPreviewVisible(true);
     } else {
       notification.warning({ message: "Please input URL first!" });
     }
   };
+
   useEffect(() => {
     form.setFieldsValue(selectedGate);
   }, [selectedGate]);
+  console.log(
+    form.getFieldValue(["cameras", 0, "cameraURL"]) + "libs/index.m3u8"
+  );
   const handleAddCamera = () => {
     cameraForm
       .validateFields()
       .then((values) => {
+        console.log(values);
         const cameras = form.getFieldValue("cameras") || [];
-        form.setFieldsValue({ cameras: [...cameras, values] });
+        form.setFieldsValue({
+          cameras: [
+            ...cameras,
+            {
+              ...values,
+              cameraType: {
+                cameraTypeId: values.cameraTypeId,
+              },
+            },
+          ],
+        });
         setIsCameraModalVisible(false);
         cameraForm.resetFields();
       })
@@ -72,8 +87,7 @@ const GateDetail: React.FC = () => {
     try {
       const updatedCameras = values.cameras.map((camera: any) => ({
         ...camera,
-        captureURL: `${camera.URL}`,
-        streamURL: "",
+        cameraURL: `${camera.cameraURL}`,
       }));
 
       const updatedValues = {
@@ -131,17 +145,20 @@ const GateDetail: React.FC = () => {
                     <div style={{ flex: "1 1 100%" }}>
                       <Form.Item
                         {...restField}
-                        name={[name, "URL"]}
-                        fieldKey={[fieldKey, "URL"]}
+                        name={[name, "cameraURL"]}
+                        fieldKey={[fieldKey, "cameraURL"]}
                         rules={[
                           {
                             required: true,
-                            message: "Please input the stream URL!",
+                            message: "Please input the stream cameraURL!",
                           },
                         ]}
                         className="hidden"
                       >
-                        <Input placeholder="URL" style={{ width: "100%" }} />
+                        <Input
+                          placeholder="cameraURL"
+                          style={{ width: "100%" }}
+                        />
                       </Form.Item>
                       <Form.Item
                         {...restField}
@@ -164,8 +181,8 @@ const GateDetail: React.FC = () => {
                       </Form.Item>
                       <Form.Item
                         {...restField}
-                        name={[name, "cameraTypeId"]}
-                        fieldKey={[fieldKey, "cameraTypeId"]}
+                        name={[name, "cameraType", "cameraTypeId"]}
+                        fieldKey={[fieldKey, "cameraType", "cameraTypeId"]}
                         rules={[
                           {
                             required: true,
@@ -181,6 +198,7 @@ const GateDetail: React.FC = () => {
                                 form.getFieldValue([
                                   "cameras",
                                   index,
+                                  "cameraType",
                                   "cameraTypeId",
                                 ])
                             )?.description
@@ -191,7 +209,7 @@ const GateDetail: React.FC = () => {
                     <div style={{ flex: "1 1 100%", marginTop: 8 }}>
                       <ReactPlayer
                         url={
-                          form.getFieldValue(["cameras", index, "captureURL"]) +
+                          form.getFieldValue(["cameras", index, "cameraURL"]) +
                           "libs/index.m3u8"
                         }
                         playing
@@ -222,7 +240,7 @@ const GateDetail: React.FC = () => {
 
           <Form.Item>
             <Button type="primary" htmlType="submit">
-              Tạo mới
+              Cập nhập
             </Button>
           </Form.Item>
         </Form>
@@ -264,13 +282,13 @@ const GateDetail: React.FC = () => {
       >
         <Form form={cameraForm} layout="vertical">
           <Form.Item
-            name="URL"
+            name="cameraURL"
             label="URL"
             rules={[
-              { required: true, message: "Please input the stream URL!" },
+              { required: true, message: "Please input the stream cameraURL!" },
             ]}
           >
-            <Input placeholder="URL" />
+            <Input placeholder="cameraURL" />
           </Form.Item>
           <Form.Item
             name="description"

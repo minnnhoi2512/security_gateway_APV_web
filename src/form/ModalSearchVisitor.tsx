@@ -58,7 +58,7 @@ const VisitorSearchModal: React.FC<VisitorSearchModalProps> = ({
         <Input
           value={credentialCard}
           onChange={handleCredentialCardChange}
-          placeholder="Nhập mã căn cước (12 số)"
+          placeholder="Nhập mã thẻ (12 số)"
         />
         {credentialCard.length === 12 && (
           <SearchVisitor
@@ -73,19 +73,24 @@ const VisitorSearchModal: React.FC<VisitorSearchModalProps> = ({
           dataSource={searchResults}
           columns={[
             {
-              title: "Ảnh căn cước",
-              dataIndex: "visitorCredentialImage",
-              key: "visitorCredentialImage",
-              render: (image: string) => (
-                <Image
-                  src={`data:image/jpeg;base64,${image}`}
-                  alt="Visitor Credential"
-                  width={50}
-                  height={50}
-                  preview={false}
-                  style={{ objectFit: "cover" }}
-                />
-              ),
+              title: "Ảnh",
+              dataIndex: "visitorImage",
+              key: "visitorImage",
+              render: (images: any[]) => {
+                return images
+                  .filter(image => image.imageType === "CitizenIdentificationCard_FRONT")
+                  .map((image, index) => (
+                    <Image
+                      key={index}
+                      src={`data:image/jpeg;base64,${image.imageURL}`}
+                      alt="Visitor Credential"
+                      width={50}
+                      height={50}
+                      preview={false}
+                      style={{ objectFit: "cover" }}
+                    />
+                  ));
+              },
             },
             {
               title: "Tên khách",
@@ -98,7 +103,7 @@ const VisitorSearchModal: React.FC<VisitorSearchModalProps> = ({
               key: "companyName",
             },
             {
-              title: "Mã căn cước",
+              title: "Mã thẻ",
               dataIndex: "credentialsCard",
               key: "credentialsCard",
             },

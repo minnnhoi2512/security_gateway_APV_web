@@ -50,6 +50,7 @@ const { Content } = Layout;
 
 const DetailCustomerVisit: React.FC = () => {
   const userId = localStorage.getItem("userId");
+  const userRole = localStorage.getItem("userRole");
   const [selectedVisitId, setSelectedVisitId] = useState<number | null>(null);
   const [isHistoryAllModalVisible, setIsHistoryAllModalVisible] =
     useState(false);
@@ -76,6 +77,7 @@ const DetailCustomerVisit: React.FC = () => {
     pageSize: -1,
   });
 
+  // console.log();
   const [visitors, setVisitors] = useState<DetailVisitor[]>([]);
   const [visitQuantity, setVisitQuantity] = useState<number>(
     visitData?.visitQuantity || 0
@@ -504,7 +506,10 @@ const DetailCustomerVisit: React.FC = () => {
                   <p className="text-sm text-gray-500 space-y-2">
                     Tên danh sách:
                   </p>
-                  {isEditMode && isEditableToday() ? (
+                  {isEditMode &&
+                  isEditableToday() &&
+                  (userRole != "Staff" ||
+                    visitData.visitStatus === "Pending") ? (
                     <Input
                       value={editableVisitName}
                       onChange={handleNameChange}
@@ -519,7 +524,10 @@ const DetailCustomerVisit: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500 space-y-2">Mô tả:</p>
-                  {isEditMode && isEditableToday() ? (
+                  {isEditMode &&
+                  isEditableToday() &&
+                  (userRole != "Staff" ||
+                    visitData.visitStatus === "Pending") ? (
                     <ReactQuill
                       value={editableDescription}
                       onChange={handleDescriptionChange}
@@ -595,7 +603,8 @@ const DetailCustomerVisit: React.FC = () => {
                     </p>
                   </div>
                   <p className="text-sm text-gray-500 mt-4">Thời gian:</p>
-                  {isEditMode ? (
+                  {isEditMode &&
+                  (userRole != "Staff")? (
                     <div className="space-y-2">
                       <span>Ngày bắt đầu</span>
                       <DatePicker
@@ -712,7 +721,7 @@ const DetailCustomerVisit: React.FC = () => {
                 </Button>
               </>
             )}
-            {status === "Active" && !isEditMode && (
+            {status === "Active" && !isEditMode && (scheduleTypeId === undefined) && (
               <div className="bg-red">
                 <Button
                   className="bg-red-500 text-white"

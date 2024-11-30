@@ -84,13 +84,6 @@ const GateManager = () => {
       render: (_: any, record: Gate) => (
         <>
           <Button
-            type="primary"
-            className="mr-2"
-            onClick={() => showVideoModal(record)}
-          >
-            <VideoCameraOutlined />
-          </Button>
-          <Button
             type="default"
             onClick={() =>
               navigate("/gate/detailGate", { state: { selectedGate: record } })

@@ -56,7 +56,7 @@ const VisitorManager = () => {
   //     (visitor: Visitor) => visitor.status === "Active"
   //   );
   // }
-  console.log(data);
+  // console.log(data);
   const totalVisitors = visitors.length; // Total visitors after filtering
   const filteredData = visitors.filter((visitor: any) =>
     visitor.credentialsCard.toLowerCase().includes(searchText.toLowerCase())
@@ -128,19 +128,20 @@ const VisitorManager = () => {
               className="text-blue-500 hover:text-blue-700 cursor-pointer text-lg"
               onClick={() => showEditModal(record.visitorId)}
             />
-            {status === "Active" ? (
-              /* Ban Icon */
-              <StopOutlined
-                className="text-red-500 hover:text-red-700 cursor-pointer text-lg"
-                onClick={() => showDeleteConfirm(record.visitorId)}
-              />
-            ) : (
-              /* Unlock Icon */
-              <UnlockOutlined
-                className="text-green-500 hover:text-green-700 cursor-pointer text-lg"
-                onClick={() => showDeleteConfirm(record.visitorId)}
-              />
-            )}
+            {userRole !== "Staff" &&
+              (status === "Active" ? (
+                /* Ban Icon */
+                <StopOutlined
+                  className="text-red-500 hover:text-red-700 cursor-pointer text-lg"
+                  onClick={() => showDeleteConfirm(record.visitorId)}
+                />
+              ) : (
+                /* Unlock Icon */
+                <UnlockOutlined
+                  className="text-green-500 hover:text-green-700 cursor-pointer text-lg"
+                  onClick={() => showDeleteConfirm(record.visitorId)}
+                />
+              ))}
           </Space>
         );
       },

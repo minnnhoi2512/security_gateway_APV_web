@@ -1,6 +1,5 @@
 type CameraType = {
-  captureURL: string;
-  streamURL: string;
+  cameraURL: string;
   description: string;
   cameraTypeId: number;
 };

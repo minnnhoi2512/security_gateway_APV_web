@@ -12,7 +12,7 @@ import {
 } from "antd";
 import "./customerScrollBar.css";
 import "react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import dayjs, { Dayjs } from "dayjs";
 import {
@@ -27,6 +27,8 @@ import { useGetDetailScheduleStaffQuery } from "../services/scheduleStaff.servic
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { DeleteOutlined } from "@ant-design/icons";
+import ReadOnlyMonthCalendar2 from "../components/ReadOnlyMonthCalendar-2";
+import ReadOnlyWeekCalendar2 from "../components/ReadOnlyWeekCalendar-2";
 
 interface FormValues {
   title: string;
@@ -41,11 +43,14 @@ interface FormValues {
   daysOfSchedule: number[] | null;
   [key: string]: any;
 }
+const formatDateLocal = (dateString: string) => {
+  return dayjs(dateString).format("DD/MM/YYYY");
+};
+
 const CreateNewVisitList: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { state } = location;
-  console.log(state);
   const { refetch } = useGetDetailScheduleStaffQuery(state?.from?.id);
   let daysOfSchedule: string = "";
   let scheduleTypeName: string = "";
@@ -66,7 +71,7 @@ const CreateNewVisitList: React.FC = () => {
       visitorId: number;
       visitorName: string;
       credentialsCard: string;
-      visitorCredentialImage: string;
+      visitorImage: any;
       companyName: string;
     }[]
   >([]);
@@ -81,7 +86,10 @@ const CreateNewVisitList: React.FC = () => {
     null
   );
   const [expectedEndTime, setExpectedEndTime] = useState<Dayjs | null>(null);
-  // console.log(expectedStartTime);
+  useEffect(() => {
+    setExpectedEndTime(state?.from?.endDate);
+    setExpectedStartTime(state?.from?.startDate);
+  }, [state]);
   const showModalCalendar = (type: any) => {
     setIsModalCalendarVisible(true);
     if (type === "ProcessWeek") {
@@ -103,7 +111,7 @@ const CreateNewVisitList: React.FC = () => {
     return `${day}/${month}/${year}`;
   };
   const handleVisitorSelection = (visitor: any) => {
-    // console.log(selectedVisitors);
+    console.log(visitor);
     setSelectedVisitors((prevVisitors) => {
       if (visitor[0].status === "Unactive") {
         notification.warning({
@@ -181,7 +189,7 @@ const CreateNewVisitList: React.FC = () => {
         // Check if the selected start time is before the minimum allowed start time
         if (selectedTime < minStartHour) {
           notification.warning({
-            message: "Giờ vào phải hơn hiện tại ít nhất 30 phút.",
+            message: "Giờ vào phải hơn giờ hiện tại.",
           });
           return; // Prevent updating startHour if the condition fails
         }
@@ -228,10 +236,6 @@ const CreateNewVisitList: React.FC = () => {
   const handleSubmit = async () => {
     try {
       const visitQuantity = form.getFieldValue("visitQuantity");
-      // const contentState = editorState.getCurrentContent();
-      // const htmlContent = stateToHTML(contentState);
-      // console.log(htmlContent);
-      // Check if the selected visitors count matches the required visit quantity
       if (selectedVisitors.length < visitQuantity) {
         notification.warning({ message: "Cần nhập đủ số lượng khách!" });
         return; // Stop further execution
@@ -277,16 +281,15 @@ const CreateNewVisitList: React.FC = () => {
         scheduleTypeName === "ProcessWeek" ||
         scheduleTypeName === "ProcessMonth"
       ) {
-        requestData.expectedStartTime = convertToVietnamTime(
-          expectedStartTime?.toDate()
-        );
-        requestData.expectedEndTime = convertToVietnamTime(
-          expectedEndTime?.toDate()
-        );
+        console.log(expectedStartTime);
+        requestData.expectedStartTime = convertToVietnamTime(expectedStartTime);
+        requestData.expectedEndTime = convertToVietnamTime(expectedEndTime);
         // console.log(state.from.schedule.scheduleId)
         requestData.scheduleId = state.from.schedule.scheduleId; // Update scheduleId to state.from.id
         requestData.scheduleUserId = state.from.id; // Update scheduleId to state.from.id
+        // console.log(requestData);
       }
+
       try {
         if (
           scheduleTypeName === "ProcessWeek" ||
@@ -338,7 +341,7 @@ const CreateNewVisitList: React.FC = () => {
       // Check if the selected start time is before the minimum allowed start time
       if (selectedTime < minStartHour) {
         notification.warning({
-          message: "Giờ vào phải hơn hiện tại ít nhất 30 phút.",
+          message: "Giờ vào phải hơn giờ hiện tại.",
         });
         return; // Prevent updating startHour if the condition fails
       }
@@ -406,9 +409,9 @@ const CreateNewVisitList: React.FC = () => {
         ),
       },
       {
-        title: "Ảnh căn cước",
-        dataIndex: "visitorCredentialImage",
-        key: "visitorCredentialImage",
+        title: "Ảnh",
+        dataIndex: "visitorImage",
+        key: "visitorImage",
         render: (image: string) => {
           // Check if the image string is null, empty, or starts with the base64 prefix
           if (!image) {
@@ -443,7 +446,7 @@ const CreateNewVisitList: React.FC = () => {
         key: "companyName",
       },
       {
-        title: "Mã căn cước",
+        title: "Mã thẻ",
         dataIndex: "credentialsCard",
         key: "credentialsCard",
       },
@@ -506,15 +509,20 @@ const CreateNewVisitList: React.FC = () => {
       },
     ];
 
-    const visitorsData = selectedVisitors.map((visitor, index) => ({
-      id: index + 1,
-      visitorName: visitor?.visitorName,
-      startHour: visitor?.startHour,
-      endHour: visitor?.endHour,
-      companyName: visitor?.companyName,
-      credentialsCard: visitor?.credentialsCard,
-      visitorCredentialImage: visitor?.visitorCredentialImage,
-    }));
+    const visitorsData = selectedVisitors.map((visitor, index) => {
+      const frontImage = visitor?.visitorImage.find(
+        (image) => image.imageType === "CitizenIdentificationCard_FRONT"
+      );
+      return {
+        id: index + 1,
+        visitorName: visitor?.visitorName,
+        startHour: visitor?.startHour,
+        endHour: visitor?.endHour,
+        companyName: visitor?.companyName,
+        visitorImage: frontImage ? frontImage.imageURL : null,
+        credentialsCard: visitor?.credentialsCard,
+      };
+    });
 
     return (
       <>
@@ -591,13 +599,13 @@ const CreateNewVisitList: React.FC = () => {
                       onClick={() => showModalCalendar(scheduleTypeName)}
                       className="w-full bg-blue-600 hover:bg-blue-700 mt-2"
                     >
-                      Chọn ngày và xem lịch
+                      Xem lịch
                     </Button>
 
                     {expectedStartTime && expectedEndTime && (
                       <div className="p-3 bg-gray-50 rounded text-gray-600 text-sm">
-                        Từ {formatDateTime(expectedStartTime?.toDate())} Đến{" "}
-                        {formatDateTime(expectedEndTime?.toDate())}
+                        Từ {formatDateLocal(expectedStartTime.toString())} Đến{" "}
+                        {formatDateLocal(expectedEndTime.toString())}
                       </div>
                     )}
                     {!expectedStartTime && !expectedEndTime && (
@@ -745,17 +753,17 @@ const CreateNewVisitList: React.FC = () => {
       >
         <div className="min-h-[400px]">
           {scheduleTypeName === "ProcessMonth" && (
-            <ReadOnlyMonthCalendar
+            <ReadOnlyMonthCalendar2
               daysOfSchedule={daysOfSchedule}
-              setExpectedStartTime={setExpectedStartTime}
-              setExpectedEndTime={setExpectedEndTime}
+              expectedStartTime={expectedStartTime}
+              expectedEndTime={expectedEndTime}
             />
           )}
           {scheduleTypeName === "ProcessWeek" && (
-            <ReadOnlyWeekCalendar
+            <ReadOnlyWeekCalendar2
               daysOfSchedule={daysOfSchedule}
-              setExpectedStartTime={setExpectedStartTime}
-              setExpectedEndTime={setExpectedEndTime}
+              expectedStartTime={expectedStartTime}
+              expectedEndTime={expectedEndTime}
             />
           )}
         </div>

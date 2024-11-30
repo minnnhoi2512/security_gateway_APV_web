@@ -19,6 +19,7 @@ const SearchVisitor: React.FC<SearchVisitorProps> = ({
  
   useEffect(() => {
     if (isSuccess && visitorData) {
+      console.log(visitorData)
       onVisitorFound([visitorData]); // Trigger only when data is successfully fetched
     } else if (isError) {
       onVisitorFound([]); // Trigger callback with an empty array on error

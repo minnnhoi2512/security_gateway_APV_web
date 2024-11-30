@@ -84,17 +84,23 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
         });
       }
 
-      const { id, name } = response.data;
+      const { id, name, birth } = response.data;
+      console.log(birth)
+      if (!birth.toString().includes("/")) {
+        return notification.warning({
+          message: `Hệ thống không nhận diện được thẻ`,
+          description: "Vui lòng nhập thông tin.",
+        });
+      }
       setFormData((prevData) => ({
         ...prevData,
         visitorName: name,
         credentialsCard: id,
       }));
     } catch (error) {
-      console.error("Error detecting identity card:", error);
-      notification.error({
-        message: `Lỗi ${error.response.status}`,
-        description: "Sai định dạng thẻ.",
+      notification.warning({
+        message: `Hệ thống không nhận diện được thẻ`,
+        description: "Vui lòng nhập thông tin.",
       });
     } finally {
       setIsDetecting(false);

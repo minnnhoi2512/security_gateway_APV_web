@@ -18,7 +18,7 @@ export const visitorAPI = createApi({
         params: { pageNumber, pageSize },
       }),
     }),
-    getVisitorById: builder.query<Visitor, { id: number }>({
+    getVisitorById: builder.query<any, { id: number }>({
       query: ({ id }) => ({
         url: `${id}`,
         method: "GET",
@@ -77,7 +77,8 @@ export const visitorAPI = createApi({
         phoneNumber: string;
         credentialsCard: string;
         credentialCardTypeId: number;
-        visitorCredentialImageFromRequest: string;
+        visitorCredentialFrontImageFromRequest: string;
+        visitorCredentialBackImageFromRequest: string;
       }
     >({
       query: ({ id, ...updatedVisitor }) => {
@@ -91,8 +92,12 @@ export const visitorAPI = createApi({
           updatedVisitor.credentialCardTypeId.toString()
         );
         formData.append(
-          "VisitorCredentialImageFromRequest",
-          updatedVisitor.visitorCredentialImageFromRequest.toString()
+          "visitorCredentialFrontImageFromRequest",
+          updatedVisitor.visitorCredentialFrontImageFromRequest.toString()
+        );
+        formData.append(
+          "visitorCredentialBackImageFromRequest",
+          updatedVisitor.visitorCredentialBackImageFromRequest.toString()
         );
 
         return {

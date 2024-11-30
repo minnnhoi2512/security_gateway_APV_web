@@ -289,29 +289,6 @@ const ScheduleUserDetailModal: React.FC<ScheduleUserModalDetailProps> = ({
                       selectedRecord.schedule.scheduleType.scheduleTypeName
                     )}
                   </span>
-                  <Button
-                    type="primary"
-                    className="ml-4"
-                    onClick={() => {
-                      if (
-                        selectedRecord.schedule.scheduleType.scheduleTypeId ===
-                        2
-                      ) {
-                        console.log("haha");
-                        setModalViewSchedule(true);
-                        setIsViewWeeklySchedule(true);
-                      } else if (
-                        selectedRecord.schedule.scheduleType.scheduleTypeId ===
-                        3
-                      ) {
-                        console.log("khong haha");
-                        setModalViewSchedule(true);
-                        setIsViewMonthlySchedule(true);
-                      }
-                    }}
-                  >
-                    <EyeOutlined />
-                  </Button>
                 </div>
                 <div className="col-span-2">
                   <strong>Ghi chú:</strong>{" "}

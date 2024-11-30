@@ -60,10 +60,10 @@ const CreateGate: React.FC = () => {
 
   const onFinish = async (values: any) => {
     try {
+      console.log("haha")
       const updatedCameras = values.cameras.map((camera: any) => ({
         ...camera,
-        captureURL: `${camera.URL}`,
-        streamURL: "",
+        cameraURL: `${camera.cameraURL}`,
       }));
 
       const updatedValues = {
@@ -121,8 +121,8 @@ const CreateGate: React.FC = () => {
                     <div style={{ flex: "1 1 100%" }}>
                       <Form.Item
                         {...restField}
-                        name={[name, "URL"]}
-                        fieldKey={[fieldKey, "URL"]}
+                        name={[name, "cameraURL"]}
+                        fieldKey={[fieldKey, "cameraURL"]}
                         rules={[
                           {
                             required: true,
@@ -131,7 +131,7 @@ const CreateGate: React.FC = () => {
                         ]}
                         className="hidden"
                       >
-                        <Input placeholder="URL" style={{ width: "100%" }} />
+                        <Input placeholder="cameraURL" style={{ width: "100%" }} />
                       </Form.Item>
                       <Form.Item
                         {...restField}
@@ -181,7 +181,7 @@ const CreateGate: React.FC = () => {
                     <div style={{ flex: "1 1 100%", marginTop: 8 }}>
                       <ReactPlayer
                         url={
-                          form.getFieldValue(["cameras", index, "URL"]) +
+                          form.getFieldValue(["cameras", index, "cameraURL"]) +
                           "libs/index.m3u8"
                         }
                         playing
@@ -254,13 +254,13 @@ const CreateGate: React.FC = () => {
       >
         <Form form={cameraForm} layout="vertical">
           <Form.Item
-            name="URL"
-            label="URL"
+            name="cameraURL"
+            label="cameraURL"
             rules={[
-              { required: true, message: "Please input the stream URL!" },
+              { required: true, message: "Please input the stream cameraURL!" },
             ]}
           >
-            <Input placeholder="URL" />
+            <Input placeholder="cameraURL" />
           </Form.Item>
           <Form.Item
             name="description"
