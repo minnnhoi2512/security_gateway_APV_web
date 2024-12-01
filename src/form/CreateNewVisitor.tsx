@@ -128,7 +128,7 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
     }
     try {
       const response = await createVisitor(formData).unwrap();
-
+      console.log(response)
       onVisitorCreated?.(response);
       setIsModalVisible(false);
       setFormData({
