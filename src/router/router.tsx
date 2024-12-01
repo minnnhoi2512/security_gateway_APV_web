@@ -322,10 +322,19 @@ const ContentRouter = () => {
       />
        <Route
         index
-        path="/gate/detailGate"
+        path="/gate/detailGate/:id"
         element={
           <LayoutPage>
             <GateDetail />
+          </LayoutPage>
+        }
+      />
+      <Route
+        index
+        path="/gate/detailGate"
+        element={
+          <LayoutPage>
+            <NotFoundState />
           </LayoutPage>
         }
       />

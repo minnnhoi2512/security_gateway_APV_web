@@ -19,6 +19,12 @@ export const gateAPI = createApi({
         method: "GET",
       }),
     }),
+    getCameraById: builder.query<any, {gateId : number}>({
+      query: ({gateId}) => ({
+        url: `${gateId}`,
+        method: "GET",
+      }),
+    }),
     createGate: builder.mutation<void, { gate: Gate }>({
       query: ({ gate }) => ({
         url: "",
@@ -40,5 +46,6 @@ export const {
   useGetListGateQuery,
   useGetListCameraTypeQuery,
   useCreateGateMutation,
-  useUpdateGateMutation
+  useUpdateGateMutation,
+  useGetCameraByIdQuery
 } = gateAPI;

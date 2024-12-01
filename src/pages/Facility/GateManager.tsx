@@ -86,7 +86,7 @@ const GateManager = () => {
           <Button
             type="default"
             onClick={() =>
-              navigate("/gate/detailGate", { state: { selectedGate: record } })
+              navigate(`/gate/detailGate/${record.gateId}`, { state: { selectedGate: record } })
             }
           >
             <EditOutlined />
