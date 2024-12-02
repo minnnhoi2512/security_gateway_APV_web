@@ -16,7 +16,7 @@ import { useGetVisitGraphqlMutation } from "../../services/visitGraphql.service"
 import { useDispatch, useSelector } from "react-redux";
 import { setListOfVisitorSession } from "../../redux/slices/visitorSession.slice";
 import VisitorSessionType from "../../types/visitorSessionType";
-import { formatDate } from "../../utils/ultil";
+import { formatDate, formatDateLocal } from "../../utils/ultil";
 import HistoryDetail from "./HistoryDetail";
 import dayjs, { Dayjs } from "dayjs";
 import {
@@ -228,6 +228,7 @@ const History = () => {
         status: element.status,
         images: element.images,
       }));
+      console.log(dataList);
       setUpdatedData(updatedData as VisitorSessionType[]);
       setFilteredData(updatedData as VisitorSessionType[]); // Update filteredData with the new data
     }
@@ -298,7 +299,7 @@ const History = () => {
       title: "Giờ Vào",
       dataIndex: "checkinTime",
       key: "checkinTime",
-      render: (text) => formatDate(text),
+      render: (text) => formatDateLocal(text),
       sorter: (a, b) =>
         new Date(a.checkinTime).getTime() - new Date(b.checkinTime).getTime(),
     },
@@ -311,7 +312,7 @@ const History = () => {
       title: "Giờ Ra",
       dataIndex: "checkoutTime",
       key: "checkoutTime",
-      render: (text) => formatDate(text) || "Khách còn ở trong công ty",
+      render: (text) => formatDateLocal(text) || "Khách còn ở trong công ty",
       sorter: (a, b) =>
         new Date(a.checkoutTime).getTime() - new Date(b.checkoutTime).getTime(),
     },

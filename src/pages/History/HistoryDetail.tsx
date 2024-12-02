@@ -1,5 +1,5 @@
 import { Layout, Tag } from "antd";
-import { formatDate } from "../../utils/ultil";
+import { formatDate, formatDateLocal } from "../../utils/ultil";
 import VisitorSessionType from "../../types/visitorSessionType";
 
 const { Content } = Layout;
@@ -43,7 +43,7 @@ const HistoryDetail = ({ data }: { data: VisitorSessionType }) => {
               Thông tin vào
             </h3>
             <p className="text-lg">
-              <strong>Giờ vào:</strong> {formatDate(data.checkinTime)}
+              <strong>Giờ vào:</strong> {formatDateLocal(data.checkinTime)}
             </p>
             <p className="text-lg mt-2">
               <strong>Cổng vào:</strong> {data.gateIn.gateName}
@@ -62,7 +62,7 @@ const HistoryDetail = ({ data }: { data: VisitorSessionType }) => {
               Thông tin ra
             </h3>
             <p className="text-lg">
-              <strong>Giờ ra:</strong> {data.checkoutTime ? formatDate(data.checkoutTime) : "Chưa có thông tin"}
+              <strong>Giờ ra:</strong> {data.checkoutTime ? formatDateLocal(data.checkoutTime) : "Chưa có thông tin"}
             </p>
             <p className="text-lg mt-2">
               <strong>Cổng ra:</strong> {data.gateOut.gateName || "Chưa có thông tin"}

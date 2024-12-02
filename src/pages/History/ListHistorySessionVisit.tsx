@@ -1,5 +1,5 @@
 import { Layout, Tag, Spin } from "antd";
-import { formatDate } from "../../utils/ultil";
+import { formatDate, formatDateLocal } from "../../utils/ultil";
 import { useEffect, useState } from "react";
 import { useGetVisitGraphqlMutation } from "../../services/visitGraphql.service";
 import VisitorSessionType from "../../types/visitorSessionType";
@@ -140,7 +140,7 @@ const ListHistorySessonVisit = ({ visitId }: { visitId: number }) => {
                 <p className="text-lg">
                   <strong>Giờ vào:</strong>{" "}
                   {session.checkinTime
-                    ? formatDate(session.checkinTime)
+                    ? formatDateLocal(session.checkinTime)
                     : "N/A"}
                 </p>
                 <p className="text-lg mt-2">
@@ -163,7 +163,7 @@ const ListHistorySessonVisit = ({ visitId }: { visitId: number }) => {
                 <p className="text-lg">
                   <strong>Giờ ra:</strong>{" "}
                   {session.checkoutTime
-                    ? formatDate(session.checkoutTime)
+                    ? formatDateLocal(session.checkoutTime)
                     : "N/A"}
                 </p>
                 <p className="text-lg mt-2">
