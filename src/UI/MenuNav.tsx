@@ -108,11 +108,6 @@ import { Calendar, CalendarSearch, ClipboardList, MessagesSquare, User, Users } 
         label: "Lịch trình",
       },
       {
-        key: "calendar",
-        label: "Lịch hẹn của tôi",
-        icon: <CalendarSearch size={17} />,
-      },
-      {
         key: "history",
         icon: <HistoryOutlined className="text-lg" />,
         label: "Lịch sử",

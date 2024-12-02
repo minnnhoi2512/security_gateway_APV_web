@@ -138,7 +138,7 @@ const CardManager = () => {
       sorter: (a: QRCardType, b: QRCardType) =>
         a.cardVerification.localeCompare(b.cardVerification),
       render: (text: string, record: QRCardType) => (
-        <>
+        <div className="">
           <Tag color="blue" style={{ cursor: "pointer" }}>
             {visibleCardVerifications[record.cardId] ? text : "******"}
           </Tag>
@@ -147,7 +147,7 @@ const CardManager = () => {
           ) : (
             <EyeFilled onClick={() => toggleCardVerificationVisibility(record.cardId.toString())} />
           )}
-        </>
+        </div>
       ),
     },
     {

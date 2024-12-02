@@ -54,7 +54,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = () => {
 
   const items: MenuProps["items"] = [];
   if (notificaitionData) {
-    const reverseArray = [...notificaitionData].reverse().slice(0, 10);
+    const reverseArray = [...notificaitionData].reverse().slice(0, 8);
     reverseArray.forEach((element, index) => {
       const isRead = element.readStatus;
       items.push({
