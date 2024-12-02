@@ -178,16 +178,17 @@ const CreateNewVisitList: React.FC = () => {
       new Date(expectedStartTime).toDateString() === currentDate.toDateString();
 
     // Define the minimum start time if today (current time + 30 minutes)
-    const minStartHour = new Date(currentDate.getTime() + 0 * 60000);
+    const minStartHour = new Date(currentDate.getTime() + (-1 * 60000));
 
     if (nameValue === "startHour") {
       if (isToday) {
         const [selectedHours, selectedMinutes] = value.split(":").map(Number);
         const selectedTime = new Date();
         selectedTime.setHours(selectedHours, selectedMinutes, 0, 0);
-
+        console.log(minStartHour)
+        console.log(selectedTime)
         // Check if the selected start time is before the minimum allowed start time
-        if (selectedTime < minStartHour) {
+        if (selectedTime <= minStartHour) {
           notification.warning({
             message: "Giờ vào phải hơn giờ hiện tại.",
           });
@@ -331,7 +332,7 @@ const CreateNewVisitList: React.FC = () => {
       new Date(expectedStartTime).toDateString() === currentDate.toDateString();
 
     // Define the minimum start time if today (current time + 30 minutes)
-    const minStartHour = new Date(currentDate.getTime() + 0 * 60000);
+    const minStartHour = new Date(currentDate.getTime() + (-1 * 60000));
 
     if (isToday) {
       const [selectedHours, selectedMinutes] = startHour.split(":").map(Number);
@@ -339,7 +340,7 @@ const CreateNewVisitList: React.FC = () => {
       selectedTime.setHours(selectedHours, selectedMinutes, 0, 0);
 
       // Check if the selected start time is before the minimum allowed start time
-      if (selectedTime < minStartHour) {
+      if (selectedTime <= minStartHour) {
         notification.warning({
           message: "Giờ vào phải hơn giờ hiện tại.",
         });
