@@ -12,11 +12,11 @@ export const qrCardAPI = createApi({
         params: { pageNumber, pageSize },
       }),
     }),
-    createQRCard: builder.mutation<void, { CardVerified: string; CardTypeId: string; ImageLogo: File }>({
+    createQRCard: builder.mutation<void, { CardVerified: string; CardTypeId: number; ImageLogo: File }>({
       query: ({ CardVerified, CardTypeId, ImageLogo }) => {
         const formData = new FormData();
         formData.append("CardVerified", CardVerified);
-        formData.append("CardTypeId", CardTypeId);
+        formData.append("CardTypeId", CardTypeId.toString());
         formData.append("ImageLogo", ImageLogo);
     
         return {

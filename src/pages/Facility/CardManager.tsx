@@ -9,52 +9,88 @@ import {
   Select,
   Form,
   Upload,
+  notification,
 } from "antd";
 import {
   SearchOutlined,
   PlusOutlined,
   DownloadOutlined,
   UploadOutlined,
+  EyeFilled,
+  EyeInvisibleOutlined,
 } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
 import moment from "moment-timezone";
 import { Content } from "antd/es/layout/layout";
 import QRCardType from "../../types/QRCardType";
-import { useGetListQRCardQuery } from "../../services/QRCard.service";
+import {
+  useCreateQRCardMutation,
+  useGetListQRCardQuery,
+} from "../../services/QRCard.service";
 import LoadingState from "../../components/State/LoadingState";
 import { CardStatusType, typeCardStatusMap } from "../../types/Enum/CardStatus";
 import { CardType, typeCardMap } from "../../types/Enum/CardType";
+import { v4 as uuidv4 } from "uuid";
+
 const { Option } = Select;
 const CardManager = () => {
-  const navigate = useNavigate();
   const [searchText, setSearchText] = useState<string>("");
-
-  // Fetching data using the query
-  const { data, isLoading, error } = useGetListQRCardQuery({
+  const { data, isLoading, error, refetch } = useGetListQRCardQuery({
     pageNumber: 1,
     pageSize: 100,
   });
   const qrCards = data?.qrCards || data || [];
+  const [visibleCardVerifications, setVisibleCardVerifications] = useState<{ [key: string]: boolean }>({});
 
-  const filteredData = qrCards.filter((card: QRCardType) =>
-    Object.values(card)
-      .join(" ")
-      .toLowerCase()
-      .includes(searchText.toLowerCase())
-  );
+  const filteredData = qrCards
+    .filter((card: QRCardType) =>
+      Object.values(card)
+        .join(" ")
+        .toLowerCase()
+        .includes(searchText.toLowerCase())
+    )
+    .sort(
+      (a, b) =>
+        new Date(b.createDate).getTime() - new Date(a.createDate).getTime()
+    );
+
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
 
   const showModal = () => {
     setIsModalVisible(true);
   };
+  const [createQRCard] = useCreateQRCardMutation();
 
-  const handleOk = () => {
-    form.validateFields().then((values) => {
-      console.log(values);
-      // Process the collected data here
+  const toggleCardVerificationVisibility = (key: string) => {
+    setVisibleCardVerifications((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
+  const handleOk = async () => {
+    try {
+      const values = await form.validateFields();
+      const numberOfCards = Number(values.numberOfCards);
+      const cardTypeId = values.cardType;
+      // console.log(values.imageLogo[0])
+      const imageLogo = values.imageLogo[0].originFileObj;
+
+      for (let i = 0; i < numberOfCards; i++) {
+        const cardVerified = uuidv4();
+        await createQRCard({
+          CardTypeId: cardTypeId,
+          CardVerified: cardVerified,
+          ImageLogo: imageLogo,
+        });
+      }
+      refetch();
+      notification.success({ message: "Thẻ đã được tạo thành công!" });
       setIsModalVisible(false);
-    });
+      form.resetFields();
+    } catch (error) {
+      console.log(error);
+      notification.error({ message: "Đã xảy ra lỗi khi tạo thẻ!" });
+    }
   };
 
   const handleCancel = () => {
@@ -98,8 +134,21 @@ const CardManager = () => {
       title: "Mã Xác Thực",
       dataIndex: "cardVerification",
       key: "cardVerification",
+      width: "20%", // Set the width to 20%
       sorter: (a: QRCardType, b: QRCardType) =>
         a.cardVerification.localeCompare(b.cardVerification),
+      render: (text: string, record: QRCardType) => (
+        <>
+          <Tag color="blue" style={{ cursor: "pointer" }}>
+            {visibleCardVerifications[record.cardId] ? text : "******"}
+          </Tag>
+          {visibleCardVerifications[record.cardId] ? (
+            <EyeInvisibleOutlined onClick={() => toggleCardVerificationVisibility(record.cardId.toString())} />
+          ) : (
+            <EyeFilled onClick={() => toggleCardVerificationVisibility(record.cardId.toString())} />
+          )}
+        </>
+      ),
     },
     {
       title: "Ngày Tạo",
@@ -216,7 +265,12 @@ const CardManager = () => {
             getValueFromEvent={(e) => (Array.isArray(e) ? e : e && e.fileList)}
             rules={[{ required: true, message: "Vui lòng tải lên logo!" }]}
           >
-            <Upload name="logo" listType="picture" beforeUpload={() => false}>
+            <Upload
+              name="logo"
+              listType="picture"
+              beforeUpload={() => false}
+              maxCount={1} // Ensure only one image can be uploaded
+            >
               <Button icon={<UploadOutlined />}>Tải lên logo</Button>
             </Upload>
           </Form.Item>
@@ -229,7 +283,7 @@ const CardManager = () => {
           columns={columns}
           dataSource={filteredData}
           pagination={{
-            total: data?.total || 0,
+            total: filteredData?.total || 0,
             showSizeChanger: true,
             pageSizeOptions: ["5"],
             defaultPageSize: 5, // Set default page size to 5
