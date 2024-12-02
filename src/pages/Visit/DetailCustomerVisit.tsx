@@ -157,7 +157,7 @@ const DetailCustomerVisit: React.FC = () => {
           updateById: Number(userId),
           visitQuantity: visitDetail.length,
         };
-        if (isEditable()) {
+        if (isEditable() && visitData?.visitorSessionCount <= 0) {
           await updateVisitBeforeStartDate({
             visitId: visitId,
             updateVisit: updatedVisitData,
