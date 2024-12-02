@@ -46,6 +46,7 @@ import LoadingState from "../../components/State/LoadingState";
 dayjs.extend(isSameOrAfter);
 dayjs.extend(customParseFormat);
 
+const { confirm } = Modal;
 const { Content } = Layout;
 
 const DetailCustomerVisit: React.FC = () => {
@@ -187,7 +188,7 @@ const DetailCustomerVisit: React.FC = () => {
       notification.success({ message: "Chấp thuận thành công!" });
       refetchVisit();
     } catch (error) {
-      notification.error({ message: "Chấp thuận thất bại!" });
+      // notification.error({ message: "Chấp thuận thất bại!" });
     }
   };
   const truncatedDescription =
@@ -481,6 +482,19 @@ const DetailCustomerVisit: React.FC = () => {
       ),
     },
   ];
+  const showConfirm = () => {
+    confirm({
+      title: "Xác nhận",
+      content: "Bạn có chắc chắn muốn báo cáo?",
+      onOk() {
+        handleReport();
+      },
+      onCancel() {
+        console.log("Cancel");
+      },
+    });
+  };
+
   if (isLoading && loadingDetailVisitData) {
     return (
       <div>
@@ -603,8 +617,7 @@ const DetailCustomerVisit: React.FC = () => {
                     </p>
                   </div>
                   <p className="text-sm text-gray-500 mt-4">Thời gian:</p>
-                  {isEditMode &&
-                  (userRole != "Staff")? (
+                  {isEditMode && userRole != "Staff" ? (
                     <div className="space-y-2">
                       <span>Ngày bắt đầu</span>
                       <DatePicker
@@ -705,14 +718,17 @@ const DetailCustomerVisit: React.FC = () => {
             style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}
             className="mt-4"
           >
-            {status === "ActiveTemporary" && (
+            {(status === "ActiveTemporary" || status === "Violation") && (
               <>
-                <Button
-                  className="bg-yellow-500 text-white"
-                  onClick={handleReport}
-                >
-                  Báo cáo
-                </Button>
+                {status !== "Violation" && (
+                  <Button
+                    className="bg-yellow-500 text-white"
+                    onClick={showConfirm}
+                  >
+                    Báo cáo
+                  </Button>
+                )}
+
                 <Button
                   className="bg-green-500 text-white"
                   onClick={handleApprove}
@@ -721,16 +737,18 @@ const DetailCustomerVisit: React.FC = () => {
                 </Button>
               </>
             )}
-            {status === "Active" && !isEditMode && (scheduleTypeId === undefined) && (
-              <div className="bg-red">
-                <Button
-                  className="bg-red-500 text-white"
-                  onClick={handleCancel}
-                >
-                  Vô hiệu hóa
-                </Button>
-              </div>
-            )}
+            {status === "Active" &&
+              !isEditMode &&
+              scheduleTypeId === undefined && (
+                <div className="bg-red">
+                  <Button
+                    className="bg-red-500 text-white"
+                    onClick={handleCancel}
+                  >
+                    Vô hiệu hóa
+                  </Button>
+                </div>
+              )}
             {isEditMode && (
               <Button type="default" onClick={handleAddGuest} className="mb-4">
                 Thêm khách

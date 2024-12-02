@@ -11,21 +11,15 @@ import {
   Modal,
   Tooltip,
   Popover,
-  Layout,
   Card,
-  Badge,
 } from "antd";
 import {
   SearchOutlined,
   PlusOutlined,
   FilterOutlined,
-  CalendarOutlined,
-  ClockCircleOutlined,
-  UserSwitchOutlined,
 } from "@ant-design/icons";
 import { TableProps } from "antd";
 import { useNavigate } from "react-router-dom";
-import moment from "moment-timezone";
 import { Content } from "antd/es/layout/layout";
 import VisitListType from "../../types/visitListType";
 import {
@@ -45,7 +39,6 @@ interface Filters {
   visitStatus: VisitStatus[];
   scheduleTypeId: any[];
 }
-const { Option } = Select;
 const CustomerVisit = () => {
   const userRole = localStorage.getItem("userRole");
   const departmentId = Number(localStorage.getItem("departmentId"));
@@ -243,32 +236,9 @@ const CustomerVisit = () => {
       [key]: value,
     }));
   };
-  const filterContent = (
-    <Space direction="vertical">
-      <DatePicker
-        placeholder="Ngày bắt đầu"
-        onChange={(date) => handleFilterChange("expectedStartTime", date)}
-      />
-      <DatePicker
-        placeholder="Ngày kết thúc"
-        onChange={(date) => handleFilterChange("expectedEndTime", date)}
-      />
-      <Slider
-        range
-        min={1}
-        max={100}
-        defaultValue={[1, 100]}
-        onChange={(value) => handleFilterChange("visitQuantity", value)}
-        style={{ width: 200 }}
-      />
-      <Button type="default" onClick={handleClearFilters}>
-        Xóa bộ lọc
-      </Button>
-    </Space>
-  );
   useEffect(() => {
     if (isLoading || !data) return;
-    let filtered = data;
+    let filtered = data.filter((item) => item.visitStatus !== "Pending");
     if (filters.expectedStartTime) {
       filtered = filtered.filter((item: any) =>
         dayjs(item?.expectedStartTime).isSameOrAfter(filters.expectedStartTime!)
@@ -323,8 +293,6 @@ const CustomerVisit = () => {
 
   return (
     <Content className="p-4 max-w-[1400px] mx-auto">
-  
-
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold text-mainColor">
           Quản lý chuyến thăm
@@ -338,7 +306,6 @@ const CustomerVisit = () => {
         </Button>
       </div>
 
- 
       <div className="flex gap-4 mb-4">
         <div className="flex flex-1 gap-2">
           <Input
@@ -439,36 +406,38 @@ const CustomerVisit = () => {
 
       <Card className="shadow-sm">
         <div className="">
-          {Object.values(VisitStatus).map((status) => {
-            const { colorVisitStatus, textVisitStatus } =
-              visitStatusMap[status];
-            const count = getCountByStatus(status);
-            return (
-              <Button
-                key={status}
-                onClick={() => handleStatusFilter(status)}
-                className={`rounded-t-3xl mr-[2px] relative ${
-                  filters.visitStatus.includes(status)
-                    ? "bg-mainColor text-white border-none hover:bg-mainColor"
-                    : "bg-white border-mainColor text-mainColor hover:text-mainColor hover:border-mainColor"
-                }`}
-              >
-                {textVisitStatus}
-                {count > 0 && (
-                  <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center bg-red-500 text-white text-xs rounded-full">
-                    {count}
-                  </div>
-                )}
-              </Button>
-            );
-          })}
+          {Object.values(VisitStatus)
+            .filter((status) => status !== "Pending")
+            .map((status) => {
+              const { colorVisitStatus, textVisitStatus } =
+                visitStatusMap[status];
+              const count = getCountByStatus(status);
+              return (
+                <Button
+                  key={status}
+                  onClick={() => handleStatusFilter(status)}
+                  className={`rounded-t-3xl mr-[2px] relative ${
+                    filters.visitStatus.includes(status)
+                      ? "bg-mainColor text-white border-none hover:bg-mainColor"
+                      : "bg-white border-mainColor text-mainColor hover:text-mainColor hover:border-mainColor"
+                  }`}
+                >
+                  {textVisitStatus}
+                  {count > 0 && (
+                    <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center bg-red-500 text-white text-xs rounded-full">
+                      {count}
+                    </div>
+                  )}
+                </Button>
+              );
+            })}
           <Table
             columns={columns}
             dataSource={filteredData}
             pagination={{
-              total: data?.length,
+              total: filteredData?.length,
               showSizeChanger: true,
-              pageSizeOptions: ["5", "10", "20"],
+              pageSizeOptions: ["5", "10"],
               showTotal: (total) => `Tổng ${total} chuyến thăm`,
               size: "small",
             }}

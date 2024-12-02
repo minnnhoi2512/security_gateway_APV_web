@@ -1,9 +1,20 @@
 import { useState } from "react";
-import { Button, Table, Input, Tag, Space } from "antd";
+import {
+  Button,
+  Table,
+  Input,
+  Tag,
+  Space,
+  Modal,
+  Select,
+  Form,
+  Upload,
+} from "antd";
 import {
   SearchOutlined,
   PlusOutlined,
   DownloadOutlined,
+  UploadOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import moment from "moment-timezone";
@@ -13,7 +24,7 @@ import { useGetListQRCardQuery } from "../../services/QRCard.service";
 import LoadingState from "../../components/State/LoadingState";
 import { CardStatusType, typeCardStatusMap } from "../../types/Enum/CardStatus";
 import { CardType, typeCardMap } from "../../types/Enum/CardType";
-
+const { Option } = Select;
 const CardManager = () => {
   const navigate = useNavigate();
   const [searchText, setSearchText] = useState<string>("");
@@ -23,7 +34,6 @@ const CardManager = () => {
     pageNumber: 1,
     pageSize: 100,
   });
-  console.log(data);
   const qrCards = data?.qrCards || data || [];
 
   const filteredData = qrCards.filter((card: QRCardType) =>
@@ -32,6 +42,24 @@ const CardManager = () => {
       .toLowerCase()
       .includes(searchText.toLowerCase())
   );
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [form] = Form.useForm();
+
+  const showModal = () => {
+    setIsModalVisible(true);
+  };
+
+  const handleOk = () => {
+    form.validateFields().then((values) => {
+      console.log(values);
+      // Process the collected data here
+      setIsModalVisible(false);
+    });
+  };
+
+  const handleCancel = () => {
+    setIsModalVisible(false);
+  };
 
   const columns = [
     {
@@ -150,13 +178,50 @@ const CardManager = () => {
         <Button
           type="primary"
           icon={<PlusOutlined />}
-          onClick={() => navigate("/createCard")}
+          onClick={showModal}
           style={{ borderRadius: 5 }}
         >
           Tạo mới thẻ
         </Button>
       </Space>
 
+      <Modal
+        title="Tạo mới thẻ"
+        visible={isModalVisible}
+        onOk={handleOk}
+        onCancel={handleCancel}
+      >
+        <Form form={form} layout="vertical">
+          <Form.Item
+            name="numberOfCards"
+            label="Số lượng thẻ"
+            rules={[{ required: true, message: "Vui lòng nhập số lượng thẻ!" }]}
+          >
+            <Input type="number" placeholder="Nhập số lượng thẻ" />
+          </Form.Item>
+          <Form.Item
+            name="cardType"
+            label="Loại thẻ"
+            rules={[{ required: true, message: "Vui lòng chọn loại thẻ!" }]}
+          >
+            <Select placeholder="Chọn loại thẻ">
+              <Option value="1">Thẻ cho ra vào hằng ngày</Option>
+              <Option value="2">Thẻ cho ra vào theo lịch trình</Option>
+            </Select>
+          </Form.Item>
+          <Form.Item
+            name="imageLogo"
+            label="Logo"
+            valuePropName="fileList"
+            getValueFromEvent={(e) => (Array.isArray(e) ? e : e && e.fileList)}
+            rules={[{ required: true, message: "Vui lòng tải lên logo!" }]}
+          >
+            <Upload name="logo" listType="picture" beforeUpload={() => false}>
+              <Button icon={<UploadOutlined />}>Tải lên logo</Button>
+            </Upload>
+          </Form.Item>
+        </Form>
+      </Modal>
       {error ? (
         <p>Đã xảy ra lỗi khi tải dữ liệu!</p>
       ) : (

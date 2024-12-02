@@ -12,11 +12,19 @@ export const qrCardAPI = createApi({
         params: { pageNumber, pageSize },
       }),
     }),
-    createQRCard: builder.mutation<void, string>({
-      query: (cardGuid) => ({
-        url: `CreateQRCard?cardGuid=${cardGuid}`,
-        method: "POST",
-      }),
+    createQRCard: builder.mutation<void, { CardVerified: string; CardTypeId: string; ImageLogo: File }>({
+      query: ({ CardVerified, CardTypeId, ImageLogo }) => {
+        const formData = new FormData();
+        formData.append("CardVerified", CardVerified);
+        formData.append("CardTypeId", CardTypeId);
+        formData.append("ImageLogo", ImageLogo);
+    
+        return {
+          url: `Card`,
+          method: "POST",
+          body: formData,
+        };
+      },
     }),
     generateQRCard: builder.mutation<void, string>({
       query: (cardGuid) => ({
