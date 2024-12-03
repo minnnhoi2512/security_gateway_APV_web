@@ -42,6 +42,7 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { HtmlContent } from "../../components/Description/description";
 import LoadingState from "../../components/State/LoadingState";
+import NotFoundState from "../../components/State/NotFoundState";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(customParseFormat);
@@ -72,6 +73,7 @@ const DetailCustomerVisit: React.FC = () => {
     data: detailVisitData = [],
     refetch: refetchListVisitor,
     isLoading: loadingDetailVisitData,
+    isError,
   } = useGetListDetailVisitQuery({
     visitId: Number(id),
     pageNumber: -1,
@@ -494,6 +496,18 @@ const DetailCustomerVisit: React.FC = () => {
       },
     });
   };
+  const showConfirmCancelled = () => {
+    confirm({
+      title: "Xác nhận",
+      content: "Bạn có chắc chắn muốn hủy chuyến thăm?",
+      onOk() {
+        handleCancel();
+      },
+      onCancel() {
+        console.log("Cancel");
+      },
+    });
+  };
 
   if (isLoading && loadingDetailVisitData) {
     return (
@@ -501,6 +515,9 @@ const DetailCustomerVisit: React.FC = () => {
         <LoadingState />
       </div>
     );
+  }
+  if (isError) {
+    return <NotFoundState />;
   }
   return (
     <Layout className="bg-white">
@@ -729,12 +746,22 @@ const DetailCustomerVisit: React.FC = () => {
                   </Button>
                 )}
 
-                <Button
-                  className="bg-green-500 text-white"
-                  onClick={handleApprove}
-                >
-                  Chấp thuận
-                </Button>
+                {status !== "Violation" && (
+                  <Button
+                    className="bg-green-500 text-white"
+                    onClick={handleApprove}
+                  >
+                    Chấp thuận
+                  </Button>
+                )}
+                {status === "Violation" && (
+                  <Button
+                    className="bg-green-500 text-white"
+                    onClick={handleApprove}
+                  >
+                    Gỡ vi phạm
+                  </Button>
+                )}
               </>
             )}
             {status === "Active" &&
@@ -743,9 +770,21 @@ const DetailCustomerVisit: React.FC = () => {
                 <div className="bg-red">
                   <Button
                     className="bg-red-500 text-white"
-                    onClick={handleCancel}
+                    onClick={showConfirmCancelled}
                   >
                     Vô hiệu hóa
+                  </Button>
+                </div>
+              )}
+            {status === "Cancelled" &&
+              !isEditMode &&
+              scheduleTypeId === undefined && (
+                <div className="bg-red">
+                  <Button
+                    className="bg-green-500 text-white"
+                    onClick={handleApprove}
+                  >
+                    Gỡ vô hiệu hóa
                   </Button>
                 </div>
               )}
@@ -756,7 +795,8 @@ const DetailCustomerVisit: React.FC = () => {
             )}
             {(isEditable() &&
               scheduleTypeId == undefined &&
-              visitData?.visitStatus != "ActiveTemporary" && (
+              visitData?.visitStatus != "ActiveTemporary") ||
+              (visitData?.visitStatus != "Cancelled" && (
                 <Button
                   type="primary"
                   onClick={handleToggleMode}

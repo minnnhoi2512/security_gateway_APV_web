@@ -341,7 +341,7 @@ const Schedule = () => {
         <TableSchedule
           schedules={filteredData || []}
           schedulesIsLoading={schedulesIsLoading}
-          totalCount={schedules?.totalCount || 0}
+          totalCount={filteredData?.length || 0}
           handleDeleteSchedule={handleDeleteSchedule}
           handleAssignUser={handleAssignUser}
         />

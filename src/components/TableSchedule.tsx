@@ -139,7 +139,7 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({
       key: "action",
       render: (_, record: any) => (
         <div className="flex justify-center space-x-2">
-          {record.scheduleUser.length === 0 && (
+          { (
             <Button
               type="text"
               icon={<EditOutlined />}

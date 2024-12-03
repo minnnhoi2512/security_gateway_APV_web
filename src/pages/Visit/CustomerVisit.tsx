@@ -31,6 +31,7 @@ import { VisitStatus, visitStatusMap } from "../../types/Enum/VisitStatus";
 import { ScheduleType, typeMap } from "../../types/Enum/ScheduleType";
 import ListHistorySessonVisit from "../History/ListHistorySessionVisit";
 import { CalendarDays, CalendarRange, Clock4 } from "lucide-react";
+import LoadingState from "../../components/State/LoadingState";
 
 interface Filters {
   expectedStartTime: Dayjs | null;
@@ -290,7 +291,9 @@ const CustomerVisit = () => {
       visitStatus: prevFilters.visitStatus.includes(status) ? [] : [status],
     }));
   };
-
+  if (isLoading) {
+    return <LoadingState></LoadingState>;
+  }
   return (
     <Content className="p-4 max-w-[1400px] mx-auto">
       <div className="flex justify-between items-center mb-4">

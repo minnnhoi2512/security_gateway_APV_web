@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Button,
   Table,
@@ -27,6 +27,7 @@ import {
 import CreateNewVisitor from "../../form/CreateNewVisitor";
 import DetailVisitor from "./DetailVisitor";
 import Visitor from "../../types/visitorType";
+import LoadingState from "../../components/State/LoadingState";
 
 const { confirm } = Modal;
 
@@ -39,28 +40,44 @@ const VisitorManager = () => {
   const [deleteVisitor] = useDeleteVisitorMutation();
   const [idVisitor, setIdVisitor] = useState<number>(0);
   const userRole = localStorage.getItem("userRole");
-
+  const [filteredData, setFilteredData] = useState<Visitor[]>([]);
+  const [activeStatus, setActiveStatus] = useState<string>('Active'); // 'all', 'active', 'inactive'
   const {
     data,
     isLoading: isLoadingData,
     error,
     refetch,
   } = useGetAllVisitorsQuery({ pageNumber: -1, pageSize: -1 }); // Fetch all visitors
-  let visitors: Visitor[] = data
-    ? data.filter((visitor: Visitor) => visitor.status === "Active")
-    : [];
 
-  // Filter visitors based on userRole after fetching
-  // if (userRole === "Staff" || userRole === "DepartmentManager") {
-  //   visitors = visitors.filter(
-  //     (visitor: Visitor) => visitor.status === "Active"
-  //   );
-  // }
-  // console.log(data);
-  const totalVisitors = visitors.length; // Total visitors after filtering
-  const filteredData = visitors.filter((visitor: any) =>
-    visitor.credentialsCard.toLowerCase().includes(searchText.toLowerCase())
-  );
+  useEffect(() => {
+    let result = data || [];
+  
+    // First filter by status
+    // if (activeStatus !== 'all') {
+    //   result = result.filter((visitor: Visitor) => 
+    //     visitor.status === (activeStatus === 'Active')
+    //   );
+    // }
+    if (activeStatus){
+      result = result.filter((visitor: Visitor) => visitor.status === activeStatus);
+    }
+    // Then filter by search text
+    if (searchText) {
+      result = result.filter((visitor: Visitor) =>
+        visitor.visitorName.toLowerCase().includes(searchText.toLowerCase())
+      );
+    }
+  
+    setFilteredData(result);
+  }, [data, searchText, activeStatus]);
+  
+  const handleFilterStatus = (status: string) => {
+    setActiveStatus(status);
+  };
+  
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchText(e.target.value);
+  };
 
   const columns = [
     {
@@ -148,9 +165,6 @@ const VisitorManager = () => {
     },
   ];
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchText(e.target.value);
-  };
   const handleVisitorCreated = () => {
     refetch(); // Call refetch after creating a visitor
   };
@@ -177,22 +191,21 @@ const VisitorManager = () => {
 
   const showDeleteConfirm = (visitorId: number) => {
     confirm({
-      title: "Bạn có chắc chắn muốn xóa khách này?",
+      title: "Bạn có chắc chắn muốn thay đổi khách này?",
       icon: <ExclamationCircleOutlined />,
-      content: "Việc xóa sẽ không thể hoàn tác.",
-      okText: "Xóa",
-      okType: "danger",
+      content: "Việc không thể hoàn tác.",
+      okText: "Thay đổi",
       cancelText: "Hủy",
       onOk: async () => {
         try {
           await deleteVisitor({ id: visitorId }).unwrap();
           notification.success({
-            message: `Xóa khách thành công!`,
+            message: `Thay đổi trạng thái thành công!`,
           });
           refetch(); // Refetch data after deletion
         } catch (error) {
           notification.error({
-            message: "Xóa khách thất bại, vui lòng thử lại.",
+            message: "Thay đổi trạng thái thất bại, vui lòng thử lại.",
           });
         }
       },
@@ -201,7 +214,9 @@ const VisitorManager = () => {
       },
     });
   };
-
+  if (isLoadingData) {
+    return <LoadingState />;
+  }
   return (
     <Layout className="min-h-screen bg-gray-50">
       <Content className="p-8 bg-white rounded-lg shadow-md">
@@ -224,6 +239,22 @@ const VisitorManager = () => {
           >
             Tạo mới khách
           </Button>
+          <div>
+            <Button
+              type="default"
+              className="ml-2 bg-green-500 hover:bg-green-600 text-white rounded-lg px-4 py-2 shadow-sm"
+              onClick={() => handleFilterStatus("Active")}
+            >
+              Hợp lệ
+            </Button>
+            <Button
+              type="default"
+              className="ml-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg px-4 py-2 shadow-sm"
+              onClick={() => handleFilterStatus("Unactive")}
+            >
+              Bị cấm
+            </Button>
+          </div>
         </div>
 
         <Divider />
@@ -254,9 +285,9 @@ const VisitorManager = () => {
             pagination={{
               current: currentPage,
               pageSize,
-              total: totalVisitors,
+              total: filteredData.length,
               showSizeChanger: true,
-              pageSizeOptions: ["5", "10", "20"],
+              pageSizeOptions: ["5", "10"],
               size: "small",
             }}
             onChange={handleTableChange}

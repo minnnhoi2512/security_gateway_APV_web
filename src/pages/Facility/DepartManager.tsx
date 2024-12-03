@@ -26,8 +26,8 @@ const DepartManager = () => {
     pageSize : -1,
   });
 
-  const departments = data ? data : [];
-  const totalDepartments = data ? data.length : 0;
+  const departments = data ? data.filter(department => ![1, 2, 3].includes(department.departmentId)) : [];
+  const totalDepartments = departments ? departments.length : 0;
 
 
   const {
@@ -35,7 +35,7 @@ const DepartManager = () => {
     isLoading: isUserListLoading,
     error: userListError
   } = useGetListUsersByDepartmentIdQuery(
-    { departmentId: selectedDepartmentId!, pageNumber: 1, pageSize: 10 }, 
+    { departmentId: selectedDepartmentId!, pageNumber: 1, pageSize: 100 }, 
     { skip: selectedDepartmentId === null } 
   );
 
