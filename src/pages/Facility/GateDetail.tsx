@@ -275,7 +275,7 @@ const GateDetail: React.FC = () => {
 
             <Form.Item>
               <Button type="primary" htmlType="submit">
-                Cập nhập
+                Cập nhật
               </Button>
             </Form.Item>
           </Form>
