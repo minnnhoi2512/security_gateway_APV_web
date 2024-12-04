@@ -9,6 +9,7 @@ import {
   notification,
   Layout,
   Divider,
+  Card,
 } from "antd";
 import {
   SearchOutlined,
@@ -279,6 +280,8 @@ const VisitorManager = () => {
             Đã xảy ra lỗi khi tải dữ liệu!
           </p>
         ) : (
+          <Card className="shadow-sm">
+          <div className="rounded-lg bg-white mx-auto" style={{ width: "100%" }}>
           <Table
             columns={columns}
             dataSource={filteredData}
@@ -294,8 +297,11 @@ const VisitorManager = () => {
             loading={isLoadingData}
             rowKey="visitorId"
             bordered
-            className="bg-white shadow-md rounded-lg"
+            className="w-full [&_.ant-table-thead_th]:!bg-[#34495e] [&_.ant-table-thead_th]:!text-white [&_.ant-table-thead_th]:!py-2 [&_.ant-table-thead_th]:!text-sm"
           />
+          </div>
+        </Card>
+  
         )}
       </Content>
     </Layout>

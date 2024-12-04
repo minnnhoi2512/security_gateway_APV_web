@@ -17,6 +17,7 @@ import {
   SearchOutlined,
   PlusOutlined,
   FilterOutlined,
+  InfoCircleOutlined,
 } from "@ant-design/icons";
 import { TableProps } from "antd";
 import { useNavigate } from "react-router-dom";
@@ -295,20 +296,7 @@ const CustomerVisit = () => {
     return <LoadingState></LoadingState>;
   }
   return (
-    <Content className="p-4 max-w-[1400px] mx-auto">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold text-mainColor">
-          Quản lý chuyến thăm
-        </h1>
-        <Button
-          icon={<PlusOutlined />}
-          onClick={() => navigate("/customerVisit/createNewVisitList")}
-          className="px-4 py-4 text-lg   rounded-lg bg-mainColor hover:bg-opacity-90 transition-all   shadow-md text-white flex items-center justify-center"
-        >
-          <span className="mb-[2px]">Tạo mới</span>
-        </Button>
-      </div>
-
+    <Content className="p-4 max-w-[1200px] mx-auto">
       <div className="flex gap-4 mb-4">
         <div className="flex flex-1 gap-2">
           <Input
@@ -364,7 +352,6 @@ const CustomerVisit = () => {
           </Popover>
         </div>
 
-        {/* Type Filter */}
         <div className="flex gap-2">
           <Button
             onClick={() => handleTypeFilter(null)}
@@ -405,10 +392,28 @@ const CustomerVisit = () => {
             Theo tháng
           </Button>
         </div>
+
+        <Button
+          icon={<PlusOutlined />}
+          onClick={() => navigate("/customerVisit/createNewVisitList")}
+          className="px-4 py-4 text-lg   rounded-lg bg-mainColor hover:bg-opacity-90 transition-all   shadow-md text-white flex items-center justify-center"
+        >
+          <span className="mb-[2px]">Tạo mới</span>
+        </Button>
       </div>
 
-      <Card className="shadow-sm">
-        <div className="">
+      <Card className="shadow-lg rounded-xl border-0">
+        <div className="mb-4 flex gap-1">
+          <Button
+            onClick={() => handleStatusFilter(null)}
+            className={`rounded-t-3xl mr-[2px] relative ${
+              filters.visitStatus.length === 0
+                ? "bg-mainColor text-white border-none hover:bg-mainColor"
+                : "bg-white border-mainColor text-mainColor hover:text-mainColor hover:border-mainColor"
+            }`}
+          >
+            Tất cả
+          </Button>
           {Object.values(VisitStatus)
             .filter((status) => status !== "Pending")
             .map((status) => {
@@ -434,43 +439,36 @@ const CustomerVisit = () => {
                 </Button>
               );
             })}
-          <Table
-            columns={columns}
-            dataSource={filteredData}
-            pagination={{
-              total: filteredData?.length,
-              showSizeChanger: true,
-              pageSizeOptions: ["5", "10"],
-              showTotal: (total) => `Tổng ${total} chuyến thăm`,
-              size: "small",
-            }}
-            rowKey="visitId"
-            bordered={false}
-            loading={isLoading}
-            onRow={(record) => ({
-              onDoubleClick: () => {
-                navigate(`/customerVisit/detailVisit/${record.visitId}`, {
-                  state: { record },
-                });
-              },
-              className: "cursor-pointer hover:bg-gray-50 transition-colors",
-            })}
-            size="middle"
-          />
+        </div>
+
+        <Table
+          columns={columns}
+          dataSource={filteredData}
+          pagination={{
+            total: filteredData?.length,
+            pageSize: 8,
+            showSizeChanger: true,
+            pageSizeOptions: ["5", "10"],
+            showTotal: (total) => `Tổng ${total} chuyến thăm`,
+            size: "small",
+            className: "mt-4",
+          }}
+          className="w-full [&_.ant-table-thead_th]:!bg-gray-50 [&_.ant-table-thead_th]:!text-gray-700 [&_.ant-table-thead_th]:!font-medium [&_.ant-table-thead_th]:!py-3 [&_.ant-table-thead_th]:!text-sm hover:[&_.ant-table-tbody_tr]:bg-blue-50/30"
+          size="middle"
+          bordered={false}
+          onRow={(record) => ({
+            onDoubleClick: () =>
+              navigate(`/customerVisit/detailVisit/${record.visitId}`, {
+                state: { record },
+              }),
+            className: "cursor-pointer transition-colors",
+          })}
+        />
+        <div className="text-gray-400 text-xs mt-2 flex items-center gap-1">
+          <InfoCircleOutlined className="text-blue-400" />
+          Nhấp đúp để xem chi tiết chuyến thăm
         </div>
       </Card>
-
-      <Modal
-        title="Lịch sử lượt ra vào"
-        visible={isModalVisible}
-        onCancel={() => setIsModalVisible(false)}
-        footer={null}
-        width={800}
-      >
-        {selectedVisitId && (
-          <ListHistorySessonVisit visitId={selectedVisitId} />
-        )}
-      </Modal>
     </Content>
   );
 };

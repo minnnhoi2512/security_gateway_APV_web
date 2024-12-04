@@ -130,23 +130,21 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({
       title: <div style={{ textAlign: "left" }}>Số nhiệm vụ đã giao</div>,
       dataIndex: "scheduleUser",
       key: "scheduleUser",
-      render: (scheduleUser: any) => (
-        <div>{scheduleUser.length}</div>
-      ),
+      render: (scheduleUser: any) => <div>{scheduleUser.length}</div>,
     },
     {
       title: <div style={{ textAlign: "left" }}>Hành động</div>,
       key: "action",
       render: (_, record: any) => (
         <div className="flex justify-center space-x-2">
-          { (
+          {
             <Button
               type="text"
               icon={<EditOutlined />}
               className="text-green-600 hover:text-green-800"
               onClick={() => showModal(record.scheduleId)}
             />
-          )}
+          }
           {record.status === true && (
             <Button
               type="text"
@@ -161,40 +159,54 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({
   ];
 
   return (
-    <>
-      <Table
-        columns={columns}
-        dataSource={schedules || []}
-        rowKey="scheduleId"
-        loading={schedulesIsLoading}
-        pagination={{
-          total: totalCount,
-          showSizeChanger: true,
-          pageSizeOptions: ["5", "10"],
-          size: "small",
-        }}
-        bordered
-        className="bg-white shadow-md rounded-lg"
-      />
-      <Modal
-        title={
-          <h1 className="text-3xl font-bold text-titleMain text-center mb-6">
-            Cập nhật lịch trình
-          </h1>
-        }
-        centered
-        width="68vw"
-        bodyStyle={{ padding: "20px", maxHeight: "90vh", overflowY: "auto" }}
-        visible={isModalVisible}
-        onCancel={handleCancel}
-        footer={null}
-      >
-        <DetailSchedule
-          scheduleId={selectedScheduleId}
-          onUpdateSuccess={handleCancel}
-        />
-      </Modal>
-    </>
+    // <>
+    //   <Table
+    //     columns={columns}
+    //     dataSource={schedules || []}
+    //     rowKey="scheduleId"
+    //     loading={schedulesIsLoading}
+    //     pagination={{
+    //       total: totalCount,
+    //       showSizeChanger: true,
+    //       pageSizeOptions: ["5", "10"],
+    //       size: "small",
+    //     }}
+    //     bordered
+    //      className="w-full [&_.ant-table-thead_th]:!bg-[#34495e] [&_.ant-table-thead_th]:!text-white"
+    //   />
+    //   <Modal
+    //     title={
+    //       <h1 className="text-3xl font-bold text-titleMain text-center mb-6">
+    //         Cập nhật lịch trình
+    //       </h1>
+    //     }
+    //     centered
+    //     width="68vw"
+    //     bodyStyle={{ padding: "20px", maxHeight: "90vh", overflowY: "auto" }}
+    //     visible={isModalVisible}
+    //     onCancel={handleCancel}
+    //     footer={null}
+    //   >
+    //     <DetailSchedule
+    //       scheduleId={selectedScheduleId}
+    //       onUpdateSuccess={handleCancel}
+    //     />
+    //   </Modal>
+    // </>
+    <Table
+      columns={columns}
+      dataSource={schedules || []}
+      rowKey="scheduleId"
+      loading={schedulesIsLoading}
+      pagination={{
+        total: totalCount,
+        showSizeChanger: true,
+        pageSizeOptions: ["5", "10"],
+        size: "small",
+      }}
+      bordered
+      className="w-full [&_.ant-table-thead_th]:!bg-[#34495e] [&_.ant-table-thead_th]:!text-white [&_.ant-table-thead_th]:!py-2 [&_.ant-table-thead_th]:!text-sm"
+    />
   );
 };
 

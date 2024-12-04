@@ -78,11 +78,15 @@ const ScheduleAssignedManager = () => {
     setSearchText(e.target.value);
   };
   if (userRole === "Staff") {
-    return <div><NotFoundState></NotFoundState></div>;
+    return (
+      <div>
+        <NotFoundState></NotFoundState>
+      </div>
+    );
   }
   return (
     <Layout className="min-h-screen bg-white">
-      <Content className="px-6">
+      <Content className="px-6 mt-3">
         <Space
           style={{
             marginBottom: 16,
@@ -92,15 +96,12 @@ const ScheduleAssignedManager = () => {
         >
           <Input
             placeholder="Tìm kiếm theo tên nhiệm vụ"
-            prefix={<SearchOutlined />}
+            prefix={<SearchOutlined className="text-gray-400" />}
             value={searchText}
             onChange={handleSearchChange}
-            style={{
-              width: 300,
-              borderColor: "#1890ff",
-              borderRadius: 5,
-            }}
+            className="max-w-xs"
           />
+
           <Button
             type="primary"
             size="large"

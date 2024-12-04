@@ -9,6 +9,7 @@ import {
 import { ScheduleUserType } from "../types/ScheduleUserType";
 import { formatDateWithourHour } from "../utils/ultil";
 import { ScheduleType, typeMap } from "../types/Enum/ScheduleType";
+import { CalendarDays, CalendarRange, Clock4 } from "lucide-react";
 
 interface Filters {
   visitStatus: ScheduleUserStatus[];
@@ -182,8 +183,48 @@ const TableScheduleUser: React.FC<ScheduleAssignedTableProps> = ({
 
   return (
     <>
-      <Space style={{ marginBottom: 16, display: "flex", flexWrap: "wrap" }}>
+      <div className="flex items-end justify-end gap-2 mb-6 ">
         <Button
+          onClick={() => handleTypeFilter(null)}
+          className={`min-w-[120px] border-2 ${
+            filters.scheduleTypeId.includes(null)
+              ? "border-green-500 text-green-600 bg-green-50"
+              : "border-green-500 text-green-600 hover:bg-green-50"
+          }`}
+        >
+          <Clock4 size={17} />
+          Theo ngày
+        </Button>
+        <Button
+          onClick={() => handleTypeFilter(ScheduleType.Weekly)}
+          className={`min-w-[120px] border-2 ${
+            filters.scheduleTypeId.includes(ScheduleType.Weekly)
+              ? "border-yellow-500 text-yellow-600 bg-yellow-50"
+              : "border-yellow-500 text-yellow-600 hover:bg-yellow-50"
+          }`}
+        >
+          <CalendarDays size={17} />
+          Theo tuần
+        </Button>
+        <Button
+          type={
+            filters.scheduleTypeId.includes(ScheduleType.Monthly)
+              ? "primary"
+              : "default"
+          }
+          onClick={() => handleTypeFilter(ScheduleType.Monthly)}
+          className={`min-w-[120px] border-2 ${
+            filters.scheduleTypeId.includes(ScheduleType.Monthly)
+              ? "border-purple-500 text-purple-600 bg-purple-50"
+              : "border-purple-500 text-purple-600 hover:bg-purple-50"
+          }`}
+        >
+          <CalendarRange size={17} />
+          Theo tháng
+        </Button>
+      </div>
+      <Space style={{ marginBottom: 16, display: "flex", flexWrap: "wrap" }}>
+        {/* <Button
           type={
             filters.scheduleTypeId.includes(ScheduleType.Weekly)
               ? "primary"
@@ -212,9 +253,9 @@ const TableScheduleUser: React.FC<ScheduleAssignedTableProps> = ({
           } hover:bg-blue-600`}
         >
           Theo tháng
-        </Button>
+        </Button> */}
       </Space>
-      <Space style={{ marginBottom: 16, display: "flex", flexWrap: "wrap" }}>
+      {/* <Space style={{ marginBottom: 16, display: "flex", flexWrap: "wrap" }}>
         <Button
           type={
             filters.visitStatus.includes(ScheduleUserStatus.Pending)
@@ -312,12 +353,64 @@ const TableScheduleUser: React.FC<ScheduleAssignedTableProps> = ({
         >
           Đã hết hạn ({getCountByStatus(ScheduleUserStatus.Expired)})
         </Button>
+      </Space> */}
+      <Space style={{ marginLeft: 65 , display: "flex", flexWrap: "wrap" }}>
+        {Object.values(ScheduleUserStatus).map((status) => {
+          const count = getCountByStatus(status);
+          const statusConfig = {
+            [ScheduleUserStatus.Pending]: {
+              text: "Chờ phê duyệt",
+              className: "!text-mainColor border-mainColor",
+            },
+            [ScheduleUserStatus.Assigned]: {
+              text: "Chờ tạo",
+              className: "!text-mainColor border-mainColor",
+            },
+            [ScheduleUserStatus.Approved]: {
+              text: "Đã phê duyệt",
+              className: "!text-mainColor border-mainColor",
+            },
+            [ScheduleUserStatus.Rejected]: {
+              text: "Đã từ chối",
+              className: "!text-mainColor border-mainColor",
+            },
+            [ScheduleUserStatus.Cancelled]: {
+              text: "Đã vô hiệu hóa",
+              className: "!text-mainColor border-mainColor",
+            },
+            [ScheduleUserStatus.Expired]: {
+              text: "Đã hết hạn",
+              className: "!text-mainColor border-mainColor",
+            },
+          }[status];
+
+          return (
+            <Button
+              key={status}
+              onClick={() => handleStatusFilter(status)}
+              className={`rounded-t-3xl ${statusConfig.className} ${
+                filters.visitStatus.includes(status)
+                  ? "bg-mainColor text-white"
+                  : "bg-white text-mainColor"
+              }`}
+            >
+              {statusConfig.text}
+              {count > 0 && (
+                // <span className={`ml-1 px-1.5 rounded ${statusConfig.bgCount}`}>
+                //   {count}
+                // </span>
+                <span className={`ml-1 px-1.5 rounded`}>{count}</span>
+              )}
+            </Button>
+          );
+        })}
       </Space>
       {error ? (
         <p className="text-red-500 text-center">
           Không có lịch trình được giao
         </p>
       ) : (
+        <div className="max-w-[90%] mx-auto"> {/* hoặc max-w-[85%] hay max-w-[80%] tùy nhu cầu */}
         <Table
           columns={columns}
           dataSource={filteredData}
@@ -327,18 +420,22 @@ const TableScheduleUser: React.FC<ScheduleAssignedTableProps> = ({
             pageSizeOptions: ["5", "10"],
             hideOnSinglePage: false,
             size: "small",
+            className: "px-4"
           }}
+          className="w-full [&_.ant-table-thead_th]:!bg-[#34495e] [&_.ant-table-thead_th]:!text-white [&_.ant-table-thead_th]:!py-2 [&_.ant-table-thead_th]:!text-sm"
           rowKey="id"
           bordered
           loading={isLoading}
+          size="small" // thêm size="small" để giảm kích thước các cells
           onRow={(record) => ({
             onDoubleClick: (event) => {
-              event.preventDefault(); // Prevent default behavior
-              event.stopPropagation(); // Stop event propagation
+              event.preventDefault();
+              event.stopPropagation();
               onRowClick(record);
             },
           })}
         />
+      </div>
       )}
     </>
   );

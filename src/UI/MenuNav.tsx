@@ -286,7 +286,7 @@ import { Calendar, CalendarSearch, ClipboardList, MessagesSquare, User, Users } 
       <Menu
         mode="inline"
         selectedKeys={[selectedKey]}
-        className="h-full border-none bg-[#1b347b] 
+        className="h-full border-none bg-backgroundPage 
           [&_.ant-menu-item]:my-1 
           [&_.ant-menu-item]:mx-2 
           [&_.ant-menu-item]:rounded-lg

@@ -229,10 +229,10 @@ const Schedule = () => {
   }
   return (
     <Content className="p-4 max-w-[1400px] mx-auto">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold text-mainColor">
+      <div className="flex justify-end items-center mb-4">
+        {/* <h1 className="text-2xl font-bold text-mainColor">
           Quản lý lịch trình
-        </h1>
+        </h1> */}
         <Button
           icon={<PlusOutlined />}
           onClick={() => navigate("/schedule/createNewSchedule")}
@@ -345,6 +345,7 @@ const Schedule = () => {
           handleDeleteSchedule={handleDeleteSchedule}
           handleAssignUser={handleAssignUser}
         />
+        
       </Card>
 
       <Modal
