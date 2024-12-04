@@ -86,7 +86,7 @@ const ScheduleAssignedManager = () => {
   }
   return (
     <Layout className="min-h-screen bg-white">
-      <Content className="px-6 mt-3">
+      <Content className="px-6">
         <Space
           style={{
             marginBottom: 16,
@@ -94,13 +94,13 @@ const ScheduleAssignedManager = () => {
             justifyContent: "space-between",
           }}
         >
-          <Input
+          {/* <Input
             placeholder="Tìm kiếm theo tên nhiệm vụ"
             prefix={<SearchOutlined className="text-gray-400" />}
             value={searchText}
             onChange={handleSearchChange}
             className="max-w-xs"
-          />
+          /> */}
 
           <Button
             type="primary"
