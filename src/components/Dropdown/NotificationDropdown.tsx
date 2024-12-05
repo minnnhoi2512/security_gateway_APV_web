@@ -1,5 +1,5 @@
 // src/components/NotificationDropdown.tsx
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Dropdown, Space, Badge, Avatar, Typography, Button } from "antd";
 import { MenuProps } from "antd/lib";
 import {
@@ -25,6 +25,15 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = () => {
     useGetListNotificationUserQuery({
       userId: Number(userId),
     });
+    const [visibleNotifications, setVisibleNotifications] = useState(7);
+    const [dropdownVisible, setDropdownVisible] = useState(false);
+
+
+    
+
+    useEffect(() => {
+      setVisibleNotifications(7);
+    }, [notificaitionData]);
 
   useEffect(() => {
     if (notificaitionData?.length > 0 && takingNew) {
@@ -34,7 +43,21 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = () => {
   }, [takingNew, notificaitionData, refetchNoti]);
   
 
-  
+ 
+
+  useEffect(() => {
+    if (notificaitionData?.length > 0 && takingNew) {
+      toast("Bạn có thông báo mới");
+      refetchNoti();
+    }
+  }, [takingNew, notificaitionData, refetchNoti]);
+
+  const handleViewMore = () => {
+    setVisibleNotifications(prev => 
+      Math.min(prev + 7, notificaitionData?.length || 0)
+    );
+    setDropdownVisible(false); 
+  };
 
   const handleReadNotification = (
     element: any,
@@ -71,12 +94,16 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = () => {
       </div>
   
       <div className="overflow-y-auto max-h-[480px] py-2">
-        {[...notificaitionData].reverse().slice(0, 8).map((element, index) => (
+        {[...notificaitionData].reverse().slice(0, visibleNotifications).map((element, index) => (
           <div
             key={index}
             onClick={() => handleReadNotification(element, element.notificationUserID, element.readStatus)}
-            className="px-4 py-3 hover:bg-gray-50 cursor-pointer group"
-          >
+            className={`
+              px-4 py-3 
+              cursor-pointer 
+              group 
+              ${!element.readStatus ? 'bg-blue-50 hover:bg-blue-100' : 'hover:bg-gray-50'}
+            `}>
             <div className="flex gap-4">
               <div className="flex flex-col items-center min-w-[80px]">
                 <div className="relative">
@@ -92,34 +119,31 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = () => {
               
               <div className="flex-1 min-w-0">
                 <div className="mb-1">
-                  <span className="text-sm text-gray-900">{element.notification.title}</span>
+                  <span className="text-sm text-gray-900 font-bold">{element.notification.title}</span>
                 </div>
                 <p className="text-sm text-gray-600 line-clamp-2 mb-2">
                   {element.notification.content}
                 </p>
-                {/* <div className="flex items-center gap-2">
-                  {element.notification.notificationType?.name === 'Visit' && (
-                    <span className="px-2 py-0.5 text-xs rounded-full bg-blue-100 text-blue-700">Visit</span>
-                  )}
+                <div className="flex items-center gap-2">
                   <span className="text-xs text-gray-500">
                     {moment(element.notification.sentDate).fromNow()}
                   </span>
-                </div> */}
+                </div>
               </div>
             </div>
-  
-            {['Q3 Financials', 'Performance Reviews'].includes(element.notification?.title) && (
-              <div className="mt-3 flex gap-2 pl-14">
-                <button className="px-3 py-1 text-sm font-medium text-white bg-blue-600 rounded-full hover:bg-blue-700">
-                  Approve
-                </button>
-                <button className="px-3 py-1 text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-full">
-                  Deny
-                </button>
-              </div>
-            )}
           </div>
         ))}
+
+        {visibleNotifications < (notificaitionData?.length || 0) && (
+          <div className="text-center py-2 border-t">
+            <button 
+              onClick={handleViewMore}
+              className="text-sm text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-full"
+            >
+              Xem thêm ({visibleNotifications}/{notificaitionData.length})
+            </button>
+          </div>
+        )}
       </div>
     </div>
   ) : null;
@@ -128,6 +152,8 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = () => {
     <Dropdown 
       menu={{ items: [{ key: 'notifications', label: notificationItems }] }}
       trigger={["click"]} 
+      visible={dropdownVisible} // Quản lý trạng thái của dropdown
+      onVisibleChange={setDropdownVisible} // Lắng nghe sự thay đổi trạng thái dropdown
       placement="bottomRight"
     >
       <Badge count={notificaitionData?.filter(n => !n.readStatus).length}>
