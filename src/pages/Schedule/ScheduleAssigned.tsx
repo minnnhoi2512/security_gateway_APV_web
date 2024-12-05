@@ -89,7 +89,6 @@ const ScheduleAssignedManager = () => {
       <Content className="px-6">
         <Space
           style={{
-            marginBottom: 16,
             display: "flex",
             justifyContent: "space-between",
           }}

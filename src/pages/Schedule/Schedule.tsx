@@ -42,9 +42,20 @@ import { isEntityError } from "../../utils/helpers";
 import TableSchedule from "../../components/TableSchedule";
 import NotFoundState from "../../components/State/NotFoundState";
 import { CalendarDays, CalendarRange, Clock4 } from "lucide-react";
+import { ScheduleType } from "../../types/Enum/ScheduleType";
+import { Dayjs } from "dayjs";
+import { VisitStatus } from "../../types/Enum/VisitStatus";
 
 const { Content } = Layout;
 const { Option } = Select;
+
+interface Filters {
+  expectedStartTime: Dayjs | null;
+  expectedEndTime: Dayjs | null;
+  visitQuantity: [number, number];
+  visitStatus: VisitStatus[];
+  scheduleTypeId: any[];
+}
 
 const Schedule = () => {
   type FormError = { [key in keyof typeof assignData]: string } | null;
@@ -209,6 +220,25 @@ const Schedule = () => {
     }
   };
 
+
+
+  const [filters, setFilters] = useState<Filters>({
+    expectedStartTime: null,
+    expectedEndTime: null,
+    visitQuantity: [1, 100],
+    visitStatus: [],
+    scheduleTypeId: [],
+  });
+
+  const handleTypeFilter = (type: ScheduleType | null) => {
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      scheduleTypeId: prevFilters.scheduleTypeId.includes(type) ? [] : [type],
+    }));
+  };
+
+ 
+
   const handleCancelAssigned = () => {
     setAssignData({
       title: "",
@@ -297,46 +327,52 @@ const Schedule = () => {
           </Popover>
         </div>
 
-        <div className="flex gap-2">
-          <Button
-            className={`min-w-[120px] border-2 bg-yellow-50 border-yellow-500 text-yellow-600 hover:bg-yellow-50`}
-            onClick={() => handleFilterScheduleTypeId(2)} // Assuming 1 is the ScheduleTypeId for "Theo tuần"
-          >
-            <CalendarDays size={17} />
-            Theo tuần
-          </Button>
-          <Button
-            className={`min-w-[120px] border-2 bg-purple-50 border-purple-500 text-purple-600 hover:bg-purple-50`}
-            onClick={() => handleFilterScheduleTypeId(3)} // Assuming 2 is the ScheduleTypeId for "Theo tháng"
-          >
-            <CalendarRange size={17} />
-            Theo tháng
-          </Button>
-        </div>
+ 
       </div>
 
       <Card className="shadow-sm">
-        {/* Status Filter Tabs */}
-        <div className="">
-          <Button
-            className={`rounded-t-3xl mr-[2px] relative bg-mainColor text-white border-none hover:bg-mainColor border-mainColor hover:text-mainColor hover:border-mainColor`}
-            onClick={() => handleFilterStatus(true)}
-          >
-            Còn hiệu lực
-            <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center bg-red-500 text-white text-xs rounded-full">
-              {schedules?.filter((item) => item?.status === true).length}
-            </div>
-          </Button>
-          <Button
-            className={`rounded-t-3xl mr-[2px] relative bg-mainColor text-white border-none hover:bg-mainColor border-mainColor hover:text-mainColor hover:border-mainColor`}
-            onClick={() => handleFilterStatus(false)}
-          >
-            Hết hiệu lực
-            <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center bg-red-500 text-white text-xs rounded-full">
-              {schedules?.filter((item) => item?.status === false).length}
-            </div>
-          </Button>
-        </div>
+      {/* <div className="shadow-lg rounded-xl border-0">
+          <div className="flex gap-1">
+            <Button
+              onClick={() => handleTypeFilter(null)}
+              className={`rounded-t-[140px] min-w-[120px] border-b-0 ${
+                filters.scheduleTypeId.includes(null)
+                  ? "border-[#138d75] text-white bg-[#138d75]  "
+                  : "border-[#34495e] text-[#34495e]  "
+              }`}
+            >
+              <Clock4 size={17} />
+              Theo ngày
+            </Button>
+            <Button
+              onClick={() => handleTypeFilter(ScheduleType.Weekly)}
+              className={`rounded-t-[120px] min-w-[120px] border-b-0  ${
+                filters.scheduleTypeId.includes(ScheduleType.Weekly)
+                  ? "border-[#d35400] text-white bg-[#d35400]"
+                  : "border-[#34495e] text-[#34495e] hover:bg-yellow-50"
+              }`}
+            >
+              <CalendarDays size={17} />
+              Theo tuần
+            </Button>
+            <Button
+              // type={
+              //   filters.scheduleTypeId.includes(ScheduleType.Monthly)
+              //     ? "primary"
+              //     : "default"
+              // }
+              onClick={() => handleTypeFilter(ScheduleType.Monthly)}
+              className={`rounded-t-[120px] min-w-[120px] border-b-0  ${
+                filters.scheduleTypeId.includes(ScheduleType.Monthly)
+                  ? "border-[#7d3c98] text-white bg-[#7d3c98]"
+                  : "border-[#34495e] text-[#34495e] hover:bg-purple-50"
+              }`}
+            >
+              <CalendarRange size={17} />
+              Theo tháng
+            </Button>
+          </div>
+        </div> */}
 
         <TableSchedule
           schedules={filteredData || []}

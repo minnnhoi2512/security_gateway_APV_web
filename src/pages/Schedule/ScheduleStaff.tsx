@@ -79,7 +79,7 @@ const ScheduleStaff: React.FC<SchedulePageProps> = ({ status }) => {
           justifyContent: "space-between",
         }}
       >
-        <Input
+        {/* <Input
           placeholder="Tìm kiếm theo tên nhiệm vụ"
           prefix={<SearchOutlined />}
           value={searchText}
@@ -89,7 +89,7 @@ const ScheduleStaff: React.FC<SchedulePageProps> = ({ status }) => {
             borderColor: "#1890ff",
             borderRadius: 5,
           }}
-        />
+        /> */}
         <Button
           type="primary"
           size="large"

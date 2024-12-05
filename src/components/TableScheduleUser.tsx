@@ -45,6 +45,7 @@ const TableScheduleUser: React.FC<ScheduleAssignedTableProps> = ({
   const [filteredData, setFilteredData] = useState<ScheduleUserType[]>(data);
   const [animationActive, setAnimationActive] = useState<boolean>(true);
 
+  const [searchText, setSearchText] = useState("");
   useEffect(() => {
     let filtered = data;
 
@@ -66,9 +67,10 @@ const TableScheduleUser: React.FC<ScheduleAssignedTableProps> = ({
         item.title?.toLowerCase().includes(searchText.toLowerCase())
       );
     }
+  
 
     setFilteredData(filtered);
-  }, [data, filters]);
+  }, [data, filters, searchText]);
 
   const columns: ColumnsType<ScheduleUserType> = [
     // {
@@ -179,7 +181,8 @@ const TableScheduleUser: React.FC<ScheduleAssignedTableProps> = ({
     return data?.filter((item: any) => item.status === status).length || 0;
   };
 
-  const [searchText, setSearchText] = useState("");
+  
+
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchText(e.target.value);
@@ -199,6 +202,25 @@ const TableScheduleUser: React.FC<ScheduleAssignedTableProps> = ({
     }));
   };
 
+  const getHeaderBackgroundColor = () => {
+    if (filters.scheduleTypeId.length === 1) {
+      const type = filters.scheduleTypeId[0];
+      switch (type) {
+        case null:
+          return "[&_.ant-table-thead_th]:!bg-[#138d75] [&_.ant-table-thead_th]:!text-white";
+        case ScheduleType.Weekly:
+          return "[&_.ant-table-thead_th]:!bg-[#d35400] [&_.ant-table-thead_th]:!text-white";
+        case ScheduleType.Monthly:
+          return "[&_.ant-table-thead_th]:!bg-[#7d3c98] [&_.ant-table-thead_th]:!text-white";
+        case "ALL":
+          return "[&_.ant-table-thead_th]:!bg-[#34495e] [&_.ant-table-thead_th]:!text-white";
+        default:
+          return "[&_.ant-table-thead_th]:!bg-[#34495e] [&_.ant-table-thead_th]:!text-white";
+      }
+    }
+    return "[&_.ant-table-thead_th]:!bg-[#34495e] [&_.ant-table-thead_th]:!text-white";
+  };
+
   return (
     <div className="p-4 max-w-[1400px] mx-auto">
       <div className="flex justify-between items-center mb-6">
@@ -209,106 +231,53 @@ const TableScheduleUser: React.FC<ScheduleAssignedTableProps> = ({
           onChange={handleSearchChange}
           className="max-w-xs"
         />
-        <div className="flex items-end justify-end gap-2 mb-6 ">
-          <Button
-            onClick={() => handleTypeFilter(null)}
-            className={`min-w-[120px] border-2 ${
-              filters.scheduleTypeId.includes(null)
-                ? "border-green-500 text-green-600 bg-green-50"
-                : "border-green-500 text-green-600 hover:bg-green-50"
-            }`}
-          >
-            <Clock4 size={17} />
-            Theo ngày
-          </Button>
-          <Button
-            onClick={() => handleTypeFilter(ScheduleType.Weekly)}
-            className={`min-w-[120px] border-2 ${
-              filters.scheduleTypeId.includes(ScheduleType.Weekly)
-                ? "border-yellow-500 text-yellow-600 bg-yellow-50"
-                : "border-yellow-500 text-yellow-600 hover:bg-yellow-50"
-            }`}
-          >
-            <CalendarDays size={17} />
-            Theo tuần
-          </Button>
-          <Button
-            type={
-              filters.scheduleTypeId.includes(ScheduleType.Monthly)
-                ? "primary"
-                : "default"
-            }
-            onClick={() => handleTypeFilter(ScheduleType.Monthly)}
-            className={`min-w-[120px] border-2 ${
-              filters.scheduleTypeId.includes(ScheduleType.Monthly)
-                ? "border-purple-500 text-purple-600 bg-purple-50"
-                : "border-purple-500 text-purple-600 hover:bg-purple-50"
-            }`}
-          >
-            <CalendarRange size={17} />
-            Theo tháng
-          </Button>
+        
+       
+      </div>
+
+      <div className="shadow-lg rounded-xl border-0">
+          <div className="flex gap-1">
+            <Button
+              onClick={() => handleTypeFilter(null)}
+              className={`rounded-t-[140px] min-w-[120px] border-b-0 ${
+                filters.scheduleTypeId.includes(null)
+                  ? "border-[#138d75] text-white bg-[#138d75]  "
+                  : "border-[#34495e] text-[#34495e]  "
+              }`}
+            >
+              <Clock4 size={17} />
+              Theo ngày
+            </Button>
+            <Button
+              onClick={() => handleTypeFilter(ScheduleType.Weekly)}
+              className={`rounded-t-[120px] min-w-[120px] border-b-0  ${
+                filters.scheduleTypeId.includes(ScheduleType.Weekly)
+                  ? "border-[#d35400] text-white bg-[#d35400]"
+                  : "border-[#34495e] text-[#34495e] hover:bg-yellow-50"
+              }`}
+            >
+              <CalendarDays size={17} />
+              Theo tuần
+            </Button>
+            <Button
+              // type={
+              //   filters.scheduleTypeId.includes(ScheduleType.Monthly)
+              //     ? "primary"
+              //     : "default"
+              // }
+              onClick={() => handleTypeFilter(ScheduleType.Monthly)}
+              className={`rounded-t-[120px] min-w-[120px] border-b-0  ${
+                filters.scheduleTypeId.includes(ScheduleType.Monthly)
+                  ? "border-[#7d3c98] text-white bg-[#7d3c98]"
+                  : "border-[#34495e] text-[#34495e] hover:bg-purple-50"
+              }`}
+            >
+              <CalendarRange size={17} />
+              Theo tháng
+            </Button>
+          </div>
         </div>
-      </div>
-
-      <div className="flex gap-1">
-        <Button
-          onClick={() => handleStatusFilter(null)}
-          className={`rounded-t-3xl mr-[2px] ${
-            filters.visitStatus.length === 0
-              ? "bg-mainColor text-white"
-              : "bg-white border-mainColor text-mainColor"
-          }`}
-        >
-          Tất cả
-        </Button>
-
-        {/* Special button for Pending status */}
-        <Button
-          onClick={() => handleStatusFilter(ScheduleUserStatus.Pending)}
-          className={`
-      rounded-t-3xl mr-[2px] relative transition-all duration-200
-      ${
-        filters.visitStatus.includes(ScheduleUserStatus.Pending)
-          ? "bg-orange-500 text-white border-none shadow-lg scale-105"
-          : "bg-orange-50 border-orange-500 text-orange-700 hover:bg-orange-100"
-      }
-      font-medium
-    `}
-        >
-          {scheduleStatusMap[ScheduleUserStatus.Pending].text}
-          {getCountByStatus(ScheduleUserStatus.Pending) > 0 && (
-            <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center bg-red-500 text-white text-xs rounded-full animate-pulse">
-              {getCountByStatus(ScheduleUserStatus.Pending)}
-            </div>
-          )}
-        </Button>
-
-        {/* Other status buttons */}
-        {Object.values(ScheduleUserStatus)
-          .filter((status) => status !== ScheduleUserStatus.Pending)
-          .map((status) => {
-            const count = getCountByStatus(status);
-            return (
-              <Button
-                key={status}
-                onClick={() => handleStatusFilter(status)}
-                className={`rounded-t-3xl mr-[2px] relative ${
-                  filters.visitStatus.includes(status)
-                    ? "bg-mainColor text-white border-none"
-                    : "bg-white border-mainColor text-mainColor"
-                }`}
-              >
-                {scheduleStatusMap[status].text}
-                {count > 0 && (
-                  <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center bg-red-500 text-white text-xs rounded-full">
-                    {count}
-                  </div>
-                )}
-              </Button>
-            );
-          })}
-      </div>
+    
 
       <Table
         columns={columns}
@@ -320,7 +289,7 @@ const TableScheduleUser: React.FC<ScheduleAssignedTableProps> = ({
           pageSizeOptions: ["5", "10"],
           showTotal: (total) => `Tổng ${total} chuyến thăm`,
         }}
-        className="w-full [&_.ant-table-thead_th]:!bg-gray-50 [&_.ant-table-thead_th]:!text-gray-700 [&_.ant-table-thead_th]:!font-medium [&_.ant-table-thead_th]:!py-3 [&_.ant-table-thead_th]:!text-sm hover:[&_.ant-table-tbody_tr]:bg-blue-50/30"
+        className={`w-full ${getHeaderBackgroundColor()} [&_.ant-table-thead_th]:!font-medium [&_.ant-table-thead_th]:!py-3 [&_.ant-table-thead_th]:!text-sm hover:[&_.ant-table-tbody_tr]:bg-blue-50/30 [&_.ant-table]:!rounded-none [&_.ant-table-container]:!rounded-none [&_.ant-table-thead>tr>th:first-child]:!rounded-tl-none [&_.ant-table-thead>tr>th:last-child]:!rounded-tr-none [&_.ant-table-thead_th]:!transition-none`}
         loading={isLoading}
         onRow={(record) => ({
           onDoubleClick: () => onRowClick(record),

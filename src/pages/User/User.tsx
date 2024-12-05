@@ -400,14 +400,14 @@ const User = () => {
               />
             </div>
 
-            <Select
+            {/* <Select
               value={role}
               onChange={(value) => setRole(value)}
               style={{ width: 200 }}
               className="rounded-lg"
             >
               <Option value="All">Tất cả</Option>
-              {/* ... other options */}
+          
             </Select>
 
             <Select
@@ -417,8 +417,8 @@ const User = () => {
               className="rounded-lg"
             >
               <Option value="All">Tất cả phòng ban</Option>
-              {/* ... other options */}
-            </Select>
+         
+            </Select> */}
           </div>
 
           <Button

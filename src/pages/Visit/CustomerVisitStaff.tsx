@@ -11,6 +11,7 @@ import {
   Popover,
   Tooltip,
   notification,
+  Card,
 } from "antd";
 import {
   SearchOutlined,
@@ -30,6 +31,7 @@ import { VisitStatus, visitStatusMap } from "../../types/Enum/VisitStatus";
 import { ScheduleType, typeMap } from "../../types/Enum/ScheduleType";
 import ListHistorySessonVisit from "../History/ListHistorySessionVisit";
 import NotFoundState from "../../components/State/NotFoundState";
+import { CalendarDays, CalendarRange, Clock4 } from "lucide-react";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -75,13 +77,13 @@ const CustomerVisitStaff = () => {
     setAnimationActive(false);
   };
   const columns: TableProps<VisitListType>["columns"] = [
-    {
-      title: "STT",
-      dataIndex: "index",
-      key: "index",
-      width: 50,
-      render: (text, record, index) => index + 1,
-    },
+    // {
+    //   title: "STT",
+    //   dataIndex: "index",
+    //   key: "index",
+    //   width: 50,
+    //   render: (text, record, index) => index + 1,
+    // },
     {
       title: "Tên chuyến thăm",
       dataIndex: "visitName",
@@ -222,6 +224,25 @@ const CustomerVisitStaff = () => {
     });
   };
 
+  const getHeaderBackgroundColor = () => {
+    if (filters.scheduleTypeId.length === 1) {
+      const type = filters.scheduleTypeId[0];
+      switch (type) {
+        case null:
+          return "[&_.ant-table-thead_th]:!bg-[#138d75] [&_.ant-table-thead_th]:!text-white";
+        case ScheduleType.Weekly:
+          return "[&_.ant-table-thead_th]:!bg-[#d35400] [&_.ant-table-thead_th]:!text-white";
+        case ScheduleType.Monthly:
+          return "[&_.ant-table-thead_th]:!bg-[#7d3c98] [&_.ant-table-thead_th]:!text-white";
+        case "ALL":
+          return "[&_.ant-table-thead_th]:!bg-[#34495e] [&_.ant-table-thead_th]:!text-white";
+        default:
+          return "[&_.ant-table-thead_th]:!bg-[#34495e] [&_.ant-table-thead_th]:!text-white";
+      }
+    }
+    return "[&_.ant-table-thead_th]:!bg-[#34495e] [&_.ant-table-thead_th]:!text-white";
+  };
+
   useEffect(() => {
     if (isLoading || !data) return;
     let filtered = data;
@@ -301,15 +322,9 @@ const CustomerVisitStaff = () => {
     );
   }
   return (
-    <Content className="px-6">
-      <Space
-        style={{
-          marginBottom: 16,
-          display: "flex",
-          justifyContent: "space-between",
-        }}
-      >
-        <Space>
+    <Content className="px-6 mt-10">
+      <div className="flex gap-4">
+        <div className="flex flex-1 gap-2">
           <Input
             placeholder="Tìm kiếm chuyến thăm..."
             prefix={<SearchOutlined className="text-gray-400" />}
@@ -317,11 +332,121 @@ const CustomerVisitStaff = () => {
             onChange={handleSearchChange}
             className="max-w-xs"
           />
-          <Popover content={filterContent} title="Bộ lọc" trigger="click">
+          <Popover
+            content={
+              <Space direction="vertical" className="w-64">
+                {/* Bộ lọc theo ngày */}
+                <DatePicker
+                  placeholder="Ngày bắt đầu"
+                  className="w-full"
+                  onChange={(date) =>
+                    handleFilterChange("expectedStartTime", date)
+                  }
+                />
+                <DatePicker
+                  placeholder="Ngày kết thúc"
+                  className="w-full"
+                  onChange={(date) =>
+                    handleFilterChange("expectedEndTime", date)
+                  }
+                />
+
+                {/* Bộ lọc số lượng khách */}
+                <div className="mt-1">
+                  <small className="text-gray-500">Số lượng khách</small>
+                  <Slider
+                    range
+                    min={1}
+                    max={100}
+                    defaultValue={[1, 100]}
+                    onChange={(value) =>
+                      handleFilterChange("visitQuantity", value)
+                    }
+                  />
+                </div>
+
+                {/* Bộ lọc trạng thái */}
+                <div className="mt-4">
+                  <small className="text-gray-500 block mb-2">Trạng thái</small>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {Object.values(VisitStatus)
+                      .filter((status) => status !== "Pending")
+                      .map((status) => {
+                        const { colorVisitStatus, textVisitStatus } =
+                          visitStatusMap[status];
+                        const count = getCountByStatus(status);
+                        const isSelected = filters.visitStatus.includes(status);
+
+                        return (
+                          <Button
+                            key={status}
+                            onClick={() => handleStatusFilter(status)}
+                            className={`
+                  relative 
+                  rounded-full 
+                  px-3 
+                  py-1 
+                  h-auto 
+                  text-xs 
+                  transition-all 
+                  duration-200 
+                  ${
+                    isSelected
+                      ? "bg-[#34495e] text-white hover:bg-primary/90"
+                      : "bg-[white] text-primary border-primary hover:bg-primary/10"
+                  }
+                `}
+                          >
+                            <span className="relative z-10">
+                              {textVisitStatus}
+                            </span>
+                            {count > 0 && (
+                              <span
+                                className="
+                      absolute 
+                      -top-1 
+                      -right-1 
+                      z-20 
+                      bg-red-500 
+                      text-white 
+                      text-[10px] 
+                      rounded-full 
+                      min-w-[16px] 
+                      h-[16px] 
+                      flex 
+                      items-center 
+                      justify-center 
+                      px-1
+                    "
+                              >
+                                {count}
+                              </span>
+                            )}
+                          </Button>
+                        );
+                      })}
+                  </div>
+                </div>
+                {/* Nút xóa bộ lọc */}
+                <Button
+                  type="default"
+                  block
+                  onClick={handleClearFilters}
+                  size="small"
+                  className="mt-4"
+                >
+                  Xóa bộ lọc
+                </Button>
+              </Space>
+            }
+            trigger="click"
+            placement="bottomRight"
+          >
             <Button icon={<FilterOutlined />} />
           </Popover>
-        </Space>
-        <Button
+        </div>
+
+        {/* <Button
           type="primary"
           size="large"
           icon={<PlusOutlined />}
@@ -329,9 +454,16 @@ const CustomerVisitStaff = () => {
           style={{ borderRadius: 12 }}
         >
           Tạo mới
+        </Button> */}
+        <Button
+          icon={<PlusOutlined />}
+          onClick={() => setIsCreateModalVisible(true)}
+          className="px-4 py-4 text-lg   rounded-lg bg-mainColor hover:bg-opacity-90 transition-all   shadow-md text-white flex items-center justify-center"
+        >
+          <span className="mb-[2px]">Tạo mới</span>
         </Button>
-      </Space>
-      <>
+      </div>
+      {/* <>
         <Space style={{ marginBottom: 16, display: "flex", flexWrap: "wrap" }}>
           <Button
             type={filters.scheduleTypeId.includes(null) ? "primary" : "default"}
@@ -472,29 +604,76 @@ const CustomerVisitStaff = () => {
             Đã hết hạn ({getCountByStatus(VisitStatus.Inactive)})
           </Button>
         </Space>
-      </>
+      </> */}
+      <Card className="shadow-lg rounded-xl border-0">
+        <div className="shadow-lg rounded-xl border-0">
+          <div className="flex gap-1">
+            <Button
+              onClick={() => handleTypeFilter(null)}
+              className={`rounded-t-[140px] min-w-[120px] border-b-0 ${
+                filters.scheduleTypeId.includes(null)
+                  ? "border-[#138d75] text-white bg-[#138d75]  "
+                  : "border-[#34495e] text-[#34495e]  "
+              }`}
+            >
+              <Clock4 size={17} />
+              Theo ngày
+            </Button>
+            <Button
+              onClick={() => handleTypeFilter(ScheduleType.Weekly)}
+              className={`rounded-t-[120px] min-w-[120px] border-b-0  ${
+                filters.scheduleTypeId.includes(ScheduleType.Weekly)
+                  ? "border-[#d35400] text-white bg-[#d35400]"
+                  : "border-[#34495e] text-[#34495e] hover:bg-yellow-50"
+              }`}
+            >
+              <CalendarDays size={17} />
+              Theo tuần
+            </Button>
+            <Button
+              // type={
+              //   filters.scheduleTypeId.includes(ScheduleType.Monthly)
+              //     ? "primary"
+              //     : "default"
+              // }
+              onClick={() => handleTypeFilter(ScheduleType.Monthly)}
+              className={`rounded-t-[120px] min-w-[120px] border-b-0  ${
+                filters.scheduleTypeId.includes(ScheduleType.Monthly)
+                  ? "border-[#7d3c98] text-white bg-[#7d3c98]"
+                  : "border-[#34495e] text-[#34495e] hover:bg-purple-50"
+              }`}
+            >
+              <CalendarRange size={17} />
+              Theo tháng
+            </Button>
+          </div>
+        </div>
+        <Table
+          columns={columns}
+          dataSource={filteredData}
+          pagination={{
+            total: filteredData?.length,
+            pageSize: 8,
+            showSizeChanger: true,
+            pageSizeOptions: ["5", "10"],
+            showTotal: (total) => `Tổng ${total} chuyến thăm`,
+            size: "small",
+            className: "mt-4",
+          }}
+          rowKey="visitId"
+          className={`w-full ${getHeaderBackgroundColor()} [&_.ant-table-thead_th]:!font-medium [&_.ant-table-thead_th]:!py-3 [&_.ant-table-thead_th]:!text-sm hover:[&_.ant-table-tbody_tr]:bg-blue-50/30 [&_.ant-table]:!rounded-none [&_.ant-table-container]:!rounded-none [&_.ant-table-thead>tr>th:first-child]:!rounded-tl-none [&_.ant-table-thead>tr>th:last-child]:!rounded-tr-none [&_.ant-table-thead_th]:!transition-none`}
+          size="middle"
+          bordered={false}
+          onRow={(record) => ({
+            onDoubleClick: () =>
+              navigate(`/customerVisit/detailVisit/${record.visitId}`, {
+                state: { record },
+              }),
+            className: "cursor-pointer transition-colors",
+          })}
+        />
+      </Card>
 
-      <Table
-        columns={columns}
-        dataSource={filteredData}
-        pagination={{
-          total: filteredData?.length,
-          showSizeChanger: true,
-          pageSizeOptions: ["5", "10"],
-          hideOnSinglePage: false,
-          size: "small",
-        }}
-        rowKey="visitId"
-        bordered
-        loading={isLoading}
-        onRow={(record) => ({
-          onDoubleClick: () => {
-            navigate(`/customerVisitStaff/detailVisit/${record.visitId}`, {
-              state: { record },
-            });
-          },
-        })}
-      />
       <Modal
         title="Lịch sử lượt ra vào"
         visible={isModalVisible}

@@ -11,6 +11,10 @@ import { formatDate } from "../utils/ultil";
 import DetailSchedule from "../pages/Schedule/DetailSchedule";
 import moment from "moment"; // Import moment
 import { useNavigate } from "react-router-dom"; // Import navigate
+import { Dayjs } from "dayjs";
+import { VisitStatus } from "../types/Enum/VisitStatus";
+import { ScheduleType } from "../types/Enum/ScheduleType";
+import { CalendarDays, CalendarRange, Clock4 } from "lucide-react";
 
 interface ScheduleTableProps {
   schedules: Schedule[];
@@ -18,6 +22,14 @@ interface ScheduleTableProps {
   totalCount: number;
   handleDeleteSchedule: (scheduleId: number) => void;
   handleAssignUser: (scheduleId: number) => void;
+}
+
+interface Filters {
+  expectedStartTime: Dayjs | null;
+  expectedEndTime: Dayjs | null;
+  visitQuantity: [number, number];
+  visitStatus: VisitStatus[];
+  scheduleTypeId: any[];
 }
 
 const TableSchedule: React.FC<ScheduleTableProps> = ({
@@ -41,6 +53,49 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({
   const handleCancel = () => {
     setIsModalVisible(false);
   };
+
+
+  const [filters, setFilters] = useState<Filters>({
+    expectedStartTime: null,
+    expectedEndTime: null,
+    visitQuantity: [1, 100],
+    visitStatus: [],
+    scheduleTypeId: [],
+  });
+
+  const handleTypeFilter = (type: ScheduleType | null) => {
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      scheduleTypeId: prevFilters.scheduleTypeId.includes(type) ? [] : [type],
+    }));
+  };
+
+  const filteredSchedules = schedules.filter((schedule) => {
+    if (filters.scheduleTypeId.length === 0) {
+      return true;  
+    }
+    return filters.scheduleTypeId.includes(schedule.scheduleType?.scheduleTypeName);
+  });
+
+  const getHeaderBackgroundColor = () => {
+    if (filters.scheduleTypeId.length === 1) {
+      const type = filters.scheduleTypeId[0];
+      switch (type) {
+        case null:
+          return "[&_.ant-table-thead_th]:!bg-[#138d75] [&_.ant-table-thead_th]:!text-white";
+        case ScheduleType.Weekly:
+          return "[&_.ant-table-thead_th]:!bg-[#d35400] [&_.ant-table-thead_th]:!text-white";
+        case ScheduleType.Monthly:
+          return "[&_.ant-table-thead_th]:!bg-[#7d3c98] [&_.ant-table-thead_th]:!text-white";
+        case "ALL":
+          return "[&_.ant-table-thead_th]:!bg-[#34495e] [&_.ant-table-thead_th]:!text-white";
+        default:
+          return "[&_.ant-table-thead_th]:!bg-[#34495e] [&_.ant-table-thead_th]:!text-white";
+      }
+    }
+    return "[&_.ant-table-thead_th]:!bg-[#34495e] [&_.ant-table-thead_th]:!text-white";
+  };
+
   console.log(schedules);
   const columns: ColumnsType<Schedule> = [
     {
@@ -193,20 +248,59 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({
     //     />
     //   </Modal>
     // </>
-    <Table
-      columns={columns}
-      dataSource={schedules || []}
-      rowKey="scheduleId"
-      loading={schedulesIsLoading}
-      pagination={{
-        total: totalCount,
-        showSizeChanger: true,
-        pageSizeOptions: ["5", "10"],
-        size: "small",
-      }}
-      bordered
-      className="w-full [&_.ant-table-thead_th]:!bg-[#34495e] [&_.ant-table-thead_th]:!text-white [&_.ant-table-thead_th]:!py-2 [&_.ant-table-thead_th]:!text-sm"
-    />
+    <>
+      <div className="shadow-lg rounded-xl border-0">
+        <div className="flex gap-1">
+          <Button
+            onClick={() => handleTypeFilter(null)}
+            className={`rounded-t-[140px] min-w-[120px] border-b-0 ${
+              filters.scheduleTypeId.includes(null)
+                ? "border-[#138d75] text-white bg-[#138d75]  "
+                : "border-[#34495e] text-[#34495e]  "
+            }`}
+          >
+            <Clock4 size={17} />
+            Theo ngày
+          </Button>
+          <Button
+            onClick={() => handleTypeFilter(ScheduleType.Weekly)}
+            className={`rounded-t-[120px] min-w-[120px] border-b-0  ${
+              filters.scheduleTypeId.includes(ScheduleType.Weekly)
+                ? "border-[#d35400] text-white bg-[#d35400]"
+                : "border-[#34495e] text-[#34495e] hover:bg-yellow-50"
+            }`}
+          >
+            <CalendarDays size={17} />
+            Theo tuần
+          </Button>
+          <Button
+            onClick={() => handleTypeFilter(ScheduleType.Monthly)}
+            className={`rounded-t-[120px] min-w-[120px] border-b-0  ${
+              filters.scheduleTypeId.includes(ScheduleType.Monthly)
+                ? "border-[#7d3c98] text-white bg-[#7d3c98]"
+                : "border-[#34495e] text-[#34495e] hover:bg-purple-50"
+            }`}
+          >
+            <CalendarRange size={17} />
+            Theo tháng
+          </Button>
+        </div>
+      </div>
+      <Table
+        columns={columns}
+        dataSource={schedules || []}
+        rowKey="scheduleId"
+        loading={schedulesIsLoading}
+        pagination={{
+          total: totalCount,
+          showSizeChanger: true,
+          pageSizeOptions: ["5", "10"],
+          size: "small",
+        }}
+        bordered
+        className={`w-full ${getHeaderBackgroundColor()} [&_.ant-table-thead_th]:!font-medium [&_.ant-table-thead_th]:!py-3 [&_.ant-table-thead_th]:!text-sm hover:[&_.ant-table-tbody_tr]:bg-blue-50/30 [&_.ant-table]:!rounded-none [&_.ant-table-container]:!rounded-none [&_.ant-table-thead>tr>th:first-child]:!rounded-tl-none [&_.ant-table-thead>tr>th:last-child]:!rounded-tr-none [&_.ant-table-thead_th]:!transition-none`}
+      />
+    </>
   );
 };
 
