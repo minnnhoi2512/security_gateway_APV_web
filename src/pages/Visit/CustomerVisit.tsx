@@ -299,11 +299,11 @@ const CustomerVisit = () => {
       const type = filters.scheduleTypeId[0];
       switch (type) {
         case null:
-          return "[&_.ant-table-thead_th]:!bg-[#138d75] [&_.ant-table-thead_th]:!text-white";
+          return "[&_.ant-table-thead_th]:!bg-[#138d75]/10 [&_.ant-table-thead_th]:!text-[#138d75]";
         case ScheduleType.Weekly:
-          return "[&_.ant-table-thead_th]:!bg-[#d35400] [&_.ant-table-thead_th]:!text-white";
+          return "[&_.ant-table-thead_th]:!bg-[#e67e22]/10 [&_.ant-table-thead_th]:!text-[#e67e22]";
         case ScheduleType.Monthly:
-          return "[&_.ant-table-thead_th]:!bg-[#7d3c98] [&_.ant-table-thead_th]:!text-white";
+          return "[&_.ant-table-thead_th]:!bg-[#2980b9]/10 [&_.ant-table-thead_th]:!text-[#2980b9]";
         case "ALL":
           return "[&_.ant-table-thead_th]:!bg-[#34495e] [&_.ant-table-thead_th]:!text-white";
         default:
@@ -513,7 +513,7 @@ const CustomerVisit = () => {
               onClick={() => handleTypeFilter(ScheduleType.Weekly)}
               className={`rounded-t-[120px] min-w-[120px] border-b-0  ${
                 filters.scheduleTypeId.includes(ScheduleType.Weekly)
-                  ? "border-[#d35400] text-white bg-[#d35400]"
+                  ? "border-[#d35400] text-white bg-[#e67e22]"
                   : "border-[#34495e] text-[#34495e] hover:bg-yellow-50"
               }`}
             >
@@ -529,7 +529,7 @@ const CustomerVisit = () => {
               onClick={() => handleTypeFilter(ScheduleType.Monthly)}
               className={`rounded-t-[120px] min-w-[120px] border-b-0  ${
                 filters.scheduleTypeId.includes(ScheduleType.Monthly)
-                  ? "border-[#7d3c98] text-white bg-[#7d3c98]"
+                  ? "border-[#7d3c98] text-white bg-[#2980b9]"
                   : "border-[#34495e] text-[#34495e] hover:bg-purple-50"
               }`}
             >
@@ -544,7 +544,7 @@ const CustomerVisit = () => {
           dataSource={filteredData}
           pagination={{
             total: filteredData?.length,
-            pageSize: 8,
+            // pageSize: 8,
             showSizeChanger: true,
             pageSizeOptions: ["5", "10"],
             showTotal: (total) => `Tổng ${total} chuyến thăm`,

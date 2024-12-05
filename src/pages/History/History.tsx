@@ -523,7 +523,7 @@ const History = () => {
   );
   if (loading) return <LoadingState />;
   return (
-    <Content className="px-6 mt-7">
+    <Content className="p-4 max-w-[1200px] mx-auto mt-7">
       <Space
         style={{
           marginBottom: 16,
@@ -560,7 +560,7 @@ const History = () => {
         </Button>
       </Space>
       {/* <Table columns={columns} dataSource={filteredData} loading={loading} />{" "} */}
-      <Card className="shadow-sm">
+      <Card className="shadow-lg rounded-xl border-0">
         <div className="rounded-lg bg-white mx-auto" style={{ width: "100%" }}>
           <Table
             columns={columns}
@@ -569,13 +569,14 @@ const History = () => {
             pagination={{
               pageSize: 8,
               size: "small",
-              className: "px-4",
+              className: "mt-4",
               showSizeChanger: true,
               showTotal: (total) => `${total} kết quả`,
               position: ["bottomRight"],
             }}
-            className="w-full [&_.ant-table-thead_th]:!bg-[#34495e] [&_.ant-table-thead_th]:!text-white"
-            size="small"
+            className={`w-full [&_.ant-table-thead_th]:!bg-[#34495e] [&_.ant-table-thead_th]:!text-white [&_.ant-table-thead_th]:!font-medium [&_.ant-table-thead_th]:!py-3 [&_.ant-table-thead_th]:!text-sm hover:[&_.ant-table-tbody_tr]:bg-blue-50/30 [&_.ant-table]:!rounded-none [&_.ant-table-container]:!rounded-none [&_.ant-table-thead>tr>th:first-child]:!rounded-tl-none [&_.ant-table-thead>tr>th:last-child]:!rounded-tr-none [&_.ant-table-thead_th]:!transition-none`}
+            size="middle"
+            bordered={false}
             rowClassName="hover:bg-gray-50"
             style={{
               borderColor: "transparent",

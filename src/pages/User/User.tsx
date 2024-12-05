@@ -421,18 +421,25 @@ const User = () => {
             </Select> */}
           </div>
 
-          <Button
+          {/* <Button
             type="primary"
             icon={<PlusOutlined />}
             onClick={() => setIsCreateUserModalVisible(true)}
             className="bg-blue-500 hover:bg-blue-600 flex items-center h-10 px-4 rounded-lg"
           >
             Tạo mới người dùng
+          </Button> */}
+          <Button
+            icon={<PlusOutlined />}
+            onClick={() => setIsCreateUserModalVisible(true)}
+            className="px-4 py-4 text-lg   rounded-lg bg-mainColor hover:bg-opacity-90 transition-all   shadow-md text-white flex items-center justify-center"
+          >
+            <span className="mb-[2px]"> Tạo mới</span>
           </Button>
         </div>
 
         {/* Table Section */}
-        <Card className="shadow-sm">
+        <Card className="shadow-lg rounded-xl border-0">
           <Table
             columns={columns}
             dataSource={filteredData}
@@ -440,13 +447,13 @@ const User = () => {
               total: filteredData?.length,
               showSizeChanger: true,
               pageSizeOptions: ["10", "20", "50"],
-              size: "default",
+              size: "small",
               showTotal: (total) => `Tổng ${total} người dùng`,
-              className: "px-4",
+              className: "mt-5",
             }}
             loading={isLoadingUser}
             rowKey="userId"
-            className="w-full [&_.ant-table-thead_th]:!bg-[#34495e] [&_.ant-table-thead_th]:!text-white"
+            className={`w-full [&_.ant-table-thead_th]:!bg-[#34495e] [&_.ant-table-thead_th]:!text-white [&_.ant-table-thead_th]:!font-medium [&_.ant-table-thead_th]:!py-3 [&_.ant-table-thead_th]:!text-sm hover:[&_.ant-table-tbody_tr]:bg-blue-50/30 [&_.ant-table]:!rounded-none [&_.ant-table-container]:!rounded-none [&_.ant-table-thead>tr>th:first-child]:!rounded-tl-none [&_.ant-table-thead>tr>th:last-child]:!rounded-tr-none [&_.ant-table-thead_th]:!transition-none`}
             size="middle"
             rowClassName="hover:bg-gray-50"
           />

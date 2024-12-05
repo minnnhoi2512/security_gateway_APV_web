@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, Modal, Table, Tag } from "antd";
+import { Button, Card, Modal, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import Schedule from "../types/scheduleType";
 import {
@@ -54,7 +54,6 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({
     setIsModalVisible(false);
   };
 
-
   const [filters, setFilters] = useState<Filters>({
     expectedStartTime: null,
     expectedEndTime: null,
@@ -72,9 +71,11 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({
 
   const filteredSchedules = schedules.filter((schedule) => {
     if (filters.scheduleTypeId.length === 0) {
-      return true;  
+      return true;
     }
-    return filters.scheduleTypeId.includes(schedule.scheduleType?.scheduleTypeName);
+    return filters.scheduleTypeId.includes(
+      schedule.scheduleType?.scheduleTypeName
+    );
   });
 
   const getHeaderBackgroundColor = () => {
@@ -113,15 +114,15 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({
         let tagColor = "default";
 
         switch (scheduleTypeName) {
-          case "VisitDaily":
-            return (
-              <Tag
-                color="blue"
-                style={{ minWidth: "80px", textAlign: "center" }}
-              >
-                Theo ngày
-              </Tag>
-            );
+          // case "VisitDaily":
+          //   return (
+          //     <Tag
+          //       color="blue"
+          //       style={{ minWidth: "80px", textAlign: "center" }}
+          //     >
+          //       Theo ngày
+          //     </Tag>
+          //   );
           case "ProcessWeek":
             return (
               <Tag
@@ -248,59 +249,52 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({
     //     />
     //   </Modal>
     // </>
-    <>
-      <div className="shadow-lg rounded-xl border-0">
-        <div className="flex gap-1">
-          <Button
-            onClick={() => handleTypeFilter(null)}
-            className={`rounded-t-[140px] min-w-[120px] border-b-0 ${
-              filters.scheduleTypeId.includes(null)
-                ? "border-[#138d75] text-white bg-[#138d75]  "
-                : "border-[#34495e] text-[#34495e]  "
-            }`}
-          >
-            <Clock4 size={17} />
-            Theo ngày
-          </Button>
-          <Button
-            onClick={() => handleTypeFilter(ScheduleType.Weekly)}
-            className={`rounded-t-[120px] min-w-[120px] border-b-0  ${
-              filters.scheduleTypeId.includes(ScheduleType.Weekly)
-                ? "border-[#d35400] text-white bg-[#d35400]"
-                : "border-[#34495e] text-[#34495e] hover:bg-yellow-50"
-            }`}
-          >
-            <CalendarDays size={17} />
-            Theo tuần
-          </Button>
-          <Button
-            onClick={() => handleTypeFilter(ScheduleType.Monthly)}
-            className={`rounded-t-[120px] min-w-[120px] border-b-0  ${
-              filters.scheduleTypeId.includes(ScheduleType.Monthly)
-                ? "border-[#7d3c98] text-white bg-[#7d3c98]"
-                : "border-[#34495e] text-[#34495e] hover:bg-purple-50"
-            }`}
-          >
-            <CalendarRange size={17} />
-            Theo tháng
-          </Button>
+
+      <Card className="shadow-lg rounded-xl border-0">
+        <div className="shadow-lg rounded-xl border-0">
+          <div className="flex gap-1">
+
+            <Button
+              onClick={() => handleTypeFilter(ScheduleType.Weekly)}
+              className={`rounded-t-[120px] min-w-[120px] border-b-0  ${
+                filters.scheduleTypeId.includes(ScheduleType.Weekly)
+                  ? "border-[#d35400] text-white bg-[#d35400]"
+                  : "border-[#34495e] text-[#34495e] hover:bg-yellow-50"
+              }`}
+            >
+              <CalendarDays size={17} />
+              Theo tuần
+            </Button>
+            <Button
+              onClick={() => handleTypeFilter(ScheduleType.Monthly)}
+              className={`rounded-t-[120px] min-w-[120px] border-b-0  ${
+                filters.scheduleTypeId.includes(ScheduleType.Monthly)
+                  ? "border-[#7d3c98] text-white bg-[#7d3c98]"
+                  : "border-[#34495e] text-[#34495e] hover:bg-purple-50"
+              }`}
+            >
+              <CalendarRange size={17} />
+              Theo tháng
+            </Button>
+          </div>
         </div>
-      </div>
-      <Table
-        columns={columns}
-        dataSource={schedules || []}
-        rowKey="scheduleId"
-        loading={schedulesIsLoading}
-        pagination={{
-          total: totalCount,
-          showSizeChanger: true,
-          pageSizeOptions: ["5", "10"],
-          size: "small",
-        }}
-        bordered
-        className={`w-full ${getHeaderBackgroundColor()} [&_.ant-table-thead_th]:!font-medium [&_.ant-table-thead_th]:!py-3 [&_.ant-table-thead_th]:!text-sm hover:[&_.ant-table-tbody_tr]:bg-blue-50/30 [&_.ant-table]:!rounded-none [&_.ant-table-container]:!rounded-none [&_.ant-table-thead>tr>th:first-child]:!rounded-tl-none [&_.ant-table-thead>tr>th:last-child]:!rounded-tr-none [&_.ant-table-thead_th]:!transition-none`}
-      />
-    </>
+        <Table
+          columns={columns}
+          dataSource={schedules || []}
+          rowKey="scheduleId"
+          loading={schedulesIsLoading}
+          pagination={{
+            total: totalCount,
+            showSizeChanger: true,
+            pageSizeOptions: ["5", "10"],
+            size: "small",
+          }}
+          size="middle"
+          bordered={false}
+          className={`w-full ${getHeaderBackgroundColor()} [&_.ant-table-thead_th]:!font-medium [&_.ant-table-thead_th]:!py-3 [&_.ant-table-thead_th]:!text-sm hover:[&_.ant-table-tbody_tr]:bg-blue-50/30 [&_.ant-table]:!rounded-none [&_.ant-table-container]:!rounded-none [&_.ant-table-thead>tr>th:first-child]:!rounded-tl-none [&_.ant-table-thead>tr>th:last-child]:!rounded-tr-none [&_.ant-table-thead_th]:!transition-none`}
+        />
+      </Card>
+
   );
 };
 

@@ -220,8 +220,6 @@ const Schedule = () => {
     }
   };
 
-
-
   const [filters, setFilters] = useState<Filters>({
     expectedStartTime: null,
     expectedEndTime: null,
@@ -236,8 +234,6 @@ const Schedule = () => {
       scheduleTypeId: prevFilters.scheduleTypeId.includes(type) ? [] : [type],
     }));
   };
-
- 
 
   const handleCancelAssigned = () => {
     setAssignData({
@@ -258,22 +254,9 @@ const Schedule = () => {
     );
   }
   return (
-    <Content className="p-4 max-w-[1400px] mx-auto">
-      <div className="flex justify-end items-center mb-4">
-        {/* <h1 className="text-2xl font-bold text-mainColor">
-          Quản lý lịch trình
-        </h1> */}
-        <Button
-          icon={<PlusOutlined />}
-          onClick={() => navigate("/schedule/createNewSchedule")}
-          className="px-4 py-4 text-lg   rounded-lg bg-mainColor hover:bg-opacity-90 transition-all   shadow-md text-white flex items-center justify-center"
-        >
-          <span className="mb-[2px]">Tạo mới</span>
-        </Button>
-      </div>
-
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center gap-2 flex-1">
+    <Content className="p-2 max-w-[1200px] mx-auto mt-10">
+      <div className="flex gap-4 mb-4">
+        <div className="flex flex-1 gap-2">
           <Input
             placeholder="Tìm kiếm chuyến thăm..."
             prefix={<SearchOutlined className="text-gray-400" />}
@@ -281,7 +264,7 @@ const Schedule = () => {
             onChange={handleSearchChange}
             className="max-w-xs"
           />
-          <Popover
+           <Popover
             content={
               <Space direction="vertical" className="w-64">
                 <DatePicker
@@ -325,12 +308,18 @@ const Schedule = () => {
           >
             <Button icon={<FilterOutlined />} />
           </Popover>
-        </div>
-
- 
+        </div>  
+        <Button
+          icon={<PlusOutlined />}
+          onClick={() => navigate("/schedule/createNewSchedule")}
+          className="px-4 py-4 text-lg  rounded-lg bg-mainColor hover:bg-opacity-90 transition-all   shadow-md text-white flex items-center justify-center"
+        >
+          <span className="mb-[2px]">Tạo mới</span>
+        </Button>
       </div>
 
-      <Card className="shadow-sm">
+
+
       {/* <div className="shadow-lg rounded-xl border-0">
           <div className="flex gap-1">
             <Button
@@ -374,15 +363,13 @@ const Schedule = () => {
           </div>
         </div> */}
 
-        <TableSchedule
-          schedules={filteredData || []}
-          schedulesIsLoading={schedulesIsLoading}
-          totalCount={filteredData?.length || 0}
-          handleDeleteSchedule={handleDeleteSchedule}
-          handleAssignUser={handleAssignUser}
-        />
-        
-      </Card>
+      <TableSchedule
+        schedules={filteredData || []}
+        schedulesIsLoading={schedulesIsLoading}
+        totalCount={filteredData?.length || 0}
+        handleDeleteSchedule={handleDeleteSchedule}
+        handleAssignUser={handleAssignUser}
+      />
 
       <Modal
         title={
