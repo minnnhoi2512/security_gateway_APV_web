@@ -264,7 +264,7 @@ const VisitorManager = () => {
         <Button
           icon={<PlusOutlined />}
           onClick={showCreateModal}
-          className="px-4 py-4 text-lg   rounded-lg bg-mainColor hover:bg-opacity-90 transition-all   shadow-md text-white flex items-center justify-center"
+          className="px-4 py-4 text-lg   rounded-lg bg-buttonColor hover:bg-opacity-90 transition-all   shadow-md text-white flex items-center justify-center"
         >
           <span className="mb-[2px]">Tạo mới</span>
         </Button>
@@ -320,6 +320,7 @@ const VisitorManager = () => {
             <Table
               columns={columns}
               dataSource={filteredData}
+              showSorterTooltip={false}
               pagination={{
                 current: currentPage,
                 pageSize,

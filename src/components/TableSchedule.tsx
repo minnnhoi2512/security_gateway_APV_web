@@ -68,13 +68,12 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({
       scheduleTypeId: prevFilters.scheduleTypeId.includes(type) ? [] : [type],
     }));
   };
-
   const filteredSchedules = schedules.filter((schedule) => {
     if (filters.scheduleTypeId.length === 0) {
       return true;
     }
     return filters.scheduleTypeId.includes(
-      schedule.scheduleType?.scheduleTypeName
+      schedule.scheduleType?.scheduleTypeId
     );
   });
 
@@ -85,9 +84,9 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({
         case null:
           return "[&_.ant-table-thead_th]:!bg-[#138d75] [&_.ant-table-thead_th]:!text-white";
         case ScheduleType.Weekly:
-          return "[&_.ant-table-thead_th]:!bg-[#d35400] [&_.ant-table-thead_th]:!text-white";
+          return "[&_.ant-table-thead_th]:!bg-[#e67e22]/10 [&_.ant-table-thead_th]:!text-[#e67e22]";
         case ScheduleType.Monthly:
-          return "[&_.ant-table-thead_th]:!bg-[#7d3c98] [&_.ant-table-thead_th]:!text-white";
+          return "[&_.ant-table-thead_th]:!bg-[#2980b9]/10 [&_.ant-table-thead_th]:!text-[#2980b9]";
         case "ALL":
           return "[&_.ant-table-thead_th]:!bg-[#34495e] [&_.ant-table-thead_th]:!text-white";
         default:
@@ -250,51 +249,52 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({
     //   </Modal>
     // </>
 
-      <Card className="shadow-lg rounded-xl border-0">
-        <div className="shadow-lg rounded-xl border-0">
-          <div className="flex gap-1">
+    <Card className="shadow-lg rounded-xl border-0">
+      <div className="shadow-lg rounded-xl border-0">
+        <div className="flex gap-1">
+          <Button
+            onClick={() => handleTypeFilter(ScheduleType.Weekly)}  
+            className={`rounded-t-[120px] min-w-[120px] border-b-0  ${
+              filters.scheduleTypeId.includes(ScheduleType.Weekly)
+                ? "border-[#e67e22] text-white bg-[#e67e22]"
+                : "border-[#34495e] text-[#34495e] hover:bg-yellow-50"
+            }`}
+          >
+            <CalendarDays size={17} />
+            Theo tuần
+          </Button>
 
-            <Button
-              onClick={() => handleTypeFilter(ScheduleType.Weekly)}
-              className={`rounded-t-[120px] min-w-[120px] border-b-0  ${
-                filters.scheduleTypeId.includes(ScheduleType.Weekly)
-                  ? "border-[#d35400] text-white bg-[#d35400]"
-                  : "border-[#34495e] text-[#34495e] hover:bg-yellow-50"
-              }`}
-            >
-              <CalendarDays size={17} />
-              Theo tuần
-            </Button>
-            <Button
-              onClick={() => handleTypeFilter(ScheduleType.Monthly)}
-              className={`rounded-t-[120px] min-w-[120px] border-b-0  ${
-                filters.scheduleTypeId.includes(ScheduleType.Monthly)
-                  ? "border-[#7d3c98] text-white bg-[#7d3c98]"
-                  : "border-[#34495e] text-[#34495e] hover:bg-purple-50"
-              }`}
-            >
-              <CalendarRange size={17} />
-              Theo tháng
-            </Button>
-          </div>
+          <Button
+            onClick={() => handleTypeFilter(ScheduleType.Monthly)}  
+            className={`rounded-t-[120px] min-w-[120px] border-b-0  ${
+              filters.scheduleTypeId.includes(ScheduleType.Monthly)
+                ? "border-[#2980b9] text-white bg-[#2980b9]"
+                : "border-[#34495e] text-[#34495e] hover:bg-purple-50"
+            }`}
+          >
+            <CalendarRange size={17} />
+            Theo tháng
+          </Button>
         </div>
-        <Table
-          columns={columns}
-          dataSource={schedules || []}
-          rowKey="scheduleId"
-          loading={schedulesIsLoading}
-          pagination={{
-            total: totalCount,
-            showSizeChanger: true,
-            pageSizeOptions: ["5", "10"],
-            size: "small",
-          }}
-          size="middle"
-          bordered={false}
-          className={`w-full ${getHeaderBackgroundColor()} [&_.ant-table-thead_th]:!font-medium [&_.ant-table-thead_th]:!py-3 [&_.ant-table-thead_th]:!text-sm hover:[&_.ant-table-tbody_tr]:bg-blue-50/30 [&_.ant-table]:!rounded-none [&_.ant-table-container]:!rounded-none [&_.ant-table-thead>tr>th:first-child]:!rounded-tl-none [&_.ant-table-thead>tr>th:last-child]:!rounded-tr-none [&_.ant-table-thead_th]:!transition-none`}
-        />
-      </Card>
-
+      </div>
+      <Table
+        columns={columns}
+        showSorterTooltip={false}
+        dataSource={filteredSchedules || []}  
+        // dataSource={schedules || []}
+        rowKey="scheduleId"
+        loading={schedulesIsLoading}
+        pagination={{
+          total: totalCount,
+          showSizeChanger: true,
+          pageSizeOptions: ["5", "10"],
+          size: "small",
+        }}
+        size="middle"
+        bordered={false}
+        className={`w-full ${getHeaderBackgroundColor()} [&_.ant-table-thead_th]:!font-medium [&_.ant-table-thead_th]:!py-3 [&_.ant-table-thead_th]:!text-sm hover:[&_.ant-table-tbody_tr]:bg-blue-50/30 [&_.ant-table]:!rounded-none [&_.ant-table-container]:!rounded-none [&_.ant-table-thead>tr>th:first-child]:!rounded-tl-none [&_.ant-table-thead>tr>th:last-child]:!rounded-tr-none [&_.ant-table-thead_th]:!transition-none`}
+      />
+    </Card>
   );
 };
 

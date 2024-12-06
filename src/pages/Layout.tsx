@@ -58,24 +58,51 @@ const findRouteName = (url: string, routes: any): string => {
 
 const generateBreadcrumbItems = (location: any, routes: any) => {
   const pathSnippets = location.pathname.split("/").filter((i: string) => i);
-  const breadcrumbItems = pathSnippets.map((snippet: string, index: number) => {
+  // const breadcrumbItems = pathSnippets.map((snippet: string, index: number) => {
+  //   const url = `/${pathSnippets.slice(0, index + 1).join("/")}`;
+  //   const routeName = findRouteName(url, routes);
+  //   const isLast = index === pathSnippets.length - 1;
+  const breadcrumbItems = pathSnippets
+  .map((snippet: string, index: number) => {
     const url = `/${pathSnippets.slice(0, index + 1).join("/")}`;
     const routeName = findRouteName(url, routes);
     const isLast = index === pathSnippets.length - 1;
     
-    return {
-      title: isLast ? (
-        <span className="text-backgroundPage text-lg  font-bold">{routeName || snippet}</span>
-      ) : (
-        <Link 
-          to={url} 
-          className="text-gray-500 hover:text-blue-600 transition-colors"
-        >
-          {routeName || snippet}
-        </Link>
-      ),
-    };
-  });
+ 
+    if (!isNaN(Number(snippet))) {
+      return null;
+    }
+    
+
+    
+
+  //   return {
+  //     title: isLast ? (
+  //       <span className="text-backgroundPage text-lg  font-bold">{routeName || snippet}</span>
+  //     ) : (
+  //       <Link 
+  //         to={url} 
+  //         className="text-gray-500 hover:text-blue-600 transition-colors"
+  //       >
+  //         {routeName || snippet}
+  //       </Link>
+  //     ),
+  //   };
+  // });
+  return {
+    title: isLast ? (
+      <span className="text-backgroundPage text-lg font-bold">{routeName || snippet}</span>
+    ) : (
+      <Link 
+        to={url} 
+        className="text-gray-500 hover:text-blue-600 transition-colors"
+      >
+        {routeName || snippet}
+      </Link>
+    ),
+  };
+})
+.filter((item): item is { title: JSX.Element } => item !== null);
 
   return [
     {

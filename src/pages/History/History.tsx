@@ -564,6 +564,7 @@ const History = () => {
         <div className="rounded-lg bg-white mx-auto" style={{ width: "100%" }}>
           <Table
             columns={columns}
+            showSorterTooltip={false}
             dataSource={filteredData}
             loading={loading}
             pagination={{

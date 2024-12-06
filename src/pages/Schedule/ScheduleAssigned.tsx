@@ -41,6 +41,16 @@ const ScheduleAssignedManager = () => {
     taskStatus: [],
     scheduleTypeId: [],
   });
+  const [isActive, setIsActive] = useState(false);
+
+  const handleClick = (status) => {
+    setIsActive(!isActive);
+    if (!isActive) {
+      handleStatusFilter(status);
+    } else {
+      handleClearFilters();
+    }
+  };
   const {
     data: schedules,
     isLoading,
@@ -138,34 +148,37 @@ const ScheduleAssignedManager = () => {
             justifyContent: "space-between",
           }}
         >
-          <div className="flex flex-1 gap-2">
-            <Input
-              placeholder="Tìm kiếm tên nhiệm vụ"
-              prefix={<SearchOutlined className="text-gray-400" />}
-              value={searchText}
-              onChange={handleSearchChange}
-              className="ml-4 w-[120%] max-w-[120%]"
-            />
-            <Popover
-              content={
-                <Space direction="vertical" className="w-64">
-                  {/* Bộ lọc trạng thái */}
-                  <div className="mt-4">
-                    <small className="text-gray-500 block mb-2">
-                      Trạng thái
-                    </small>
-                    <div className="flex flex-wrap items-center gap-2">
-                      {Object.values(TaskStatus).map((status) => {
-                        const { colorVisitStatus, textVisitStatus } =
-                          taskStatusMap[status];
-                        const count = getCountByStatus(status);
-                        const isSelected = filters.taskStatus.includes(status);
+          <div className="flex flex-col mb-2">
+            <div className="flex gap-4 items-center">
+              <div className="flex flex-1 gap-2">
+                <Input
+                  placeholder="Tìm kiếm tên nhiệm vụ"
+                  prefix={<SearchOutlined className="text-gray-400" />}
+                  value={searchText}
+                  onChange={handleSearchChange}
+                  className="ml-4 w-[120%] max-w-[120%]"
+                />
+                <Popover
+                  content={
+                    <Space direction="vertical" className="w-64">
+                      {/* Bộ lọc trạng thái */}
+                      <div className="mt-4">
+                        <small className="text-gray-500 block mb-2">
+                          Trạng thái
+                        </small>
+                        <div className="flex flex-wrap items-center gap-2">
+                          {Object.values(TaskStatus).map((status) => {
+                            const { colorVisitStatus, textVisitStatus } =
+                              taskStatusMap[status];
+                            const count = getCountByStatus(status);
+                            const isSelected =
+                              filters.taskStatus.includes(status);
 
-                        return (
-                          <Button
-                            key={status}
-                            onClick={() => handleStatusFilter(status)}
-                            className={`
+                            return (
+                              <Button
+                                key={status}
+                                onClick={() => handleStatusFilter(status)}
+                                className={`
                   relative 
                   rounded-full 
                   px-3 
@@ -180,13 +193,13 @@ const ScheduleAssignedManager = () => {
                       : "bg-[white] text-primary border-primary hover:bg-primary/10"
                   }
                 `}
-                          >
-                            <span className="relative z-10">
-                              {textVisitStatus}
-                            </span>
-                            {count > 0 && (
-                              <span
-                                className="
+                              >
+                                <span className="relative z-10">
+                                  {textVisitStatus}
+                                </span>
+                                {count > 0 && (
+                                  <span
+                                    className="
                       absolute 
                       -top-1 
                       -right-1 
@@ -202,42 +215,88 @@ const ScheduleAssignedManager = () => {
                       justify-center 
                       px-1
                     "
-                              >
+                                  >
+                                    {count}
+                                  </span>
+                                )}
+                              </Button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                      {/* Nút xóa bộ lọc */}
+                      <Button
+                        type="default"
+                        block
+                        onClick={handleClearFilters}
+                        size="small"
+                        className="mt-4"
+                      >
+                        Xóa bộ lọc
+                      </Button>
+                    </Space>
+                  }
+                  trigger="click"
+                  placement="bottomRight"
+                >
+                  <Button icon={<FilterOutlined />} />
+                </Popover>
+              </div>
+              <div className="flex items-center gap-2 ml-auto">
+                <div
+                  className={`
+      bg-[#dc7633] 
+      shadow-lg 
+      rounded-lg 
+      p-1 
+      ml-[815px]
+      animate-cardPulse 
+      transition-all 
+      duration-200
+      ${isActive ? "ring-2 ring-white" : ""}
+    `}
+                >
+                  <div className="flex items-center gap-2 px-2">
+                    {Object.values(TaskStatus)
+                      .filter((status) => status === TaskStatus.ActiveTemporary)
+                      .map((status) => {
+                        const { textVisitStatus } = visitStatusMap[status];
+                        const count = getCountByStatus(status);
+
+                        return (
+                          <button
+                            key={status}
+                            onClick={() => handleClick(status)}
+                            className={`
+                  text-white
+                  px-2
+                  py-1
+                  text-sm
+                  rounded-md
+                  flex
+                  items-center
+                  gap-2
+                  hover:opacity-80
+                  transition-all
+                  duration-200
+                  h-8
+                  ${isActive ? "" : ""}
+                `}
+                          >
+                            <span>{textVisitStatus}</span>
+                            {count > 0 && (
+                              <span className="bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[20px] text-center">
                                 {count}
                               </span>
                             )}
-                          </Button>
+                          </button>
                         );
                       })}
-                    </div>
                   </div>
-                  {/* Nút xóa bộ lọc */}
-                  <Button
-                    type="default"
-                    block
-                    onClick={handleClearFilters}
-                    size="small"
-                    className="mt-4"
-                  >
-                    Xóa bộ lọc
-                  </Button>
-                </Space>
-              }
-              trigger="click"
-              placement="bottomRight"
-            >
-              <Button icon={<FilterOutlined />} />
-            </Popover>
+                </div>
+              </div>
+            </div>
           </div>
-
-          <Button
-            type="primary"
-            size="large"
-            className="invisible"
-            style={{ borderRadius: 12 }}
-          >
-            Tạo mới
-          </Button>
         </Space>
 
         {/* <div className="bg-white shadow-lg rounded-md overflow-hidden">

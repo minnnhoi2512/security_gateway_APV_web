@@ -220,6 +220,16 @@ const CustomerVisit = () => {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchText(e.target.value);
   };
+  const [isActive, setIsActive] = useState(false);
+
+  const handleClick = (status) => {
+    setIsActive(!isActive);
+    if (!isActive) {
+      handleStatusFilter(status);
+    } else {
+      handleClearFilters();
+    }
+  };
   const handleClearFilters = () => {
     setFilters({
       expectedStartTime: null,
@@ -318,65 +328,69 @@ const CustomerVisit = () => {
   }
   return (
     <Content className="p-4 max-w-[1200px] mx-auto mt-10">
-      <div className="flex gap-4 mb-4">
-        <div className="flex flex-1 gap-2">
-          <Input
-            placeholder="Tìm kiếm chuyến thăm..."
-            prefix={<SearchOutlined className="text-gray-400" />}
-            value={searchText}
-            onChange={handleSearchChange}
-            className="max-w-xs"
-          />
-          <Popover
-            content={
-              <Space direction="vertical" className="w-64">
-                {/* Bộ lọc theo ngày */}
-                <DatePicker
-                  placeholder="Ngày bắt đầu"
-                  className="w-full"
-                  onChange={(date) =>
-                    handleFilterChange("expectedStartTime", date)
-                  }
-                />
-                <DatePicker
-                  placeholder="Ngày kết thúc"
-                  className="w-full"
-                  onChange={(date) =>
-                    handleFilterChange("expectedEndTime", date)
-                  }
-                />
-
-                {/* Bộ lọc số lượng khách */}
-                <div className="mt-1">
-                  <small className="text-gray-500">Số lượng khách</small>
-                  <Slider
-                    range
-                    min={1}
-                    max={100}
-                    defaultValue={[1, 100]}
-                    onChange={(value) =>
-                      handleFilterChange("visitQuantity", value)
+      <div className="flex flex-col mb-2">
+        <div className="flex gap-4 items-center">
+          <div className="flex flex-1 gap-2">
+            <Input
+              placeholder="Tìm kiếm chuyến thăm..."
+              prefix={<SearchOutlined className="text-gray-400" />}
+              value={searchText}
+              onChange={handleSearchChange}
+              className="max-w-xs"
+            />
+            <Popover
+              content={
+                <Space direction="vertical" className="w-64">
+                  {/* Bộ lọc theo ngày */}
+                  <DatePicker
+                    placeholder="Ngày bắt đầu"
+                    className="w-full"
+                    onChange={(date) =>
+                      handleFilterChange("expectedStartTime", date)
                     }
                   />
-                </div>
+                  <DatePicker
+                    placeholder="Ngày kết thúc"
+                    className="w-full"
+                    onChange={(date) =>
+                      handleFilterChange("expectedEndTime", date)
+                    }
+                  />
 
-                {/* Bộ lọc trạng thái */}
-                <div className="mt-4">
-                  <small className="text-gray-500 block mb-2">Trạng thái</small>
-                  <div className="flex flex-wrap items-center gap-2">
-                    {Object.values(VisitStatus)
-                      .filter((status) => status !== "Pending")
-                      .map((status) => {
-                        const { colorVisitStatus, textVisitStatus } =
-                          visitStatusMap[status];
-                        const count = getCountByStatus(status);
-                        const isSelected = filters.visitStatus.includes(status);
+                  {/* Bộ lọc số lượng khách */}
+                  <div className="mt-1">
+                    <small className="text-gray-500">Số lượng khách</small>
+                    <Slider
+                      range
+                      min={1}
+                      max={100}
+                      defaultValue={[1, 100]}
+                      onChange={(value) =>
+                        handleFilterChange("visitQuantity", value)
+                      }
+                    />
+                  </div>
 
-                        return (
-                          <Button
-                            key={status}
-                            onClick={() => handleStatusFilter(status)}
-                            className={`
+                  {/* Bộ lọc trạng thái */}
+                  <div className="mt-4">
+                    <small className="text-gray-500 block mb-2">
+                      Trạng thái
+                    </small>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {Object.values(VisitStatus)
+                        .filter((status) => status !== "Pending")
+                        .map((status) => {
+                          const { colorVisitStatus, textVisitStatus } =
+                            visitStatusMap[status];
+                          const count = getCountByStatus(status);
+                          const isSelected =
+                            filters.visitStatus.includes(status);
+
+                          return (
+                            <Button
+                              key={status}
+                              onClick={() => handleStatusFilter(status)}
+                              className={`
                   relative 
                   rounded-full 
                   px-3 
@@ -391,13 +405,13 @@ const CustomerVisit = () => {
                       : "bg-[white] text-primary border-primary hover:bg-primary/10"
                   }
                 `}
-                          >
-                            <span className="relative z-10">
-                              {textVisitStatus}
-                            </span>
-                            {count > 0 && (
-                              <span
-                                className="
+                            >
+                              <span className="relative z-10">
+                                {textVisitStatus}
+                              </span>
+                              {count > 0 && (
+                                <span
+                                  className="
                       absolute 
                       -top-1 
                       -right-1 
@@ -413,87 +427,96 @@ const CustomerVisit = () => {
                       justify-center 
                       px-1
                     "
-                              >
-                                {count}
-                              </span>
-                            )}
-                          </Button>
-                        );
-                      })}
+                                >
+                                  {count}
+                                </span>
+                              )}
+                            </Button>
+                          );
+                        })}
+                    </div>
                   </div>
-                </div>
-                {/* Nút xóa bộ lọc */}
-                <Button
-                  type="default"
-                  block
-                  onClick={handleClearFilters}
-                  size="small"
-                  className="mt-4"
-                >
-                  Xóa bộ lọc
-                </Button>
-              </Space>
-            }
-            trigger="click"
-            placement="bottomRight"
-          >
-            <Button icon={<FilterOutlined />} />
-          </Popover>
-        </div>
-
-        <Button
-          icon={<PlusOutlined />}
-          onClick={() => navigate("/customerVisit/createNewVisitList")}
-          className="px-4 py-4 text-lg   rounded-lg bg-mainColor hover:bg-opacity-90 transition-all   shadow-md text-white flex items-center justify-center"
-        >
-          <span className="mb-[2px]">Tạo mới</span>
-        </Button>
-      </div>
-      {/* <div className="mt-4">
-        <div className="bg-white shadow-lg rounded-lg p-4 animate-cardPulse transition-all duration-200">
-          <small className="text-gray-500 block mb-2">Trạng thái</small>
-          <div className="flex flex-wrap items-center gap-2">
-            {Object.values(VisitStatus)
-              .filter((status) => status === VisitStatus.ActiveTemporary)
-              .map((status) => {
-                const { colorVisitStatus, textVisitStatus } =
-                  visitStatusMap[status];
-                const count = getCountByStatus(status);
-
-                return (
-                  <div
-                    key={status}
-                    className={`
-                bg-${colorVisitStatus} 
-                text-black 
-                p-4 
-                rounded-md 
-                flex 
-                justify-between 
-                items-center 
-              `}
+                  {/* Nút xóa bộ lọc */}
+                  <Button
+                    type="default"
+                    block
+                    onClick={handleClearFilters}
+                    size="small"
+                    className="mt-4"
                   >
-                    <span>{textVisitStatus}</span>
-                    {count > 0 && (
-                      <span
-                        className="
-                    bg-red-500 
-                    text-white 
-                    text-sm 
-                    rounded-full 
-                    px-2 
-                    py-1 
-                  "
+                    Xóa bộ lọc
+                  </Button>
+                </Space>
+              }
+              trigger="click"
+              placement="bottomRight"
+            >
+              <Button icon={<FilterOutlined />} />
+            </Popover>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <div
+              className={`
+      bg-[#dc7633] 
+      shadow-lg 
+      rounded-lg 
+      p-1 
+      animate-cardPulse 
+      transition-all 
+      duration-200
+      ${isActive ? "ring-2 ring-white" : ""}
+    `}
+            >
+              <div className="flex items-center gap-2 px-2">
+                {Object.values(VisitStatus)
+                  .filter((status) => status === VisitStatus.ActiveTemporary)
+                  .map((status) => {
+                    const { textVisitStatus } = visitStatusMap[status];
+                    const count = getCountByStatus(status);
+
+                    return (
+                      <button
+                        key={status}
+                        onClick={() => handleClick(status)}
+                        className={`
+                  text-white
+                  px-2
+                  py-1
+                  text-sm
+                  rounded-md
+                  flex
+                  items-center
+                  gap-2
+                  hover:opacity-80
+                  transition-all
+                  duration-200
+                  h-8
+                  ${isActive ? "" : ""}
+                `}
                       >
-                        {count}
-                      </span>
-                    )}
-                  </div>
-                );
-              })}
+                        <span>{textVisitStatus}</span>
+                        {count > 0 && (
+                          <span className="bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[20px] text-center">
+                            {count}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+              </div>
+            </div>
+
+            <Button
+              icon={<PlusOutlined />}
+              onClick={() => navigate("/customerVisit/createNewVisitList")}
+              className="px-4 py-4 text-lg   rounded-lg bg-buttonColor hover:bg-opacity-90 transition-all   shadow-md text-white flex items-center justify-center"
+            >
+              <span className="mb-[2px]">Tạo mới</span>
+            </Button>
           </div>
         </div>
-      </div> */}
+      </div>
 
       <Card className="shadow-lg rounded-xl border-0">
         <div className="shadow-lg rounded-xl border-0">
@@ -513,7 +536,7 @@ const CustomerVisit = () => {
               onClick={() => handleTypeFilter(ScheduleType.Weekly)}
               className={`rounded-t-[120px] min-w-[120px] border-b-0  ${
                 filters.scheduleTypeId.includes(ScheduleType.Weekly)
-                  ? "border-[#d35400] text-white bg-[#e67e22]"
+                  ? "border-[#e67e22] text-white bg-[#e67e22]"
                   : "border-[#34495e] text-[#34495e] hover:bg-yellow-50"
               }`}
             >
@@ -529,7 +552,7 @@ const CustomerVisit = () => {
               onClick={() => handleTypeFilter(ScheduleType.Monthly)}
               className={`rounded-t-[120px] min-w-[120px] border-b-0  ${
                 filters.scheduleTypeId.includes(ScheduleType.Monthly)
-                  ? "border-[#7d3c98] text-white bg-[#2980b9]"
+                  ? "border-[#2980b9] text-white bg-[#2980b9]"
                   : "border-[#34495e] text-[#34495e] hover:bg-purple-50"
               }`}
             >
@@ -542,6 +565,7 @@ const CustomerVisit = () => {
         <Table
           columns={columns}
           dataSource={filteredData}
+          showSorterTooltip={false}
           pagination={{
             total: filteredData?.length,
             // pageSize: 8,

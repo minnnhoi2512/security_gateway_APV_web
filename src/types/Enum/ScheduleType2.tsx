@@ -1,6 +1,6 @@
 export enum ScheduleType2 {
-    Weekly = 1,
-    Monthly = 2,
+    Weekly = 2,
+    Monthly = 3,
 }
 
 export const typeMap: { [key in ScheduleType2]: { colorScheduleType: string; textScheduleType: string } } = {

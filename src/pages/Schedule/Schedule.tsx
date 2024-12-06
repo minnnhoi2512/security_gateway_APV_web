@@ -235,6 +235,16 @@ const Schedule = () => {
     }));
   };
 
+  const handleClearFilters = () => {
+    setFilters({
+      expectedStartTime: null,
+      expectedEndTime: null,
+      visitQuantity: [1, 100],
+      visitStatus: [],
+      scheduleTypeId: [],
+    });
+  };
+
   const handleCancelAssigned = () => {
     setAssignData({
       title: "",
@@ -253,6 +263,8 @@ const Schedule = () => {
       </div>
     );
   }
+
+
   return (
     <Content className="p-2 max-w-[1200px] mx-auto mt-10">
       <div className="flex gap-4 mb-4">
@@ -264,7 +276,7 @@ const Schedule = () => {
             onChange={handleSearchChange}
             className="max-w-xs"
           />
-           <Popover
+          <Popover
             content={
               <Space direction="vertical" className="w-64">
                 <DatePicker
@@ -281,6 +293,52 @@ const Schedule = () => {
                   //   handleFilterChange("expectedEndTime", date)
                   // }
                 />
+
+                <div className="mt-4">
+                  <small className="text-gray-500 block mb-2">Trạng thái</small>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button
+                      onClick={() => setFilterStatus(true)}
+                      className={`
+              relative 
+              rounded-full 
+              px-3 
+              py-1 
+              h-auto 
+              text-xs 
+              transition-all 
+              duration-200 
+              ${
+                filterStatus === true
+                  ? "bg-[#34495e] text-white hover:bg-primary/90"
+                  : "bg-[white] text-primary border-primary hover:bg-primary/10"
+              }
+            `}
+                    >
+                      <span className="relative z-10">Còn hiệu lực</span>
+                    </Button>
+                    <Button
+                      onClick={() => setFilterStatus(false)}
+                      className={`
+              relative 
+              rounded-full 
+              px-3 
+              py-1 
+              h-auto 
+              text-xs 
+              transition-all 
+              duration-200 
+              ${
+                filterStatus === false
+                  ? "bg-[#34495e] text-white hover:bg-primary/90"
+                  : "bg-[white] text-primary border-primary hover:bg-primary/10"
+              }
+            `}
+                    >
+                      <span className="relative z-10">Hết hiệu lực</span>
+                    </Button>
+                  </div>
+                </div>
                 <div className="mt-1">
                   <small className="text-gray-500">Số lượng khách</small>
                   <Slider
@@ -296,7 +354,10 @@ const Schedule = () => {
                 <Button
                   type="default"
                   block
-                  // onClick={handleClearFilters}
+                  onClick={() => {
+                    setFilterStatus(null);
+                   
+                  }}
                   size="small"
                 >
                   Xóa bộ lọc
@@ -308,17 +369,15 @@ const Schedule = () => {
           >
             <Button icon={<FilterOutlined />} />
           </Popover>
-        </div>  
+        </div>
         <Button
           icon={<PlusOutlined />}
           onClick={() => navigate("/schedule/createNewSchedule")}
-          className="px-4 py-4 text-lg  rounded-lg bg-mainColor hover:bg-opacity-90 transition-all   shadow-md text-white flex items-center justify-center"
+          className="px-4 py-4 text-lg  rounded-lg bg-buttonColor hover:bg-opacity-90 transition-all   shadow-md text-white flex items-center justify-center"
         >
           <span className="mb-[2px]">Tạo mới</span>
         </Button>
       </div>
-
-
 
       {/* <div className="shadow-lg rounded-xl border-0">
           <div className="flex gap-1">

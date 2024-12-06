@@ -432,7 +432,7 @@ const User = () => {
           <Button
             icon={<PlusOutlined />}
             onClick={() => setIsCreateUserModalVisible(true)}
-            className="px-4 py-4 text-lg   rounded-lg bg-mainColor hover:bg-opacity-90 transition-all   shadow-md text-white flex items-center justify-center"
+            className="px-4 py-4 text-lg   rounded-lg bg-buttonColor hover:bg-opacity-90 transition-all   shadow-md text-white flex items-center justify-center"
           >
             <span className="mb-[2px]"> Tạo mới</span>
           </Button>
@@ -442,6 +442,7 @@ const User = () => {
         <Card className="shadow-lg rounded-xl border-0">
           <Table
             columns={columns}
+            showSorterTooltip={false}
             dataSource={filteredData}
             pagination={{
               total: filteredData?.length,

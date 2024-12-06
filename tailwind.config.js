@@ -10,6 +10,7 @@ export default {
         titleMain: '#2E4369',
         backgroundPage: '#34495e',  
         mainColor: "#1b347b",
+        buttonColor: "#2ecc71",
       },
       keyframes: {
         cardPulse: {

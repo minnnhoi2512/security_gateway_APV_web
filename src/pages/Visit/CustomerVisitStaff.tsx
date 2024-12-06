@@ -324,7 +324,7 @@ const CustomerVisitStaff = () => {
   return (
     <Content className="px-6 mt-10">
       <div className="flex gap-4">
-        <div className="flex flex-1 gap-2">
+        <div className="flex flex-1 gap-2 mt-2">
           <Input
             placeholder="Tìm kiếm chuyến thăm..."
             prefix={<SearchOutlined className="text-gray-400" />}
@@ -458,7 +458,7 @@ const CustomerVisitStaff = () => {
         <Button
           icon={<PlusOutlined />}
           onClick={() => setIsCreateModalVisible(true)}
-          className="px-4 py-4 text-lg   rounded-lg bg-mainColor hover:bg-opacity-90 transition-all   shadow-md text-white flex items-center justify-center"
+          className="px-4 py-4 text-lg   rounded-lg bg-buttonColor hover:bg-opacity-90 transition-all shadow-md text-white flex items-center justify-center"
         >
           <span className="mb-[2px]">Tạo mới</span>
         </Button>
@@ -623,7 +623,7 @@ const CustomerVisitStaff = () => {
               onClick={() => handleTypeFilter(ScheduleType.Weekly)}
               className={`rounded-t-[120px] min-w-[120px] border-b-0  ${
                 filters.scheduleTypeId.includes(ScheduleType.Weekly)
-                  ? "border-[#d35400] text-white bg-[#e67e22]"
+                  ? "border-[#e67e22] text-white bg-[#e67e22]"
                   : "border-[#34495e] text-[#34495e] hover:bg-yellow-50"
               }`}
             >
@@ -639,7 +639,7 @@ const CustomerVisitStaff = () => {
               onClick={() => handleTypeFilter(ScheduleType.Monthly)}
               className={`rounded-t-[120px] min-w-[120px] border-b-0  ${
                 filters.scheduleTypeId.includes(ScheduleType.Monthly)
-                  ? "border-[#7d3c98] text-white bg-[#2980b9]"
+                  ? "border-[#2980b9] text-white bg-[#2980b9]"
                   : "border-[#34495e] text-[#34495e] hover:bg-purple-50"
               }`}
             >
@@ -650,10 +650,11 @@ const CustomerVisitStaff = () => {
         </div>
         <Table
           columns={columns}
+          showSorterTooltip={false}
           dataSource={filteredData}
           pagination={{
             total: filteredData?.length,
-            pageSize: 8,
+            // pageSize: 8,
             showSizeChanger: true,
             pageSizeOptions: ["5", "10"],
             showTotal: (total) => `Tổng ${total} chuyến thăm`,
