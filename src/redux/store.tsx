@@ -19,6 +19,7 @@ import { scheduleUserAPI } from "../services/scheduleUser.service";
 import { rtkQueryErrorLogger } from "../middleware";
 import { scheduleStaffAPI } from "../services/scheduleStaff.service";
 import { gateAPI } from "../services/gate.service";
+import { dashBoardAPI } from "../services/dashboard.service";
 
 
 export const store = configureStore({
@@ -36,6 +37,7 @@ export const store = configureStore({
     [notificationAPI.reducerPath] : notificationAPI.reducer,
     [scheduleStaffAPI.reducerPath] : scheduleStaffAPI.reducer,
     [gateAPI.reducerPath] : gateAPI.reducer,
+    [dashBoardAPI.reducerPath] : dashBoardAPI.reducer,
     filterTabs: filterTabReducer,
     visitDetailList : visitDetailListReducer,
     visitorSession : visitorSessionReducer,
@@ -59,7 +61,8 @@ export const store = configureStore({
       .concat(notificationAPI.middleware)
       .concat(visitGrapqlAPI.middleware)
       .concat(gateAPI.middleware)
-      .concat(scheduleStaffAPI.middleware),
+      .concat(scheduleStaffAPI.middleware)
+      .concat(dashBoardAPI.middleware),
 });
 
 // Define RootState and AppDispatch types
