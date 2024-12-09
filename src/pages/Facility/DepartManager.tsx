@@ -335,6 +335,7 @@ const DepartManager = () => {
     ) : (
       <Table
         columns={columns}
+        showSorterTooltip={false}
         dataSource={filteredData}
         pagination={{
           total: totalDepartments,

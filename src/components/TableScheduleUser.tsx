@@ -277,6 +277,7 @@ const TableScheduleUser: React.FC<ScheduleAssignedTableProps> = ({
         <Table
           columns={columns}
           dataSource={filteredData}
+          showSorterTooltip={false}
           size="small"
           pagination={{
             // pageSize: 8,

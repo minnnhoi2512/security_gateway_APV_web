@@ -281,6 +281,7 @@ const CardManager = () => {
       ) : (
         <Table
           columns={columns}
+          showSorterTooltip={false}
           dataSource={filteredData}
           pagination={{
             total: filteredData?.total || 0,

@@ -572,6 +572,7 @@ const History = () => {
               size: "small",
               className: "mt-4",
               showSizeChanger: true,
+              pageSizeOptions: ["5", "10", "20"],
               showTotal: (total) => `${total} kết quả`,
               position: ["bottomRight"],
             }}
