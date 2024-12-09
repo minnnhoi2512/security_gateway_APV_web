@@ -199,7 +199,7 @@ const BanVisitorManager = () => {
       <Button
         type="primary"
         icon={<PlusOutlined />}
-        className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 shadow-sm"
+        className="bg-buttonColor hover:bg-blue-700 text-white rounded-lg px-4 py-2 shadow-sm"
         onClick={showCreateModal}
       >
         Tạo mới khách
@@ -230,6 +230,7 @@ const BanVisitorManager = () => {
     ) : (
       <Table
         columns={columns}
+        showSorterTooltip={false}
         dataSource={filteredData}
         pagination={{
           current: currentPage,

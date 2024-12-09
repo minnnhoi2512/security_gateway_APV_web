@@ -11,10 +11,12 @@ export const routes = [
   {
     path: "/customerVisitStaff/detailVisit",
     breadcrumbName: "Chi tiết chuyến thăm",
+    hideInBreadcrumb: true
   },
   {
     path: "/customerVisit/detailVisit",
     breadcrumbName: "Chi tiết chuyến thăm",
+    hideInBreadcrumb: true
   },
   { path: "/dashboard", breadcrumbName: "Thông tin chung" },
   {

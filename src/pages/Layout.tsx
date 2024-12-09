@@ -58,25 +58,57 @@ const findRouteName = (url: string, routes: any): string => {
 
 const generateBreadcrumbItems = (location: any, routes: any) => {
   const pathSnippets = location.pathname.split("/").filter((i: string) => i);
-  const breadcrumbItems = pathSnippets.map((snippet: string, index: number) => {
+  // const breadcrumbItems = pathSnippets.map((snippet: string, index: number) => {
+  //   const url = `/${pathSnippets.slice(0, index + 1).join("/")}`;
+  //   const routeName = findRouteName(url, routes);
+  //   const isLast = index === pathSnippets.length - 1;
+  const breadcrumbItems = pathSnippets
+  .map((snippet: string, index: number) => {
     const url = `/${pathSnippets.slice(0, index + 1).join("/")}`;
     const routeName = findRouteName(url, routes);
     const isLast = index === pathSnippets.length - 1;
-    return {
-      title: isLast ? (
-        <span className="breadcrumb-link-last">{routeName || snippet}</span>
-      ) : (
-        <Link to={url} className="breadcrumb-link">
-          {routeName || snippet}
-        </Link>
-      ),
-    };
-  });
+    
+ 
+    if (!isNaN(Number(snippet))) {
+      return null;
+    }
+    
+
+    
+
+  //   return {
+  //     title: isLast ? (
+  //       <span className="text-backgroundPage text-lg  font-bold">{routeName || snippet}</span>
+  //     ) : (
+  //       <Link 
+  //         to={url} 
+  //         className="text-gray-500 hover:text-blue-600 transition-colors"
+  //       >
+  //         {routeName || snippet}
+  //       </Link>
+  //     ),
+  //   };
+  // });
+  return {
+    title: isLast ? (
+      <span className="text-backgroundPage text-lg font-bold">{routeName || snippet}</span>
+    ) : (
+      <Link 
+        to={url} 
+        className="text-gray-500 hover:text-blue-600 transition-colors"
+      >
+        {routeName || snippet}
+      </Link>
+    ),
+  };
+})
+.filter((item): item is { title: JSX.Element } => item !== null);
+
   return [
     {
       title: (
-        <Link to="/dashboard" className="breadcrumb-link">
-          <HomeOutlined />
+        <Link to="/dashboard" className="flex items-center text-gray-500 hover:text-blue-600 transition-colors">
+          <HomeOutlined className="text-lg" />
         </Link>
       ),
     },
@@ -208,8 +240,8 @@ const LayoutPage = ({ children }: { children: any }) => {
         });
       });
   }
-  const sharedBackgroundColor = "#1b347b";
-  // const sharedBackgroundColor = "#34495e";
+  // const sharedBackgroundColor = "#1b347b";
+  const sharedBackgroundColor = "#34495e";
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -256,7 +288,7 @@ const LayoutPage = ({ children }: { children: any }) => {
           </div>
 
           {!collapsed && (
-            <div className="rounded-lg bg-[#1c2f6c] p-4 cursor-pointer hover:bg-slate-700/70 transition-colors shadow-xl relative">
+            <div className="rounded-lg bg-[#2e4053] p-4 cursor-pointer hover:bg-slate-700/70 transition-colors shadow-xl relative">
               <div className="absolute -top-2 -right-2 z-10">
                 <NotificationDropdown />
               </div>

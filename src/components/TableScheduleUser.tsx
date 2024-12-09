@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Button, Table, Tag, Space, Tooltip } from "antd";
+import { Button, Table, Tag, Space, Tooltip, Input, Card } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useNavigate } from "react-router";
 import {
@@ -9,6 +9,13 @@ import {
 import { ScheduleUserType } from "../types/ScheduleUserType";
 import { formatDateWithourHour } from "../utils/ultil";
 import { ScheduleType, typeMap } from "../types/Enum/ScheduleType";
+import { CalendarDays, CalendarRange, Clock4 } from "lucide-react";
+import {
+  FilterOutlined,
+  PlusOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
+import { VisitStatus, visitStatusMap } from "../types/Enum/VisitStatus";
 
 interface Filters {
   visitStatus: ScheduleUserStatus[];
@@ -37,6 +44,8 @@ const TableScheduleUser: React.FC<ScheduleAssignedTableProps> = ({
   console.log(data);
   const [filteredData, setFilteredData] = useState<ScheduleUserType[]>(data);
   const [animationActive, setAnimationActive] = useState<boolean>(true);
+
+  const [searchText, setSearchText] = useState("");
   useEffect(() => {
     let filtered = data;
 
@@ -53,18 +62,23 @@ const TableScheduleUser: React.FC<ScheduleAssignedTableProps> = ({
         )
       );
     }
+    if (searchText) {
+      filtered = filtered.filter((item) =>
+        item.title?.toLowerCase().includes(searchText.toLowerCase())
+      );
+    }
 
     setFilteredData(filtered);
-  }, [data, filters]);
+  }, [data, filters, searchText]);
 
   const columns: ColumnsType<ScheduleUserType> = [
-    {
-      title: "STT",
-      dataIndex: "index",
-      key: "index",
-      width: 50,
-      render: (text, record, index) => index + 1,
-    },
+    // {
+    //   title: "STT",
+    //   dataIndex: "index",
+    //   key: "index",
+    //   width: 50,
+    //   render: (text, record, index) => index + 1,
+    // },
     {
       title: "Tên nhiệm vụ",
       dataIndex: "title",
@@ -166,6 +180,10 @@ const TableScheduleUser: React.FC<ScheduleAssignedTableProps> = ({
     return data?.filter((item: any) => item.status === status).length || 0;
   };
 
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchText(e.target.value);
+  };
+
   const handleTypeFilter = (type: ScheduleType | null) => {
     setFilters((prevFilters) => ({
       ...prevFilters,
@@ -180,167 +198,101 @@ const TableScheduleUser: React.FC<ScheduleAssignedTableProps> = ({
     }));
   };
 
+  const getHeaderBackgroundColor = () => {
+    if (filters.scheduleTypeId.length === 1) {
+      const type = filters.scheduleTypeId[0];
+      switch (type) {
+        case null:
+          return "[&_.ant-table-thead_th]:!bg-[#138d75]/10 [&_.ant-table-thead_th]:!text-[#138d75]";
+        case ScheduleType.Weekly:
+          return "[&_.ant-table-thead_th]:!bg-[#e67e22]/10 [&_.ant-table-thead_th]:!text-[#e67e22]";
+        case ScheduleType.Monthly:
+          return "[&_.ant-table-thead_th]:!bg-[#2980b9]/10 [&_.ant-table-thead_th]:!text-[#2980b9]";
+        case "ALL":
+          return "[&_.ant-table-thead_th]:!bg-[#34495e] [&_.ant-table-thead_th]:!text-white";
+        default:
+          return "[&_.ant-table-thead_th]:!bg-[#34495e] [&_.ant-table-thead_th]:!text-white";
+      }
+    }
+    return "[&_.ant-table-thead_th]:!bg-[#34495e] [&_.ant-table-thead_th]:!text-white";
+  };
+
   return (
-    <>
-      <Space style={{ marginBottom: 16, display: "flex", flexWrap: "wrap" }}>
-        <Button
-          type={
-            filters.scheduleTypeId.includes(ScheduleType.Weekly)
-              ? "primary"
-              : "default"
-          }
-          onClick={() => handleTypeFilter(ScheduleType.Weekly)}
-          className={`px-4 py-2 rounded-md ${
-            filters.scheduleTypeId.includes(ScheduleType.Weekly)
-              ? "bg-blue-500 text-white"
-              : "bg-gray-200 text-gray-700"
-          } hover:bg-blue-600`}
-        >
-          Theo tuần
-        </Button>
-        <Button
-          type={
-            filters.scheduleTypeId.includes(ScheduleType.Monthly)
-              ? "primary"
-              : "default"
-          }
-          onClick={() => handleTypeFilter(ScheduleType.Monthly)}
-          className={`px-4 py-2 rounded-md ${
-            filters.scheduleTypeId.includes(ScheduleType.Monthly)
-              ? "bg-blue-500 text-white"
-              : "bg-gray-200 text-gray-700"
-          } hover:bg-blue-600`}
-        >
-          Theo tháng
-        </Button>
-      </Space>
-      <Space style={{ marginBottom: 16, display: "flex", flexWrap: "wrap" }}>
-        <Button
-          type={
-            filters.visitStatus.includes(ScheduleUserStatus.Pending)
-              ? "primary"
-              : "default"
-          }
-          onClick={() => {
-            setAnimationActive(false);
-            handleStatusFilter(ScheduleUserStatus.Pending);
-          }}
-          className={`px-4 py-2 rounded-md ${
-            filters.visitStatus.includes(ScheduleUserStatus.Pending)
-              ? "bg-blue-500 text-white"
-              : "bg-gray-200 text-gray-700"
-          } hover:bg-blue-600 ${
-            animationActive && getCountByStatus(ScheduleUserStatus.Pending) > 0
-              ? "animated-button"
-              : ""
-          }`}
-        >
-          Chờ phê duyệt ({getCountByStatus(ScheduleUserStatus.Pending)})
-        </Button>
-        <Button
-          type={
-            filters.visitStatus.includes(ScheduleUserStatus.Assigned)
-              ? "primary"
-              : "default"
-          }
-          onClick={() => handleStatusFilter(ScheduleUserStatus.Assigned)}
-          className={`px-4 py-2 rounded-md ${
-            filters.visitStatus.includes(ScheduleUserStatus.Assigned)
-              ? "bg-blue-500 text-white"
-              : "bg-gray-200 text-gray-700"
-          } hover:bg-blue-600`}
-        >
-          Chờ tạo ({getCountByStatus(ScheduleUserStatus.Assigned)})
-        </Button>
-        <Button
-          type={
-            filters.visitStatus.includes(ScheduleUserStatus.Approved)
-              ? "primary"
-              : "default"
-          }
-          onClick={() => handleStatusFilter(ScheduleUserStatus.Approved)}
-          className={`px-4 py-2 rounded-md ${
-            filters.visitStatus.includes(ScheduleUserStatus.Approved)
-              ? "bg-blue-500 text-white"
-              : "bg-gray-200 text-gray-700"
-          } hover:bg-blue-600`}
-        >
-          Đã phê duyệt ({getCountByStatus(ScheduleUserStatus.Approved)})
-        </Button>
-        <Button
-          type={
-            filters.visitStatus.includes(ScheduleUserStatus.Rejected)
-              ? "primary"
-              : "default"
-          }
-          onClick={() => handleStatusFilter(ScheduleUserStatus.Rejected)}
-          className={`px-4 py-2 rounded-md ${
-            filters.visitStatus.includes(ScheduleUserStatus.Rejected)
-              ? "bg-blue-500 text-white"
-              : "bg-gray-200 text-gray-700"
-          } hover:bg-blue-600`}
-        >
-          Đã từ chối ({getCountByStatus(ScheduleUserStatus.Rejected)})
-        </Button>
-        <Button
-          type={
-            filters.visitStatus.includes(ScheduleUserStatus.Cancelled)
-              ? "primary"
-              : "default"
-          }
-          onClick={() => handleStatusFilter(ScheduleUserStatus.Cancelled)}
-          className={`px-4 py-2 rounded-md ${
-            filters.visitStatus.includes(ScheduleUserStatus.Cancelled)
-              ? "bg-blue-500 text-white"
-              : "bg-gray-200 text-gray-700"
-          } hover:bg-blue-600`}
-        >
-          Đã vô hiệu hóa ({getCountByStatus(ScheduleUserStatus.Cancelled)})
-        </Button>
-        <Button
-          type={
-            filters.visitStatus.includes(ScheduleUserStatus.Expired)
-              ? "primary"
-              : "default"
-          }
-          onClick={() => handleStatusFilter(ScheduleUserStatus.Expired)}
-          className={`px-4 py-2 rounded-md ${
-            filters.visitStatus.includes(ScheduleUserStatus.Expired)
-              ? "bg-blue-500 text-white"
-              : "bg-gray-200 text-gray-700"
-          } hover:bg-blue-600`}
-        >
-          Đã hết hạn ({getCountByStatus(ScheduleUserStatus.Expired)})
-        </Button>
-      </Space>
-      {error ? (
-        <p className="text-red-500 text-center">
-          Không có lịch trình được giao
-        </p>
-      ) : (
+    <div className="p-4 max-w-[1400px] mx-auto">
+      {/* <div className="flex justify-between items-center mb-6">
+        <Input
+          placeholder="Tìm kiếm theo tên nhiệm vụ"
+          prefix={<SearchOutlined className="text-gray-400" />}
+          value={searchText}
+          onChange={handleSearchChange}
+          className="max-w-xs"
+        />
+        
+       
+      </div> */}
+      <Card className="shadow-lg rounded-xl border-0">
+        <div className="shadow-lg rounded-xl border-0">
+          <div className="flex gap-1">
+            <Button
+              onClick={() => handleTypeFilter(null)}
+              className={`rounded-t-[140px] min-w-[120px] border-b-0 ${
+                filters.scheduleTypeId.includes(null)
+                  ? "border-[#138d75] text-white bg-[#138d75]  "
+                  : "border-[#34495e] text-[#34495e]  "
+              }`}
+            >
+              <Clock4 size={17} />
+              Theo ngày
+            </Button>
+            <Button
+              onClick={() => handleTypeFilter(ScheduleType.Weekly)}
+              className={`rounded-t-[120px] min-w-[120px] border-b-0  ${
+                filters.scheduleTypeId.includes(ScheduleType.Weekly)
+                  ? "border-[#d35400] text-white bg-[#e67e22]"
+                  : "border-[#34495e] text-[#34495e] hover:bg-yellow-50"
+              }`}
+            >
+              <CalendarDays size={17} />
+              Theo tuần
+            </Button>
+            <Button
+              // type={
+              //   filters.scheduleTypeId.includes(ScheduleType.Monthly)
+              //     ? "primary"
+              //     : "default"
+              // }
+              onClick={() => handleTypeFilter(ScheduleType.Monthly)}
+              className={`rounded-t-[120px] min-w-[120px] border-b-0  ${
+                filters.scheduleTypeId.includes(ScheduleType.Monthly)
+                  ? "border-[#7d3c98] text-white bg-[#2980b9]"
+                  : "border-[#34495e] text-[#34495e] hover:bg-purple-50"
+              }`}
+            >
+              <CalendarRange size={17} />
+              Theo tháng
+            </Button>
+          </div>
+        </div>
+
         <Table
           columns={columns}
           dataSource={filteredData}
+          size="small"
           pagination={{
-            total: filteredData?.length,
+            pageSize: 8,
             showSizeChanger: true,
             pageSizeOptions: ["5", "10"],
-            hideOnSinglePage: false,
-            size: "small",
+            showTotal: (total) => `Tổng ${total} chuyến thăm`,
           }}
-          rowKey="id"
-          bordered
+          className={`w-full ${getHeaderBackgroundColor()} [&_.ant-table-thead_th]:!font-medium [&_.ant-table-thead_th]:!py-3 [&_.ant-table-thead_th]:!text-sm hover:[&_.ant-table-tbody_tr]:bg-blue-50/30 [&_.ant-table]:!rounded-none [&_.ant-table-container]:!rounded-none [&_.ant-table-thead>tr>th:first-child]:!rounded-tl-none [&_.ant-table-thead>tr>th:last-child]:!rounded-tr-none [&_.ant-table-thead_th]:!transition-none`}
           loading={isLoading}
           onRow={(record) => ({
-            onDoubleClick: (event) => {
-              event.preventDefault(); // Prevent default behavior
-              event.stopPropagation(); // Stop event propagation
-              onRowClick(record);
-            },
+            onDoubleClick: () => onRowClick(record),
+            className: "cursor-pointer hover:bg-gray-50",
           })}
         />
-      )}
-    </>
+      </Card>
+    </div>
   );
 };
 

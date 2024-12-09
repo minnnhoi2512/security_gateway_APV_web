@@ -9,6 +9,7 @@ import {
   notification,
   Layout,
   Divider,
+  Card,
 } from "antd";
 import {
   SearchOutlined,
@@ -41,7 +42,7 @@ const VisitorManager = () => {
   const [idVisitor, setIdVisitor] = useState<number>(0);
   const userRole = localStorage.getItem("userRole");
   const [filteredData, setFilteredData] = useState<Visitor[]>([]);
-  const [activeStatus, setActiveStatus] = useState<string>('Active'); // 'all', 'active', 'inactive'
+  const [activeStatus, setActiveStatus] = useState<string>("Active"); // 'all', 'active', 'inactive'
   const {
     data,
     isLoading: isLoadingData,
@@ -51,15 +52,17 @@ const VisitorManager = () => {
 
   useEffect(() => {
     let result = data || [];
-  
+
     // First filter by status
     // if (activeStatus !== 'all') {
-    //   result = result.filter((visitor: Visitor) => 
+    //   result = result.filter((visitor: Visitor) =>
     //     visitor.status === (activeStatus === 'Active')
     //   );
     // }
-    if (activeStatus){
-      result = result.filter((visitor: Visitor) => visitor.status === activeStatus);
+    if (activeStatus) {
+      result = result.filter(
+        (visitor: Visitor) => visitor.status === activeStatus
+      );
     }
     // Then filter by search text
     if (searchText) {
@@ -67,14 +70,14 @@ const VisitorManager = () => {
         visitor.visitorName.toLowerCase().includes(searchText.toLowerCase())
       );
     }
-  
+
     setFilteredData(result);
   }, [data, searchText, activeStatus]);
-  
+
   const handleFilterStatus = (status: string) => {
     setActiveStatus(status);
   };
-  
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchText(e.target.value);
   };
@@ -214,91 +217,129 @@ const VisitorManager = () => {
       },
     });
   };
+
+  const getButtonStyles = (status) => {
+    if (status === "Active") {
+      return activeStatus === "Active"
+        ? "border-[#138d75] text-white bg-[#138d75] hover:bg-[#138d75]/90"
+        : "border-[#34495e] text-[#34495e] hover:bg-[#138d75]/10";
+    }
+    return activeStatus === "Unactive"
+      ? "border-[#c0392b] text-white bg-[#c0392b] hover:bg-[#c0392b]/90"
+      : "border-[#34495e] text-[#34495e] hover:bg-[#c0392b]/10";
+  };
+
+  const getTableHeaderStyle = () => {
+    return activeStatus === "Active"
+      ? "[&_.ant-table-thead_th]:!bg-[#138d75]/10 [&_.ant-table-thead_th]:!text-[#138d75]"
+      : "[&_.ant-table-thead_th]:!bg-[#c0392b]/10 [&_.ant-table-thead_th]:!text-[#c0392b]";
+  };
+
   if (isLoadingData) {
     return <LoadingState />;
   }
   return (
-    <Layout className="min-h-screen bg-gray-50">
-      <Content className="p-8 bg-white rounded-lg shadow-md">
-        <div className="flex justify-between items-center mb-4">
-          <div className="flex items-center bg-white rounded-full shadow-sm p-2 border border-gray-300 focus-within:border-blue-500 transition-all duration-200 ease-in-out">
-            <SearchOutlined className="text-gray-500 ml-2" />
-            <Input
-              placeholder="Tìm kiếm theo CCCD/CMND khách"
-              value={searchText}
-              onChange={handleSearchChange}
-              className="ml-2 bg-transparent border-none focus:outline-none text-gray-700 placeholder-gray-400"
-              style={{ width: 300 }}
+    <Content className="p-2 max-w-[1200px] mx-auto mt-7">
+      <div className="flex justify-between items-center mb-4">
+        <Input
+          placeholder="Tìm kiếm theo tên khách"
+          value={searchText}
+          onChange={handleSearchChange}
+          prefix={<SearchOutlined />}
+          style={{
+            width: 300,
+            borderColor: "#1890ff",
+            borderRadius: 5,
+          }}
+        />
+
+        {/* <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 shadow-sm"
+          onClick={showCreateModal}
+        >
+          Tạo mới khách
+        </Button> */}
+        <Button
+          icon={<PlusOutlined />}
+          onClick={showCreateModal}
+          className="px-4 py-4 text-lg   rounded-lg bg-buttonColor hover:bg-opacity-90 transition-all   shadow-md text-white flex items-center justify-center"
+        >
+          <span className="mb-[2px]">Tạo mới</span>
+        </Button>
+      </div>
+
+      <Divider />
+
+      {isModalVisible && (
+        <CreateNewVisitor
+          isModalVisible={isModalVisible}
+          setIsModalVisible={closeCreateModal}
+          onVisitorCreated={handleVisitorCreated}
+        />
+      )}
+      {isEditModalVisible && (
+        <DetailVisitor
+          isEditModalVisible={isEditModalVisible}
+          setIsEditModalVisible={closeEditModal}
+          id={idVisitor}
+        />
+      )}
+
+      {error ? (
+        <p className="text-red-500 text-center">
+          Đã xảy ra lỗi khi tải dữ liệu!
+        </p>
+      ) : (
+        <Card className="shadow-lg rounded-xl border-0">
+          <div
+            className="rounded-lg bg-white mx-auto"
+            style={{ width: "100%" }}
+          >
+            <div className="flex gap-1">
+              <Button
+                type="default"
+                className={`rounded-t-[140px] min-w-[120px] border-b-0 transition-colors duration-200 ${getButtonStyles(
+                  "Active"
+                )}`}
+                onClick={() => handleFilterStatus("Active")}
+              >
+                Hợp lệ
+              </Button>
+              <Button
+                type="default"
+                className={`rounded-t-[140px] min-w-[120px] border-b-0 transition-colors duration-200 ${getButtonStyles(
+                  "Unactive"
+                )}`}
+                onClick={() => handleFilterStatus("Unactive")}
+              >
+                Bị cấm
+              </Button>
+            </div>
+            <Table
+              columns={columns}
+              dataSource={filteredData}
+              showSorterTooltip={false}
+              pagination={{
+                current: currentPage,
+                pageSize,
+                total: filteredData.length,
+                showSizeChanger: true,
+                pageSizeOptions: ["5", "10"],
+                size: "small",
+              }}
+              onChange={handleTableChange}
+              loading={isLoadingData}
+              rowKey="visitorId"
+              bordered={false}
+              className={`w-full ${getTableHeaderStyle()} [&_.ant-table-thead_th]:!font-medium [&_.ant-table-thead_th]:!py-3 [&_.ant-table-thead_th]:!text-sm hover:[&_.ant-table-tbody_tr]:bg-blue-50/30 [&_.ant-table]:!rounded-none [&_.ant-table-container]:!rounded-none [&_.ant-table-thead>tr>th:first-child]:!rounded-tl-none [&_.ant-table-thead>tr>th:last-child]:!rounded-tr-none [&_.ant-table-thead_th]:!transition-all`}
+              size="middle"
             />
           </div>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 shadow-sm"
-            onClick={showCreateModal}
-          >
-            Tạo mới khách
-          </Button>
-          <div>
-            <Button
-              type="default"
-              className="ml-2 bg-green-500 hover:bg-green-600 text-white rounded-lg px-4 py-2 shadow-sm"
-              onClick={() => handleFilterStatus("Active")}
-            >
-              Hợp lệ
-            </Button>
-            <Button
-              type="default"
-              className="ml-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg px-4 py-2 shadow-sm"
-              onClick={() => handleFilterStatus("Unactive")}
-            >
-              Bị cấm
-            </Button>
-          </div>
-        </div>
-
-        <Divider />
-
-        {isModalVisible && (
-          <CreateNewVisitor
-            isModalVisible={isModalVisible}
-            setIsModalVisible={closeCreateModal}
-            onVisitorCreated={handleVisitorCreated}
-          />
-        )}
-        {isEditModalVisible && (
-          <DetailVisitor
-            isEditModalVisible={isEditModalVisible}
-            setIsEditModalVisible={closeEditModal}
-            id={idVisitor}
-          />
-        )}
-
-        {error ? (
-          <p className="text-red-500 text-center">
-            Đã xảy ra lỗi khi tải dữ liệu!
-          </p>
-        ) : (
-          <Table
-            columns={columns}
-            dataSource={filteredData}
-            pagination={{
-              current: currentPage,
-              pageSize,
-              total: filteredData.length,
-              showSizeChanger: true,
-              pageSizeOptions: ["5", "10"],
-              size: "small",
-            }}
-            onChange={handleTableChange}
-            loading={isLoadingData}
-            rowKey="visitorId"
-            bordered
-            className="bg-white shadow-md rounded-lg"
-          />
-        )}
-      </Content>
-    </Layout>
+        </Card>
+      )}
+    </Content>
   );
 };
 

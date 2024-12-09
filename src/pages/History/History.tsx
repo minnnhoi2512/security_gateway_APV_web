@@ -9,6 +9,7 @@ import {
   Spin,
   Space,
   Popover,
+  Card,
 } from "antd";
 import { useEffect, useState } from "react";
 import type { TableProps } from "antd";
@@ -28,9 +29,12 @@ import VisitList from "../../types/visitListType";
 import LoadingState from "../../components/State/LoadingState";
 import { Content } from "antd/es/layout/layout";
 import {
+  EditOutlined,
+  EyeOutlined,
   FilterOutlined,
   PlusOutlined,
   SearchOutlined,
+  UserOutlined,
 } from "@ant-design/icons";
 
 const { Option } = Select;
@@ -279,27 +283,99 @@ const History = () => {
     };
   }
 
+  // const columns: TableProps<VisitorSessionType>["columns"] = [
+  //   {
+  //     title: "STT",
+  //     key: "index",
+  //     render: (_text, _record, index) => index + 1,
+  //   },
+  //   {
+  //     title: "Tên khách",
+  //     dataIndex: ["visitor", "visitorName"],
+  //     key: "visitorName",
+  //   },
+  //   {
+  //     title: "Cổng vào",
+  //     dataIndex: ["gateIn", "gateName"],
+  //     key: "gateName",
+  //   },
+  //   {
+  //     title: "Giờ Vào",
+  //     dataIndex: "checkinTime",
+  //     key: "checkinTime",
+  //     render: (text) => formatDateLocal(text),
+  //     sorter: (a, b) =>
+  //       new Date(a.checkinTime).getTime() - new Date(b.checkinTime).getTime(),
+  //   },
+  //   {
+  //     title: "Cổng ra",
+  //     dataIndex: ["gateOut", "gateName"],
+  //     key: "gateName",
+  //   },
+  //   {
+  //     title: "Giờ Ra",
+  //     dataIndex: "checkoutTime",
+  //     key: "checkoutTime",
+  //     render: (text) => formatDateLocal(text) || "Khách còn ở trong công ty",
+  //     sorter: (a, b) =>
+  //       new Date(a.checkoutTime).getTime() - new Date(b.checkoutTime).getTime(),
+  //   },
+  //   {
+  //     title: "Trạng thái",
+  //     key: "status",
+  //     dataIndex: "status",
+  //     render: (_, { status }) => (
+  //       <Tag color={status === "CheckIn" ? "volcano" : "green"}>
+  //         {status === "CheckIn" ? "Đã vào" : "Đã ra"}
+  //       </Tag>
+  //     ),
+  //   },
+  //   {
+  //     title: "Hành động",
+  //     key: "action",
+  //     render: (_, record) => (
+  //       <Button
+  //         size="middle"
+  //         onClick={() => {
+  //           setSelectedRecord(record);
+  //           setIsModalVisible(true);
+  //         }}
+  //       >
+  //         Chi tiết
+  //       </Button>
+  //     ),
+  //   },
+  // ];
   const columns: TableProps<VisitorSessionType>["columns"] = [
-    {
-      title: "STT",
-      key: "index",
-      render: (_text, _record, index) => index + 1,
-    },
+    // {
+    //   title: "STT",
+    //   key: "index",
+    //   width: 80,
+    //   render: (_text, _record, index) => index + 1,
+    // },
     {
       title: "Tên khách",
       dataIndex: ["visitor", "visitorName"],
       key: "visitorName",
+      render: (text) => <div className="font-medium">{text}</div>,
     },
     {
       title: "Cổng vào",
       dataIndex: ["gateIn", "gateName"],
       key: "gateName",
+      render: (text) => (
+        <Tag className="bg-yellow-50 border-yellow-200 text-yellow-600 rounded-md">
+          {text}
+        </Tag>
+      ),
     },
     {
       title: "Giờ Vào",
       dataIndex: "checkinTime",
       key: "checkinTime",
-      render: (text) => formatDateLocal(text),
+      render: (text) => (
+        <div className="text-gray-600">{formatDateLocal(text)}</div>
+      ),
       sorter: (a, b) =>
         new Date(a.checkinTime).getTime() - new Date(b.checkinTime).getTime(),
     },
@@ -307,12 +383,22 @@ const History = () => {
       title: "Cổng ra",
       dataIndex: ["gateOut", "gateName"],
       key: "gateName",
+      render: (text) =>
+        text && (
+          <Tag className="bg-green-50 border-green-200 text-green-600 rounded-md">
+            {text}
+          </Tag>
+        ),
     },
     {
       title: "Giờ Ra",
       dataIndex: "checkoutTime",
       key: "checkoutTime",
-      render: (text) => formatDateLocal(text) || "Khách còn ở trong công ty",
+      render: (text) => (
+        <div className="text-gray-600">
+          {formatDateLocal(text) || "Khách còn ở trong công ty"}
+        </div>
+      ),
       sorter: (a, b) =>
         new Date(a.checkoutTime).getTime() - new Date(b.checkoutTime).getTime(),
     },
@@ -321,24 +407,38 @@ const History = () => {
       key: "status",
       dataIndex: "status",
       render: (_, { status }) => (
-        <Tag color={status === "CheckIn" ? "volcano" : "green"}>
-          {status === "CheckIn" ? "Đã vào" : "Đã ra"}
+        <Tag
+          className={`${
+            status === "CheckIn"
+              ? "bg-green-50 border-green-200 text-green-600"
+              : "bg-gray-50 border-gray-200 text-gray-600"
+          } rounded-md`}
+        >
+          {status === "CheckIn" ? "Còn hiệu lực" : "Hết hiệu lực"}
         </Tag>
       ),
     },
     {
       title: "Hành động",
       key: "action",
+      width: 100,
       render: (_, record) => (
-        <Button
-          size="middle"
-          onClick={() => {
-            setSelectedRecord(record);
-            setIsModalVisible(true);
-          }}
-        >
-          Chi tiết
-        </Button>
+        <Space>
+          <Button
+            type="text"
+            className="flex justify-center text-blue-500 hover:text-blue-600"
+            icon={<EyeOutlined />}
+            onClick={() => {
+              setSelectedRecord(record);
+              setIsModalVisible(true);
+            }}
+          />
+          {/* <Button
+            type="text"
+            className="flex items-center text-blue-500 hover:text-blue-600"
+            icon={<UserOutlined />}
+          /> */}
+        </Space>
       ),
     },
   ];
@@ -423,7 +523,7 @@ const History = () => {
   );
   if (loading) return <LoadingState />;
   return (
-    <Content className="px-6">
+    <Content className="p-4 max-w-[1200px] mx-auto mt-7">
       <Space
         style={{
           marginBottom: 16,
@@ -459,7 +559,34 @@ const History = () => {
           Tạo mới
         </Button>
       </Space>
-      <Table columns={columns} dataSource={filteredData} loading={loading} />{" "}
+      {/* <Table columns={columns} dataSource={filteredData} loading={loading} />{" "} */}
+      <Card className="shadow-lg rounded-xl border-0">
+        <div className="rounded-lg bg-white mx-auto" style={{ width: "100%" }}>
+          <Table
+            columns={columns}
+            showSorterTooltip={false}
+            dataSource={filteredData}
+            loading={loading}
+            pagination={{
+              pageSize: 8,
+              size: "small",
+              className: "mt-4",
+              showSizeChanger: true,
+              showTotal: (total) => `${total} kết quả`,
+              position: ["bottomRight"],
+            }}
+            className={`w-full [&_.ant-table-thead_th]:!bg-[#34495e] [&_.ant-table-thead_th]:!text-white [&_.ant-table-thead_th]:!font-medium [&_.ant-table-thead_th]:!py-3 [&_.ant-table-thead_th]:!text-sm hover:[&_.ant-table-tbody_tr]:bg-blue-50/30 [&_.ant-table]:!rounded-none [&_.ant-table-container]:!rounded-none [&_.ant-table-thead>tr>th:first-child]:!rounded-tl-none [&_.ant-table-thead>tr>th:last-child]:!rounded-tr-none [&_.ant-table-thead_th]:!transition-none`}
+            size="middle"
+            bordered={false}
+            rowClassName="hover:bg-gray-50"
+            style={{
+              borderColor: "transparent",
+              fontSize: "0.9rem",
+            }}
+          />
+        </div>
+      </Card>
+
       {/* Apply loading here */}
       <Modal
         title="Chi tiết lịch sử"
