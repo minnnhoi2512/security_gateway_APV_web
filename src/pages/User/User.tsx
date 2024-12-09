@@ -431,7 +431,6 @@ const User = () => {
             Tạo mới người dùng
           </Button> */}
           <Button
- 
             onClick={() => setIsCreateUserModalVisible(true)}
             className="group relative px-6 py-4 bg-buttonColor hover:!bg-buttonColor hover:!border-buttonColor rounded-lg shadow-lg hover:!shadow-green-500/50 transition-all duration-300 transform hover:!scale-105"
           >
@@ -505,7 +504,11 @@ const User = () => {
           visible={isDetailModalVisible}
           footer={null}
           onCancel={() => setIsDetailModalVisible(false)}
-          className="rounded-lg"
+          className="rounded-lg ml-[140px]"
+          centered
+    
+          bodyStyle={{ padding: 0 }}
+          destroyOnClose
         >
           {selectedUser && (
             <DetailUser
@@ -519,7 +522,14 @@ const User = () => {
           visible={isCreateUserModalVisible}
           footer={null}
           onCancel={() => setIsCreateUserModalVisible(false)}
-          className="rounded-lg"
+          centered
+          className="rounded-lg ml-[140px]"
+          styles={{
+            body: {
+              overflow: "auto",
+              padding: 0,
+            },
+          }}
         >
           <CreateUser onSuccess={handleCreateSuccess} />
         </Modal>
