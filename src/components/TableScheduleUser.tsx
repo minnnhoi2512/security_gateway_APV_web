@@ -279,7 +279,7 @@ const TableScheduleUser: React.FC<ScheduleAssignedTableProps> = ({
           dataSource={filteredData}
           size="small"
           pagination={{
-            pageSize: 8,
+            // pageSize: 8,
             showSizeChanger: true,
             pageSizeOptions: ["5", "10"],
             showTotal: (total) => `Tổng ${total} chuyến thăm`,

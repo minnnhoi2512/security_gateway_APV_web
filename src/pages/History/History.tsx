@@ -414,7 +414,7 @@ const History = () => {
               : "bg-gray-50 border-gray-200 text-gray-600"
           } rounded-md`}
         >
-          {status === "CheckIn" ? "Còn hiệu lực" : "Hết hiệu lực"}
+          {status === "CheckIn" ? "Đã vào" : "Đã ra"}
         </Tag>
       ),
     },
@@ -568,7 +568,7 @@ const History = () => {
             dataSource={filteredData}
             loading={loading}
             pagination={{
-              pageSize: 8,
+              // pageSize: 8,
               size: "small",
               className: "mt-4",
               showSizeChanger: true,

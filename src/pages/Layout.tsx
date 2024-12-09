@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   HomeOutlined,
   MenuFoldOutlined,
@@ -31,6 +31,7 @@ import {
 import "./layout.css";
 import { chatDB } from "../api/firebase";
 import { routes } from "../UI/routeConstants";
+import { ChevronRight } from "lucide-react";
 
 const { Sider, Content } = Layout;
 
@@ -58,63 +59,126 @@ const findRouteName = (url: string, routes: any): string => {
 
 const generateBreadcrumbItems = (location: any, routes: any) => {
   const pathSnippets = location.pathname.split("/").filter((i: string) => i);
-  // const breadcrumbItems = pathSnippets.map((snippet: string, index: number) => {
-  //   const url = `/${pathSnippets.slice(0, index + 1).join("/")}`;
-  //   const routeName = findRouteName(url, routes);
-  //   const isLast = index === pathSnippets.length - 1;
   const breadcrumbItems = pathSnippets
-  .map((snippet: string, index: number) => {
-    const url = `/${pathSnippets.slice(0, index + 1).join("/")}`;
-    const routeName = findRouteName(url, routes);
-    const isLast = index === pathSnippets.length - 1;
-    
- 
-    if (!isNaN(Number(snippet))) {
-      return null;
-    }
-    
+    .map((snippet: string, index: number) => {
+      const url = `/${pathSnippets.slice(0, index + 1).join("/")}`;
+      const routeName = findRouteName(url, routes);
+      const isLast = index === pathSnippets.length - 1;
+      
+      if (!isNaN(Number(snippet))) {
+        return null;
+      }
 
-    
-
-  //   return {
-  //     title: isLast ? (
-  //       <span className="text-backgroundPage text-lg  font-bold">{routeName || snippet}</span>
-  //     ) : (
-  //       <Link 
-  //         to={url} 
-  //         className="text-gray-500 hover:text-blue-600 transition-colors"
-  //       >
-  //         {routeName || snippet}
-  //       </Link>
-  //     ),
-  //   };
-  // });
-  return {
-    title: isLast ? (
-      <span className="text-backgroundPage text-lg font-bold">{routeName || snippet}</span>
-    ) : (
-      <Link 
-        to={url} 
-        className="text-gray-500 hover:text-blue-600 transition-colors"
-      >
-        {routeName || snippet}
-      </Link>
-    ),
-  };
-})
-.filter((item): item is { title: JSX.Element } => item !== null);
+      return {
+        title: isLast ? (
+          <span className="text-blue-600 font-bold text-lg px-2 py-1 bg-blue-50 rounded-md">
+            {routeName || snippet}
+          </span>
+        ) : (
+          <Link 
+            to={url}
+            className="text-gray-600 hover:text-blue-600 font-medium transition-all duration-200 
+                       hover:bg-blue-50 px-2 py-1 rounded-md"
+          >
+            {routeName || snippet}
+          </Link>
+        ),
+      };
+    })
+    .filter((item): item is { title: JSX.Element } => item !== null);
 
   return [
     {
       title: (
-        <Link to="/dashboard" className="flex items-center text-gray-500 hover:text-blue-600 transition-colors">
-          <HomeOutlined className="text-lg" />
+        <Link 
+          to="/dashboard" 
+          className="flex items-center text-gray-600 hover:text-blue-600 transition-all duration-200
+                     hover:bg-blue-50 p-2 rounded-md"
+        >
+          <HomeOutlined className="w-5 h-5" />
         </Link>
       ),
     },
     ...breadcrumbItems,
   ];
 };
+
+const StyledBreadcrumb = ({ location, routes }: { location: any; routes: any }) => {
+  const items = generateBreadcrumbItems(location, routes);
+
+  return (
+    <nav className="bg-white shadow-md rounded-lg px-4 py-3 mb-6">
+      <div className="flex items-center flex-wrap gap-2">
+        {items.map((item, index) => (
+          <React.Fragment key={index}>
+            {index > 0 && (
+              <ChevronRight className="w-5 h-5 text-gray-400" />
+            )}
+            <div className="flex items-center">
+              {item.title}
+            </div>
+          </React.Fragment>
+        ))}
+      </div>
+    </nav>
+  );
+};
+
+// const generateBreadcrumbItems = (location: any, routes: any) => {
+//   const pathSnippets = location.pathname.split("/").filter((i: string) => i);
+//   // const breadcrumbItems = pathSnippets.map((snippet: string, index: number) => {
+//   //   const url = `/${pathSnippets.slice(0, index + 1).join("/")}`;
+//   //   const routeName = findRouteName(url, routes);
+//   //   const isLast = index === pathSnippets.length - 1;
+//   const breadcrumbItems = pathSnippets
+//   .map((snippet: string, index: number) => {
+//     const url = `/${pathSnippets.slice(0, index + 1).join("/")}`;
+//     const routeName = findRouteName(url, routes);
+//     const isLast = index === pathSnippets.length - 1;
+
+//     if (!isNaN(Number(snippet))) {
+//       return null;
+//     }
+
+//   //   return {
+//   //     title: isLast ? (
+//   //       <span className="text-backgroundPage text-lg  font-bold">{routeName || snippet}</span>
+//   //     ) : (
+//   //       <Link
+//   //         to={url}
+//   //         className="text-gray-500 hover:text-blue-600 transition-colors"
+//   //       >
+//   //         {routeName || snippet}
+//   //       </Link>
+//   //     ),
+//   //   };
+//   // });
+//   return {
+//     title: isLast ? (
+//       <span className="text-blue-500 text-lg font-bold">{routeName || snippet}</span>
+//     ) : (
+//       <Link
+//         to={url}
+//         className="text-red hover:text-blue-600 transition-colors"
+//       >
+//         {routeName || snippet}
+//       </Link>
+//     ),
+//   };
+// })
+// .filter((item): item is { title: JSX.Element } => item !== null);
+
+//   return [
+//     {
+//       title: (
+//         <Link to="/dashboard" className="flex items-center text-gray-500 hover:text-blue-600 transition-colors">
+//           <HomeOutlined className="text-lg" />
+//         </Link>
+//       ),
+//     },
+//     ...breadcrumbItems,
+//   ];
+// };
 const LayoutPage = ({ children }: { children: any }) => {
   const [collapsed, setCollapsed] = useState(false);
   const userId = Number(localStorage.getItem("userId"));
@@ -322,7 +386,7 @@ const LayoutPage = ({ children }: { children: any }) => {
       <Layout>
         <Content className="bg-white rounded shadow min-h-[80vh]">
           <div className="sticky top-0 z-20 bg-white border-b border-gray-200">
-            <Breadcrumb items={breadcrumbItems} className="p-4 text-lg" />
+            <Breadcrumb items={breadcrumbItems} className="p-4  text-lg" />
           </div>
           {children}
         </Content>

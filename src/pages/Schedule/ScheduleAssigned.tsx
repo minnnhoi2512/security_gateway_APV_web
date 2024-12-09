@@ -37,6 +37,8 @@ const ScheduleAssignedManager = () => {
   const [actionType, setActionType] = useState<string | null>(null);
   const [filteredSchedules, setFilteredSchedules] = useState([]);
   const userRole = localStorage.getItem("userRole");
+  console.log("ROLE: ", userRole);
+
   const [filters, setFilters] = useState<Filters>({
     taskStatus: [],
     scheduleTypeId: [],
@@ -243,31 +245,32 @@ const ScheduleAssignedManager = () => {
                 </Popover>
               </div>
               <div className="flex items-center gap-2 ml-auto">
-                <div
-                  className={`
+                {userRole === "DepartmentManager" && (
+                  <div
+                    className={`
       bg-[#dc7633] 
       shadow-lg 
       rounded-lg 
       p-1 
-      ml-[815px]
+      ml-[740px]
       animate-cardPulse 
       transition-all 
       duration-200
       ${isActive ? "ring-2 ring-white" : ""}
     `}
-                >
-                  <div className="flex items-center gap-2 px-2">
-                    {Object.values(TaskStatus)
-                      .filter((status) => status === TaskStatus.ActiveTemporary)
-                      .map((status) => {
-                        const { textVisitStatus } = visitStatusMap[status];
-                        const count = getCountByStatus(status);
-
-                        return (
-                          <button
-                            key={status}
-                            onClick={() => handleClick(status)}
-                            className={`
+                  >
+                    <div className="flex items-center gap-2 px-2">
+                      <div className="flex items-center gap-2 px-2">
+                        {Object.values(TaskStatus)
+                          .filter((status) => status === TaskStatus.Pending)
+                          .map((status) => {
+                            const { textVisitStatus } = visitStatusMap[status];
+                            const count = getCountByStatus(status);
+                            return (
+                              <button
+                                key={status}
+                                onClick={() => handleClick(status)}
+                                className={`
                   text-white
                   px-2
                   py-1
@@ -282,18 +285,20 @@ const ScheduleAssignedManager = () => {
                   h-8
                   ${isActive ? "" : ""}
                 `}
-                          >
-                            <span>{textVisitStatus}</span>
-                            {count > 0 && (
-                              <span className="bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[20px] text-center">
-                                {count}
-                              </span>
-                            )}
-                          </button>
-                        );
-                      })}
+                              >
+                                <span>{textVisitStatus}</span>
+                                {count > 0 && (
+                                  <span className="bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[20px] text-center">
+                                    {count}
+                                  </span>
+                                )}
+                              </button>
+                            );
+                          })}
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </div>

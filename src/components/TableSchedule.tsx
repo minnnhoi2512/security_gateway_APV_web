@@ -294,6 +294,24 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({
         bordered={false}
         className={`w-full ${getHeaderBackgroundColor()} [&_.ant-table-thead_th]:!font-medium [&_.ant-table-thead_th]:!py-3 [&_.ant-table-thead_th]:!text-sm hover:[&_.ant-table-tbody_tr]:bg-blue-50/30 [&_.ant-table]:!rounded-none [&_.ant-table-container]:!rounded-none [&_.ant-table-thead>tr>th:first-child]:!rounded-tl-none [&_.ant-table-thead>tr>th:last-child]:!rounded-tr-none [&_.ant-table-thead_th]:!transition-none`}
       />
+        <Modal
+        title={
+          <h1 className="text-3xl font-bold text-titleMain text-center mb-6">
+            Cập nhật lịch trình
+          </h1>
+        }
+        centered
+        width="68vw"
+        bodyStyle={{ padding: "20px", maxHeight: "90vh", overflowY: "auto" }}
+        visible={isModalVisible}
+        onCancel={handleCancel}
+        footer={null}
+      >
+        <DetailSchedule
+          scheduleId={selectedScheduleId}
+          onUpdateSuccess={handleCancel}
+        />
+      </Modal>
     </Card>
   );
 };

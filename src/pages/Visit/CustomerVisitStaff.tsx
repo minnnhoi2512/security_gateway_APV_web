@@ -243,6 +243,18 @@ const CustomerVisitStaff = () => {
     return "[&_.ant-table-thead_th]:!bg-[#34495e] [&_.ant-table-thead_th]:!text-white";
   };
 
+
+  const [isActive, setIsActive] = useState(false);
+
+  const handleClick = (status) => {
+    setIsActive(!isActive);
+    if (!isActive) {
+      handleStatusFilter(status);
+    } else {
+      handleClearFilters();
+    }
+  };
+
   useEffect(() => {
     if (isLoading || !data) return;
     let filtered = data;
@@ -455,13 +467,66 @@ const CustomerVisitStaff = () => {
         >
           Tạo mới
         </Button> */}
-        <Button
-          icon={<PlusOutlined />}
-          onClick={() => setIsCreateModalVisible(true)}
-          className="px-4 py-4 text-lg   rounded-lg bg-buttonColor hover:bg-opacity-90 transition-all shadow-md text-white flex items-center justify-center"
-        >
-          <span className="mb-[2px]">Tạo mới</span>
-        </Button>
+        <div className="flex items-center gap-2">
+          <div
+              className={`
+      bg-[#dc7633] 
+      shadow-lg 
+      rounded-lg 
+      p-1 
+      animate-cardPulse 
+      transition-all 
+      duration-200
+      ${isActive ? "ring-2 ring-white" : ""}
+    `}
+            >
+              <div className="flex items-center gap-2 px-2">
+                {Object.values(VisitStatus)
+                  .filter((status) => status === VisitStatus.ActiveTemporary)
+                  .map((status) => {
+                    const { textVisitStatus } = visitStatusMap[status];
+                    const count = getCountByStatus(status);
+
+                    return (
+                      <button
+                        key={status}
+                        onClick={() => handleClick(status)}
+                        className={`
+                  text-white
+                  px-2
+                  py-1
+                  text-sm
+                  rounded-md
+                  flex
+                  items-center
+                  gap-2
+                  hover:opacity-80
+                  transition-all
+                  duration-200
+                  h-8
+                  ${isActive ? "" : ""}
+                `}
+                      >
+                        <span>{textVisitStatus}</span>
+                        {count > 0 && (
+                          <span className="bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[20px] text-center">
+                            {count}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+              </div>
+            </div>
+
+          <Button
+            icon={<PlusOutlined />}
+            onClick={() => setIsCreateModalVisible(true)}
+            className="px-4 py-4 text-lg   rounded-lg bg-buttonColor hover:bg-opacity-90 transition-all shadow-md text-white flex items-center justify-center"
+          >
+            <span className="mb-[2px]">Tạo mới</span>
+          </Button>
+        </div>
       </div>
       {/* <>
         <Space style={{ marginBottom: 16, display: "flex", flexWrap: "wrap" }}>

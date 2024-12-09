@@ -233,7 +233,7 @@ const ScheduleStaff: React.FC<SchedulePageProps> = ({ status }) => {
                 <Button icon={<FilterOutlined />} />
               </Popover>
             </div>
-            <div className="flex items-center gap-2 ml-auto">
+            {/* <div className="flex items-center gap-2 ml-auto">
               <div
                 className={`
       bg-[#dc7633] 
@@ -285,7 +285,7 @@ const ScheduleStaff: React.FC<SchedulePageProps> = ({ status }) => {
                     })}
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </Space>

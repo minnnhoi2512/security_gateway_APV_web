@@ -456,7 +456,7 @@ const CustomerVisit = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <div
+            {/* <div
               className={`
       bg-[#dc7633] 
       shadow-lg 
@@ -505,7 +505,7 @@ const CustomerVisit = () => {
                     );
                   })}
               </div>
-            </div>
+            </div> */}
 
             <Button
               icon={<PlusOutlined />}
