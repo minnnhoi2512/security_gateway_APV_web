@@ -36,6 +36,7 @@ import NotFoundState from "../components/State/NotFoundState";
 import User from "../pages/User/User";
 import CreateGate from "../form/CreateGate";
 import GateDetail from "../pages/Facility/GateDetail";
+import { Simulation } from "../pages/Simulation";
 
 
 
@@ -345,6 +346,15 @@ const ContentRouter = () => {
           <LayoutPage>
             <CalendarPage />
           </LayoutPage>
+        }
+      />
+      <Route
+        index
+        path="/simulation"
+        element={
+
+            <Simulation />
+
         }
       />
       <Route
