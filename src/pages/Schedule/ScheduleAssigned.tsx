@@ -8,6 +8,7 @@ import ScheduleUserDetailModal from "../../components/Modal/ScheduleUserDetailMo
 import NotFoundState from "../../components/State/NotFoundState";
 import { VisitStatus, visitStatusMap } from "../../types/Enum/VisitStatus";
 import { TaskStatus, taskStatusMap } from "../../types/Enum/TaskStatus";
+import { Bell } from "lucide-react";
 
 const { Content } = Layout;
 
@@ -37,7 +38,7 @@ const ScheduleAssignedManager = () => {
   const [actionType, setActionType] = useState<string | null>(null);
   const [filteredSchedules, setFilteredSchedules] = useState([]);
   const userRole = localStorage.getItem("userRole");
-  console.log("ROLE: ", userRole);
+  const [isHovered, setIsHovered] = useState(false);
 
   const [filters, setFilters] = useState<Filters>({
     taskStatus: [],
@@ -244,13 +245,12 @@ const ScheduleAssignedManager = () => {
                   <Button icon={<FilterOutlined />} />
                 </Popover>
               </div>
+
               <div className="flex items-center gap-2 ml-auto">
                 {userRole === "DepartmentManager" && (
                   <div
                     className={`
-      bg-[#dc7633] 
-      shadow-lg 
-      rounded-lg 
+  
       p-1 
       ml-[740px]
       animate-cardPulse 
@@ -270,28 +270,83 @@ const ScheduleAssignedManager = () => {
                               <button
                                 key={status}
                                 onClick={() => handleClick(status)}
+                                onMouseEnter={() => setIsHovered(true)}
+                                onMouseLeave={() => setIsHovered(false)}
                                 className={`
-                  text-white
-                  px-2
-                  py-1
-                  text-sm
-                  rounded-md
-                  flex
-                  items-center
-                  gap-2
-                  hover:opacity-80
-                  transition-all
-                  duration-200
-                  h-8
+                                  relative
+                                  group
+                                  flex
+                                  items-center
+                                  gap-3
+                                  animate-cardPulse
+                                  bg-gradient-to-r
+                                  from-orange-400
+                                  to-orange-600
+                                  hover:from-orange-500
+                                  hover:to-orange-700
+                                  px-4
+                                  py-2
+                                  rounded-lg
+                                  shadow-lg
+                                  hover:shadow-orange-500/50
+                                  transition-all
+                                  duration-300
+                                  transform
+                                  hover:scale-105
+                                  ${isHovered ? "animate-pulse" : ""}
+                                
                   ${isActive ? "" : ""}
                 `}
                               >
-                                <span>{textVisitStatus}</span>
+                                <Bell
+                                  className={`
+                                w-5 
+                                h-5 
+                                text-white
+                                transition-transform
+                                duration-300
+                                ${isHovered ? "animate-bounce" : ""}
+                              `}
+                                />
+                                <span className="text-white">
+                                  {textVisitStatus}
+                                </span>
                                 {count > 0 && (
-                                  <span className="bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[20px] text-center">
+                                  <span
+                                    className={`
+              absolute
+              -top-2
+              -right-2
+              bg-red-500
+              text-white
+              text-xs
+              font-bold
+              rounded-full
+              min-w-[24px]
+              h-6
+              flex
+              items-center
+              justify-center
+              px-2
+              animate-bounce
+              shadow-lg
+            `}
+                                  >
                                     {count}
                                   </span>
                                 )}
+                                <div
+                                  className={`
+            absolute
+            inset-0
+            rounded-lg
+            bg-gradient-to-r
+            from-orange-400/20
+            to-orange-600/20
+            animate-pulse
+            ${isHovered ? "opacity-100" : "opacity-0"}
+          `}
+                                />
                               </button>
                             );
                           })}

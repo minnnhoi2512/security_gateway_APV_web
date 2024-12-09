@@ -147,7 +147,7 @@ const ScheduleStaff: React.FC<SchedulePageProps> = ({ status }) => {
                 prefix={<SearchOutlined className="text-gray-400" />}
                 value={searchText}
                 onChange={handleSearchChange}
-                className="ml-4 w-[120%] max-w-[120%]"
+                className="ml-4 w-[140%] max-w-[140%]"
               />
               <Popover
                 content={

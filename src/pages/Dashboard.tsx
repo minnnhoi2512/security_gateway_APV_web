@@ -79,6 +79,8 @@ const Dashboard: React.FC = () => {
   const { data: userData, isLoading: isLoadingUser } = useGetDashboardUserQuery(
     {}
   );
+  console.log("visit: ", visitData);
+  
   const { data: visitorData, isLoading: isLoadingVisitor } =
     useGetDashboardVisitorQuery({});
   const { data: scheduleData, isLoading: isLoadingSchedule } =
@@ -140,8 +142,8 @@ const Dashboard: React.FC = () => {
   const getScheduleData = () => {
     if (!scheduleData) return [];
     return [
-      { name: "Tuần này", value: scheduleData.week },
-      { name: "Tháng này", value: scheduleData.month },
+      { name: "Tuần", value: scheduleData.week },
+      { name: "Tháng", value: scheduleData.month },
     ];
   };
 
@@ -192,6 +194,7 @@ const Dashboard: React.FC = () => {
       <Spin size="large" />
     </div>
   );
+
 
  
 console.log("CARD: ",userData );

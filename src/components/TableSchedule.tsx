@@ -256,8 +256,8 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({
             onClick={() => handleTypeFilter(ScheduleType.Weekly)}  
             className={`rounded-t-[120px] min-w-[120px] border-b-0  ${
               filters.scheduleTypeId.includes(ScheduleType.Weekly)
-                ? "border-[#e67e22] text-white bg-[#e67e22]"
-                : "border-[#34495e] text-[#34495e] hover:bg-yellow-50"
+                ? "border-[#e67e22] text-white bg-[#e67e22] hover:!border-[#e67e22] hover:!text-white hover:!bg-[#e67e22]"
+                : "border-[#34495e] text-[#34495e] hover:!border-[#34495e] hover:!text-[#34495e]"
             }`}
           >
             <CalendarDays size={17} />
@@ -268,8 +268,8 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({
             onClick={() => handleTypeFilter(ScheduleType.Monthly)}  
             className={`rounded-t-[120px] min-w-[120px] border-b-0  ${
               filters.scheduleTypeId.includes(ScheduleType.Monthly)
-                ? "border-[#2980b9] text-white bg-[#2980b9]"
-                : "border-[#34495e] text-[#34495e] hover:bg-purple-50"
+                ? "border-[#2980b9] text-white bg-[#2980b9] hover:!border-[#2980b9] hover:!text-white hover:!bg-[#2980b9]"
+                : "border-[#34495e] text-[#34495e] hover:!border-[#34495e] hover:!text-[#34495e]"
             }`}
           >
             <CalendarRange size={17} />
