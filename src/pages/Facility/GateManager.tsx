@@ -8,6 +8,7 @@ import { EditOutlined, VideoCameraOutlined } from "@ant-design/icons";
 import StreamingModal from "../../components/Modal/StreamingModal";
 import CreateGate from "../../form/CreateGate";
 import GateDetail from "./GateDetail";
+import { Plus } from "lucide-react";
 
 const { Content } = Layout;
 
@@ -86,7 +87,9 @@ const GateManager = () => {
           <Button
             type="default"
             onClick={() =>
-              navigate(`/gate/detailGate/${record.gateId}`, { state: { selectedGate: record } })
+              navigate(`/gate/detailGate/${record.gateId}`, {
+                state: { selectedGate: record },
+              })
             }
           >
             <EditOutlined />
@@ -100,12 +103,16 @@ const GateManager = () => {
     <Layout className="min-h-screen bg-white">
       <Content className="p-6">
         <Button
-          type="primary"
-          className="mb-4 bg-blue-500 hover:bg-blue-600"
+          // type="primary"
+          className="group relative mb-2 px-6 py-4 bg-buttonColor hover:!bg-buttonColor hover:!border-buttonColor rounded-lg shadow-lg hover:!shadow-green-500/50 transition-all duration-300 transform hover:!scale-105"
           onClick={() => navigate("/gate/createGate")}
         >
-          Tạo mới cổng
+          <div className="flex items-center gap-2 text-white">
+            <Plus className="w-6 h-6 group-hover:!rotate-180 transition-transform duration-500" />
+            <span className="font-medium text-lg">Tạo mới</span>
+          </div>
         </Button>
+
         <StreamingModal
           selectedGate={selectedGate}
           isVisible={isModalVisible}

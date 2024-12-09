@@ -300,6 +300,7 @@ const ScheduleAssignedManager = () => {
                               >
                                 <Bell
                                   className={`
+                                font-bold
                                 w-5 
                                 h-5 
                                 text-white
@@ -308,7 +309,7 @@ const ScheduleAssignedManager = () => {
                                 ${isHovered ? "animate-bounce" : ""}
                               `}
                                 />
-                                <span className="text-white">
+                                <span className="text-white font-bold">
                                   {textVisitStatus}
                                 </span>
                                 {count > 0 && (

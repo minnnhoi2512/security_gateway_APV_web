@@ -31,7 +31,7 @@ import dayjs, { Dayjs } from "dayjs";
 import { VisitStatus, visitStatusMap } from "../../types/Enum/VisitStatus";
 import { ScheduleType, typeMap } from "../../types/Enum/ScheduleType";
 import ListHistorySessonVisit from "../History/ListHistorySessionVisit";
-import { CalendarDays, CalendarRange, Clock4 } from "lucide-react";
+import { CalendarDays, CalendarRange, Clock4, Plus } from "lucide-react";
 import LoadingState from "../../components/State/LoadingState";
 
 interface Filters {
@@ -508,11 +508,19 @@ const CustomerVisit = () => {
             </div> */}
 
             <Button
-              icon={<PlusOutlined />}
+              // icon={<PlusOutlined />}
               onClick={() => navigate("/customerVisit/createNewVisitList")}
-              className="px-4 py-4 text-lg   rounded-lg bg-buttonColor hover:bg-opacity-90 transition-all   shadow-md text-white flex items-center justify-center"
+              className="group relative px-6 py-4 bg-buttonColor hover:!bg-buttonColor hover:!border-buttonColor rounded-lg shadow-lg hover:!shadow-green-500/50 transition-all duration-300 transform hover:!scale-105"
             >
-              <span className="mb-[2px]">Tạo mới</span>
+              <div className="flex items-center gap-2 text-white">
+                <Plus className="w-6 h-6 group-hover:!rotate-180 transition-transform duration-500" />
+                <span className="font-medium text-lg">Tạo mới</span>
+              </div>
+
+              {/* <div className="absolute inset-0 rounded-lg">
+                <div className="absolute inset-0 bg-gradient-to-r from-green-400/20 to-green-600/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-green-500 to-green-700 rounded-lg blur opacity-0 group-hover:opacity-75 animate-pulse transition-opacity duration-300" />
+              </div> */}
             </Button>
           </div>
         </div>
