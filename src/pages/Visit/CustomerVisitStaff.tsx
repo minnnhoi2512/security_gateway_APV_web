@@ -31,7 +31,7 @@ import { VisitStatus, visitStatusMap } from "../../types/Enum/VisitStatus";
 import { ScheduleType, typeMap } from "../../types/Enum/ScheduleType";
 import ListHistorySessonVisit from "../History/ListHistorySessionVisit";
 import NotFoundState from "../../components/State/NotFoundState";
-import { CalendarDays, CalendarRange, Clock4 } from "lucide-react";
+import { Bell, CalendarDays, CalendarRange, Clock4, Plus } from "lucide-react";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -54,6 +54,7 @@ const CustomerVisitStaff = () => {
   const [searchText, setSearchText] = useState<string>("");
   const [animationActive, setAnimationActive] = useState<boolean>(true);
   const [filteredData, setFilteredData] = useState<VisitListType[]>([]);
+  const [isHovered, setIsHovered] = useState(false);
   const [filters, setFilters] = useState<Filters>({
     expectedStartTime: null,
     expectedEndTime: null,
@@ -243,7 +244,6 @@ const CustomerVisitStaff = () => {
     return "[&_.ant-table-thead_th]:!bg-[#34495e] [&_.ant-table-thead_th]:!text-white";
   };
 
-
   const [isActive, setIsActive] = useState(false);
 
   const handleClick = (status) => {
@@ -336,7 +336,7 @@ const CustomerVisitStaff = () => {
   return (
     <Content className="px-6 mt-10">
       <div className="flex gap-4">
-        <div className="flex flex-1 gap-2 mt-2">
+        <div className="flex flex-1 gap-2 mt-2 mb-2">
           <Input
             placeholder="Tìm kiếm chuyến thăm..."
             prefix={<SearchOutlined className="text-gray-400" />}
@@ -467,64 +467,120 @@ const CustomerVisitStaff = () => {
         >
           Tạo mới
         </Button> */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 mb-2">
           <div
-              className={`
-      bg-[#dc7633] 
-      shadow-lg 
-      rounded-lg 
+            className={`
+ 
       p-1 
       animate-cardPulse 
       transition-all 
       duration-200
       ${isActive ? "ring-2 ring-white" : ""}
     `}
-            >
-              <div className="flex items-center gap-2 px-2">
-                {Object.values(VisitStatus)
-                  .filter((status) => status === VisitStatus.ActiveTemporary)
-                  .map((status) => {
-                    const { textVisitStatus } = visitStatusMap[status];
-                    const count = getCountByStatus(status);
+          >
+            <div className="flex items-center gap-2 px-2">
+              {Object.values(VisitStatus)
+                .filter((status) => status === VisitStatus.ActiveTemporary)
+                .map((status) => {
+                  const { textVisitStatus } = visitStatusMap[status];
+                  const count = getCountByStatus(status);
 
-                    return (
-                      <button
-                        key={status}
-                        onClick={() => handleClick(status)}
-                        className={`
-                  text-white
-                  px-2
-                  py-1
-                  text-sm
-                  rounded-md
-                  flex
-                  items-center
-                  gap-2
-                  hover:opacity-80
-                  transition-all
-                  duration-200
-                  h-8
+                  return (
+                    <button
+                      key={status}
+                      onClick={() => handleClick(status)}
+                      onMouseEnter={() => setIsHovered(true)}
+                      onMouseLeave={() => setIsHovered(false)}
+                      className={`
+                          relative
+                          group
+                          flex
+                          items-center
+                          gap-3
+                          animate-cardPulse
+                          bg-gradient-to-r
+                          from-orange-400
+                          to-orange-600
+                          hover:from-orange-500
+                          hover:to-orange-700
+                          px-4
+                          py-2
+                          rounded-lg
+                          shadow-lg
+                          hover:shadow-orange-500/50
+                          transition-all
+                          duration-300
+                          transform
+                          hover:scale-105
+                          ${isHovered ? "animate-pulse" : ""}
                   ${isActive ? "" : ""}
                 `}
-                      >
-                        <span>{textVisitStatus}</span>
-                        {count > 0 && (
-                          <span className="bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[20px] text-center">
-                            {count}
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
-              </div>
+                    >
+                      <Bell
+                        className={`
+                                w-5 
+                                h-5 
+                                text-white
+                                font-bold
+                                transition-transform
+                                duration-300
+                                ${isHovered ? "animate-bounce" : ""}
+                              `}
+                      />
+                      <span className="text-white font-bold">
+                        {textVisitStatus}
+                      </span>
+                      {count > 0 && (
+                        <span
+                          className={`
+                            absolute
+                            -top-2
+                            -right-2
+                            bg-red-500
+                            text-white
+                            text-xs
+                            font-bold
+                            rounded-full
+                            min-w-[24px]
+                            h-6
+                            flex
+                            items-center
+                            justify-center
+                            px-2
+                            animate-bounce
+                            shadow-lg
+                          `}
+                        >
+                          {count}
+                        </span>
+                      )}
+                      <div
+                        className={`
+            absolute
+            inset-0
+            rounded-lg
+            bg-gradient-to-r
+            from-orange-400/20
+            to-orange-600/20
+            animate-pulse
+            ${isHovered ? "opacity-100" : "opacity-0"}
+          `}
+                      />
+                    </button>
+                  );
+                })}
             </div>
+          </div>
 
           <Button
-            icon={<PlusOutlined />}
+             
             onClick={() => setIsCreateModalVisible(true)}
-            className="px-4 py-4 text-lg   rounded-lg bg-buttonColor hover:bg-opacity-90 transition-all shadow-md text-white flex items-center justify-center"
+            className="group relative px-6 py-4 bg-buttonColor hover:!bg-buttonColor hover:!border-buttonColor rounded-lg shadow-lg hover:!shadow-green-500/50 transition-all duration-300 transform hover:!scale-105"
           >
-            <span className="mb-[2px]">Tạo mới</span>
+            <div className="flex items-center gap-2 text-white">
+              <Plus className="w-6 h-6 group-hover:!rotate-180 transition-transform duration-500" />
+              <span className="font-medium text-lg">Tạo mới</span>
+            </div>
           </Button>
         </div>
       </div>
@@ -677,8 +733,8 @@ const CustomerVisitStaff = () => {
               onClick={() => handleTypeFilter(null)}
               className={`rounded-t-[140px] min-w-[120px] border-b-0 ${
                 filters.scheduleTypeId.includes(null)
-                  ? "border-[#138d75] text-white bg-[#138d75]  "
-                  : "border-[#34495e] text-[#34495e]  "
+                  ? "border-[#138d75] text-white bg-[#138d75] hover:!bg-[#138d75] hover:!text-white hover:!border-[#138d75]"
+                  : "border-[#34495e] text-[#34495e] hover:!border-[#34495e] hover:!text-[#34495e]"
               }`}
             >
               <Clock4 size={17} />
@@ -688,8 +744,8 @@ const CustomerVisitStaff = () => {
               onClick={() => handleTypeFilter(ScheduleType.Weekly)}
               className={`rounded-t-[120px] min-w-[120px] border-b-0  ${
                 filters.scheduleTypeId.includes(ScheduleType.Weekly)
-                  ? "border-[#e67e22] text-white bg-[#e67e22]"
-                  : "border-[#34495e] text-[#34495e] hover:bg-yellow-50"
+                  ? "border-[#e67e22] text-white bg-[#e67e22] hover:!border-[#e67e22] hover:!text-white hover:!bg-[#e67e22]"
+                  : "border-[#34495e] text-[#34495e] hover:!border-[#34495e] hover:!text-[#34495e]"
               }`}
             >
               <CalendarDays size={17} />
@@ -704,8 +760,8 @@ const CustomerVisitStaff = () => {
               onClick={() => handleTypeFilter(ScheduleType.Monthly)}
               className={`rounded-t-[120px] min-w-[120px] border-b-0  ${
                 filters.scheduleTypeId.includes(ScheduleType.Monthly)
-                  ? "border-[#2980b9] text-white bg-[#2980b9]"
-                  : "border-[#34495e] text-[#34495e] hover:bg-purple-50"
+                  ? "border-[#2980b9] text-white bg-[#2980b9] hover:!border-[#2980b9] hover:!text-white hover:!bg-[#2980b9]"
+                  : "border-[#34495e] text-[#34495e] hover:!border-[#34495e] hover:!text-[#34495e]"
               }`}
             >
               <CalendarRange size={17} />

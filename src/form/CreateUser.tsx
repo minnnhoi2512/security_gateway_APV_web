@@ -13,7 +13,13 @@ import {
   notification,
 } from "antd";
 import { useLocation } from "react-router-dom";
-import { UploadOutlined } from "@ant-design/icons";
+import {
+  LockOutlined,
+  MailOutlined,
+  PhoneOutlined,
+  UploadOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
 import { v4 as uuidv4 } from "uuid";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { imageDB } from "../api/firebase";
@@ -42,6 +48,7 @@ const CreateUser: React.FC<CreateUserProps> = ({ onSuccess }) => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [faceImg, setFaceImg] = useState<File[]>([]);
   const [roleId, setRoleId] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
   const [departmentId, setDepartmentId] = useState<number | undefined>(
     undefined
   );
@@ -97,109 +104,108 @@ const CreateUser: React.FC<CreateUserProps> = ({ onSuccess }) => {
   };
 
   return (
-    <Content className="w-full max-w-2xl">
-      <Card className="shadow-md border border-gray-200 p-6 rounded-lg">
-        <Title
-          level={3}
-          className="text-3xl font-bold text-center text-titleMain mb-6"
-        >
+    <div className="bg-white">
+      <div className="px-6 pt-6 pb-4 border-b border-gray-100 text-center">
+        <Title level={4} className="!mb-1 text-lg !text-buttonColor">
           Tạo Người Dùng Mới
         </Title>
-        <Text type="secondary" className="text-center block mb-6">
-          Vui lòng nhập thông tin cần thiết để tạo người dùng mới
-        </Text>
-        <Form form={form} layout="vertical">
-          <Row gutter={16}>
-            <Col xs={24} sm={12}>
+        <p className="text-gray-500 text-sm">
+          Vui lòng nhập thông tin cần thiết
+        </p>
+      </div>
+
+      <div className="p-6">
+        <Form
+          form={form}
+          layout="vertical"
+          className="space-y-3"
+          requiredMark={false}
+        >
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-3">
               <Form.Item
                 name="fullName"
-                label={
-                  <Text className="font-medium text-gray-700">Họ và Tên</Text>
-                }
+                label={<span className="text-gray-600">Họ và Tên</span>}
                 rules={[{ required: true, message: "Vui lòng nhập họ và tên" }]}
               >
                 <Input
-                  placeholder="Nhập tên"
+                  prefix={<UserOutlined className="text-gray-400" />}
+                  placeholder="Nhập họ và tên"
                   onChange={(e) => setFullName(e.target.value)}
                   className="rounded-md"
+                  size="middle"
                 />
               </Form.Item>
-            </Col>
-            <Col xs={24} sm={12}>
+
               <Form.Item
                 name="email"
-                label={<Text className="font-medium text-gray-700">Email</Text>}
-                rules={[{ required: true, message: "Vui lòng nhập email" }]}
-              >
-                <Input
-                  placeholder="Nhập email"
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="rounded-md"
-                />
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={12}>
-              <Form.Item
-                name="username"
-                label={
-                  <Text className="font-medium text-gray-700">
-                    Tên đăng nhập
-                  </Text>
-                }
+                label={<span className="text-gray-600">Email</span>}
                 rules={[
-                  { required: true, message: "Vui lòng nhập tên đăng nhập" },
+                  { required: true, message: "Vui lòng nhập email" },
+                  { type: "email", message: "Email không hợp lệ" },
                 ]}
               >
                 <Input
-                  placeholder="Nhập tên đăng nhập"
-                  onChange={(e) => setUsername(e.target.value)}
+                  prefix={<MailOutlined className="text-gray-400" />}
+                  placeholder="example@domain.com"
+                  onChange={(e) => setEmail(e.target.value)}
                   className="rounded-md"
+                  size="middle"
                 />
               </Form.Item>
-            </Col>
-            <Col xs={24} sm={12}>
-              <Form.Item
-                name="password"
-                label={
-                  <Text className="font-medium text-gray-700">Mật khẩu</Text>
-                }
-                rules={[{ required: true, message: "Vui lòng nhập mật khẩu" }]}
-              >
-                <Input.Password
-                  placeholder="Nhập mật khẩu"
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="rounded-md"
-                />
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={12}>
+
               <Form.Item
                 name="phoneNumber"
-                label={
-                  <Text className="font-medium text-gray-700">
-                    Số điện thoại
-                  </Text>
-                }
+                label={<span className="text-gray-600">Số điện thoại</span>}
                 rules={[
                   { required: true, message: "Vui lòng nhập số điện thoại" },
                 ]}
               >
                 <Input
-                  placeholder="Nhập số điện thoại"
+                  prefix={<PhoneOutlined className="text-gray-400" />}
+                  placeholder="0123456789"
                   onChange={(e) => setPhoneNumber(e.target.value)}
                   className="rounded-md"
+                  size="middle"
                 />
               </Form.Item>
-            </Col>
-            {userRole !== "DepartmentManager" && (
-              <Col xs={24} sm={12}>
+            </div>
+
+            <div className="space-y-3">
+              <Form.Item
+                name="username"
+                label={<span className="text-gray-600">Tên đăng nhập</span>}
+                rules={[
+                  { required: true, message: "Vui lòng nhập tên đăng nhập" },
+                ]}
+              >
+                <Input
+                  prefix={<UserOutlined className="text-gray-400" />}
+                  placeholder="Nhập tên đăng nhập"
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="rounded-md"
+                  size="middle"
+                />
+              </Form.Item>
+
+              <Form.Item
+                name="password"
+                label={<span className="text-gray-600">Mật khẩu</span>}
+                rules={[{ required: true, message: "Vui lòng nhập mật khẩu" }]}
+              >
+                <Input.Password
+                  prefix={<LockOutlined className="text-gray-400" />}
+                  placeholder="••••••••"
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="rounded-md"
+                  size="middle"
+                />
+              </Form.Item>
+
+              {userRole !== "DepartmentManager" && (
                 <Form.Item
                   name="departmentId"
-                  label={
-                    <Text className="font-medium text-gray-700">
-                      Chọn phòng ban
-                    </Text>
-                  }
+                  label={<span className="text-gray-600">Phòng ban</span>}
                   rules={[
                     { required: true, message: "Vui lòng chọn phòng ban" },
                   ]}
@@ -213,15 +219,13 @@ const CreateUser: React.FC<CreateUserProps> = ({ onSuccess }) => {
                       );
                       if (selectedDepartment?.departmentName === "Security") {
                         setRoleId("5");
-                        setEditDisabled(true);
-                      } else {
-                        setEditDisabled(false);
                       }
                     }}
                     className="rounded-md"
+                    size="middle"
                   >
                     {listDepartment
-                      ?.filter((department: DepartmentType) => {
+                      ?.filter((department) => {
                         if (userRole === "Manager") {
                           return (
                             department.departmentName !== "Admin" &&
@@ -230,7 +234,7 @@ const CreateUser: React.FC<CreateUserProps> = ({ onSuccess }) => {
                         }
                         return true;
                       })
-                      ?.map((department: DepartmentType) => (
+                      ?.map((department) => (
                         <Select.Option
                           key={department.departmentId}
                           value={department.departmentId}
@@ -244,73 +248,71 @@ const CreateUser: React.FC<CreateUserProps> = ({ onSuccess }) => {
                       ))}
                   </Select>
                 </Form.Item>
-              </Col>
-            )}
-
-            {userRole !== "DepartmentManager" && !editDisable && (
-              <Col xs={24} sm={12}>
-                <Form.Item
-                  name="roleId"
-                  label={
-                    <Text className="font-medium text-gray-700">
-                      Chọn vai trò
-                    </Text>
-                  }
-                  rules={[{ required: true, message: "Vui lòng chọn vai trò" }]}
-                >
-                  {
-                    <Select
-                      placeholder="Chọn vai trò"
-                      onChange={(value) => setRoleId(value)}
-                      className="rounded-md"
-                    >
-                      {userRole === "Admin" && (
-                        <Select.Option value={1}>Quản trị viên</Select.Option>
-                      )}
-                      {userRole === "Admin" && (
-                        <Select.Option value={2}>Quản lý</Select.Option>
-                      )}
-                      <Select.Option value={3}>Quản lý phòng ban</Select.Option>
-                      <Select.Option value={4}>Nhân viên</Select.Option>
-                    </Select>
-                  }
-                </Form.Item>
-              </Col>
-            )}
-
-            <Col xs={24}>
-              <Form.Item
-                label={
-                  <Text className="font-medium text-gray-700">
-                    Ảnh đại diện
-                  </Text>
-                }
-              >
-                <Upload
-                  beforeUpload={(file) => {
-                    setFaceImg((prev) => [...prev, file]);
-                    return false;
-                  }}
-                  showUploadList={true}
-                  className="rounded-md"
-                >
-                  <Button icon={<UploadOutlined />}>Tải lên ảnh</Button>
-                </Upload>
-              </Form.Item>
-            </Col>
-          </Row>
-          <div className="flex justify-end space-x-3 mt-6">
-            <Button
-              type="primary"
-              onClick={handleCreateUser}
-              className="rounded-md"
-            >
-              Tạo người dùng
-            </Button>
+              )}
+            </div>
           </div>
+
+          {userRole !== "DepartmentManager" && !editDisable && (
+            <Form.Item
+              name="roleId"
+              label={<span className="text-gray-600">Vai trò</span>}
+              rules={[{ required: true, message: "Vui lòng chọn vai trò" }]}
+            >
+              <Select
+                placeholder="Chọn vai trò"
+                onChange={(value) => setRoleId(value)}
+                className="rounded-md"
+                size="middle"
+              >
+                {userRole === "Admin" && (
+                  <>
+                    <Select.Option value="1">Quản trị viên</Select.Option>
+                    <Select.Option value="2">Quản lý</Select.Option>
+                  </>
+                )}
+                <Select.Option value="3">Quản lý phòng ban</Select.Option>
+                <Select.Option value="4">Nhân viên</Select.Option>
+              </Select>
+            </Form.Item>
+          )}
+
+          <Form.Item
+            label={<span className="text-gray-600">Ảnh đại diện</span>}
+          >
+            <Upload
+              beforeUpload={(file) => {
+                setFaceImg((prev) => [...prev, file]);
+                return false;
+              }}
+              showUploadList={true}
+              className="w-full"
+            >
+              <Button
+                icon={<UploadOutlined />}
+                className="w-full h-20 flex items-center justify-center border-2 border-dashed hover:border-blue-500 hover:text-blue-500 transition-colors"
+              >
+                <span className="ml-2">Tải ảnh lên</span>
+              </Button>
+            </Upload>
+          </Form.Item>
+
+          <Form.Item className="mb-0 mt-4">
+            <div className="flex justify-end gap-2">
+              <Button onClick={() => form.resetFields()} className="rounded-md">
+                Đặt lại
+              </Button>
+              <Button
+                type="primary"
+                onClick={handleCreateUser}
+                className="rounded-md bg-buttonColor hover:!bg-buttonColor"
+              >
+                Tạo người dùng
+              </Button>
+            </div>
+          </Form.Item>
         </Form>
-      </Card>
-    </Content>
+      </div>
+    </div>
   );
 };
 

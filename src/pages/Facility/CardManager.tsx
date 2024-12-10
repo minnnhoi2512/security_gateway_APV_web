@@ -30,6 +30,7 @@ import LoadingState from "../../components/State/LoadingState";
 import { CardStatusType, typeCardStatusMap } from "../../types/Enum/CardStatus";
 import { CardType, typeCardMap } from "../../types/Enum/CardType";
 import { v4 as uuidv4 } from "uuid";
+import { Plus } from "lucide-react";
 
 const { Option } = Select;
 const CardManager = () => {
@@ -39,7 +40,9 @@ const CardManager = () => {
     pageSize: 100,
   });
   const qrCards = data?.qrCards || data || [];
-  const [visibleCardVerifications, setVisibleCardVerifications] = useState<{ [key: string]: boolean }>({});
+  const [visibleCardVerifications, setVisibleCardVerifications] = useState<{
+    [key: string]: boolean;
+  }>({});
 
   const filteredData = qrCards
     .filter((card: QRCardType) =>
@@ -143,9 +146,17 @@ const CardManager = () => {
             {visibleCardVerifications[record.cardId] ? text : "******"}
           </Tag>
           {visibleCardVerifications[record.cardId] ? (
-            <EyeInvisibleOutlined onClick={() => toggleCardVerificationVisibility(record.cardId.toString())} />
+            <EyeInvisibleOutlined
+              onClick={() =>
+                toggleCardVerificationVisibility(record.cardId.toString())
+              }
+            />
           ) : (
-            <EyeFilled onClick={() => toggleCardVerificationVisibility(record.cardId.toString())} />
+            <EyeFilled
+              onClick={() =>
+                toggleCardVerificationVisibility(record.cardId.toString())
+              }
+            />
           )}
         </div>
       ),
@@ -225,12 +236,15 @@ const CardManager = () => {
           }}
         />
         <Button
-          type="primary"
-          icon={<PlusOutlined />}
+          // type="primary"
+          // icon={<PlusOutlined />}
           onClick={showModal}
-          style={{ borderRadius: 5 }}
+          className="group relative px-6 py-4 bg-buttonColor hover:!bg-buttonColor hover:!border-buttonColor rounded-lg shadow-lg hover:!shadow-green-500/50 transition-all duration-300 transform hover:!scale-105"
         >
-          Tạo mới thẻ
+          <div className="flex items-center gap-2 text-white">
+            <Plus className="w-6 h-6 group-hover:!rotate-180 transition-transform duration-500" />
+            <span className="font-medium text-lg">Tạo mới</span>
+          </div>
         </Button>
       </Space>
 

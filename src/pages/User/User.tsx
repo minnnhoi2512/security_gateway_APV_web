@@ -28,6 +28,7 @@ import {
 import { useGetListDepartmentsQuery } from "../../services/department.service";
 import CreateUser from "../../form/CreateUser";
 import DetailUser from "./DetailUser";
+import { Plus } from "lucide-react";
 
 const { Content } = Layout;
 const { Option } = Select;
@@ -430,11 +431,13 @@ const User = () => {
             Tạo mới người dùng
           </Button> */}
           <Button
-            icon={<PlusOutlined />}
             onClick={() => setIsCreateUserModalVisible(true)}
-            className="px-4 py-4 text-lg   rounded-lg bg-buttonColor hover:bg-opacity-90 transition-all   shadow-md text-white flex items-center justify-center"
+            className="group relative px-6 py-4 bg-buttonColor hover:!bg-buttonColor hover:!border-buttonColor rounded-lg shadow-lg hover:!shadow-green-500/50 transition-all duration-300 transform hover:!scale-105"
           >
-            <span className="mb-[2px]"> Tạo mới</span>
+            <div className="flex items-center gap-2 text-white">
+              <Plus className="w-6 h-6 group-hover:!rotate-180 transition-transform duration-500" />
+              <span className="font-medium text-lg">Tạo mới</span>
+            </div>
           </Button>
         </div>
 
@@ -501,7 +504,11 @@ const User = () => {
           visible={isDetailModalVisible}
           footer={null}
           onCancel={() => setIsDetailModalVisible(false)}
-          className="rounded-lg"
+          className="rounded-lg ml-[140px]"
+          centered
+    
+          bodyStyle={{ padding: 0 }}
+          destroyOnClose
         >
           {selectedUser && (
             <DetailUser
@@ -515,7 +522,14 @@ const User = () => {
           visible={isCreateUserModalVisible}
           footer={null}
           onCancel={() => setIsCreateUserModalVisible(false)}
-          className="rounded-lg"
+          centered
+          className="rounded-lg ml-[140px]"
+          styles={{
+            body: {
+              overflow: "auto",
+              padding: 0,
+            },
+          }}
         >
           <CreateUser onSuccess={handleCreateSuccess} />
         </Modal>

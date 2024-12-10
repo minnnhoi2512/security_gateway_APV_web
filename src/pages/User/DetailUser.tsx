@@ -27,9 +27,9 @@ import { roleMap, UserRole } from "../../types/Enum/UserRole";
 const { Content } = Layout;
 const { Title, Text } = Typography;
 interface DetailUserProps {
-    userId: number;
-    onSuccess?: () => void;
-  }
+  userId: number;
+  onSuccess?: () => void;
+}
 const DetailUser: React.FC<DetailUserProps> = ({ userId, onSuccess }) => {
   const navigate = useNavigate();
 
@@ -92,7 +92,7 @@ const DetailUser: React.FC<DetailUserProps> = ({ userId, onSuccess }) => {
 
   return (
     <Content className="w-full max-w-lg">
-      <Card className="shadow-sm border border-gray-200 rounded-lg p-4">
+      <Card className="shadow-sm border border-white rounded-lg p-4">
         {/* Header with Profile Image and Name */}
         <div className="flex flex-col items-center text-center mb-6">
           <img
@@ -151,10 +151,16 @@ const DetailUser: React.FC<DetailUserProps> = ({ userId, onSuccess }) => {
               <Upload
                 listType="picture"
                 showUploadList={false}
+                className="w-full"
                 onChange={handleFaceImageChange}
                 maxCount={1}
               >
-                <Button icon={<UploadOutlined />}>Tải lên hình ảnh mặt</Button>
+                <Button
+                  icon={<UploadOutlined />}
+                  className="w-full h-20 flex items-center justify-center border-2 border-dashed hover:border-blue-500 hover:text-blue-500 transition-colors"
+                >
+                  <span className="ml-2">Tải ảnh lên</span>
+                </Button>
               </Upload>
               {imgFace && (
                 <div className="mt-2">
@@ -171,9 +177,8 @@ const DetailUser: React.FC<DetailUserProps> = ({ userId, onSuccess }) => {
 
             <div className="flex justify-end space-x-3">
               <Button
-                type="primary"
                 onClick={handleUpdateStatus}
-                className="rounded-md"
+                className="rounded-md bg-buttonColor text-white hover:!border-buttonColor hover:!text-buttonColor"
               >
                 Cập nhật
               </Button>

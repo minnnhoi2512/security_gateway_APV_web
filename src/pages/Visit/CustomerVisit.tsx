@@ -31,7 +31,7 @@ import dayjs, { Dayjs } from "dayjs";
 import { VisitStatus, visitStatusMap } from "../../types/Enum/VisitStatus";
 import { ScheduleType, typeMap } from "../../types/Enum/ScheduleType";
 import ListHistorySessonVisit from "../History/ListHistorySessionVisit";
-import { CalendarDays, CalendarRange, Clock4 } from "lucide-react";
+import { CalendarDays, CalendarRange, Clock4, Plus } from "lucide-react";
 import LoadingState from "../../components/State/LoadingState";
 
 interface Filters {
@@ -508,11 +508,19 @@ const CustomerVisit = () => {
             </div> */}
 
             <Button
-              icon={<PlusOutlined />}
+              // icon={<PlusOutlined />}
               onClick={() => navigate("/customerVisit/createNewVisitList")}
-              className="px-4 py-4 text-lg   rounded-lg bg-buttonColor hover:bg-opacity-90 transition-all   shadow-md text-white flex items-center justify-center"
+              className="group relative px-6 py-4 bg-buttonColor hover:!bg-buttonColor hover:!border-buttonColor rounded-lg shadow-lg hover:!shadow-green-500/50 transition-all duration-300 transform hover:!scale-105"
             >
-              <span className="mb-[2px]">Tạo mới</span>
+              <div className="flex items-center gap-2 text-white">
+                <Plus className="w-6 h-6 group-hover:!rotate-180 transition-transform duration-500" />
+                <span className="font-medium text-lg">Tạo mới</span>
+              </div>
+
+              {/* <div className="absolute inset-0 rounded-lg">
+                <div className="absolute inset-0 bg-gradient-to-r from-green-400/20 to-green-600/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-green-500 to-green-700 rounded-lg blur opacity-0 group-hover:opacity-75 animate-pulse transition-opacity duration-300" />
+              </div> */}
             </Button>
           </div>
         </div>
@@ -525,8 +533,8 @@ const CustomerVisit = () => {
               onClick={() => handleTypeFilter(null)}
               className={`rounded-t-[140px] min-w-[120px] border-b-0 ${
                 filters.scheduleTypeId.includes(null)
-                  ? "border-[#138d75] text-white bg-[#138d75]  "
-                  : "border-[#34495e] text-[#34495e]  "
+                  ? "border-[#138d75] text-white bg-[#138d75] hover:!bg-[#138d75] hover:!text-white hover:!border-[#138d75]"
+                  : "border-[#34495e] text-[#34495e] hover:!border-[#34495e] hover:!text-[#34495e]"
               }`}
             >
               <Clock4 size={17} />
@@ -536,8 +544,8 @@ const CustomerVisit = () => {
               onClick={() => handleTypeFilter(ScheduleType.Weekly)}
               className={`rounded-t-[120px] min-w-[120px] border-b-0  ${
                 filters.scheduleTypeId.includes(ScheduleType.Weekly)
-                  ? "border-[#e67e22] text-white bg-[#e67e22]"
-                  : "border-[#34495e] text-[#34495e] hover:bg-yellow-50"
+                  ? "border-[#e67e22] text-white bg-[#e67e22] hover:!border-[#e67e22] hover:!text-white hover:!bg-[#e67e22]"
+                  : "border-[#34495e] text-[#34495e] hover:!border-[#34495e] hover:!text-[#34495e]"
               }`}
             >
               <CalendarDays size={17} />
@@ -552,8 +560,8 @@ const CustomerVisit = () => {
               onClick={() => handleTypeFilter(ScheduleType.Monthly)}
               className={`rounded-t-[120px] min-w-[120px] border-b-0  ${
                 filters.scheduleTypeId.includes(ScheduleType.Monthly)
-                  ? "border-[#2980b9] text-white bg-[#2980b9]"
-                  : "border-[#34495e] text-[#34495e] hover:bg-purple-50"
+                  ? "border-[#2980b9] text-white bg-[#2980b9] hover:!border-[#2980b9] hover:!text-white hover:!bg-[#2980b9]"
+                  : "border-[#34495e] text-[#34495e] hover:!border-[#34495e] hover:!text-[#34495e]"
               }`}
             >
               <CalendarRange size={17} />

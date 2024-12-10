@@ -41,7 +41,7 @@ import { useAssignScheduleMutation } from "../../services/scheduleUser.service";
 import { isEntityError } from "../../utils/helpers";
 import TableSchedule from "../../components/TableSchedule";
 import NotFoundState from "../../components/State/NotFoundState";
-import { CalendarDays, CalendarRange, Clock4 } from "lucide-react";
+import { CalendarDays, CalendarRange, Clock4, Plus } from "lucide-react";
 import { ScheduleType } from "../../types/Enum/ScheduleType";
 import { Dayjs } from "dayjs";
 import { VisitStatus } from "../../types/Enum/VisitStatus";
@@ -264,7 +264,6 @@ const Schedule = () => {
     );
   }
 
-
   return (
     <Content className="p-2 max-w-[1200px] mx-auto mt-10">
       <div className="flex gap-4 mb-4">
@@ -356,7 +355,6 @@ const Schedule = () => {
                   block
                   onClick={() => {
                     setFilterStatus(null);
-                   
                   }}
                   size="small"
                 >
@@ -371,11 +369,13 @@ const Schedule = () => {
           </Popover>
         </div>
         <Button
-          icon={<PlusOutlined />}
           onClick={() => navigate("/schedule/createNewSchedule")}
-          className="px-4 py-4 text-lg  rounded-lg bg-buttonColor hover:bg-opacity-90 transition-all   shadow-md text-white flex items-center justify-center"
+          className="group relative px-6 py-4 bg-buttonColor hover:!bg-buttonColor hover:!border-buttonColor rounded-lg shadow-lg hover:!shadow-green-500/50 transition-all duration-300 transform hover:!scale-105"
         >
-          <span className="mb-[2px]">Tạo mới</span>
+          <div className="flex items-center gap-2 text-white">
+            <Plus className="w-6 h-6 group-hover:!rotate-180 transition-transform duration-500" />
+            <span className="font-medium text-lg">Tạo mới</span>
+          </div>
         </Button>
       </div>
 
