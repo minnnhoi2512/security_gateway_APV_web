@@ -1,11 +1,19 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import baseAPI from "../api/baseAPI";
 import Visitor from "../types/visitorType";
+import { getToken } from "../utils/jwtToken";
 
 export const visitorAPI = createApi({
   reducerPath: "visitorAPI",
   baseQuery: fetchBaseQuery({
     baseUrl: `${baseAPI}/api/Visitor`,
+    prepareHeaders: (headers) => {
+      const token = getToken();
+      if (token) {
+        headers.set("Authorization", `Bearer ${token}`);
+      }
+      return headers;
+    },
   }),
   endpoints: (builder) => ({
     getAllVisitors: builder.query<
@@ -31,6 +39,8 @@ export const visitorAPI = createApi({
         companyName: string;
         phoneNumber: string;
         credentialsCard: string;
+        email: string;
+        imgBlur:   File | null,
         credentialCardTypeId: number;
         visitorCredentialFrontImageFromRequest: File | null;
         visitorCredentialBackImageFromRequest: File | null;
@@ -41,13 +51,15 @@ export const visitorAPI = createApi({
 
         formData.append("visitorName", newVisitor.visitorName);
         formData.append("companyName", newVisitor.companyName);
+        formData.append("email", newVisitor.email);
+       
         formData.append("phoneNumber", newVisitor.phoneNumber);
         formData.append("credentialsCard", newVisitor.credentialsCard);
         formData.append(
           "credentialCardTypeId",
           newVisitor.credentialCardTypeId.toString()
         );
-
+        formData.append("visitorCredentialBlurImageFromRequest", newVisitor.imgBlur);
         if (newVisitor.visitorCredentialFrontImageFromRequest) {
           formData.append(
             "visitorCredentialFrontImageFromRequest",

@@ -776,27 +776,28 @@ const DetailCustomerVisit: React.FC = () => {
                   </Button>
                 </div>
               )}
-            {status === "Cancelled" &&
-              !isEditMode &&
-              scheduleTypeId === undefined && (
-                <div className="bg-red">
-                  <Button
-                    className="bg-green-500 text-white"
-                    onClick={handleApprove}
-                  >
-                    Gỡ vô hiệu hóa
-                  </Button>
-                </div>
-              )}
+
             {isEditMode && (
               <Button type="default" onClick={handleAddGuest} className="mb-4">
                 Thêm khách
               </Button>
             )}
+            {status === "Active" &&
+              scheduleTypeId === undefined && (
+                <div className="">
+                  <Button
+                    type="primary"
+                    className="mb-4"
+                    onClick={handleToggleMode}
+                  >
+                    {isEditMode ? "Lưu" : "Chỉnh sửa"}
+                  </Button>
+                </div>
+              )}
             {(isEditable() &&
               scheduleTypeId == undefined &&
               visitData?.visitStatus != "ActiveTemporary") ||
-              (visitData?.visitStatus != "Cancelled" && (
+              (visitData?.visitStatus != "Cancelled" || visitData?.visitStatus != "Expired" && (
                 <Button
                   type="primary"
                   onClick={handleToggleMode}

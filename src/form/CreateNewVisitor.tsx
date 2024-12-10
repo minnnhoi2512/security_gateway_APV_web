@@ -23,7 +23,9 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
     companyName: "",
     phoneNumber: "",
     credentialCardTypeId: 1,
+    email : "",
     credentialsCard: "",
+    imgBlur : null as File | null,
     visitorCredentialFrontImageFromRequest: null as File | null,
     visitorCredentialBackImageFromRequest: null as File | null,
   });
@@ -61,6 +63,31 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
     }
   };
 
+  const base64ToFile = (base64String: string, fileName: string = 'image.jpg'): File => {
+    try {
+      // Remove data URI prefix if present
+      const base64Content = base64String.replace(/^data:image\/(png|jpeg|jpg);base64,/, '');
+      
+      // Convert base64 to binary
+      const byteString = window.atob(base64Content);
+      
+      // Create array buffer
+      const arrayBuffer = new ArrayBuffer(byteString.length);
+      const uint8Array = new Uint8Array(arrayBuffer);
+      
+      // Fill array buffer
+      for (let i = 0; i < byteString.length; i++) {
+        uint8Array[i] = byteString.charCodeAt(i);
+      }
+      
+      // Create Blob and File
+      const blob = new Blob([arrayBuffer], { type: 'image/jpeg' });
+      return new File([blob], fileName, { type: 'image/jpeg' });
+    } catch (error) {
+      console.error('Error converting base64 to file:', error);
+      throw new Error('Failed to convert base64 to file');
+    }
+  };
   const callDetectAPI = async (formData: any) => {
     setIsDetecting(true);
     try {
@@ -84,18 +111,21 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
         });
       }
 
-      const { id, name, birth } = response.data;
+      const { id, name, birth ,imgblur} = response.data;
       console.log(birth)
+
       if (!birth.toString().includes("/")) {
         return notification.warning({
           message: `Hệ thống không nhận diện được thẻ`,
           description: "Vui lòng nhập thông tin.",
         });
       }
+      const convertFile = base64ToFile(imgblur)
       setFormData((prevData) => ({
         ...prevData,
         visitorName: name,
         credentialsCard: id,
+        imgBlur : convertFile,
       }));
     } catch (error) {
       notification.warning({
@@ -136,7 +166,9 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
         companyName: "",
         phoneNumber: "",
         credentialCardTypeId: 0,
+        email : "",
         credentialsCard: "",
+        imgBlur : null as File | null,
         visitorCredentialFrontImageFromRequest: null as File | null,
         visitorCredentialBackImageFromRequest: null as File | null,
       });
@@ -158,8 +190,10 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
       visitorName: "",
       companyName: "",
       phoneNumber: "",
+      email : "",
       credentialCardTypeId: 0,
       credentialsCard: "",
+      imgBlur :  null as File | null,
       visitorCredentialFrontImageFromRequest: null as File | null,
       visitorCredentialBackImageFromRequest: null as File | null,
     });
@@ -315,7 +349,21 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
               </p>
             )}
           </div>
-
+          <div>
+            <label>Email</label>
+            <Input
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              placeholder="Nhập địa chỉ email"
+              status={errorVisitor?.email ? "error" : ""}
+            />
+            {errorVisitor?.email && (
+              <p className="text-red-500 bg-red-100 p-2 rounded">
+                {errorVisitor.email[0]}
+              </p>
+            )}
+          </div>
           {formData.credentialCardTypeId && (
             <div>
               <label>Số thẻ</label>
