@@ -1,7 +1,7 @@
 import { Layout, Button, Input, Space, Card, Popover } from "antd";
 import { FilterOutlined, SearchOutlined } from "@ant-design/icons";
 import { useState, useCallback, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useGetSchedulesUserByStatusQuery } from "../../services/scheduleUser.service";
 import TableScheduleUser from "../../components/TableScheduleUser";
 import ScheduleUserDetailModal from "../../components/Modal/ScheduleUserDetailModal";
@@ -39,12 +39,26 @@ const ScheduleAssignedManager = () => {
   const [filteredSchedules, setFilteredSchedules] = useState([]);
   const userRole = localStorage.getItem("userRole");
   const [isHovered, setIsHovered] = useState(false);
-
+  const location = useLocation();
   const [filters, setFilters] = useState<Filters>({
     taskStatus: [],
     scheduleTypeId: [],
   });
   const [isActive, setIsActive] = useState(false);
+
+  useEffect(() => {
+
+    const searchParams = new URLSearchParams(location.search);
+    const autoFilter = searchParams.get('autoFilter');
+    
+    if (autoFilter === 'pending') {
+
+      setIsActive(true);
+      handleStatusFilter(TaskStatus.Pending);
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+    }
+  }, []);
 
   const handleClick = (status) => {
     setIsActive(!isActive);
