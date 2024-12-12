@@ -36,6 +36,7 @@ import {
   SearchOutlined,
   UserOutlined,
 } from "@ant-design/icons";
+import { useNavigate } from "react-router";
 
 const { Option } = Select;
 
@@ -66,7 +67,7 @@ const History = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedRecord, setSelectedRecord] =
     useState<VisitorSessionType | null>(null);
-
+  const navigate = useNavigate();
   let dataVisit, isLoadingVisit;
 
   if (userRole === "Staff") {
@@ -200,6 +201,7 @@ const History = () => {
   }, [dispatch]);
 
   useEffect(() => {
+    console.log(dataList)
     if (dataList) {
       const updatedData = dataList.map((element, index) => ({
         visitorSessionId: element.visitorSessionId,
@@ -283,7 +285,7 @@ const History = () => {
     };
   }
 
-  // const columns: TableProps<VisitorSessionType>["columns"] = [
+ 
   //   {
   //     title: "STT",
   //     key: "index",
@@ -429,8 +431,7 @@ const History = () => {
             className="flex justify-center text-blue-500 hover:text-blue-600"
             icon={<EyeOutlined />}
             onClick={() => {
-              setSelectedRecord(record);
-              setIsModalVisible(true);
+              navigate(`/sessionDetail/${record.visitorSessionId}`);
             }}
           />
           {/* <Button
@@ -589,14 +590,14 @@ const History = () => {
       </Card>
 
       {/* Apply loading here */}
-      <Modal
+      {/* <Modal
         title="Chi tiết lịch sử"
         visible={isModalVisible}
         onCancel={handleModalClose}
         footer={null}
       >
-        {selectedRecord && <HistoryDetail data={selectedRecord} />}
-      </Modal>
+        {selectedRecord && <HistoryDetail />}
+      </Modal> */}
     </Content>
   );
 };

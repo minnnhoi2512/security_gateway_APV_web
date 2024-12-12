@@ -783,7 +783,7 @@ const DetailCustomerVisit: React.FC = () => {
               </Button>
             )}
             {status === "Active" &&
-              scheduleTypeId === undefined && (
+               (
                 <div className="">
                   <Button
                     type="primary"

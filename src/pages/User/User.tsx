@@ -9,6 +9,7 @@ import {
   Divider,
   Select,
   Card,
+  notification,
 } from "antd";
 import { useState, useEffect } from "react";
 import UserType from "../../types/userType";
@@ -74,7 +75,7 @@ const User = () => {
       .toLowerCase()
       .includes(searchText.toLowerCase());
     const matchesDepartment =
-      department === "All" || user.department?.departmentName === department;
+      department === "All" || user?.department?.departmentName === department;
 
     // For DepartmentManager - only show Staff from their department
     if (userRole === "DepartmentManager") {
@@ -118,12 +119,12 @@ const User = () => {
     if (userIdToDelete) {
       try {
         await deleteUser(userIdToDelete).unwrap();
-        message.success("Xóa người dùng thành công");
+        notification.success({ message: "Thay đổi trạng thái người dùng thành công" });
         setIsModalVisible(false);
         setUserIdToDelete(null);
         refetchUserData();
       } catch (error) {
-        message.error("Xóa người dùng thất bại");
+        notification.error({ message: "Thay đổi trạng thái người dùng thất bại" });
       }
     }
   };
@@ -172,11 +173,11 @@ const User = () => {
       width: "20%",
       render: (text: any) => (
         <span style={{ fontSize: "14px", color: "#000" }}>
-          {text.departmentName === "Manager"
+          {text?.departmentName === "Manager"
             ? "Phòng Quản lý"
-            : text.departmentName === "Security"
+            : text?.departmentName === "Security"
             ? "Phòng Bảo vệ"
-            : text.departmentName}
+            : text?.departmentName}
         </span>
       ),
     },
@@ -257,9 +258,9 @@ const User = () => {
     //       </Button>
     //     </div>
 
-        // <div className="flex items-center mb-4">
-          
-        // </div>
+    // <div className="flex items-center mb-4">
+
+    // </div>
 
     //     {/* Divider Line */}
     //     <Divider />
@@ -351,56 +352,61 @@ const User = () => {
               />
             </div>
             {userRole !== "DepartmentManager" && (
-            <Select
-              value={role}
-              onChange={(value) => setRole(value)}
-              style={{ width: 200 }}
-            >
-              <Option value="All">Tất cả</Option>
-              {userRole === "Admin" && <Option value="Manager">Quản lý</Option>}
-              {userRole !== "DepartmentManager" && (
-                <Option value="DepartmentManager">Quản lý phòng ban</Option>
-              )}
-              <Option value="Staff">Nhân viên</Option>
-              <Option value="Security">Bảo vệ</Option>
-            </Select>
-          )}
+              <Select
+                value={role}
+                onChange={(value) => setRole(value)}
+                style={{ width: 200 }}
+              >
+                <Option value="All">Tất cả</Option>
+                {userRole === "Admin" && (
+                  <Option value="Manager">Quản lý</Option>
+                )}
+                {userRole !== "DepartmentManager" && (
+                  <Option value="DepartmentManager">Quản lý phòng ban</Option>
+                )}
+                <Option value="Staff">Nhân viên</Option>
+                <Option value="Security">Bảo vệ</Option>
+              </Select>
+            )}
 
-          {userRole !== "DepartmentManager" && (
-            <Select
-              value={department}
-              onChange={(value) => setDepartment(value)}
-              style={{ width: 200 }}
-              disabled={userRole === "DepartmentManager"} // Disable for DepartmentManager
-            >
-              <Option value="All">Tất cả phòng ban</Option>
-              {departmentData
-                ?.filter((dept: any) => {
-                  if (userRole === "Admin") {
-                    return dept.departmentName !== "Admin";
-                  }
-                  if (userRole === "Manager") {
-                    return (
-                      dept.departmentName !== "Admin" &&
-                      dept.departmentName !== "Manager"
-                    );
-                  }
-                  if (userRole === "DepartmentManager") {
-                    return dept.departmentId === Number(departmentId);
-                  }
-                  return true;
-                })
-                ?.map((dept: any) => (
-                  <Option key={dept.departmentId} value={dept.departmentName}>
-                    {dept.departmentName === "Manager"
-                      ? "Phòng Quản lý"
-                      : dept.departmentName === "Security"
-                      ? "Phòng Bảo vệ"
-                      : dept.departmentName}
-                  </Option>
-                ))}
-            </Select>
-          )}
+            {userRole !== "DepartmentManager" && (
+              <Select
+                value={department}
+                onChange={(value) => setDepartment(value)}
+                style={{ width: 200 }}
+                disabled={userRole === "DepartmentManager"} // Disable for DepartmentManager
+              >
+                <Option value="All">Tất cả phòng ban</Option>
+                {departmentData
+                  ?.filter((dept: any) => {
+                    if (userRole === "Admin") {
+                      return dept?.departmentName !== "Admin";
+                    }
+                    if (userRole === "Manager") {
+                      return (
+                        dept?.departmentName !== "Admin" &&
+                        dept?.departmentName !== "Manager"
+                      );
+                    }
+                    if (userRole === "DepartmentManager") {
+                      return dept?.departmentId === Number(departmentId);
+                    }
+                    return true;
+                  })
+                  ?.map((dept: any) => (
+                    <Option
+                      key={dept?.departmentId}
+                      value={dept?.departmentName}
+                    >
+                      {dept?.departmentName === "Manager"
+                        ? "Phòng Quản lý"
+                        : dept?.departmentName === "Security"
+                        ? "Phòng Bảo vệ"
+                        : dept?.departmentName}
+                    </Option>
+                  ))}
+              </Select>
+            )}
             {/* <Select
               value={role}
               onChange={(value) => setRole(value)}
@@ -481,20 +487,20 @@ const User = () => {
         <Modal
           title={
             <div className="text-lg font-medium text-red-500 px-2">
-              Xác nhận xóa
+              Xác nhận thay đổi trạng thái
             </div>
           }
           visible={isModalVisible}
           onOk={handleDeleteUser}
           onCancel={() => setIsModalVisible(false)}
-          okText="Xóa"
+          okText="Thay đổi"
           cancelText="Hủy"
           okButtonProps={{
             className: "bg-red-500 hover:bg-red-600",
           }}
           className="rounded-lg"
         >
-          <p className="px-2">Bạn có chắc chắn muốn xóa người dùng này?</p>
+          <p className="px-2">Bạn có chắc chắn muốn thay đổi trạng thái người dùng này?</p>
         </Modal>
 
         <Modal
@@ -506,7 +512,6 @@ const User = () => {
           onCancel={() => setIsDetailModalVisible(false)}
           className="rounded-lg ml-[140px]"
           centered
-    
           bodyStyle={{ padding: 0 }}
           destroyOnClose
         >

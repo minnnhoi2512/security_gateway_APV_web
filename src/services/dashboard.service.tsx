@@ -10,8 +10,13 @@ interface VisitorSessionMonthParams {
   year: number;
   month: number;
 }
+interface MonthlyCount {
+  month: number;
+  count: number;
+}
 
 interface VisitorSessionMonthResponse {
+  monthlyCounts: MonthlyCount[];
   dailyCounts: DailyCount[];
 }
 
@@ -61,10 +66,11 @@ export const dashBoardAPI = createApi({
         method: "GET",
       }),
     }),
-    getDashboardVisitorSSYear: builder.query<any, any>({
-      query: () => ({
-        url: "VisitorSessionYear?year=2024",
+    getDashboardVisitorSSYear: builder.query<any, {year : number}>({
+      query: (year) => ({
+        url: `VisitorSessionYear`,
         method: "GET",
+        params : {year : year.year}
       }),
     }),
     getDashboardVisitorSessionMonth: builder.query<VisitorSessionMonthResponse, VisitorSessionMonthParams>({
@@ -73,7 +79,18 @@ export const dashBoardAPI = createApi({
         params: { year: params.year, month: params.month }
       }),
     }),
-    
+    getRecentSession: builder.query<any, any>({
+      query: () => ({
+        url: "RecentVisitorSessions?count=5",
+        method: "GET",
+      }),
+    }),
+    getTask: builder.query<any, any>({
+      query: () => ({
+        url: "ScheduleUser",
+        method: "GET",
+      }),
+    }),
   }),
 });
 
@@ -87,4 +104,6 @@ export const {
   useGetDashboardCardIssuesQuery,
   useGetDashboardVisitorSSYearQuery,
   useGetDashboardVisitorSessionMonthQuery,
+  useGetRecentSessionQuery,
+  useGetTaskQuery
 } = dashBoardAPI;

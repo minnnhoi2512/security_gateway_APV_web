@@ -37,6 +37,7 @@ import User from "../pages/User/User";
 import CreateGate from "../form/CreateGate";
 import GateDetail from "../pages/Facility/GateDetail";
 import { Simulation } from "../pages/Simulation";
+import HistoryDetail from "../pages/History/HistoryDetail";
 
 
 
@@ -345,6 +346,15 @@ const ContentRouter = () => {
         element={
           <LayoutPage>
             <CalendarPage />
+          </LayoutPage>
+        }
+      />
+      <Route
+        index
+        path="/sessionDetail/:id"
+        element={
+          <LayoutPage>
+            <HistoryDetail />
           </LayoutPage>
         }
       />

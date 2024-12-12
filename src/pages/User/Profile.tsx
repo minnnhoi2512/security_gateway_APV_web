@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Avatar, Button, Form, Input, message, Tag } from "antd";
+import { Avatar, Button, Form, Input, message, notification, Tag } from "antd";
 import { useParams } from "react-router-dom";
 import {
   useGetDetailUserQuery,
   useUpdateUserMutation,
 } from "../../services/user.service";
 import { Camera, CheckIcon, MapPinIcon, PencilIcon, XIcon } from "lucide-react";
+import defaultImg from "../../assets/default-user-image.png";
 
 const Profile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -29,7 +30,7 @@ const Profile: React.FC = () => {
         email: user.email,
         phoneNumber: user.phoneNumber,
         departmentName: user.department?.departmentName || "N/A",
-        image: user.image || "https://b.fssta.com/uploads/application/soccer/headshots/885.png",
+        image: user.image || defaultImg,
       });
     }
   }, [user, form]);
@@ -51,7 +52,7 @@ const Profile: React.FC = () => {
       }
 
       await updateUser({ User: payload, idUser: userId }).unwrap();
-      message.success("Cập nhật thông tin thành công!");
+      notification.success({ message: "Cập nhật thông tin thành công!" });
 
       refetch(); // Gọi lại API để lấy dữ liệu mới nhất
     } catch (e: any) {
@@ -61,7 +62,9 @@ const Profile: React.FC = () => {
           console.error(`Lỗi ở ${key}: ${value}`);
         });
       }
-      message.error(`Cập nhật thất bại: ${e.data?.message || "Có lỗi xảy ra"}`);
+      notification.error({
+        message: `Cập nhật thất bại: ${e.data?.message || "Có lỗi xảy ra"}`,
+      });
     }
   };
 
@@ -73,20 +76,15 @@ const Profile: React.FC = () => {
         roleID: user?.role?.roleId || 0,
         status: user?.status || "Inactive",
       };
-
-      if (
-        user?.role?.roleName !== "Admin" &&
-        user?.role?.roleName !== "Manager"
-      ) {
-        payload.departmentId = user?.department?.departmentId || 0;
-      }
-
+      payload.departmentId = user?.department?.departmentId || 0;
       await updateUser({ User: payload, idUser: userId }).unwrap();
       setIsEditing(false);
-      message.success("Cập nhật thông tin thành công!");
+      notification.success({ message: "Cập nhật thông tin thành công!" });
       refetch();
     } catch (e: any) {
-      message.error(`Cập nhật thất bại: ${e.data?.message || "Có lỗi xảy ra"}`);
+      notification.error({
+        message: `Cập nhật thất bại: ${e.data?.message || "Có lỗi xảy ra"}`,
+      });
     }
   };
 
@@ -168,12 +166,13 @@ const Profile: React.FC = () => {
     <div className="bg-gradient-to-br from-blue-50 to-blue-100 min-h-screen flex items-center justify-center p-1">
       <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden">
         <div className="relative h-48 bg-backgroundPage">
-          <button 
+          <button
             onClick={() => setIsEditing(!isEditing)}
             className={`absolute top-3 right-4 rounded-full p-3 transition-all duration-300 hover:scale-110 shadow-lg
-              ${isEditing 
-                ? "bg-red-500 text-white hover:bg-red-600" 
-                : "bg-white text-blue-600 hover:bg-gray-100"
+              ${
+                isEditing
+                  ? "bg-red-500 text-white hover:bg-red-600"
+                  : "bg-white text-blue-600 hover:bg-gray-100"
               }`}
           >
             {isEditing ? <XIcon size={24} /> : <PencilIcon size={24} />}
@@ -201,10 +200,14 @@ const Profile: React.FC = () => {
 
             {/* Profile Header */}
             <div className="mb-6">
-              <h1 className="text-3xl font-bold text-gray-800">{user?.fullName}</h1>
+              <h1 className="text-3xl font-bold text-gray-800">
+                {user?.fullName}
+              </h1>
               <div className="flex items-center text-gray-600 mt-2">
                 <MapPinIcon size={18} className="mr-2" />
-                <span className="text-sm">{user?.department?.departmentName || "N/A"}</span>
+                <span className="text-sm">
+                  {user?.department?.departmentName || "N/A"}
+                </span>
               </div>
             </div>
 
@@ -219,79 +222,96 @@ const Profile: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Left Column */}
                 <div>
-                  <Form.Item 
-                    label="Tên đăng nhập" 
+                  <Form.Item
+                    label="Tên đăng nhập"
                     name="userName"
                     className="mb-4"
                   >
-                    <Input 
-                      readOnly 
-                      className="bg-gray-100 border-transparent rounded-lg" 
+                    <Input
+                      readOnly
+                      className="bg-gray-100 border-transparent rounded-lg"
                     />
                   </Form.Item>
 
-                  <Form.Item 
-                    label="Họ và tên" 
+                  <Form.Item
+                    label="Họ và tên"
                     name="fullName"
-                    rules={[{ required: true, message: "Vui lòng nhập họ và tên" }]}
-                    className="mb-4"
-                  >
-                    <Input 
-                      readOnly={!isEditing}
-                      className={`rounded-lg ${!isEditing ? 'bg-gray-100' : ''}`} 
-                    />
-                  </Form.Item>
-
-                  <Form.Item 
-                    label="Email" 
-                    name="email"
                     rules={[
-                      { required: true, message: "Vui lòng nhập email" },
-                      { type: "email", message: "Email không hợp lệ" }
+                      { required: true, message: "Vui lòng nhập họ và tên" },
                     ]}
                     className="mb-4"
                   >
-                    <Input 
+                    <Input
                       readOnly={!isEditing}
-                      className={`rounded-lg ${!isEditing ? 'bg-gray-100' : ''}`} 
+                      className={`rounded-lg ${
+                        !isEditing ? "bg-gray-100" : ""
+                      }`}
+                    />
+                  </Form.Item>
+
+                  <Form.Item
+                    label="Email"
+                    name="email"
+                    rules={[
+                      { required: true, message: "Vui lòng nhập email" },
+                      { type: "email", message: "Email không hợp lệ" },
+                    ]}
+                    className="mb-4"
+                  >
+                    <Input
+                      readOnly={!isEditing}
+                      className={`rounded-lg ${
+                        !isEditing ? "bg-gray-100" : ""
+                      }`}
                     />
                   </Form.Item>
                 </div>
 
                 {/* Right Column */}
                 <div>
-                  <Form.Item 
-                    label="Số điện thoại" 
+                  <Form.Item
+                    label="Số điện thoại"
                     name="phoneNumber"
                     rules={[
-                      { required: true, message: "Vui lòng nhập số điện thoại" },
-                      { pattern: /^[0-9]+$/, message: "Số điện thoại không hợp lệ" }
+                      {
+                        required: true,
+                        message: "Vui lòng nhập số điện thoại",
+                      },
+                      {
+                        pattern: /^[0-9]+$/,
+                        message: "Số điện thoại không hợp lệ",
+                      },
                     ]}
                     className="mb-4"
                   >
-                    <Input 
+                    <Input
                       readOnly={!isEditing}
-                      className={`rounded-lg ${!isEditing ? 'bg-gray-100' : ''}`} 
+                      className={`rounded-lg ${
+                        !isEditing ? "bg-gray-100" : ""
+                      }`}
                     />
                   </Form.Item>
 
                   <div className="space-y-4">
                     <div>
-                      <div className="text-sm font-medium text-gray-700 mb-2">Trạng thái</div>
-                      <Tag 
+                      <div className="text-sm font-medium text-gray-700 mb-2">
+                        Trạng thái
+                      </div>
+                      <Tag
                         color={user?.status === "Active" ? "green" : "red"}
                         className="px-4 py-1 rounded-full"
                       >
-                        {user?.status === "Active" ? "Hoạt động" : "Không hoạt động"}
+                        {user?.status === "Active"
+                          ? "Hoạt động"
+                          : "Không hoạt động"}
                       </Tag>
                     </div>
 
                     <div>
-                      <div className="text-sm font-medium text-gray-700 mb-2">Vai trò</div>
-                      <Tag 
-                        color="blue" 
-                        className="px-4 py-1 rounded-full"
-                      >
+                      <div className="text-sm font-medium text-gray-700 mb-2">
+                        Vai trò
+                      </div>
+                      <Tag color="blue" className="px-4 py-1 rounded-full">
                         {user?.role?.roleName || "N/A"}
                       </Tag>
                     </div>
@@ -301,8 +321,8 @@ const Profile: React.FC = () => {
 
               {isEditing && (
                 <div className="flex justify-end mt-6">
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     className="flex items-center bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                   >
                     <CheckIcon size={18} className="mr-2" />

@@ -25,7 +25,7 @@ export const formatDate = (dateString: any) => {
 export const formatDateLocal = (dateString: any) => {
   if (dateString === null) return;
   const date = new Date(dateString);
-  console.log(dateString);
+  // console.log(dateString);
 
   // Subtract 7 hours
   date.setHours(date.getHours() - 7);
