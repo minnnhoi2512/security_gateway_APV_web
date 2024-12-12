@@ -121,6 +121,7 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
         });
       }
       const convertFile = base64ToFile(imgblur)
+      console.log(convertFile);
       setFormData((prevData) => ({
         ...prevData,
         visitorName: name,

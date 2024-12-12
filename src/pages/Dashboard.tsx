@@ -1,5 +1,16 @@
-import React, { useState } from "react";
-import { Card, Col, Row, Statistic, Spin, Radio } from "antd";
+import React, { useEffect, useState } from "react";
+import {
+  Card,
+  Col,
+  Row,
+  Statistic,
+  Spin,
+  Radio,
+  Button,
+  Select,
+  List,
+  Tag,
+} from "antd";
 import {
   PieChart,
   Pie,
@@ -13,7 +24,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { UserOutlined, TeamOutlined, IdcardOutlined } from "@ant-design/icons";
+import { UserOutlined, IdcardOutlined } from "@ant-design/icons";
 import {
   useGetDashboardCardIssuesQuery,
   useGetDashboardCardStatusQuery,
@@ -24,7 +35,11 @@ import {
   useGetDashboardVisitorSessionStatusTodayQuery,
   useGetDashboardVisitorSSYearQuery,
   useGetDashboardVisitQuery,
+  useGetRecentSessionQuery,
+  useGetTaskQuery,
 } from "../services/dashboard.service";
+import dayjs from "dayjs";
+const { Option } = Select;
 
 interface UserData {
   admin: number;
@@ -34,30 +49,16 @@ interface UserData {
   security: number;
 }
 
-interface VisitorData {
-  total: number;
-  active: number;
-  inavtive: number;
-}
-
-interface ScheduleData {
-  week: number;
-  month: number;
-}
-
-interface SessionStatus {
-  count: number;
+interface RecentSession {
+  visitorSessionId: number;
+  checkinTime: string;
+  checkoutTime: string;
   status: string;
-}
-
-interface CardStatus {
-  count: number;
-  status: string;
-}
-
-interface CardIssue {
-  totalCard: number;
-  totalCardIssue: number;
+  visitDetail: {
+    visitor: {
+      visitorName: string;
+    };
+  };
 }
 
 interface MonthlyCount {
@@ -65,44 +66,97 @@ interface MonthlyCount {
   count: number;
 }
 
-interface VisitorSSYear {
+interface DailyCount {
+  day: number;
+  count: number;
+}
+interface VisitorSessionMonthResponse {
   monthlyCounts: MonthlyCount[];
+  dailyCounts: DailyCount[];
 }
-
-interface DailyVisitorsProps {
-  year?: number;
-}
-
 const Dashboard: React.FC = () => {
-  const { data: visitData, isLoading: isLoadingVisit } =
-    useGetDashboardVisitQuery({});
-  const { data: userData, isLoading: isLoadingUser } = useGetDashboardUserQuery(
-    {}
-  );
-  console.log("visit: ", visitData);
-  
-  const { data: visitorData, isLoading: isLoadingVisitor } =
-    useGetDashboardVisitorQuery({});
-  const { data: scheduleData, isLoading: isLoadingSchedule } =
-    useGetDashboardScheduleQuery({});
-  const { data: visitorSessionStatusTodayData, isLoading: isLoadingvstst } =
-    useGetDashboardVisitorSessionStatusTodayQuery({});
-  const { data: cardStatus, isLoading: isLoadingCardStatus } =
-    useGetDashboardCardStatusQuery({});
-  const { data: cardIssue, isLoading: isLoadingCardIssue } =
-    useGetDashboardCardIssuesQuery({});
-  const { data: vstSSYear, isLoading: isLoadingVstSSYear } =
-    useGetDashboardVisitorSSYearQuery({});
+  const [dataSession, setDataSession] =
+    useState<VisitorSessionMonthResponse | null>(null);
+  const [isScheduleView, setIsScheduleView] = useState(true);
 
-  const currentYear = new Date().getFullYear();
-  const [selectedMonth, setSelectedMonth] = useState<number>(
+  const showScheduleView = () => {
+    setIsScheduleView(true);
+  };
+
+  const showTaskView = () => {
+    setIsScheduleView(false);
+  };
+  const [visitMode, setVisitMode] = useState<"type" | "status">("type");
+  const [selectedYear, setSelectedYear] = useState<any>(
+    new Date().getFullYear()
+  );
+  const [selectedMonth, setSelectedMonth] = useState<number | null>(
     new Date().getMonth() + 1
   );
-  const { data, isLoading } = useGetDashboardVisitorSessionMonthQuery({
-    year: currentYear,
-    month: selectedMonth,
-  });
+  const {
+    data: visitData,
+    isLoading: isLoadingVisit,
+    refetch: refetchVisitData,
+  } = useGetDashboardVisitQuery({});
+  const {
+    data: userData,
+    isLoading: isLoadingUser,
+    refetch: refetchUserData,
+  } = useGetDashboardUserQuery({});
+  const {
+    data: visitorData,
+    isLoading: isLoadingVisitor,
+    refetch: refetchVisitorData,
+  } = useGetDashboardVisitorQuery({});
+  const {
+    data: scheduleData,
+    isLoading: isLoadingSchedule,
+    refetch: refetchScheduleData,
+  } = useGetDashboardScheduleQuery({});
+  const {
+    data: visitorSessionStatusTodayData,
+    isLoading: isLoadingvstst,
+    refetch: refetchVisitorSessionStatusTodayData,
+  } = useGetDashboardVisitorSessionStatusTodayQuery({});
+  const {
+    data: cardStatus,
+    isLoading: isLoadingCardStatus,
+    refetch: refetchCardStatus,
+  } = useGetDashboardCardStatusQuery({});
+  const {
+    data: cardIssue,
+    isLoading: isLoadingCardIssue,
+    refetch: refetchCardIssue,
+  } = useGetDashboardCardIssuesQuery({});
+  const { data: sessionYear, refetch: refetchSessionYear } =
+    useGetDashboardVisitorSSYearQuery({
+      year: selectedYear,
+    });
+  const { data, refetch: refetchSessionMonth } =
+    useGetDashboardVisitorSessionMonthQuery({
+      year: selectedYear,
+      month: selectedMonth,
+    });
+  const {
+    data: task,
+    isLoading: taskLoading,
+    refetch: refetchTask,
+  } = useGetTaskQuery({});
+  const {
+    data: recentSession,
+    isLoading: isLoadingRecentSession,
+    refetch: refetchRecentSession,
+  } = useGetRecentSessionQuery({});
 
+  useEffect(() => {
+    if (selectedMonth === 0) {
+      setDataSession(sessionYear);
+    } else {
+      setDataSession(data);
+    }
+  }, [data, sessionYear, selectedYear, selectedMonth]);
+
+  console.log(recentSession);
   const months = [
     { value: 1, label: "Tháng 1" },
     { value: 2, label: "Tháng 2" },
@@ -118,11 +172,50 @@ const Dashboard: React.FC = () => {
     { value: 12, label: "Tháng 12" },
   ];
 
-  const chartData =
-    data?.dailyCounts.map((item) => ({
-      name: `Ngày ${item.day}`,
-      visitors: item.count,
-    })) || [];
+  let chartData = [];
+
+  if (selectedMonth === 0) {
+    chartData =
+      dataSession?.monthlyCounts?.map((item) => ({
+        name: `Tháng ${item.month}`,
+        visitors: item.count,
+      })) || [];
+  } else {
+    chartData =
+      dataSession?.dailyCounts?.map((item) => ({
+        name: `Ngày ${item.day}`,
+        visitors: item.count,
+      })) || [];
+  }
+  useEffect(() => {
+    const interval = setInterval(() => {
+      refetchVisitData();
+      refetchUserData();
+      refetchVisitorData();
+      refetchScheduleData();
+      refetchVisitorSessionStatusTodayData();
+      refetchCardStatus();
+      refetchCardIssue();
+      refetchSessionYear();
+      refetchSessionMonth();
+      refetchTask();
+      refetchRecentSession();
+    }, 5000); // Poll every 5 seconds
+
+    return () => clearInterval(interval); // Cleanup on unmount
+  }, [
+    refetchVisitData,
+    refetchUserData,
+    refetchVisitorData,
+    refetchScheduleData,
+    refetchVisitorSessionStatusTodayData,
+    refetchCardStatus,
+    refetchCardIssue,
+    refetchSessionYear,
+    refetchSessionMonth,
+    refetchTask,
+    refetchRecentSession,
+  ]);
 
   const getUserData = () => {
     if (!userData) return [];
@@ -146,47 +239,57 @@ const Dashboard: React.FC = () => {
       { name: "Tháng", value: scheduleData.month },
     ];
   };
-
+  const getTaskData = () => {
+    console.log(task);
+    if (!task) return [];
+    return [
+      { name: "Chờ phê duyệt", value: task.pending },
+      { name: "Đã phê duyệt", value: task.approved },
+      { name: "Chờ tạo", value: task.assigned },
+      { name: "Đã từ chối", value: task.rejected },
+      { name: "Đã hết hạn", value: task.expired },
+    ];
+  };
+  const getVisitByType = () => {
+    if (!visitData) return [];
+    return [
+      { name: "Ngày", value: visitData.daily },
+      { name: "Tuần", value: visitData.week },
+      { name: "Tháng", value: visitData.month },
+    ];
+  };
+  const getVisitByStatus = () => {
+    if (!visitData) return [];
+    return [
+      { name: "Đã vô hiệu hóa", value: visitData.cancel || 0 },
+      { name: "Đã hết hạn", value: visitData.inactive || 0 },
+      { name: "Vi phạm", value: visitData.violation || 0 },
+      { name: "Cần duyệt", value: visitData.activeTemporary || 0 },
+      { name: "Còn hiệu lực", value: visitData.active || 0 },
+      { name: "Chờ phê duyệt", value: visitData.pending || 0 },
+    ];
+  };
   const getSessionStatusData = () => {
     if (!visitorSessionStatusTodayData) return [];
     const translations: { [key: string]: string } = {
       CheckIn: "Đã vào",
       CheckOut: "Đã ra",
+      // UnCheckOut: "Đã ra",
     };
     return visitorSessionStatusTodayData.map((item) => ({
       name: translations[item.status] || item.status,
-      value: item.count,
+      value: item.count || 0,
     }));
   };
-
-  const getMonthlyVisitorData = () => {
-    if (!vstSSYear?.monthlyCounts) return [];
-
-    const monthNames = {
-      1: "Tháng 1",
-      2: "Tháng 2",
-      3: "Tháng 3",
-      4: "Tháng 4",
-      5: "Tháng 5",
-      6: "Tháng 6",
-      7: "Tháng 7",
-      8: "Tháng 8",
-      9: "Tháng 9",
-      10: "Tháng 10",
-      11: "Tháng 11",
-      12: "Tháng 12",
-    };
-
-    return vstSSYear.monthlyCounts.map((item) => ({
-      name: monthNames[item.month as keyof typeof monthNames],
-      visitors: item.count,
-    }));
-  };
+  const years = Array.from(
+    { length: 5 },
+    (_, i) => new Date().getFullYear() - i
+  );
 
   const COLORS = {
     users: ["#1890FF", "#13C2C2", "#52C41A", "#FAAD14", "#F5222D"],
     schedule: ["#1890FF", "#13C2C2"],
-    session: ["#722ED1"],
+    session: ["#722ED1", "#1890FF", "#13C2C2"],
   };
 
   const LoadingSpinner = () => (
@@ -195,83 +298,81 @@ const Dashboard: React.FC = () => {
     </div>
   );
 
+  // console.log("CARD: ", userData);
 
- 
-console.log("CARD: ",userData );
-
+  const CardTitle = () => (
+    <div className="flex justify-between items-center">
+      <span>Chuyến thăm</span>
+      <div className="flex gap-1">
+        <Button
+          size="small"
+          type={visitMode === "type" ? "primary" : "default"}
+          onClick={() => setVisitMode("type")}
+        >
+          Loại
+        </Button>
+        <Button
+          size="small"
+          type={visitMode === "status" ? "primary" : "default"}
+          onClick={() => setVisitMode("status")}
+        >
+          Trạng thái
+        </Button>
+      </div>
+    </div>
+  );
   return (
     <div className="p-6 bg-gray-50">
       <Row gutter={[16, 16]} className="mb-6">
         <Col xs={24} sm={8}>
-          <Card size="small">
+          <Card size="small" style={{ minHeight: "200px" }}>
             <Statistic
-              title="Thẻ hoạt động"
+              title="Thẻ ra vào của hệ thống"
               value={cardStatus?.[0]?.count ?? 0}
               prefix={<IdcardOutlined className="text-green-500" />}
               suffix={`/ ${cardIssue?.totalCard ?? 0}`}
             />
             <div className="mt-2 text-sm text-gray-600">
-              <div>Tổng số thẻ: {cardIssue?.totalCard ?? 0}</div>
               <div>Đã cấp: {cardIssue?.totalCardIssue ?? 0}</div>
+              <div>Đã mất: {cardStatus?.[1]?.count ?? 0}</div>
               <div>
-                Trạng thái:{" "}
-                {cardStatus?.[0]?.status === "Active"
-                  ? "Hoạt động"
-                  : "Không hoạt động"}
+                Còn trong hệ thống:{" "}
+                {cardStatus?.[0]?.count - cardIssue?.totalCardIssue}
               </div>
             </div>
           </Card>
         </Col>
         <Col xs={24} sm={8}>
-          <Card size="small">
+          <Card size="small" style={{ minHeight: "200px" }}>
             <Statistic
-              title="Khách đang có mặt"
+              title="Khách trong hệ thống"
               value={visitorData?.active ?? 0}
               prefix={<UserOutlined className="text-purple-500" />}
               suffix={`/ ${visitorData?.total ?? 0}`}
             />
             <div className="mt-2 text-sm text-gray-600">
               <div>Tổng số khách: {visitorData?.total ?? 0}</div>
-              <div>Đang hoạt động: {visitorData?.active ?? 0}</div>
-              <div>Không hoạt động: {visitorData?.inavtive ?? 0}</div>
-            </div>
-          </Card>
-        </Col>
-        <Col xs={24} sm={8}>
-          <Card size="small">
-            <Statistic
-              title="Thẻ đã cấp"
-              value={cardIssue?.totalCardIssue ?? 0}
-              prefix={<TeamOutlined className="text-blue-500" />}
-              suffix={`/ ${cardIssue?.totalCard ?? 0}`}
-            />
-            <div className="mt-2 text-sm text-gray-600">
+              <div>Số khách hợp lệ: {visitorData?.active ?? 0}</div>
               <div>
-                Còn trống:{" "}
-                {(cardIssue?.totalCard ?? 0) - (cardIssue?.totalCardIssue ?? 0)}
-              </div>
-              <div>
-                Tỷ lệ sử dụng:{" "}
-                {cardIssue
-                  ? Math.round(
-                      (cardIssue.totalCardIssue / cardIssue.totalCard) * 100
-                    )
-                  : 0}
-                %
+                Số khách trong danh sách đen:{" "}
+                {visitorData?.total - visitorData?.active}
               </div>
             </div>
           </Card>
         </Col>
       </Row>
 
- 
       <Row gutter={[16, 16]}>
         <Col xs={24} lg={8}>
-          <Card title="Phân bố người dùng" className="h-full">
+          <Card
+            title="Phân bố người dùng"
+            className="h-full"
+            style={{ minHeight: "300px" }}
+          >
             {isLoadingUser ? (
               <LoadingSpinner />
             ) : (
-              <ResponsiveContainer width="100%" height={240}>
+              <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
                     data={getUserData()}
@@ -294,14 +395,74 @@ console.log("CARD: ",userData );
           </Card>
         </Col>
         <Col xs={24} lg={8}>
-          <Card title="Lịch trình tổng quan" className="h-full">
-            {isLoadingSchedule ? (
+          <Card
+            title={
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <span>
+                  {isScheduleView ? "Lịch trình tổng quan" : "Nhiệm vụ"}
+                </span>
+                <div>
+                  <Button
+                    onClick={showScheduleView}
+                    size="small"
+                    type={isScheduleView ? "primary" : "default"}
+                  >
+                    Lịch trình
+                  </Button>
+                  <Button
+                    onClick={showTaskView}
+                    size="small"
+                    type={!isScheduleView ? "primary" : "default"}
+                    style={{ marginLeft: 8 }}
+                  >
+                    Nhiệm vụ
+                  </Button>
+                </div>
+              </div>
+            }
+            className="h-full"
+            style={{ minHeight: "300px" }}
+          >
+            {isScheduleView ? (
+              isLoadingSchedule ? (
+                <LoadingSpinner />
+              ) : (
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={getScheduleData()}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, value }) => `${name}: ${value}`}
+                      outerRadius={80}
+                      dataKey="value"
+                    >
+                      {getScheduleData().map((entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={COLORS.schedule[index]}
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              )
+            ) : taskLoading ? (
               <LoadingSpinner />
             ) : (
-              <ResponsiveContainer width="100%" height={240}>
+              <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
-                    data={getScheduleData()}
+                    data={getTaskData()}
                     cx="50%"
                     cy="50%"
                     labelLine={false}
@@ -309,11 +470,8 @@ console.log("CARD: ",userData );
                     outerRadius={80}
                     dataKey="value"
                   >
-                    {getScheduleData().map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={COLORS.schedule[index]}
-                      />
+                    {getTaskData().map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS.users[index]} />
                     ))}
                   </Pie>
                   <Tooltip />
@@ -324,11 +482,57 @@ console.log("CARD: ",userData );
           </Card>
         </Col>
         <Col xs={24} lg={8}>
-          <Card title="Trạng thái phiên hôm nay" className="h-full">
-            {isLoadingvstst ? (
+          <Card
+            title={<CardTitle />}
+            className="h-full"
+            style={{ minHeight: "300px" }}
+          >
+            {isLoadingVisit ? (
               <LoadingSpinner />
             ) : (
-              <ResponsiveContainer width="100%" height={240}>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={
+                      visitMode === "type"
+                        ? getVisitByType()
+                        : getVisitByStatus()
+                    }
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, value }) => `${name}: ${value}`}
+                    outerRadius={80}
+                    dataKey="value"
+                  >
+                    {(visitMode === "type"
+                      ? getVisitByType()
+                      : getVisitByStatus()
+                    ).map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS.users[index]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
+          </Card>
+        </Col>
+        <Col xs={24} lg={8}>
+          <Card
+            title="Trạng thái lượt ra vào hôm nay"
+            className="h-full"
+            style={{ minHeight: "300px" }}
+          >
+            {isLoadingvstst ? (
+              <LoadingSpinner />
+            ) : getSessionStatusData().length === 0 ? (
+              <div className="flex justify-center items-center h-[300px] text-gray-500">
+                Hôm nay chưa có khách nào đến công ty
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
                     data={getSessionStatusData()}
@@ -353,16 +557,117 @@ console.log("CARD: ",userData );
             )}
           </Card>
         </Col>
+        <Col xs={24} lg={16}>
+          <Card
+            title="Lượt ra vào gần đây"
+            className="h-full"
+            style={{ minHeight: "300px" }}
+          >
+            {isLoadingRecentSession ? (
+              <LoadingSpinner />
+            ) : !recentSession?.length ? (
+              <div className="flex justify-center items-center h-[300px] text-gray-500">
+                Chưa có lượt ra vào nào gần đây
+              </div>
+            ) : (
+              <List
+                dataSource={recentSession}
+                renderItem={(session: RecentSession) => (
+                  <List.Item>
+                    <List.Item.Meta
+                      title={`Phiên #${session?.visitorSessionId}`}
+                      description={
+                        <Row gutter={8}>
+                          <Col span={6}>
+                            <span>
+                              Khách: {session.visitDetail.visitor.visitorName}
+                            </span>
+                          </Col>
+                          <Col span={6}>
+                            <span>
+                              Thời gian vào :{" "}
+                              {dayjs(session.checkinTime).format(
+                                "DD/MM/YYYY HH:mm"
+                              )}
+                            </span>
+                          </Col>
+                          <Col span={6}>
+                            <span>
+                              Thời gian ra :{" "}
+                              {session.checkoutTime
+                                ? dayjs(session.checkoutTime).format(
+                                    "DD/MM/YYYY HH:mm"
+                                  )
+                                : "N/A"}
+                            </span>
+                          </Col>
+                          <Col span={6}>
+                            <Tag
+                              color={
+                                session.status === "CheckOut" ? "gray" : "green"
+                              }
+                            >
+                              {session.status === "CheckOut"
+                                ? "Đã ra"
+                                : "Đã vào"}
+                            </Tag>
+                          </Col>
+                        </Row>
+                      }
+                    />
+                  </List.Item>
+                )}
+              />
+            )}
+          </Card>
+        </Col>
       </Row>
       <Row gutter={[16, 16]} className="mt-6">
         <Col span={24}>
-          <Card title="Thống kê khách thăm theo tháng" className="h-full">
-            {isLoadingVstSSYear ? (
-              <LoadingSpinner />
-            ) : (
-              <ResponsiveContainer width="100%" height={300}>
+          <Card
+            title="Thống kê lượt ra vào"
+            className="h-full"
+            extra={
+              <div className="flex items-center gap-4">
+                <Radio.Group
+                  value={selectedMonth}
+                  buttonStyle="solid"
+                  size="small"
+                >
+                  {months.map((month) => (
+                    <Radio.Button
+                      key={month.value}
+                      value={month.value}
+                      onClick={() => {
+                        const newValue = month.value;
+                        setSelectedMonth(
+                          selectedMonth === newValue ? 0 : newValue
+                        );
+                      }}
+                    >
+                      {month.label}
+                    </Radio.Button>
+                  ))}
+                </Radio.Group>
+                <Select
+                  value={selectedYear}
+                  onChange={(value) => setSelectedYear(value)}
+                  style={{ width: 120 }}
+                >
+                  {years.map((year) => (
+                    <Option key={year} value={year}>
+                      {year}
+                    </Option>
+                  ))}
+                </Select>
+              </div>
+            }
+            style={{ minHeight: "400px" }}
+          >
+            {chartData?.length ? (
+              <ResponsiveContainer width="100%" height={400}>
                 <BarChart
-                  data={getMonthlyVisitorData()}
+                  data={chartData}
                   margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" />
@@ -372,60 +677,20 @@ console.log("CARD: ",userData );
                   <Legend />
                   <Bar
                     dataKey="visitors"
-                    name="Số lượng khách"
+                    name="Số lượt ra vào"
                     fill="#8884d8"
                     radius={[4, 4, 0, 0]}
                   />
                 </BarChart>
               </ResponsiveContainer>
+            ) : (
+              <div className="flex justify-center items-center h-[400px] text-gray-500">
+                Không có lượt ra vào nào
+              </div>
             )}
           </Card>
         </Col>
       </Row>
-
-      <Card
-        title="Thống kê khách theo ngày"
-        className="h-full"
-        extra={
-          <Radio.Group
-            value={selectedMonth}
-            onChange={(e) => setSelectedMonth(e.target.value)}
-            buttonStyle="solid"
-            size="small"
-          >
-            {months.map((month) => (
-              <Radio.Button key={month.value} value={month.value}>
-                {month.label}
-              </Radio.Button>
-            ))}
-          </Radio.Group>
-        }
-      >
-        {isLoading ? (
-          <div className="flex justify-center items-center h-[400px]">
-            <Spin size="large" />
-          </div>
-        ) : (
-          <ResponsiveContainer width="100%" height={400}>
-            <BarChart
-              data={chartData}
-              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar
-                dataKey="visitors"
-                name="Số lượng khách"
-                fill="#8884d8"
-                radius={[4, 4, 0, 0]}
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        )}
-      </Card>
 
       <div className="text-right mt-4 text-gray-500 text-sm">
         Cập nhật lúc: {new Date().toLocaleTimeString()}

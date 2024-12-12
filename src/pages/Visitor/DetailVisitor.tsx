@@ -107,6 +107,7 @@ const DetailVisitor: React.FC<DetailVisitorProps> = ({
     }
   };
   const trimmedBase64 = (base64: string) => {
+    console.log(base64.replace(/^data:image\/jpeg;base64,/, ""))
     return base64.replace(/^data:image\/jpeg;base64,/, "");
   };
   const handleUpdate = async () => {

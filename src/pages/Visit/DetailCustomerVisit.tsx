@@ -12,7 +12,7 @@ import {
   Card,
   Divider,
 } from "antd";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   ClockCircleOutlined,
   InfoCircleOutlined,
@@ -34,7 +34,7 @@ import {
 import VisitorSearchModal from "../../form/ModalSearchVisitor";
 import { DetailVisitor } from "../../types/detailVisitorForVisit";
 import { convertToVietnamTime, formatDateWithourHour } from "../../utils/ultil";
-import ListHistorySesson from "../History/ListHistorySession";
+import ListHistorySesson from "../History/ListHistorySessionVisitor";
 import { ScheduleType, typeMap } from "../../types/Enum/ScheduleType";
 import { VisitStatus, visitStatusMap } from "../../types/Enum/VisitStatus";
 import ListHistorySessonVisit from "../History/ListHistorySessionVisit";
@@ -65,6 +65,7 @@ const DetailCustomerVisit: React.FC = () => {
   } = useGetDetailVisitQuery({
     visitId: Number(id),
   });
+  const navigate = useNavigate();
   const [updateVisitBeforeStartDate] = useUpdateVisitBeforeStartDateMutation();
   const [updateVisitAfterStartDate] = useUpdateVisitAfterStartDateMutation();
   const [updateVisitStatus] = useUpdateStatusVisitMutation();
@@ -226,7 +227,7 @@ const DetailCustomerVisit: React.FC = () => {
       notification.error({ message: "Từ chối thất bại!" });
     }
   };
-
+  // console.log(visitors)
   const timePickerStyles = {
     error: {
       borderColor: "red",
@@ -451,7 +452,14 @@ const DetailCustomerVisit: React.FC = () => {
         <>
           {!isEditMode && (
             <>
-              <Button size="middle" onClick={() => showHistoryModal(record)}>
+              <Button
+                size="middle"
+                onClick={() =>
+                  navigate(
+                    `listVisitorSession/${record.visitor.visitorId}`
+                  )
+                }
+              >
                 <SearchOutlined />
               </Button>
             </>
@@ -709,7 +717,11 @@ const DetailCustomerVisit: React.FC = () => {
                       <Button
                         type="link"
                         className="text-blue-600 hover:text-blue-800 text-base"
-                        onClick={() => setIsHistoryAllModalVisible(true)}
+                        onClick={() =>
+                          navigate(
+                            `listSession`
+                          )
+                        }
                       >
                         Xem chi tiết
                       </Button>
@@ -782,22 +794,22 @@ const DetailCustomerVisit: React.FC = () => {
                 Thêm khách
               </Button>
             )}
-            {status === "Active" &&
-       
-                <div className="">
-                  <Button
-                    type="primary"
-                    className="mb-4"
-                    onClick={handleToggleMode}
-                  >
-                    {isEditMode ? "Lưu" : "Chỉnh sửa"}
-                  </Button>
-                </div>
-              }
+            {status === "Active" && (
+              <div className="">
+                <Button
+                  type="primary"
+                  className="mb-4"
+                  onClick={handleToggleMode}
+                >
+                  {isEditMode ? "Lưu" : "Chỉnh sửa"}
+                </Button>
+              </div>
+            )}
             {(isEditable() &&
               scheduleTypeId == undefined &&
               visitData?.visitStatus != "ActiveTemporary") ||
-              (visitData?.visitStatus != "Cancelled" || visitData?.visitStatus != "Expired" && (
+              visitData?.visitStatus != "Cancelled" ||
+              (visitData?.visitStatus != "Expired" && (
                 <Button
                   type="primary"
                   onClick={handleToggleMode}
@@ -824,7 +836,7 @@ const DetailCustomerVisit: React.FC = () => {
           onVisitorSelected={handleVisitorSelected}
         />
       </Content>
-      <Modal
+      {/* <Modal
         title="Chi tiết lịch sử từng người"
         visible={isHistoryModalVisible}
         onCancel={handleCloseHistoryModal}
@@ -833,8 +845,8 @@ const DetailCustomerVisit: React.FC = () => {
         {selectedRecord && (
           <ListHistorySesson data={selectedRecord.visitDetailId} />
         )}
-      </Modal>
-      <Modal
+      </Modal> */}
+      {/* <Modal
         title="Lịch sử lượt ra vào"
         visible={isHistoryAllModalVisible}
         onCancel={() => setIsHistoryAllModalVisible(false)}
@@ -844,7 +856,7 @@ const DetailCustomerVisit: React.FC = () => {
         {selectedVisitId && (
           <ListHistorySessonVisit visitId={selectedVisitId} />
         )}
-      </Modal>
+      </Modal> */}
     </Layout>
   );
 };

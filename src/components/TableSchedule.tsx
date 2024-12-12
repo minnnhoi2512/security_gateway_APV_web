@@ -96,7 +96,7 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({
     return "[&_.ant-table-thead_th]:!bg-[#34495e] [&_.ant-table-thead_th]:!text-white";
   };
 
-  console.log(schedules);
+  // console.log(schedules);
   const columns: ColumnsType<Schedule> = [
     {
       title: "Tên lịch trình",

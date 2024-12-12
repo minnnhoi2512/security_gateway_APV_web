@@ -14,6 +14,26 @@ export const routes = [
     hideInBreadcrumb: true
   },
   {
+    path: "/customerVisit/detailVisit/listSession",
+    breadcrumbName: "Danh sách lượt ra vào của chuyến thăm",
+  
+  },
+  {
+    path: "/customerVisitStaff/detailVisit/listSession",
+    breadcrumbName: "Danh sách lượt ra vào của chuyến thăm",
+  
+  },
+  {
+    path: "/customerVisit/detailVisit/listVisitorSession",
+    breadcrumbName: "Danh sách lượt ra vào của khách",
+  
+  },
+  {
+    path: "/profile",
+    breadcrumbName: "Thông tin cá nhân",
+  
+  },
+  {
     path: "/customerVisit/detailVisit",
     breadcrumbName: "Chi tiết chuyến thăm",
     hideInBreadcrumb: true
@@ -51,6 +71,10 @@ export const routes = [
   {
     path: "/history",
     breadcrumbName: "Lịch sử ra vào",
+  },
+  {
+    path: "/history/sessionDetail",
+    breadcrumbName: "Chi tiết lượt ra vào",
   },
   {
     path: "/user",

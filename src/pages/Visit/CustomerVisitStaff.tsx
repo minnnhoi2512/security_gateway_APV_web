@@ -151,8 +151,7 @@ const CustomerVisitStaff = () => {
             textDecoration: "underline",
           }}
           onClick={() => {
-            setSelectedVisitId(record.visitId);
-            setIsModalVisible(true);
+            navigate(`/customerVisitStaff/detailVisit/${record.visitId}/listSession`)
           }}
         >
           {text} Lượt
@@ -788,7 +787,7 @@ const CustomerVisitStaff = () => {
           bordered={false}
           onRow={(record) => ({
             onDoubleClick: () =>
-              navigate(`/customerVisit/detailVisit/${record.visitId}`, {
+              navigate(`/customerVisitStaff/detailVisit/${record.visitId}`, {
                 state: { record },
               }),
             className: "cursor-pointer transition-colors",
@@ -796,7 +795,7 @@ const CustomerVisitStaff = () => {
         />
       </Card>
 
-      <Modal
+      {/* <Modal
         title="Lịch sử lượt ra vào"
         visible={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
@@ -806,7 +805,7 @@ const CustomerVisitStaff = () => {
         {selectedVisitId && (
           <ListHistorySessonVisit visitId={selectedVisitId} />
         )}
-      </Modal>
+      </Modal> */}
       <Modal
         title={<span style={{ fontSize: "30px" }}>Chọn loại chuyến thăm</span>}
         visible={isCreateModalVisible}
