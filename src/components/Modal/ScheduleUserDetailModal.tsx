@@ -111,6 +111,9 @@ const ScheduleUserDetailModal: React.FC<ScheduleUserModalDetailProps> = ({
     setDescriptionIsModalVisible(true);
   };
 
+  console.log("Data detail nhiem vu: ", data);
+  
+
   const handleDescriptionModalClose = () => {
     setDescriptionIsModalVisible(false);
   };
