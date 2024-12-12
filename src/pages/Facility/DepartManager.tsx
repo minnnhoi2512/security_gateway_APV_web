@@ -10,6 +10,7 @@ import {
   notification,
   Layout,
   Divider,
+  Card,
 } from "antd";
 import {
   SearchOutlined,
@@ -73,11 +74,11 @@ const DepartManager = () => {
   );
 
   const columns = [
-    {
-      title: "ID Phòng Ban",
-      dataIndex: "departmentId",
-      key: "departmentId",
-    },
+    // {
+    //   title: "ID Phòng Ban",
+    //   dataIndex: "departmentId",
+    //   key: "departmentId",
+    // },
     {
       title: "Tên Phòng Ban",
       dataIndex: "departmentName",
@@ -239,28 +240,28 @@ const DepartManager = () => {
   return (
     <Layout className="min-h-screen bg-gray-50">
       <Content className="p-8 bg-white rounded-lg shadow-md">
-        <div className="flex justify-between items-center mb-4">
-          <div className="flex items-center bg-white rounded-full shadow-sm p-2 border border-gray-300 focus-within:border-blue-500 transition-all duration-200 ease-in-out">
-            <SearchOutlined className="text-gray-500 ml-2" />
+        <div className="flex flex-col mb-2 mt-2">
+          <div className="flex gap-4 justify-between items-center">
             <Input
               placeholder="Tìm kiếm theo tên phòng ban"
+              prefix={<SearchOutlined className="text-gray-400" />}
               value={searchText}
               onChange={handleSearchChange}
-              className="ml-2 bg-transparent border-none focus:outline-none text-gray-700 placeholder-gray-400"
-              style={{ width: 300 }}
+              className="max-w-xs"
             />
+
+            <Button
+              // type="primary"
+              // icon={<PlusOutlined />}
+              className=" group relative px-5 py-3 bg-buttonColor hover:!bg-buttonColor hover:!border-buttonColor rounded-lg shadow-lg hover:!shadow-green-500/50 transition-all duration-300 transform hover:!scale-105"
+              onClick={showModal}
+            >
+              <div className="flex items-center gap-2 text-white">
+                <Plus className="w-6 h-6 group-hover:!rotate-180 transition-transform duration-500" />
+                <span className="font-medium text-lg">Tạo mới</span>
+              </div>
+            </Button>
           </div>
-          <Button
-            // type="primary"
-            // icon={<PlusOutlined />}
-            className="group relative px-6 py-4 bg-buttonColor hover:!bg-buttonColor hover:!border-buttonColor rounded-lg shadow-lg hover:!shadow-green-500/50 transition-all duration-300 transform hover:!scale-105"
-            onClick={showModal}
-          >
-            <div className="flex items-center gap-2 text-white">
-              <Plus className="w-6 h-6 group-hover:!rotate-180 transition-transform duration-500" />
-              <span className="font-medium text-lg">Tạo mới</span>
-            </div>
-          </Button>
         </div>
 
         <Divider />
@@ -357,29 +358,35 @@ const DepartManager = () => {
               Đã xảy ra lỗi khi tải danh sách người dùng!
             </p>
           ) : (
-            <Table
-              columns={[
-                { title: "Tên đầy đủ", dataIndex: "fullName", key: "fullName" },
-                { title: "Email", dataIndex: "email", key: "email" },
-                {
-                  title: "Số điện thoại",
-                  dataIndex: "phoneNumber",
-                  key: "phoneNumber",
-                },
-                {
-                  title: "Vai trò",
-                  dataIndex: ["role", "roleName"],
-                  key: "roleName",
-                },
-                { title: "Trạng thái", dataIndex: "status", key: "status" },
-              ]}
-              dataSource={userListData}
-              loading={isUserListLoading}
-              pagination={{ pageSize: 5 }}
-              rowKey="userId"
-              bordered
-              className="bg-white shadow-md rounded-lg"
-            />
+            <Card className="shadow-lg rounded-xl border-0">
+              <Table
+                columns={[
+                  {
+                    title: "Tên đầy đủ",
+                    dataIndex: "fullName",
+                    key: "fullName",
+                  },
+                  { title: "Email", dataIndex: "email", key: "email" },
+                  {
+                    title: "Số điện thoại",
+                    dataIndex: "phoneNumber",
+                    key: "phoneNumber",
+                  },
+                  {
+                    title: "Vai trò",
+                    dataIndex: ["role", "roleName"],
+                    key: "roleName",
+                  },
+                  { title: "Trạng thái", dataIndex: "status", key: "status" },
+                ]}
+                dataSource={userListData}
+                loading={isUserListLoading}
+                pagination={{ pageSize: 5 }}
+                rowKey="userId"
+                bordered
+                className="w-full [&_thead_th]:!bg-[#34495e] [&_thead_th]:!text-white [&_thead_th]:!font-medium [&_thead_th]:!py-3 [&_thead_th]:!text-sm hover:[&_tbody_tr]:bg-blue-50/30 [&_table]:!rounded-none [&_table-container]:!rounded-none [&_thead>tr>th:first-child]:!rounded-tl-none [&_thead>tr>th:last-child]:!rounded-tr-none [&_thead_th]:!transition-none"
+              />
+            </Card>
           )}
         </Modal>
 
@@ -388,21 +395,23 @@ const DepartManager = () => {
             Đã xảy ra lỗi khi tải dữ liệu!
           </p>
         ) : (
-          <Table
-            columns={columns}
-            showSorterTooltip={false}
-            dataSource={filteredData}
-            pagination={{
-              total: totalDepartments,
-              showSizeChanger: true,
-              pageSizeOptions: ["5", "10", "20"],
-              size: "small",
-            }}
-            loading={isLoading}
-            rowKey="departmentId"
-            bordered
-            className="bg-white shadow-md rounded-lg"
-          />
+          <Card className="shadow-lg rounded-xl border-0">
+            <Table
+              columns={columns}
+              showSorterTooltip={false}
+              dataSource={filteredData}
+              pagination={{
+                total: totalDepartments,
+                showSizeChanger: true,
+                pageSizeOptions: ["5", "10", "20"],
+                size: "small",
+              }}
+              loading={isLoading}
+              rowKey="departmentId"
+              bordered
+              className="w-full [&_thead_th]:!bg-[#34495e] [&_thead_th]:!text-white [&_thead_th]:!font-medium [&_thead_th]:!py-3 [&_thead_th]:!text-sm hover:[&_tbody_tr]:bg-blue-50/30 [&_table]:!rounded-none [&_table-container]:!rounded-none [&_thead>tr>th:first-child]:!rounded-tl-none [&_thead>tr>th:last-child]:!rounded-tr-none [&_thead_th]:!transition-none"
+            />
+          </Card>
         )}
       </Content>
     </Layout>

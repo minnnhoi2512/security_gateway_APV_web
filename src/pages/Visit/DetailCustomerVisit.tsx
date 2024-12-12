@@ -783,7 +783,6 @@ const DetailCustomerVisit: React.FC = () => {
               </Button>
             )}
             {status === "Active" &&
-               (
                 <div className="">
                   <Button
                     type="primary"
@@ -793,7 +792,7 @@ const DetailCustomerVisit: React.FC = () => {
                     {isEditMode ? "Lưu" : "Chỉnh sửa"}
                   </Button>
                 </div>
-              )}
+              }
             {(isEditable() &&
               scheduleTypeId == undefined &&
               visitData?.visitStatus != "ActiveTemporary") ||
