@@ -37,12 +37,12 @@ const { Sider, Content } = Layout;
 
 const findRouteName = (url: string, routes: any): string => {
   if (url.startsWith("/profile/")) {
-    return "Profile";
+    return "Thông tin cá nhân";
   }
 
-  if (url.includes("/detailVisit")) {
-    return "Chi tiết chuyến thăm";
-  }
+  // if (url.includes("/detailVisit")) {
+  //   return "Chi tiết chuyến thăm";
+  // }
 
   for (const route of routes) {
     const routePath = route.path.replace(/:\w+/g, "[^/]+"); // Replace dynamic segments with regex

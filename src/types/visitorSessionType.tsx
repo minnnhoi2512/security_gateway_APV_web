@@ -1,12 +1,15 @@
 type VisitorSessionType = {
   visitorSessionId: Number;
+
   visitor: {
     visitorId: Number;
     visitorName: String;
     companyName: String;
   };
+  qrCardId?: Number;
   visit : {
     visitId: Number;
+    visitName: String;
   }
   checkinTime: Date;
   checkoutTime: Date;

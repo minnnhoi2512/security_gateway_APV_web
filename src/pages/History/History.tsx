@@ -212,6 +212,7 @@ const History = () => {
         },
         visit: {
           visitId: element.visit.visitId,
+          visitName: element.visit.visitName,
         },
         visitDetailId: element.visitDetailId,
         checkinTime: element.checkinTime,
@@ -431,7 +432,7 @@ const History = () => {
             className="flex justify-center text-blue-500 hover:text-blue-600"
             icon={<EyeOutlined />}
             onClick={() => {
-              navigate(`/sessionDetail/${record.visitorSessionId}`);
+              navigate(`/history/sessionDetail/${record.visitorSessionId}`);
             }}
           />
           {/* <Button

@@ -1,10 +1,10 @@
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import LayoutPage from "../pages/Layout";
 import Dashboard from "../pages/Dashboard";
 import Login from "../pages/Login";
 import { useEffect, useRef } from "react";
 import { useDispatch } from "react-redux";
-import SignalR from '../utils/signalR';
+import SignalR from "../utils/signalR";
 import UserConnectionHubType from "../types/userConnectionHubType";
 import Manager from "../pages/User/Manager";
 import DepartManager from "../pages/Facility/DepartManager";
@@ -38,25 +38,23 @@ import CreateGate from "../form/CreateGate";
 import GateDetail from "../pages/Facility/GateDetail";
 import { Simulation } from "../pages/Simulation";
 import HistoryDetail from "../pages/History/HistoryDetail";
-
-
-
+import ListHistorySessonVisit from "../pages/History/ListHistorySessionVisit";
+import ListHistorySessionVisitor from "../pages/History/ListHistorySessionVisitor";
 
 const ContentRouter = () => {
-
   const userRole = localStorage.getItem("userRole"); // Get user role from local storage
   const userId = Number(localStorage.getItem("userId"));
   const connection = useRef<signalR.HubConnection | null>(null);
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   useEffect(() => {
     if (userRole) {
       const user: UserConnectionHubType = {
         userId: userId,
-        role: userRole
-      }
-      SignalR.SetSignalR(user, connection, dispatch)
+        role: userRole,
+      };
+      SignalR.SetSignalR(user, connection, dispatch);
     }
-  }, [])
+  }, []);
   return (
     <Routes>
       <Route
@@ -205,7 +203,7 @@ const ContentRouter = () => {
           </LayoutPage>
         }
       />
-       <Route
+      <Route
         index
         path="/customerVisit/createNewVisitList"
         element={
@@ -214,7 +212,7 @@ const ContentRouter = () => {
           </LayoutPage>
         }
       />
-       <Route
+      <Route
         index
         path="/customerVisitStaff/detailVisit"
         element={
@@ -223,14 +221,19 @@ const ContentRouter = () => {
           </LayoutPage>
         }
       />
-       <Route
+      <Route
         index
-        path="/customerVisit/detailVisit"
+        path="/customerVisitStaff/detailVisit/:id/listSession"
         element={
           <LayoutPage>
-            <NotFoundState />
+            <ListHistorySessonVisit />
           </LayoutPage>
         }
+      />
+      <Route
+        index
+        path="/customerVisit/detailVisit"
+        element={<NotFoundState />}
       />
       <Route
         index
@@ -241,6 +244,7 @@ const ContentRouter = () => {
           </LayoutPage>
         }
       />
+
       <Route
         index
         path="customerVisitStaff/detailVisit/:id"
@@ -250,7 +254,16 @@ const ContentRouter = () => {
           </LayoutPage>
         }
       />
-<Route
+       <Route
+        index
+        path="customerVisitStaff/detailVisit/:id/listVisitorSession/:visitorId"
+        element={
+          <LayoutPage>
+            <ListHistorySessionVisitor />
+          </LayoutPage>
+        }
+      />
+      <Route
         index
         path="/customerVisitStaff"
         element={
@@ -313,7 +326,7 @@ const ContentRouter = () => {
           </LayoutPage>
         }
       />
-       <Route
+      <Route
         index
         path="/gate/createGate"
         element={
@@ -322,7 +335,7 @@ const ContentRouter = () => {
           </LayoutPage>
         }
       />
-       <Route
+      <Route
         index
         path="/gate/detailGate/:id"
         element={
@@ -351,7 +364,7 @@ const ContentRouter = () => {
       />
       <Route
         index
-        path="/sessionDetail/:id"
+        path="/history/sessionDetail/:id"
         element={
           <LayoutPage>
             <HistoryDetail />
@@ -360,13 +373,23 @@ const ContentRouter = () => {
       />
       <Route
         index
-        path="/simulation"
+        path="/customerVisit/detailVisit/:id/listSession"
         element={
-
-            <Simulation />
-
+          <LayoutPage>
+            <ListHistorySessonVisit />
+          </LayoutPage>
         }
       />
+      <Route
+        index
+        path="/customerVisit/detailVisit/:id/listVisitorSession/:visitorId"
+        element={
+          <LayoutPage>
+            <ListHistorySessionVisitor />
+          </LayoutPage>
+        }
+      />
+      <Route index path="/simulation" element={<Simulation />} />
       <Route
         index
         path="/history"
@@ -385,14 +408,16 @@ const ContentRouter = () => {
           </LayoutPage>
         }
       />
-     
+
       <Route
         index
         path="/profile/:idUser"
         element={
           <LayoutPage>
             <Profile />
-          </LayoutPage>} />
+          </LayoutPage>
+        }
+      />
       <Route index path="/" element={<Login />} />
     </Routes>
   );

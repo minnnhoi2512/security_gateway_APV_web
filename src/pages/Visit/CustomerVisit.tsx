@@ -159,8 +159,9 @@ const CustomerVisit = () => {
             textDecoration: "underline",
           }}
           onClick={() => {
-            setSelectedVisitId(record.visitId);
-            setIsModalVisible(true);
+            // setSelectedVisitId(record.visitId);
+            // setIsModalVisible(true);
+            navigate(`/customerVisit/detailVisit/${record.visitId}/listSession`)
           }}
         >
           {text} Lượt
