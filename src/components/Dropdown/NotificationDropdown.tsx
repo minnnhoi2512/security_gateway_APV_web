@@ -19,7 +19,11 @@ import { useSelector } from "react-redux";
 import moment from "moment";
 import { useNavigate } from "react-router";
 import { BellFilled } from "@ant-design/icons";
+
 import { Bell, Expand, Users } from "lucide-react";
+import { format } from "timeago.js";
+import * as timeago from "timeago.js";
+import vi from "timeago.js/lib/lang/vi";
 const { Text } = Typography;
 
 interface NotificationDropdownProps {}
@@ -33,11 +37,12 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = () => {
     useGetListNotificationUserQuery({
       userId: Number(userId),
     });
+  timeago.register("vi", vi);
   const [visibleNotifications, setVisibleNotifications] = useState(7);
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const notificationListRef = useRef<HTMLDivElement>(null);
-
-  // console.log("Noti nè cu: ", notificaitionData);
+  const userRole = localStorage.getItem("userRole");
+  console.log("Noti nè cu: ", notificaitionData);
 
   // useEffect(() => {
   //
@@ -94,15 +99,27 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = () => {
     //   );
     // }
 
-    if (element.notification.notificationType.name === "Visit") {
-      navigate(`/schedule-assigned?autoFilter=pending`);
-    }
+    // if (element.notification.notificationType.name === "Visit") {
+    //   navigate(`/schedule-assigned?autoFilter=pending`);
+    // }
 
     if (element.notification.notificationType.name === "ScheduleUser") {
       navigate(`/schedule-staff`);
     }
+
+    if (element.notification.notificationType.name === "VisitSession") {
+      navigate(`/history`);
+    }
+
+    if (element.notification.notificationType.name === "Visit") {
+      if (userRole === "DepartmentManager") {
+        navigate(`/schedule-assigned?autoFilter=pending`);
+      } else if (userRole === "Staff") {
+        navigate(`/customerVisitStaff?autoFilter=pending`);
+      }
+    }
     // if (element.notification.notificationType.name === "Visit") {
-    //   navigate(`/history`);
+    //   navigate(`/customerVisitStaff`);
     // }
   };
 
@@ -179,8 +196,11 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = () => {
                     {element.notification.content}
                   </p>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-500">
+                    {/* <span className="text-xs text-gray-500">
                       {moment(element.notification.sentDate).fromNow()}
+                    </span> */}
+                    <span className="text-xs text-gray-500">
+                      {format(element.notification.sentDate, "vi")}
                     </span>
                   </div>
                 </div>

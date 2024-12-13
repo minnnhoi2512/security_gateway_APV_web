@@ -298,19 +298,16 @@ const CardManager = () => {
   );
 
   return (
-    <Content className="p-8 bg-white rounded-lg shadow-md">
-      <div className="w-full mb-9 mt-7">
-        <div className="w-full flex justify-between items-center">
-          <div className="flex items-center gap-4">
+    <Content className="p-2 max-w-[1200px] mx-auto mt-10">
+      <div className="flex flex-col mb-2">
+        <div className="flex gap-4 items-center">
+          <div className="flex flex-1 gap-2">
             <Input
               placeholder="Tìm kiếm theo từ khóa (Mã Thẻ, Mã Xác Thực, ...)"
               prefix={<SearchOutlined />}
               value={searchText}
               onChange={handleSearchChange}
-              style={{
-                width: 300,
-                borderRadius: 5,
-              }}
+              className="max-w-xs"
             />
             <Popover
               content={filterContent}
@@ -330,7 +327,7 @@ const CardManager = () => {
           </div>
           <Button
             onClick={showModal}
-            className="group relative px-5 py-3 bg-buttonColor hover:!bg-buttonColor hover:!border-buttonColor rounded-lg shadow-lg hover:!shadow-green-500/50 transition-all duration-300 transform hover:!scale-105"
+            className="group relative px-6 py-4 bg-buttonColor hover:!bg-buttonColor hover:!border-buttonColor rounded-lg shadow-lg hover:!shadow-green-500/50 transition-all duration-300 transform hover:!scale-105"
           >
             <div className="flex items-center gap-2 text-white">
               <Plus className="w-6 h-6 group-hover:!rotate-180 transition-transform duration-500" />
@@ -385,7 +382,7 @@ const CardManager = () => {
       {error ? (
         <p>Đã xảy ra lỗi khi tải dữ liệu!</p>
       ) : (
-        <Card className="shadow-lg rounded-xl border-0 ">
+        <Card className="shadow-lg rounded-xl border-0 mt-4">
           <Table
             columns={columns}
             showSorterTooltip={false}

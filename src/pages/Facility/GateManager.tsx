@@ -100,46 +100,36 @@ const GateManager = () => {
   ];
 
   return (
-    <Layout className="min-h-screen bg-white">
-      <Content className="p-6 mt-5">
-        {/* <Button
-        
-          className="group relative mb-2 px-5 py-3 bg-buttonColor hover:!bg-buttonColor hover:!border-buttonColor rounded-lg shadow-lg hover:!shadow-green-500/50 transition-all duration-300 transform hover:!scale-105"
+    <Content className="p-2 max-w-[1200px] mx-auto mt-10">
+      <div className="flex gap-4 mb-4">
+        <div className="flex flex-1 gap-2"></div>
+        <Button
+          className="group relative px-6 py-4 bg-buttonColor hover:!bg-buttonColor hover:!border-buttonColor rounded-lg shadow-lg hover:!shadow-green-500/50 transition-all duration-300 transform hover:!scale-105"
           onClick={() => navigate("/gate/createGate")}
         >
           <div className="flex items-center gap-2 text-white">
             <Plus className="w-6 h-6 group-hover:!rotate-180 transition-transform duration-500" />
             <span className="font-medium text-lg">Tạo mới</span>
           </div>
-        </Button> */}
-        <div className="flex justify-end">
-          <Button
-            className="group relative mb-2 px-5 py-3 bg-buttonColor hover:!bg-buttonColor hover:!border-buttonColor rounded-lg shadow-lg hover:!shadow-green-500/50 transition-all duration-300 transform hover:!scale-105"
-            onClick={() => navigate("/gate/createGate")}
-          >
-            <div className="flex items-center gap-2 text-white">
-              <Plus className="w-6 h-6 group-hover:!rotate-180 transition-transform duration-500" />
-              <span className="font-medium text-lg">Tạo mới</span>
-            </div>
-          </Button>
-        </div>
+        </Button>
+      </div>
 
-        <StreamingModal
-          selectedGate={selectedGate}
-          isVisible={isModalVisible}
-          onClose={handleVideoClose}
+      <StreamingModal
+        selectedGate={selectedGate}
+        isVisible={isModalVisible}
+        onClose={handleVideoClose}
+      />
+      <Card className="shadow-lg rounded-xl border-0 mt-4">
+        <Table
+          columns={columns}
+          dataSource={data}
+          pagination={false}
+          size="middle"
+          bordered={false}
+          className="w-full [&_thead_th]:!bg-[#34495e] [&_thead_th]:!text-white [&_thead_th]:!font-medium [&_thead_th]:!py-3 [&_thead_th]:!text-sm hover:[&_tbody_tr]:bg-blue-50/30 [&_table]:!rounded-none [&_table-container]:!rounded-none [&_thead>tr>th:first-child]:!rounded-tl-none [&_thead>tr>th:last-child]:!rounded-tr-none [&_thead_th]:!transition-none"
         />
-        <Card className="shadow-lg rounded-xl border-0 mt-9 p-1">
-          <Table
-            columns={columns}
-            dataSource={data}
-            pagination={false}
-            bordered={false}
-            className="w-full [&_thead_th]:!bg-[#34495e] [&_thead_th]:!text-white [&_thead_th]:!font-medium [&_thead_th]:!py-3 [&_thead_th]:!text-sm hover:[&_tbody_tr]:bg-blue-50/30 [&_table]:!rounded-none [&_table-container]:!rounded-none [&_thead>tr>th:first-child]:!rounded-tl-none [&_thead>tr>th:last-child]:!rounded-tr-none [&_thead_th]:!transition-none"
-          />
-        </Card>
-      </Content>
-    </Layout>
+      </Card>
+    </Content>
   );
 };
 

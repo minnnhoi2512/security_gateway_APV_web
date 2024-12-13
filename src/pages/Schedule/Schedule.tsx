@@ -196,7 +196,7 @@ const Schedule = () => {
   };
   const handleAssignSubmit = async () => {
     if (assignData.assignToId === 0) {
-      notification.error({message : "Vui lòng chọn nhân viên."});
+      notification.error({ message: "Vui lòng chọn nhân viên." });
       return;
     }
 
@@ -382,49 +382,6 @@ const Schedule = () => {
           </div>
         </Button>
       </div>
-
-      {/* <div className="shadow-lg rounded-xl border-0">
-          <div className="flex gap-1">
-            <Button
-              onClick={() => handleTypeFilter(null)}
-              className={`rounded-t-[140px] min-w-[120px] border-b-0 ${
-                filters.scheduleTypeId.includes(null)
-                  ? "border-[#138d75] text-white bg-[#138d75]  "
-                  : "border-[#34495e] text-[#34495e]  "
-              }`}
-            >
-              <Clock4 size={17} />
-              Theo ngày
-            </Button>
-            <Button
-              onClick={() => handleTypeFilter(ScheduleType.Weekly)}
-              className={`rounded-t-[120px] min-w-[120px] border-b-0  ${
-                filters.scheduleTypeId.includes(ScheduleType.Weekly)
-                  ? "border-[#d35400] text-white bg-[#d35400]"
-                  : "border-[#34495e] text-[#34495e] hover:bg-yellow-50"
-              }`}
-            >
-              <CalendarDays size={17} />
-              Theo tuần
-            </Button>
-            <Button
-              // type={
-              //   filters.scheduleTypeId.includes(ScheduleType.Monthly)
-              //     ? "primary"
-              //     : "default"
-              // }
-              onClick={() => handleTypeFilter(ScheduleType.Monthly)}
-              className={`rounded-t-[120px] min-w-[120px] border-b-0  ${
-                filters.scheduleTypeId.includes(ScheduleType.Monthly)
-                  ? "border-[#7d3c98] text-white bg-[#7d3c98]"
-                  : "border-[#34495e] text-[#34495e] hover:bg-purple-50"
-              }`}
-            >
-              <CalendarRange size={17} />
-              Theo tháng
-            </Button>
-          </div>
-        </div> */}
 
       <TableSchedule
         schedules={filteredData || []}

@@ -238,183 +238,181 @@ const DepartManager = () => {
   };
 
   return (
-    <Layout className="min-h-screen bg-gray-50">
-      <Content className="p-8 bg-white rounded-lg shadow-md">
-        <div className="flex flex-col mb-2 mt-2">
-          <div className="flex gap-4 justify-between items-center">
-            <Input
-              placeholder="Tìm kiếm theo tên phòng ban"
-              prefix={<SearchOutlined className="text-gray-400" />}
-              value={searchText}
-              onChange={handleSearchChange}
-              className="max-w-xs"
-            />
-
-            <Button
-              // type="primary"
-              // icon={<PlusOutlined />}
-              className=" group relative px-5 py-3 bg-buttonColor hover:!bg-buttonColor hover:!border-buttonColor rounded-lg shadow-lg hover:!shadow-green-500/50 transition-all duration-300 transform hover:!scale-105"
-              onClick={showModal}
-            >
-              <div className="flex items-center gap-2 text-white">
-                <Plus className="w-6 h-6 group-hover:!rotate-180 transition-transform duration-500" />
-                <span className="font-medium text-lg">Tạo mới</span>
-              </div>
-            </Button>
-          </div>
+    <Content className="p-2 max-w-[1200px] mx-auto mt-10">
+      <div className="flex gap-4 mb-4">
+        <div className="flex flex-1 gap-2">
+          <Input
+            placeholder="Tìm kiếm theo tên phòng ban"
+            prefix={<SearchOutlined className="text-gray-400" />}
+            value={searchText}
+            onChange={handleSearchChange}
+            className="max-w-xs"
+          />
         </div>
-
-        <Divider />
-
-        {/* Create Department Modal */}
-        <Modal
-          title={<h2 className="text-lg font-semibold">Tạo mới phòng ban</h2>}
-          open={isModalVisible}
-          onOk={handleOk}
-          confirmLoading={isCreating}
-          onCancel={handleCancel}
-          okText="Tạo mới"
-          cancelText="Hủy"
-          className="rounded-lg"
+        <Button
+          // type="primary"
+          // icon={<PlusOutlined />}
+          className=" group relative px-5 py-3 bg-buttonColor hover:!bg-buttonColor hover:!border-buttonColor rounded-lg shadow-lg hover:!shadow-green-500/50 transition-all duration-300 transform hover:!scale-105"
+          onClick={showModal}
         >
-          <Form form={form} layout="vertical">
-            <Form.Item
-              label="Tên Phòng Ban"
-              name="departmentName"
-              rules={[
-                { required: true, message: "Vui lòng nhập tên phòng ban!" },
-              ]}
-            >
-              <Input placeholder="Nhập tên phòng ban" />
-            </Form.Item>
-            <Form.Item
-              label="Mô Tả"
-              name="description"
-              rules={[{ required: true, message: "Vui lòng nhập mô tả!" }]}
-            >
-              <Input placeholder="Nhập mô tả" />
-            </Form.Item>
-            <Form.Item
-              label="Cấp Độ"
-              name="acceptLevel"
-              rules={[{ required: true, message: "Vui lòng nhập cấp độ!" }]}
-            >
-              <Input type="number" placeholder="Nhập cấp độ" />
-            </Form.Item>
-          </Form>
-        </Modal>
+          <div className="flex items-center gap-2 text-white">
+            <Plus className="w-6 h-6 group-hover:!rotate-180 transition-transform duration-500" />
+            <span className="font-medium text-lg">Tạo mới</span>
+          </div>
+        </Button>
+      </div>
 
-        {/* Edit Department Modal */}
-        <Modal
-          title={<h2 className="text-lg font-semibold">Cập nhật phòng ban</h2>}
-          open={isEditModalVisible}
-          onOk={handleUpdate}
-          confirmLoading={isUpdating}
-          onCancel={handleCancel}
-          okText="Cập nhật"
-          cancelText="Hủy"
-          className="rounded-lg"
-        >
-          <Form form={form} layout="vertical">
-            <Form.Item
-              label="Tên Phòng Ban"
-              name="departmentName"
-              rules={[
-                { required: true, message: "Vui lòng nhập tên phòng ban!" },
-              ]}
-            >
-              <Input placeholder="Nhập tên phòng ban" />
-            </Form.Item>
-            <Form.Item
-              label="Mô Tả"
-              name="description"
-              rules={[{ required: true, message: "Vui lòng nhập mô tả!" }]}
-            >
-              <Input placeholder="Nhập mô tả" />
-            </Form.Item>
-            <Form.Item
-              label="Cấp Độ"
-              name="acceptLevel"
-              rules={[{ required: true, message: "Vui lòng nhập cấp độ!" }]}
-            >
-              <Input type="number" placeholder="Nhập cấp độ" />
-            </Form.Item>
-          </Form>
-        </Modal>
+      <Divider />
 
-        {/* User List Modal */}
-        <Modal
-          title={
-            <h2 className="text-lg font-semibold">Danh sách người dùng</h2>
-          }
-          open={isUserListModalVisible}
-          onCancel={() => setIsUserListModalVisible(false)}
-          footer={null}
-          width={800}
-          className="rounded-lg"
-        >
-          {userListError ? (
-            <p className="text-red-500">
-              Đã xảy ra lỗi khi tải danh sách người dùng!
-            </p>
-          ) : (
-            <Card className="shadow-lg rounded-xl border-0">
-              <Table
-                columns={[
-                  {
-                    title: "Tên đầy đủ",
-                    dataIndex: "fullName",
-                    key: "fullName",
-                  },
-                  { title: "Email", dataIndex: "email", key: "email" },
-                  {
-                    title: "Số điện thoại",
-                    dataIndex: "phoneNumber",
-                    key: "phoneNumber",
-                  },
-                  {
-                    title: "Vai trò",
-                    dataIndex: ["role", "roleName"],
-                    key: "roleName",
-                  },
-                  { title: "Trạng thái", dataIndex: "status", key: "status" },
-                ]}
-                dataSource={userListData}
-                loading={isUserListLoading}
-                pagination={{ pageSize: 5 }}
-                rowKey="userId"
-                bordered
-                className="w-full [&_thead_th]:!bg-[#34495e] [&_thead_th]:!text-white [&_thead_th]:!font-medium [&_thead_th]:!py-3 [&_thead_th]:!text-sm hover:[&_tbody_tr]:bg-blue-50/30 [&_table]:!rounded-none [&_table-container]:!rounded-none [&_thead>tr>th:first-child]:!rounded-tl-none [&_thead>tr>th:last-child]:!rounded-tr-none [&_thead_th]:!transition-none"
-              />
-            </Card>
-          )}
-        </Modal>
+      {/* Create Department Modal */}
+      <Modal
+        title={<h2 className="text-lg font-semibold">Tạo mới phòng ban</h2>}
+        open={isModalVisible}
+        onOk={handleOk}
+        confirmLoading={isCreating}
+        onCancel={handleCancel}
+        okText="Tạo mới"
+        cancelText="Hủy"
+        className="rounded-lg"
+      >
+        <Form form={form} layout="vertical">
+          <Form.Item
+            label="Tên Phòng Ban"
+            name="departmentName"
+            rules={[
+              { required: true, message: "Vui lòng nhập tên phòng ban!" },
+            ]}
+          >
+            <Input placeholder="Nhập tên phòng ban" />
+          </Form.Item>
+          <Form.Item
+            label="Mô Tả"
+            name="description"
+            rules={[{ required: true, message: "Vui lòng nhập mô tả!" }]}
+          >
+            <Input placeholder="Nhập mô tả" />
+          </Form.Item>
+          <Form.Item
+            label="Cấp Độ"
+            name="acceptLevel"
+            rules={[{ required: true, message: "Vui lòng nhập cấp độ!" }]}
+          >
+            <Input type="number" placeholder="Nhập cấp độ" />
+          </Form.Item>
+        </Form>
+      </Modal>
 
-        {error ? (
-          <p className="text-red-500 text-center">
-            Đã xảy ra lỗi khi tải dữ liệu!
+      {/* Edit Department Modal */}
+      <Modal
+        title={<h2 className="text-lg font-semibold">Cập nhật phòng ban</h2>}
+        open={isEditModalVisible}
+        onOk={handleUpdate}
+        confirmLoading={isUpdating}
+        onCancel={handleCancel}
+        okText="Cập nhật"
+        cancelText="Hủy"
+        className="rounded-lg"
+      >
+        <Form form={form} layout="vertical">
+          <Form.Item
+            label="Tên Phòng Ban"
+            name="departmentName"
+            rules={[
+              { required: true, message: "Vui lòng nhập tên phòng ban!" },
+            ]}
+          >
+            <Input placeholder="Nhập tên phòng ban" />
+          </Form.Item>
+          <Form.Item
+            label="Mô Tả"
+            name="description"
+            rules={[{ required: true, message: "Vui lòng nhập mô tả!" }]}
+          >
+            <Input placeholder="Nhập mô tả" />
+          </Form.Item>
+          <Form.Item
+            label="Cấp Độ"
+            name="acceptLevel"
+            rules={[{ required: true, message: "Vui lòng nhập cấp độ!" }]}
+          >
+            <Input type="number" placeholder="Nhập cấp độ" />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* User List Modal */}
+      <Modal
+        title={<h2 className="text-lg font-semibold">Danh sách người dùng</h2>}
+        open={isUserListModalVisible}
+        onCancel={() => setIsUserListModalVisible(false)}
+        footer={null}
+        width={800}
+        className="rounded-lg"
+      >
+        {userListError ? (
+          <p className="text-red-500">
+            Đã xảy ra lỗi khi tải danh sách người dùng!
           </p>
         ) : (
           <Card className="shadow-lg rounded-xl border-0">
             <Table
-              columns={columns}
-              showSorterTooltip={false}
-              dataSource={filteredData}
-              pagination={{
-                total: totalDepartments,
-                showSizeChanger: true,
-                pageSizeOptions: ["5", "10", "20"],
-                size: "small",
-              }}
-              loading={isLoading}
-              rowKey="departmentId"
-              bordered
+              columns={[
+                {
+                  title: "Tên đầy đủ",
+                  dataIndex: "fullName",
+                  key: "fullName",
+                },
+                { title: "Email", dataIndex: "email", key: "email" },
+                {
+                  title: "Số điện thoại",
+                  dataIndex: "phoneNumber",
+                  key: "phoneNumber",
+                },
+                {
+                  title: "Vai trò",
+                  dataIndex: ["role", "roleName"],
+                  key: "roleName",
+                },
+                { title: "Trạng thái", dataIndex: "status", key: "status" },
+              ]}
+              dataSource={userListData}
+              loading={isUserListLoading}
+              pagination={{ pageSize: 5 }}
+              rowKey="userId"
+              size="middle"
+              bordered={false}
               className="w-full [&_thead_th]:!bg-[#34495e] [&_thead_th]:!text-white [&_thead_th]:!font-medium [&_thead_th]:!py-3 [&_thead_th]:!text-sm hover:[&_tbody_tr]:bg-blue-50/30 [&_table]:!rounded-none [&_table-container]:!rounded-none [&_thead>tr>th:first-child]:!rounded-tl-none [&_thead>tr>th:last-child]:!rounded-tr-none [&_thead_th]:!transition-none"
             />
           </Card>
         )}
-      </Content>
-    </Layout>
+      </Modal>
+
+      {error ? (
+        <p className="text-red-500 text-center">
+          Đã xảy ra lỗi khi tải dữ liệu!
+        </p>
+      ) : (
+        <Card className="shadow-lg rounded-xl border-0">
+          <Table
+            columns={columns}
+            showSorterTooltip={false}
+            dataSource={filteredData}
+            pagination={{
+              total: totalDepartments,
+              className: "mt-4",
+              showSizeChanger: true,
+              pageSizeOptions: ["5", "10", "20"],
+              size: "small",
+            }}
+            loading={isLoading}
+            rowKey="departmentId"
+            size="middle"
+            bordered={false}
+            className={`w-full [&_.ant-table-thead_th]:!bg-[#34495e] [&_.ant-table-thead_th]:!text-white [&_.ant-table-thead_th]:!font-medium [&_.ant-table-thead_th]:!py-3 [&_.ant-table-thead_th]:!text-sm hover:[&_.ant-table-tbody_tr]:bg-blue-50/30 [&_.ant-table]:!rounded-none [&_.ant-table-container]:!rounded-none [&_.ant-table-thead>tr>th:first-child]:!rounded-tl-none [&_.ant-table-thead>tr>th:last-child]:!rounded-tr-none [&_.ant-table-thead_th]:!transition-none`}
+          />
+        </Card>
+      )}
+    </Content>
   );
 };
 
