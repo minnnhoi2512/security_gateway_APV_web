@@ -65,6 +65,8 @@ const Schedule = () => {
   const [filterScheduleTypeId, setFilterScheduleTypeId] = useState<
     number | null
   >(null);
+  const [form] = Form.useForm();
+
   const [staffData, setStaffData] = useState<any[]>([]);
   const userRole = localStorage.getItem("userRole");
   const userId = Number(localStorage.getItem("userId"));
@@ -194,7 +196,7 @@ const Schedule = () => {
   };
   const handleAssignSubmit = async () => {
     if (assignData.assignToId === 0) {
-      message.error("Vui lòng chọn nhân viên.");
+      notification.error({message : "Vui lòng chọn nhân viên."});
       return;
     }
 
@@ -207,9 +209,10 @@ const Schedule = () => {
         description: "",
         note: "",
         deadlineTime: "",
-        scheduleId: 0,
-        assignToId: 0,
+        scheduleId: null,
+        assignToId: null,
       });
+      form.resetFields();
       setIsModalVisible(false);
       scheduleUserRefetch();
     } catch (error) {
@@ -251,9 +254,10 @@ const Schedule = () => {
       description: "",
       note: "",
       deadlineTime: "",
-      scheduleId: 0,
-      assignToId: 0,
+      scheduleId: null,
+      assignToId: null,
     });
+    form.resetFields();
     setIsModalVisible(false);
   };
   if (userRole === "Staff") {
@@ -462,10 +466,11 @@ const Schedule = () => {
         }}
       >
         <Form
+          form={form}
           layout="vertical"
           className="space-y-4"
           onFinish={handleAssignSubmit}
-          initialValues={assignData}
+          // initialValues={assignData}
         >
           <Form.Item
             label="Tên nhiệm vụ"

@@ -39,23 +39,17 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = () => {
 
   // console.log("Noti nè cu: ", notificaitionData);
 
-  useEffect(() => {
-    setVisibleNotifications(7);
-  }, [notificaitionData]);
+  // useEffect(() => {
+  //   
+  // }, [notificaitionData]);
 
   useEffect(() => {
     if (notificaitionData?.length > 0 && takingNew) {
       toast("Bạn có thông báo mới");
       refetchNoti();
     }
-  }, [takingNew, notificaitionData, refetchNoti]);
+  }, []);
 
-  useEffect(() => {
-    if (notificaitionData?.length > 0 && takingNew) {
-      toast("Bạn có thông báo mới");
-      refetchNoti();
-    }
-  }, [takingNew, notificaitionData, refetchNoti]);
 
   // const handleViewMore = () => {
   //   setVisibleNotifications((prev) =>

@@ -216,7 +216,7 @@ const ScheduleUserDetailModal: React.FC<ScheduleUserModalDetailProps> = ({
               header={
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-lg">
-                    Thông tin lịch trình
+                    Thông tin nhiệm vụ
                   </span>
                   {status && (
                     <Tag
@@ -308,18 +308,6 @@ const ScheduleUserDetailModal: React.FC<ScheduleUserModalDetailProps> = ({
                   <span className="font-semi text-lg">
                     Thông tin chuyến thăm
                   </span>
-                  <div className="flex items-center">
-                    <Tag
-                      color={
-                        visitStatusMap[data.visitStatus as VisitStatus]
-                          ?.colorVisitStatus || "gray"
-                      }
-                      className="ml-1"
-                    >
-                      {visitStatusMap[data.visitStatus as VisitStatus]
-                        ?.textVisitStatus || "Trạng thái không xác định"}
-                    </Tag>
-                  </div>
                 </div>
               }
               key="2"
