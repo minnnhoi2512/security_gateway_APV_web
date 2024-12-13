@@ -39,6 +39,7 @@ import {
   useGetTaskQuery,
 } from "../services/dashboard.service";
 import dayjs from "dayjs";
+import { useNavigate } from "react-router";
 const { Option } = Select;
 
 interface UserData {
@@ -78,7 +79,7 @@ const Dashboard: React.FC = () => {
   const [dataSession, setDataSession] =
     useState<VisitorSessionMonthResponse | null>(null);
   const [isScheduleView, setIsScheduleView] = useState(true);
-
+  const navigate = useNavigate();
   const showScheduleView = () => {
     setIsScheduleView(true);
   };
@@ -270,16 +271,19 @@ const Dashboard: React.FC = () => {
     ];
   };
   const getSessionStatusData = () => {
-    if (!visitorSessionStatusTodayData) return [];
-    const translations: { [key: string]: string } = {
-      CheckIn: "Đã vào",
-      CheckOut: "Đã ra",
-      // UnCheckOut: "Đã ra",
-    };
-    return visitorSessionStatusTodayData.map((item) => ({
-      name: translations[item.status] || item.status,
-      value: item.count || 0,
-    }));
+    if (visitorSessionStatusTodayData.every(item => item.count === 0)) {
+      return [];
+    } else {
+      const translations: { [key: string]: string } = {
+        CheckIn: "Đã vào",
+        CheckOut: "Đã ra",
+        // UnCheckOut: "Đã ra",
+      };
+      return visitorSessionStatusTodayData.map((item) => ({
+        name: translations[item.status] || item.status,
+        value: item.count || 0,
+      }));
+    }
   };
   const years = Array.from(
     { length: 5 },
@@ -573,7 +577,7 @@ const Dashboard: React.FC = () => {
               <List
                 dataSource={recentSession}
                 renderItem={(session: RecentSession) => (
-                  <List.Item>
+                  <List.Item onClick={()=> navigate(`/dashboard/sessionDetail/${session.visitorSessionId}`)}>
                     <List.Item.Meta
                       title={`Phiên #${session?.visitorSessionId}`}
                       description={

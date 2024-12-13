@@ -373,6 +373,15 @@ const ContentRouter = () => {
       />
       <Route
         index
+        path="/dashboard/sessionDetail/:id"
+        element={
+          <LayoutPage>
+            <HistoryDetail />
+          </LayoutPage>
+        }
+      />
+      <Route
+        index
         path="/customerVisit/detailVisit/:id/listSession"
         element={
           <LayoutPage>

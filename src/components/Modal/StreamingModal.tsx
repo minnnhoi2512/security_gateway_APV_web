@@ -16,7 +16,7 @@ const StreamingModal: React.FC<StreamingModalProps> = ({
 }) => {
   return (
     <Modal visible={isVisible} onCancel={onClose} footer={null} width={800}>
-      <div className="grid grid-cols-2 gap-4">
+      {/* <div className="grid grid-cols-2 gap-4">
         {selectedGate?.cameras.length > 0 ? (
           selectedGate.cameras.slice(0, 4).map((camera, index) => (
             <div key={index} className="mb-4">
@@ -35,7 +35,7 @@ const StreamingModal: React.FC<StreamingModalProps> = ({
             Cổng này không có camera
           </div>
         )}
-      </div>
+      </div> */}
     </Modal>
   );
 };

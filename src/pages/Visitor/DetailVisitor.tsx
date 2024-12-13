@@ -35,9 +35,11 @@ const DetailVisitor: React.FC<DetailVisitorProps> = ({
     credentialsCard: "",
     visitorCredentialFrontImageFromRequest: "",
     visitorCredentialBackImageFromRequest: "",
+    visitorCredentialBlurImageFromRequest : "",
   });
   const [frontImage, setFrontImage] = useState<string | null>(null);
   const [backImage, setBackImage] = useState<string | null>(null);
+  const [blurImage, setBlurImage] = useState<string | null>(null);
   const [isFlipped, setIsFlipped] = useState(false);
   const [isDetecting, setIsDetecting] = useState(false);
 
@@ -50,7 +52,9 @@ const DetailVisitor: React.FC<DetailVisitorProps> = ({
       const backImage = visitorData.visitorImage.find(
         (image) => image.imageType === "CitizenIdentificationCard_BACK"
       )?.imageURL;
-
+      const blurImage = visitorData.visitorImage.find(
+        (image) => image.imageType === "CitizenIdentificationCard_BLUR"
+      )?.imageURL;
       setFormData({
         visitorName: visitorData.visitorName,
         companyName: visitorData.companyName,
@@ -60,7 +64,10 @@ const DetailVisitor: React.FC<DetailVisitorProps> = ({
           visitorData.credentialCardType.credentialCardTypeId,
         visitorCredentialFrontImageFromRequest: frontImage,
         visitorCredentialBackImageFromRequest: backImage,
+        visitorCredentialBlurImageFromRequest: blurImage,
       });
+      // console.log(blurImage)
+      setBlurImage(`data:image/jpeg;base64,${blurImage}` || null);
       setFrontImage(`data:image/jpeg;base64,${frontImage}` || null);
       setBackImage(`data:image/jpeg;base64,${backImage}` || null);
     }
@@ -107,7 +114,7 @@ const DetailVisitor: React.FC<DetailVisitorProps> = ({
     }
   };
   const trimmedBase64 = (base64: string) => {
-    console.log(base64.replace(/^data:image\/jpeg;base64,/, ""))
+    // console.log(base64.replace(/^data:image\/jpeg;base64,/, ""))
     return base64.replace(/^data:image\/jpeg;base64,/, "");
   };
   const handleUpdate = async () => {
@@ -115,8 +122,9 @@ const DetailVisitor: React.FC<DetailVisitorProps> = ({
       const updatedVisitor = {
         ...formData,
         id,
+        visitorCredentialBlurImageFromRequest: trimmedBase64(blurImage),
       };
-
+      console.log(updatedVisitor)
       await updateVisitor(updatedVisitor).unwrap();
       refetch();
       notification.success({ message: "Cập nhật thành công!" });

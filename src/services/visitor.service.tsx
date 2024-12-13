@@ -91,10 +91,12 @@ export const visitorAPI = createApi({
         credentialCardTypeId: number;
         visitorCredentialFrontImageFromRequest: string;
         visitorCredentialBackImageFromRequest: string;
+        visitorCredentialBlurImageFromRequest: string;
       }
     >({
       query: ({ id, ...updatedVisitor }) => {
         const formData = new FormData();
+        // console.log(updatedVisitor.visitorCredentialBlurImageFromRequest.toString())
         formData.append("visitorName", updatedVisitor.visitorName);
         formData.append("companyName", updatedVisitor.companyName);
         formData.append("phoneNumber", updatedVisitor.phoneNumber);
@@ -106,6 +108,10 @@ export const visitorAPI = createApi({
         formData.append(
           "visitorCredentialFrontImageFromRequest",
           updatedVisitor.visitorCredentialFrontImageFromRequest.toString()
+        );
+        formData.append(
+          "visitorCredentialBlurImageFromRequest",
+          updatedVisitor.visitorCredentialBlurImageFromRequest.toString()
         );
         formData.append(
           "visitorCredentialBackImageFromRequest",
