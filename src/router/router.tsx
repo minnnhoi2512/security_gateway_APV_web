@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import LayoutPage from "../pages/Layout";
 import Dashboard from "../pages/Dashboard";
 import Login from "../pages/Login";
@@ -12,8 +12,6 @@ import DepartmentManager from "../pages/User/DepartmentManager";
 import Security from "../pages/User/Security";
 import ScheduleStaff from "../pages/Schedule/ScheduleStaff";
 import ScheduleAssignedManager from "../pages/Schedule/ScheduleAssigned";
-import DetailScheduleStaff from "../pages/Schedule/DetailScheduleStaff";
-import DetailUser from "../pages/User/DetailUser";
 import CreateUser from "../form/CreateUser";
 import CustomerVisit from "../pages/Visit/CustomerVisit";
 import VisitorManager from "../pages/Visitor/VisitorManager";
@@ -31,7 +29,6 @@ import History from "../pages/History/History";
 import Chat from "../pages/Utility/Chat/Chat";
 import Profile from "../pages/User/Profile";
 import CustomerVisitStaff from "../pages/Visit/CustomerVisitStaff";
-import ChatDetail from "../pages/Utility/Chat/ChatDetail";
 import NotFoundState from "../components/State/NotFoundState";
 import User from "../pages/User/User";
 import CreateGate from "../form/CreateGate";
@@ -40,21 +37,28 @@ import { Simulation } from "../pages/Simulation";
 import HistoryDetail from "../pages/History/HistoryDetail";
 import ListHistorySessonVisit from "../pages/History/ListHistorySessionVisit";
 import ListHistorySessionVisitor from "../pages/History/ListHistorySessionVisitor";
+import { getToken } from "../utils/jwtToken";
+import ForgetPassword from "../pages/ForgetPassword";
 
 const ContentRouter = () => {
   const userRole = localStorage.getItem("userRole"); // Get user role from local storage
   const userId = Number(localStorage.getItem("userId"));
   const connection = useRef<signalR.HubConnection | null>(null);
+  const jwt = getToken();
+  const navigate = useNavigate();
+
   const dispatch = useDispatch();
   useEffect(() => {
-    if (userRole) {
+    if (!jwt) {
+      navigate("/");
+    } else if (userRole) {
       const user: UserConnectionHubType = {
         userId: userId,
         role: userRole,
       };
       SignalR.SetSignalR(user, connection, dispatch);
     }
-  }, []);
+  }, [jwt, userRole, userId, dispatch, navigate]);
   return (
     <Routes>
       <Route
@@ -66,6 +70,7 @@ const ContentRouter = () => {
           </LayoutPage>
         }
       />
+      <Route index path="/forgetPassword" element={<ForgetPassword />} />
       <Route
         index
         path="/manager"
@@ -254,7 +259,7 @@ const ContentRouter = () => {
           </LayoutPage>
         }
       />
-       <Route
+      <Route
         index
         path="customerVisitStaff/detailVisit/:id/listVisitorSession/:visitorId"
         element={

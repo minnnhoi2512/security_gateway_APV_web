@@ -26,6 +26,7 @@ const DetailVisitor: React.FC<DetailVisitorProps> = ({
     isLoading,
     refetch,
   } = useGetVisitorByIdQuery({ id });
+  // console.log(visitorData)
   const [updateVisitor, { isLoading: isUpdating }] = useUpdateVisitorMutation();
   const [formData, setFormData] = useState({
     visitorName: "",
@@ -33,6 +34,7 @@ const DetailVisitor: React.FC<DetailVisitorProps> = ({
     phoneNumber: "",
     credentialCardTypeId: 1,
     credentialsCard: "",
+    // email : "",
     visitorCredentialFrontImageFromRequest: "",
     visitorCredentialBackImageFromRequest: "",
     visitorCredentialBlurImageFromRequest : "",

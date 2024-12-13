@@ -7,6 +7,8 @@ import {
 } from "../../services/user.service";
 import { Camera, CheckIcon, MapPinIcon, PencilIcon, XIcon } from "lucide-react";
 import defaultImg from "../../assets/default-user-image.png";
+import { roleTextMap, UserRoleText } from "../../types/Enum/UserRoleText";
+import upload from "../../api/upload";
 
 const Profile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -18,10 +20,12 @@ const Profile: React.FC = () => {
     error,
     refetch,
   } = useGetDetailUserQuery(userId);
+  const [roleText, setRoleText] = useState<string>("");
   const [updateUser] = useUpdateUserMutation();
   const [isEditing, setIsEditing] = useState(false);
   const [form] = Form.useForm();
-
+  const [image, setImage] = useState(user?.image || "");
+  const [file, setFile] = useState<File>(null);
   useEffect(() => {
     if (user) {
       form.setFieldsValue({
@@ -32,53 +36,76 @@ const Profile: React.FC = () => {
         departmentName: user.department?.departmentName || "N/A",
         image: user.image || defaultImg,
       });
+      setImage(user.image);
+      setRoleText(
+        user?.role?.roleName
+          ? roleTextMap[user.role.roleName as UserRoleText]?.textRole
+          : "N/A"
+      );
     }
   }, [user, form]);
 
-  const onFinish = async (values: any) => {
-    try {
-      const payload: any = {
-        ...values,
-        roleID: user?.role?.roleId || 0,
-        status: user?.status || "Inactive",
+  //   try {
+  //     const payload: any = {
+  //       ...values,
+  //       roleID: user?.role?.roleId || 0,
+  //       status: user?.status || "Inactive",
+  //     };
+
+  //     // Nếu user có role Admin hoặc Manager, không gửi departmentId
+  //     if (
+  //       user?.role?.roleName !== "Admin" &&
+  //       user?.role?.roleName !== "Manager"
+  //     ) {
+  //       payload.departmentId = user?.department?.departmentId || 0;
+  //     }
+
+  //     await updateUser({ User: payload, idUser: userId }).unwrap();
+  //     notification.success({ message: "Cập nhật thông tin thành công!" });
+
+  //     refetch(); // Gọi lại API để lấy dữ liệu mới nhất
+  //   } catch (e: any) {
+  //     console.error("Lỗi API:", e);
+  //     if (e.data?.errors) {
+  //       Object.entries(e.data.errors).forEach(([key, value]) => {
+  //         console.error(`Lỗi ở ${key}: ${value}`);
+  //       });
+  //     }
+  //     notification.error({
+  //       message: `Cập nhật thất bại: ${e.data?.message || "Có lỗi xảy ra"}`,
+  //     });
+  //   }
+  // };
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImage(reader.result as string);
       };
-
-      // Nếu user có role Admin hoặc Manager, không gửi departmentId
-      if (
-        user?.role?.roleName !== "Admin" &&
-        user?.role?.roleName !== "Manager"
-      ) {
-        payload.departmentId = user?.department?.departmentId || 0;
-      }
-
-      await updateUser({ User: payload, idUser: userId }).unwrap();
-      notification.success({ message: "Cập nhật thông tin thành công!" });
-
-      refetch(); // Gọi lại API để lấy dữ liệu mới nhất
-    } catch (e: any) {
-      console.error("Lỗi API:", e);
-      if (e.data?.errors) {
-        Object.entries(e.data.errors).forEach(([key, value]) => {
-          console.error(`Lỗi ở ${key}: ${value}`);
-        });
-      }
-      notification.error({
-        message: `Cập nhật thất bại: ${e.data?.message || "Có lỗi xảy ra"}`,
-      });
+      reader.readAsDataURL(file);
     }
   };
-
   const handleSubmit = async (values: any) => {
     try {
+      let downloadURL = null;
+      if (file != null) {
+        downloadURL = await upload(file);
+      }
+
+      console.log(downloadURL);
       const payload = {
         ...values,
-        image: user?.image,
+        image: downloadURL || user?.image,
         roleID: user?.role?.roleId || 0,
         status: user?.status || "Inactive",
       };
       payload.departmentId = user?.department?.departmentId || 0;
       await updateUser({ User: payload, idUser: userId }).unwrap();
       setIsEditing(false);
+      setFile(null);
+      setImage(downloadURL);
       notification.success({ message: "Cập nhật thông tin thành công!" });
       refetch();
     } catch (e: any) {
@@ -92,82 +119,23 @@ const Profile: React.FC = () => {
   if (error) return <p>Không tìm thấy thông tin người dùng.</p>;
 
   return (
-    // <div className="p-8 max-w-3xl mx-auto bg-white shadow-lg rounded-lg">
-    //   <div className="flex items-center space-x-4 mb-6">
-    //     <Avatar size={64} src={user?.image} />
-    //     <div>
-    //       <h2 className="text-xl font-semibold">{user?.fullName}</h2>
-    //       <p className="text-gray-500">{user?.role?.roleName}</p>
-    //     </div>
-    //   </div>
-
-    //   <Form form={form} layout="vertical" onFinish={onFinish} className="space-y-4">
-    //     <Form.Item label="Tên đăng nhập" name="userName">
-    //       <Input readOnly className="bg-gray-100" />
-    //     </Form.Item>
-
-    //     <Form.Item
-    //       label="Họ và tên"
-    //       name="fullName"
-    //       rules={[{ required: true, message: "Vui lòng nhập họ và tên" }]}
-    //     >
-    //       <Input placeholder="Nhập họ và tên" />
-    //     </Form.Item>
-
-    //     <Form.Item
-    //       label="Email"
-    //       name="email"
-    //       rules={[
-    //         { required: true, message: "Vui lòng nhập email" },
-    //         { type: "email", message: "Email không hợp lệ" },
-    //       ]}
-    //     >
-    //       <Input placeholder="Nhập email" />
-    //     </Form.Item>
-
-    //     <Form.Item
-    //       label="Số điện thoại"
-    //       name="phoneNumber"
-    //       rules={[
-    //         { required: true, message: "Vui lòng nhập số điện thoại" },
-    //         { pattern: /^[0-9]+$/, message: "Số điện thoại không hợp lệ" },
-    //       ]}
-    //     >
-    //       <Input placeholder="Nhập số điện thoại" />
-    //     </Form.Item>
-
-    //     <Form.Item label="Ảnh đại diện" name="image" hidden>
-    //       <Input />
-    //     </Form.Item>
-
-    //     {/* Chỉ hiển thị trường phòng ban nếu không phải Admin hoặc Manager */}
-    //     {user?.role?.roleName !== "Admin" && user?.role?.roleName !== "Manager" && (
-    //       <Form.Item label="Phòng ban" name="departmentName">
-    //         <Input readOnly className="bg-gray-100" />
-    //       </Form.Item>
-    //     )}
-
-    //     <div className="flex items-center space-x-2">
-    //       <span>Trạng thái:</span>
-    //       {user?.status === "Active" ? (
-    //         <Tag color="green">Hoạt động</Tag>
-    //       ) : (
-    //         <Tag color="red">Không hoạt động</Tag>
-    //       )}
-    //     </div>
-
-    //     <Form.Item>
-    //       <Button type="primary" htmlType="submit" className="w-full">
-    //         Cập nhật thông tin
-    //       </Button>
-    //     </Form.Item>
-    //   </Form>
-    // </div>
     <div className="bg-gradient-to-br from-blue-50 to-blue-100 min-h-screen flex items-center justify-center p-1">
       <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden">
         <div className="relative h-48 bg-backgroundPage">
           <button
-            onClick={() => setIsEditing(!isEditing)}
+            onClick={() => {
+              setImage(user?.image || "");
+              setFile(null);
+              form.setFieldsValue({
+                userName: user.userName,
+                fullName: user.fullName,
+                email: user.email,
+                phoneNumber: user.phoneNumber,
+                departmentName: user.department?.departmentName || "N/A",
+                image: user.image || defaultImg,
+              });
+              setIsEditing(!isEditing);
+            }}
             className={`absolute top-3 right-4 rounded-full p-3 transition-all duration-300 hover:scale-110 shadow-lg
               ${
                 isEditing
@@ -186,13 +154,19 @@ const Profile: React.FC = () => {
             <div className="relative group mb-4">
               <div className="w-40 h-40 rounded-full border-4 border-white shadow-xl overflow-hidden">
                 <img
-                  src={user?.image || "/api/placeholder/150/150"}
+                  src={image || user?.image}
                   alt="Profile"
                   className="w-full h-full object-cover"
                 />
                 {isEditing && (
                   <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
                     <Camera className="text-white w-8 h-8" />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="absolute inset-0 opacity-0 cursor-pointer"
+                      onChange={(e) => handleImageChange(e)}
+                    />
                   </div>
                 )}
               </div>
@@ -312,7 +286,7 @@ const Profile: React.FC = () => {
                         Vai trò
                       </div>
                       <Tag color="blue" className="px-4 py-1 rounded-full">
-                        {user?.role?.roleName || "N/A"}
+                        {roleText}
                       </Tag>
                     </div>
                   </div>

@@ -84,9 +84,16 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
       const blob = new Blob([arrayBuffer], { type: 'image/jpeg' });
       return new File([blob], fileName, { type: 'image/jpeg' });
     } catch (error) {
-      console.error('Error converting base64 to file:', error);
+      // console.error('Error converting base64 to file:', error);
       throw new Error('Failed to convert base64 to file');
     }
+  };
+  const capitalizeFirstLetter = (str: string) => {
+    return str
+      .toLowerCase()
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
   };
   const callDetectAPI = async (formData: any) => {
     setIsDetecting(true);
@@ -112,26 +119,49 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
       }
 
       const { id, name, birth ,imgblur} = response.data;
-      console.log(birth)
+
 
       if (!birth.toString().includes("/")) {
+        setFormData((prev) => ({
+          ...prev,
+          visitorName: "",
+          companyName: "",
+          phoneNumber: "",
+          email : "",
+          credentialsCard: "",
+          imgBlur : null,
+          visitorCredentialFrontImageFromRequest: null,
+          visitorCredentialBackImageFromRequest: null ,
+        }));
         return notification.warning({
-          message: `Hệ thống không nhận diện được thẻ`,
-          description: "Vui lòng nhập thông tin.",
+          message: `Hệ thống không nhận diện được ảnh`,
+          description: "Vui lòng chọn đúng loại giấy tờ.",
         });
       }
+      const formattedName = capitalizeFirstLetter(name);
       const convertFile = base64ToFile(imgblur)
-      console.log(convertFile);
+      // console.log(convertFile);
       setFormData((prevData) => ({
         ...prevData,
-        visitorName: name,
+        visitorName: formattedName,
         credentialsCard: id,
         imgBlur : convertFile,
       }));
     } catch (error) {
+      setFormData((prev) => ({
+        ...prev,
+        visitorName: "",
+        companyName: "",
+        phoneNumber: "",
+        email : "",
+        credentialsCard: "",
+        imgBlur : null,
+        visitorCredentialFrontImageFromRequest: null ,
+        visitorCredentialBackImageFromRequest: null ,
+      }));
       notification.warning({
-        message: `Hệ thống không nhận diện được thẻ`,
-        description: "Vui lòng nhập thông tin.",
+        message: `Hệ thống không nhận diện được ảnh`,
+        description: "Vui lòng chọn đúng loại giấy tờ.",
       });
     } finally {
       setIsDetecting(false);

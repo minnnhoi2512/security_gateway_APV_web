@@ -32,7 +32,12 @@ function Login() {
       }
     }
   }, [navigate]);
-
+  const handleForgotPasswordClick = (
+    e: React.MouseEvent<HTMLAnchorElement>
+  ) => {
+    e.preventDefault();
+    navigate("/forgetPassword");
+  };
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     try {
@@ -81,13 +86,13 @@ function Login() {
               alt="Security Gate Logo"
               className="w-12 h-12 object-contain"
             />
-            <h1 className="text-2xl font-bold text-white">APACHE VIET NAM SECURITY GATE</h1>
+            <h1 className="text-2xl font-bold text-white">
+              APACHE VIET NAM SECURITY GATE
+            </h1>
           </div>
 
           {/* <h2 className="text-2xl font-bold text-white mb-1">Security Gate</h2> */}
-          <p className="text-gray-400 mb-6">
-            Hệ thống kiểm soát ra vào
-          </p>
+          <p className="text-gray-400 mb-6">Hệ thống kiểm soát ra vào</p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -116,7 +121,11 @@ function Login() {
               />
             </div>
 
-            <a href="#" className="text-sm text-blue-400 hover:underline block">
+            <a
+              href="/forgetPassword"
+              className="text-sm text-blue-400 hover:underline block"
+              // onClick={handleForgotPasswordClick}
+            >
               Quên mật khẩu?
             </a>
 

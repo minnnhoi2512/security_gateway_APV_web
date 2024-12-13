@@ -1,7 +1,7 @@
 import { Button, Card, Input, notification } from "antd";
 import { useState } from "react";
 import axios from "axios";
-
+import baseAPI from "../api/baseAPI";
 export const Simulation = () => {
   const [visitorNumber, setVisitorNumber] = useState<string>("0");
   const [scheduleNumber, setScheduleNumber] = useState<string>("0");
@@ -13,7 +13,7 @@ export const Simulation = () => {
   const handleSimulateVisit = async () => {
     try {
       await axios.get(
-        `https://security-gateway-api.tools.kozow.com/api/Mock/Coflow1_1_CreateVisit`,
+        `${baseAPI}/api/Mock/Coflow1_1_CreateVisit`,
         {
           params: {
             requestOfStaff: 5,
@@ -33,7 +33,7 @@ export const Simulation = () => {
   const handleSimulateCheckIn = async () => {
     try {
       await axios.get(
-        `https://security-gateway-api.tools.kozow.com/api/Mock/Coflow3_1_Check_in`,
+        `${baseAPI}/api/Mock/Coflow3_1_Check_in`,
         {
           params: {
             numberOfCheckIn: parseInt(checkinNumber) || 0,
@@ -51,7 +51,7 @@ export const Simulation = () => {
   const handleSimulateUpdateTask = async () => {
     try {
       await axios.get(
-        `https://security-gateway-api.tools.kozow.com/api/Mock/Coflow2_4_AcceptAndRejectTask`,
+        `${baseAPI}/api/Mock/Coflow2_4_AcceptAndRejectTask`,
         {
           params: {
             numberOfReject: parseInt(rejectTaskNumber) || 0,
@@ -72,7 +72,7 @@ export const Simulation = () => {
   const handleSimulateVisitor = async () => {
     try {
       await axios.get(
-        `https://security-gateway-api.tools.kozow.com/api/Mock/Coflow1_1_MockVisitor`,
+        `${baseAPI}/api/Mock/Coflow1_1_MockVisitor`,
         {
           params: {
             numberOfVisitor: parseInt(visitorNumber) || 0,
@@ -90,7 +90,7 @@ export const Simulation = () => {
   const handleSimulateSchedule = async () => {
     try {
       await axios.get(
-        `https://security-gateway-api.tools.kozow.com/api/Mock/Coflow2_1_CreateSchedule`,
+        `${baseAPI}/api/Mock/Coflow2_1_CreateSchedule`,
         {
           params: {
             numberRequestOfSchedule: parseInt(scheduleNumber) || 0,
@@ -108,7 +108,7 @@ export const Simulation = () => {
   const handleSimulateRejectFromSecurity = async () => {
     try {
       await axios.get(
-        `https://security-gateway-api.tools.kozow.com/api/Mock/Coflow1_2_RejectVisitOfSecurity`,
+        `${baseAPI}/api/Mock/Coflow1_2_RejectVisitOfSecurity`,
         {}
       );
       notification.success({
