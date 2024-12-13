@@ -11,6 +11,7 @@ export default {
         backgroundPage: '#34495e',  
         mainColor: "#1b347b",
         buttonColor: "#2ecc71",
+        buttonCancel: "#f5b041",
       },
       keyframes: {
         cardPulse: {

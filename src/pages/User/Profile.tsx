@@ -5,7 +5,17 @@ import {
   useGetDetailUserQuery,
   useUpdateUserMutation,
 } from "../../services/user.service";
-import { Camera, CheckIcon, MapPinIcon, PencilIcon, XIcon } from "lucide-react";
+import {
+  Building,
+  Camera,
+  CheckIcon,
+  Mail,
+  MapPinIcon,
+  PencilIcon,
+  Phone,
+  User,
+  XIcon,
+} from "lucide-react";
 import defaultImg from "../../assets/default-user-image.png";
 import { roleTextMap, UserRoleText } from "../../types/Enum/UserRoleText";
 import upload from "../../api/upload";
@@ -115,8 +125,18 @@ const Profile: React.FC = () => {
     }
   };
 
-  if (isLoading) return <p>Đang tải dữ liệu...</p>;
-  if (error) return <p>Không tìm thấy thông tin người dùng.</p>;
+  if (isLoading)
+    return (
+      <div className="flex items-center justify-center h-screen">
+        Đang tải...
+      </div>
+    );
+  if (error)
+    return (
+      <div className="flex items-center justify-center h-screen">
+        Không tìm thấy thông tin người dùng.
+      </div>
+    );
 
   return (
     <div className="bg-gradient-to-br from-blue-50 to-blue-100 min-h-screen flex items-center justify-center p-1">
@@ -143,16 +163,20 @@ const Profile: React.FC = () => {
                   : "bg-white text-blue-600 hover:bg-gray-100"
               }`}
           >
-            {isEditing ? <XIcon size={24} /> : <PencilIcon size={24} />}
+            {isEditing ? (
+              <XIcon size={20} className="text-white" />
+            ) : (
+              <PencilIcon size={20} className="text-white" />
+            )}
           </button>
         </div>
 
         {/* Profile Content */}
-        <div className="px-4 pb-4 -mt-20 mb-10 ">
-          <div className="flex flex-col items-start">
-            {/* Profile Image */}
-            <div className="relative group mb-4">
-              <div className="w-40 h-40 rounded-full border-4 border-white shadow-xl overflow-hidden">
+        <div className="px-6 pb-6 -mt-16">
+          {/* Avatar Section */}
+          <div className="flex flex-col items-center mb-6">
+            <div className="relative group">
+              <div className="w-32 h-32 rounded-full border-4 border-white shadow-md overflow-hidden bg-white">
                 <img
                   src={image || user?.image}
                   alt="Profile"
@@ -171,141 +195,113 @@ const Profile: React.FC = () => {
                 )}
               </div>
             </div>
+            <h1 className="mt-4 text-2xl font-bold text-gray-800">
+              {user?.fullName}
+            </h1>
+            <div className="flex items-center gap-2 mt-1 text-gray-600">
+              <MapPinIcon size={16} />
+              <span className="text-sm">
+                {user?.department?.departmentName || "N/A"}
+              </span>
+            </div>
 
-            {/* Profile Header */}
-            <div className="mb-6">
-              <h1 className="text-3xl font-bold text-gray-800">
-                {user?.fullName}
-              </h1>
-              <div className="flex items-center text-gray-600 mt-2">
-                <MapPinIcon size={18} className="mr-2" />
-                <span className="text-sm">
-                  {user?.department?.departmentName || "N/A"}
-                </span>
+            {/* Status and Role Tags */}
+            <div className="flex gap-2 mt-3">
+              <Tag
+                color={user?.status === "Active" ? "success" : "error"}
+                className="rounded-full px-3"
+              >
+                {user?.status === "Active" ? "Hoạt động" : "Không hoạt động"}
+              </Tag>
+              <Tag color="blue" className="rounded-full px-3">
+                {roleText}
+              </Tag>
+            </div>
+          </div>
+
+          {/* Form Section */}
+          <Form
+            form={form}
+            layout="vertical"
+            onFinish={handleSubmit}
+            className="max-w-xl mx-auto"
+          >
+            <div className="space-y-4">
+              <Form.Item name="userName" label="Tên đăng nhập">
+                <Input
+                  prefix={<User size={16} className="text-gray-400 mr-2" />}
+                  readOnly
+                  className="bg-gray-50 rounded-lg"
+                />
+              </Form.Item>
+            </div>
+            <Form.Item
+              name="fullName"
+              label="Họ và tên"
+              rules={[{ required: true, message: "Vui lòng nhập họ và tên" }]}
+            >
+              <Input
+                prefix={<Building size={16} className="text-gray-400 mr-2" />}
+                readOnly={!isEditing}
+                className={`rounded-lg ${!isEditing ? "bg-gray-50" : ""}`}
+              />
+            </Form.Item>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Form.Item
+                name="email"
+                label="Email"
+                rules={[
+                  { required: true, message: "Vui lòng nhập email" },
+                  { type: "email", message: "Email không hợp lệ" },
+                ]}
+              >
+                <Input
+                  prefix={<Mail size={16} className="text-gray-400 mr-2" />}
+                  readOnly={!isEditing}
+                  className={`rounded-lg ${!isEditing ? "bg-gray-50" : ""}`}
+                />
+              </Form.Item>
+
+              {/* Right Column */}
+              <div>
+                <Form.Item
+                  label="Số điện thoại"
+                  name="phoneNumber"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Vui lòng nhập số điện thoại",
+                    },
+                    {
+                      pattern: /^[0-9]+$/,
+                      message: "Số điện thoại không hợp lệ",
+                    },
+                  ]}
+                  className="mb-4"
+                >
+                  <Input
+                    readOnly={!isEditing}
+                    className={`rounded-lg ${!isEditing ? "bg-gray-100" : ""}`}
+                  />
+                </Form.Item>
+
+               
               </div>
             </div>
 
-            {/* Profile Form */}
-            <Form
-              form={form}
-              layout="vertical"
-              onFinish={handleSubmit}
-              className="w-full"
-              initialValues={user}
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Left Column */}
-                <div>
-                  <Form.Item
-                    label="Tên đăng nhập"
-                    name="userName"
-                    className="mb-4"
-                  >
-                    <Input
-                      readOnly
-                      className="bg-gray-100 border-transparent rounded-lg"
-                    />
-                  </Form.Item>
-
-                  <Form.Item
-                    label="Họ và tên"
-                    name="fullName"
-                    rules={[
-                      { required: true, message: "Vui lòng nhập họ và tên" },
-                    ]}
-                    className="mb-4"
-                  >
-                    <Input
-                      readOnly={!isEditing}
-                      className={`rounded-lg ${
-                        !isEditing ? "bg-gray-100" : ""
-                      }`}
-                    />
-                  </Form.Item>
-
-                  <Form.Item
-                    label="Email"
-                    name="email"
-                    rules={[
-                      { required: true, message: "Vui lòng nhập email" },
-                      { type: "email", message: "Email không hợp lệ" },
-                    ]}
-                    className="mb-4"
-                  >
-                    <Input
-                      readOnly={!isEditing}
-                      className={`rounded-lg ${
-                        !isEditing ? "bg-gray-100" : ""
-                      }`}
-                    />
-                  </Form.Item>
-                </div>
-
-                {/* Right Column */}
-                <div>
-                  <Form.Item
-                    label="Số điện thoại"
-                    name="phoneNumber"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Vui lòng nhập số điện thoại",
-                      },
-                      {
-                        pattern: /^[0-9]+$/,
-                        message: "Số điện thoại không hợp lệ",
-                      },
-                    ]}
-                    className="mb-4"
-                  >
-                    <Input
-                      readOnly={!isEditing}
-                      className={`rounded-lg ${
-                        !isEditing ? "bg-gray-100" : ""
-                      }`}
-                    />
-                  </Form.Item>
-
-                  <div className="space-y-4">
-                    <div>
-                      <div className="text-sm font-medium text-gray-700 mb-2">
-                        Trạng thái
-                      </div>
-                      <Tag
-                        color={user?.status === "Active" ? "green" : "red"}
-                        className="px-4 py-1 rounded-full"
-                      >
-                        {user?.status === "Active"
-                          ? "Hoạt động"
-                          : "Không hoạt động"}
-                      </Tag>
-                    </div>
-
-                    <div>
-                      <div className="text-sm font-medium text-gray-700 mb-2">
-                        Vai trò
-                      </div>
-                      <Tag color="blue" className="px-4 py-1 rounded-full">
-                        {roleText}
-                      </Tag>
-                    </div>
-                  </div>
-                </div>
+            {isEditing && (
+              <div className="flex justify-end mt-6">
+                <button
+                  type="submit"
+                  className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  <CheckIcon size={16} />
+                  <span>Lưu thay đổi</span>
+                </button>
               </div>
-
-              {isEditing && (
-                <div className="flex justify-end mt-6">
-                  <button
-                    type="submit"
-                    className="flex items-center bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    <CheckIcon size={18} className="mr-2" />
-                    Lưu thay đổi
-                  </button>
-                </div>
-              )}
-            </Form>
-          </div>
+            )}
+          </Form>
         </div>
       </div>
     </div>

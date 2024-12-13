@@ -62,6 +62,20 @@ const CustomerVisitStaff = () => {
     visitStatus: [],
     scheduleTypeId: [],
   });
+
+
+    useEffect(() => {
+      const searchParams = new URLSearchParams(location.search);
+      const autoFilter = searchParams.get("autoFilter");
+  
+      if (autoFilter === "pending") {
+        setIsActive(true);
+        handleStatusFilter(VisitStatus.ActiveTemporary);
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, "", newUrl);
+      }
+    }, []);
+
   const getCountByStatus = (status: VisitStatus) => {
     return data?.filter((item: any) => item.visitStatus === status).length || 0;
   };

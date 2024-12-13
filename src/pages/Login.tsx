@@ -9,7 +9,15 @@ import "react-toastify/dist/ReactToastify.css"; // Import toast styles
 import SetSignalR from "../utils/signalR";
 import UserConnectionHubType from "../types/userConnectionHubType";
 import { useDispatch } from "react-redux";
-import { Building2, Camera, Lock, ShieldCheck, User } from "lucide-react";
+import {
+  Building2,
+  Camera,
+  Eye,
+  EyeOff,
+  Lock,
+  ShieldCheck,
+  User,
+} from "lucide-react";
 
 function Login() {
   const [rememberMe, setRememberMe] = useState(false);
@@ -19,7 +27,7 @@ function Login() {
   const [loginUser, { isLoading }] = useLoginUserMutation();
   const connection = useRef<signalR.HubConnection | null>(null);
   const dispatch = useDispatch();
-
+  const [showPassword, setShowPassword] = useState(false);
   // Check for existing token on component mount
   useEffect(() => {
     const token = localStorage.getItem("jwtToken");
@@ -108,7 +116,7 @@ function Login() {
               />
             </div>
 
-            <div>
+            {/* <div>
               <label className="text-xs font-bold text-gray-300 uppercase mb-1 block">
                 Mật khẩu
               </label>
@@ -119,6 +127,27 @@ function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
+            </div> */}
+            <div>
+              <label className="text-xs font-bold text-gray-300 uppercase mb-1 block">
+                Mật khẩu
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  required
+                  className="w-full p-2.5 rounded bg-slate-900/80 text-white border border-slate-700 focus:ring-2 focus:ring-blue-500"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
 
             <a

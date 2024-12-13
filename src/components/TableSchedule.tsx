@@ -214,46 +214,11 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({
   ];
 
   return (
-    // <>
-    //   <Table
-    //     columns={columns}
-    //     dataSource={schedules || []}
-    //     rowKey="scheduleId"
-    //     loading={schedulesIsLoading}
-    //     pagination={{
-    //       total: totalCount,
-    //       showSizeChanger: true,
-    //       pageSizeOptions: ["5", "10"],
-    //       size: "small",
-    //     }}
-    //     bordered
-    //      className="w-full [&_.ant-table-thead_th]:!bg-[#34495e] [&_.ant-table-thead_th]:!text-white"
-    //   />
-    //   <Modal
-    //     title={
-    //       <h1 className="text-3xl font-bold text-titleMain text-center mb-6">
-    //         Cập nhật lịch trình
-    //       </h1>
-    //     }
-    //     centered
-    //     width="68vw"
-    //     bodyStyle={{ padding: "20px", maxHeight: "90vh", overflowY: "auto" }}
-    //     visible={isModalVisible}
-    //     onCancel={handleCancel}
-    //     footer={null}
-    //   >
-    //     <DetailSchedule
-    //       scheduleId={selectedScheduleId}
-    //       onUpdateSuccess={handleCancel}
-    //     />
-    //   </Modal>
-    // </>
-
     <Card className="shadow-lg rounded-xl border-0">
       <div className="shadow-lg rounded-xl border-0">
         <div className="flex gap-1">
           <Button
-            onClick={() => handleTypeFilter(ScheduleType.Weekly)}  
+            onClick={() => handleTypeFilter(ScheduleType.Weekly)}
             className={`rounded-t-[120px] min-w-[120px] border-b-0  ${
               filters.scheduleTypeId.includes(ScheduleType.Weekly)
                 ? "border-[#e67e22] text-white bg-[#e67e22] hover:!border-[#e67e22] hover:!text-white hover:!bg-[#e67e22]"
@@ -265,7 +230,7 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({
           </Button>
 
           <Button
-            onClick={() => handleTypeFilter(ScheduleType.Monthly)}  
+            onClick={() => handleTypeFilter(ScheduleType.Monthly)}
             className={`rounded-t-[120px] min-w-[120px] border-b-0  ${
               filters.scheduleTypeId.includes(ScheduleType.Monthly)
                 ? "border-[#2980b9] text-white bg-[#2980b9] hover:!border-[#2980b9] hover:!text-white hover:!bg-[#2980b9]"
@@ -280,7 +245,7 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({
       <Table
         columns={columns}
         showSorterTooltip={false}
-        dataSource={filteredSchedules || []}  
+        dataSource={filteredSchedules || []}
         // dataSource={schedules || []}
         rowKey="scheduleId"
         loading={schedulesIsLoading}
@@ -294,7 +259,7 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({
         bordered={false}
         className={`w-full ${getHeaderBackgroundColor()} [&_.ant-table-thead_th]:!font-medium [&_.ant-table-thead_th]:!py-3 [&_.ant-table-thead_th]:!text-sm hover:[&_.ant-table-tbody_tr]:bg-blue-50/30 [&_.ant-table]:!rounded-none [&_.ant-table-container]:!rounded-none [&_.ant-table-thead>tr>th:first-child]:!rounded-tl-none [&_.ant-table-thead>tr>th:last-child]:!rounded-tr-none [&_.ant-table-thead_th]:!transition-none`}
       />
-        <Modal
+      <Modal
         title={
           <h1 className="text-3xl font-bold text-titleMain text-center mb-6">
             Cập nhật lịch trình

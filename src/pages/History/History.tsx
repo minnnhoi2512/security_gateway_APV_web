@@ -201,7 +201,7 @@ const History = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    console.log(dataList)
+    console.log(dataList);
     if (dataList) {
       const updatedData = dataList.map((element, index) => ({
         visitorSessionId: element.visitorSessionId,
@@ -286,69 +286,6 @@ const History = () => {
     };
   }
 
- 
-  //   {
-  //     title: "STT",
-  //     key: "index",
-  //     render: (_text, _record, index) => index + 1,
-  //   },
-  //   {
-  //     title: "Tên khách",
-  //     dataIndex: ["visitor", "visitorName"],
-  //     key: "visitorName",
-  //   },
-  //   {
-  //     title: "Cổng vào",
-  //     dataIndex: ["gateIn", "gateName"],
-  //     key: "gateName",
-  //   },
-  //   {
-  //     title: "Giờ Vào",
-  //     dataIndex: "checkinTime",
-  //     key: "checkinTime",
-  //     render: (text) => formatDateLocal(text),
-  //     sorter: (a, b) =>
-  //       new Date(a.checkinTime).getTime() - new Date(b.checkinTime).getTime(),
-  //   },
-  //   {
-  //     title: "Cổng ra",
-  //     dataIndex: ["gateOut", "gateName"],
-  //     key: "gateName",
-  //   },
-  //   {
-  //     title: "Giờ Ra",
-  //     dataIndex: "checkoutTime",
-  //     key: "checkoutTime",
-  //     render: (text) => formatDateLocal(text) || "Khách còn ở trong công ty",
-  //     sorter: (a, b) =>
-  //       new Date(a.checkoutTime).getTime() - new Date(b.checkoutTime).getTime(),
-  //   },
-  //   {
-  //     title: "Trạng thái",
-  //     key: "status",
-  //     dataIndex: "status",
-  //     render: (_, { status }) => (
-  //       <Tag color={status === "CheckIn" ? "volcano" : "green"}>
-  //         {status === "CheckIn" ? "Đã vào" : "Đã ra"}
-  //       </Tag>
-  //     ),
-  //   },
-  //   {
-  //     title: "Hành động",
-  //     key: "action",
-  //     render: (_, record) => (
-  //       <Button
-  //         size="middle"
-  //         onClick={() => {
-  //           setSelectedRecord(record);
-  //           setIsModalVisible(true);
-  //         }}
-  //       >
-  //         Chi tiết
-  //       </Button>
-  //     ),
-  //   },
-  // ];
   const columns: TableProps<VisitorSessionType>["columns"] = [
     // {
     //   title: "STT",
@@ -458,7 +395,7 @@ const History = () => {
     new Set(updatedData.map((entry) => entry.gateOut?.gateName).filter(Boolean))
   );
   const filterContent = (
-    <Space direction="vertical">
+    <Space direction="vertical" className="w-64">
       <DatePicker
         placeholder="Chọn ngày vào"
         value={checkinTimeFilter}
@@ -524,32 +461,23 @@ const History = () => {
     </Space>
   );
   if (loading) return <LoadingState />;
+
+  
   return (
-    <Content className="p-4 max-w-[1200px] mx-auto mt-7">
-      <Space
-        style={{
-          marginBottom: 16,
-          display: "flex",
-          justifyContent: "space-between",
-        }}
-      >
-        <Space>
+    <Content className="p-2 max-w-[1200px] mx-auto mt-10">
+      <div className="flex gap-4 mb-4">
+        <div className="flex flex-1 gap-2">
           <Input
             placeholder="Tìm kiếm theo tên khách"
             value={searchText}
             onChange={handleSearchTextChange}
-            prefix={<SearchOutlined />}
-            style={{
-              width: 300,
-              borderColor: "#1890ff",
-              borderRadius: 5,
-            }}
+            prefix={<SearchOutlined className="text-gray-400" />}
+            className="max-w-xs h-8"
           />
           <Popover content={filterContent} title="Bộ lọc" trigger="click">
             <Button icon={<FilterOutlined />} />
           </Popover>
-        </Space>
-
+        </div>
         <Button
           type="primary"
           size="large"
@@ -560,7 +488,8 @@ const History = () => {
         >
           Tạo mới
         </Button>
-      </Space>
+      </div>
+
       {/* <Table columns={columns} dataSource={filteredData} loading={loading} />{" "} */}
       <Card className="shadow-lg rounded-xl border-0">
         <div className="rounded-lg bg-white mx-auto" style={{ width: "100%" }}>

@@ -161,7 +161,9 @@ const CustomerVisit = () => {
           onClick={() => {
             // setSelectedVisitId(record.visitId);
             // setIsModalVisible(true);
-            navigate(`/customerVisit/detailVisit/${record.visitId}/listSession`)
+            navigate(
+              `/customerVisit/detailVisit/${record.visitId}/listSession`
+            );
           }}
         >
           {text} Lượt
@@ -328,7 +330,7 @@ const CustomerVisit = () => {
     return <LoadingState></LoadingState>;
   }
   return (
-    <Content className="p-4 max-w-[1200px] mx-auto mt-10">
+    <Content className="p-2 max-w-[1200px] mx-auto mt-10">
       <div className="flex flex-col mb-2">
         <div className="flex gap-4 items-center">
           <div className="flex flex-1 gap-2">
@@ -457,57 +459,6 @@ const CustomerVisit = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            {/* <div
-              className={`
-      bg-[#dc7633] 
-      shadow-lg 
-      rounded-lg 
-      p-1 
-      animate-cardPulse 
-      transition-all 
-      duration-200
-      ${isActive ? "ring-2 ring-white" : ""}
-    `}
-            >
-              <div className="flex items-center gap-2 px-2">
-                {Object.values(VisitStatus)
-                  .filter((status) => status === VisitStatus.ActiveTemporary)
-                  .map((status) => {
-                    const { textVisitStatus } = visitStatusMap[status];
-                    const count = getCountByStatus(status);
-
-                    return (
-                      <button
-                        key={status}
-                        onClick={() => handleClick(status)}
-                        className={`
-                  text-white
-                  px-2
-                  py-1
-                  text-sm
-                  rounded-md
-                  flex
-                  items-center
-                  gap-2
-                  hover:opacity-80
-                  transition-all
-                  duration-200
-                  h-8
-                  ${isActive ? "" : ""}
-                `}
-                      >
-                        <span>{textVisitStatus}</span>
-                        {count > 0 && (
-                          <span className="bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[20px] text-center">
-                            {count}
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
-              </div>
-            </div> */}
-
             <Button
               // icon={<PlusOutlined />}
               onClick={() => navigate("/customerVisit/createNewVisitList")}
@@ -517,17 +468,12 @@ const CustomerVisit = () => {
                 <Plus className="w-6 h-6 group-hover:!rotate-180 transition-transform duration-500" />
                 <span className="font-medium text-lg">Tạo mới</span>
               </div>
-
-              {/* <div className="absolute inset-0 rounded-lg">
-                <div className="absolute inset-0 bg-gradient-to-r from-green-400/20 to-green-600/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-green-500 to-green-700 rounded-lg blur opacity-0 group-hover:opacity-75 animate-pulse transition-opacity duration-300" />
-              </div> */}
             </Button>
           </div>
         </div>
       </div>
 
-      <Card className="shadow-lg rounded-xl border-0">
+      <Card className="shadow-lg rounded-xl border-0 mt-4">
         <div className="shadow-lg rounded-xl border-0">
           <div className="flex gap-1">
             <Button

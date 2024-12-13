@@ -47,16 +47,14 @@ const ScheduleAssignedManager = () => {
   const [isActive, setIsActive] = useState(false);
 
   useEffect(() => {
-
     const searchParams = new URLSearchParams(location.search);
-    const autoFilter = searchParams.get('autoFilter');
-    
-    if (autoFilter === 'pending') {
+    const autoFilter = searchParams.get("autoFilter");
 
+    if (autoFilter === "pending") {
       setIsActive(true);
       handleStatusFilter(TaskStatus.Pending);
       const newUrl = window.location.pathname;
-      window.history.replaceState({}, '', newUrl);
+      window.history.replaceState({}, "", newUrl);
     }
   }, []);
 
@@ -157,45 +155,37 @@ const ScheduleAssignedManager = () => {
     );
   }
   return (
-    <Layout className="min-h-screen bg-white">
-      <Content className="p-4  mt-10">
-        <Space
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-          }}
-        >
-          <div className="flex flex-col mb-2">
-            <div className="flex gap-4 items-center">
-              <div className="flex flex-1 gap-2">
-                <Input
-                  placeholder="Tìm kiếm tên nhiệm vụ"
-                  prefix={<SearchOutlined className="text-gray-400" />}
-                  value={searchText}
-                  onChange={handleSearchChange}
-                  className="ml-4 w-[120%] max-w-[120%]"
-                />
-                <Popover
-                  content={
-                    <Space direction="vertical" className="w-64">
-                      {/* Bộ lọc trạng thái */}
-                      <div className="mt-4">
-                        <small className="text-gray-500 block mb-2">
-                          Trạng thái
-                        </small>
-                        <div className="flex flex-wrap items-center gap-2">
-                          {Object.values(TaskStatus).map((status) => {
-                            const { colorVisitStatus, textVisitStatus } =
-                              taskStatusMap[status];
-                            const count = getCountByStatus(status);
-                            const isSelected =
-                              filters.taskStatus.includes(status);
+    <Content className="p-2 max-w-[1200px] mx-auto mt-10">
+      <div className="flex flex-col mb-2">
+        <div className="flex gap-4 mb-4">
+          <div className="flex flex-1 gap-2">
+            <Input
+              placeholder="Tìm kiếm tên nhiệm vụ"
+              prefix={<SearchOutlined className="text-gray-400" />}
+              value={searchText}
+              onChange={handleSearchChange}
+              className="max-w-xs h-8"
+            />
+            <Popover
+              content={
+                <Space direction="vertical" className="w-64">
+                  {/* Bộ lọc trạng thái */}
+                  <div className="mt-4">
+                    <small className="text-gray-500 block mb-2">
+                      Trạng thái
+                    </small>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {Object.values(TaskStatus).map((status) => {
+                        const { colorVisitStatus, textVisitStatus } =
+                          taskStatusMap[status];
+                        const count = getCountByStatus(status);
+                        const isSelected = filters.taskStatus.includes(status);
 
-                            return (
-                              <Button
-                                key={status}
-                                onClick={() => handleStatusFilter(status)}
-                                className={`
+                        return (
+                          <Button
+                            key={status}
+                            onClick={() => handleStatusFilter(status)}
+                            className={`
                   relative 
                   rounded-full 
                   px-3 
@@ -210,13 +200,13 @@ const ScheduleAssignedManager = () => {
                       : "bg-[white] text-primary border-primary hover:bg-primary/10"
                   }
                 `}
-                              >
-                                <span className="relative z-10">
-                                  {textVisitStatus}
-                                </span>
-                                {count > 0 && (
-                                  <span
-                                    className="
+                          >
+                            <span className="relative z-10">
+                              {textVisitStatus}
+                            </span>
+                            {count > 0 && (
+                              <span
+                                className="
                       absolute 
                       -top-1 
                       -right-1 
@@ -232,61 +222,60 @@ const ScheduleAssignedManager = () => {
                       justify-center 
                       px-1
                     "
-                                  >
-                                    {count}
-                                  </span>
-                                )}
-                              </Button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                      {/* Nút xóa bộ lọc */}
-                      <Button
-                        type="default"
-                        block
-                        onClick={handleClearFilters}
-                        size="small"
-                        className="mt-4"
-                      >
-                        Xóa bộ lọc
-                      </Button>
-                    </Space>
-                  }
-                  trigger="click"
-                  placement="bottomRight"
-                >
-                  <Button icon={<FilterOutlined />} />
-                </Popover>
-              </div>
-
-              <div className="flex items-center gap-2 ml-auto">
-                {userRole === "DepartmentManager" && (
-                  <div
-                    className={`
+                              >
+                                {count}
+                              </span>
+                            )}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  {/* Nút xóa bộ lọc */}
+                  <Button
+                    type="default"
+                    block
+                    onClick={handleClearFilters}
+                    size="small"
+                    className="mt-4"
+                  >
+                    Xóa bộ lọc
+                  </Button>
+                </Space>
+              }
+              trigger="click"
+              placement="bottomRight"
+            >
+              <Button icon={<FilterOutlined />} />
+            </Popover>
+          </div>
+          <div className="flex items-center gap-2 ml-auto">
+          {userRole === "DepartmentManager" && (
+            <div
+              className={`
   
       p-1 
-      ml-[740px]
+
       animate-cardPulse 
       transition-all 
       duration-200
       ${isActive ? "ring-2 ring-white" : ""}
     `}
-                  >
-                    <div className="flex items-center gap-2 px-2">
-                      <div className="flex items-center gap-2 px-2">
-                        {Object.values(TaskStatus)
-                          .filter((status) => status === TaskStatus.Pending)
-                          .map((status) => {
-                            const { textVisitStatus } = visitStatusMap[status];
-                            const count = getCountByStatus(status);
-                            return (
-                              <button
-                                key={status}
-                                onClick={() => handleClick(status)}
-                                onMouseEnter={() => setIsHovered(true)}
-                                onMouseLeave={() => setIsHovered(false)}
-                                className={`
+            >
+              <div className="flex items-center gap-2 px-2">
+                <div className="flex items-center gap-2 px-2">
+                  {Object.values(TaskStatus)
+                    .filter((status) => status === TaskStatus.Pending)
+                    .map((status) => {
+                      const { textVisitStatus } = visitStatusMap[status];
+                      const count = getCountByStatus(status);
+                      return (
+                        <button
+                          key={status}
+                          onClick={() => handleClick(status)}
+                          onMouseEnter={() => setIsHovered(true)}
+                          onMouseLeave={() => setIsHovered(false)}
+                          className={`
                                   relative
                                   group
                                   flex
@@ -311,9 +300,9 @@ const ScheduleAssignedManager = () => {
                                 
                   ${isActive ? "" : ""}
                 `}
-                              >
-                                <Bell
-                                  className={`
+                        >
+                          <Bell
+                            className={`
                                 font-bold
                                 w-5 
                                 h-5 
@@ -322,13 +311,13 @@ const ScheduleAssignedManager = () => {
                                 duration-300
                                 ${isHovered ? "animate-bounce" : ""}
                               `}
-                                />
-                                <span className="text-white font-bold">
-                                  {textVisitStatus}
-                                </span>
-                                {count > 0 && (
-                                  <span
-                                    className={`
+                          />
+                          <span className="text-white font-bold">
+                            {textVisitStatus}
+                          </span>
+                          {count > 0 && (
+                            <span
+                              className={`
               absolute
               -top-2
               -right-2
@@ -346,12 +335,12 @@ const ScheduleAssignedManager = () => {
               animate-bounce
               shadow-lg
             `}
-                                  >
-                                    {count}
-                                  </span>
-                                )}
-                                <div
-                                  className={`
+                            >
+                              {count}
+                            </span>
+                          )}
+                          <div
+                            className={`
             absolute
             inset-0
             rounded-lg
@@ -361,20 +350,20 @@ const ScheduleAssignedManager = () => {
             animate-pulse
             ${isHovered ? "opacity-100" : "opacity-0"}
           `}
-                                />
-                              </button>
-                            );
-                          })}
-                      </div>
-                    </div>
-                  </div>
-                )}
+                          />
+                        </button>
+                      );
+                    })}
+                </div>
               </div>
             </div>
-          </div>
-        </Space>
+          )}
+        </div>
+        </div>
 
-        {/* <div className="bg-white shadow-lg rounded-md overflow-hidden">
+      </div>
+
+      {/* <div className="bg-white shadow-lg rounded-md overflow-hidden">
           <TableScheduleUser
             data={filteredSchedules}
             isLoading={isLoading || isFetching}
@@ -383,22 +372,21 @@ const ScheduleAssignedManager = () => {
           />
         </div> */}
 
-        <TableScheduleUser
-          data={filteredSchedules}
-          isLoading={isLoading || isFetching}
-          onRowClick={handleEditOrView}
-          error={error}
+      <TableScheduleUser
+        data={filteredSchedules}
+        isLoading={isLoading || isFetching}
+        onRowClick={handleEditOrView}
+        error={error}
+      />
+      {isModalVisible && (
+        <ScheduleUserDetailModal
+          isVisible={isModalVisible}
+          handleClose={handleModalClose}
+          selectedRecord={selectedRecord}
+          refetch={refetch}
         />
-        {isModalVisible && (
-          <ScheduleUserDetailModal
-            isVisible={isModalVisible}
-            handleClose={handleModalClose}
-            selectedRecord={selectedRecord}
-            refetch={refetch}
-          />
-        )}
-      </Content>
-    </Layout>
+      )}
+    </Content>
   );
 };
 

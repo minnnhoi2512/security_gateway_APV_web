@@ -218,82 +218,71 @@ const TableScheduleUser: React.FC<ScheduleAssignedTableProps> = ({
   };
 
   return (
-    <div className="p-4 max-w-[1400px] mx-auto">
-      {/* <div className="flex justify-between items-center mb-6">
-        <Input
-          placeholder="Tìm kiếm theo tên nhiệm vụ"
-          prefix={<SearchOutlined className="text-gray-400" />}
-          value={searchText}
-          onChange={handleSearchChange}
-          className="max-w-xs"
-        />
-        
-       
-      </div> */}
-      <Card className="shadow-lg rounded-xl border-0">
-        <div className="shadow-lg rounded-xl border-0">
-          <div className="flex gap-1">
-            <Button
-              onClick={() => handleTypeFilter(null)}
-              className={`rounded-t-[140px] min-w-[120px] border-b-0 ${
-                filters.scheduleTypeId.includes(null)
-                  ? "border-[#138d75] text-white bg-[#138d75] hover:!bg-[#138d75] hover:!text-white hover:!border-[#138d75]"
-                  : "border-[#34495e] text-[#34495e] hover:!border-[#34495e] hover:!text-[#34495e]"
-              }`}
-            >
-              <Clock4 size={17} />
-              Theo ngày
-            </Button>
-            <Button
-              onClick={() => handleTypeFilter(ScheduleType.Weekly)}
-              className={`rounded-t-[120px] min-w-[120px] border-b-0  ${
-                filters.scheduleTypeId.includes(ScheduleType.Weekly)
-                  ? "border-[#e67e22] text-white bg-[#e67e22] hover:!border-[#e67e22] hover:!text-white hover:!bg-[#e67e22]"
-                  : "border-[#34495e] text-[#34495e] hover:!border-[#34495e] hover:!text-[#34495e]"
-              }`}
-            >
-              <CalendarDays size={17} />
-              Theo tuần
-            </Button>
-            <Button
-              // type={
-              //   filters.scheduleTypeId.includes(ScheduleType.Monthly)
-              //     ? "primary"
-              //     : "default"
-              // }
-              onClick={() => handleTypeFilter(ScheduleType.Monthly)}
-              className={`rounded-t-[120px] min-w-[120px] border-b-0  ${
-                filters.scheduleTypeId.includes(ScheduleType.Monthly)
-                  ? "border-[#2980b9] text-white bg-[#2980b9] hover:!border-[#2980b9] hover:!text-white hover:!bg-[#2980b9]"
-                  : "border-[#34495e] text-[#34495e] hover:!border-[#34495e] hover:!text-[#34495e]"
-              }`}
-            >
-              <CalendarRange size={17} />
-              Theo tháng
-            </Button>
-          </div>
+    <Card className="shadow-lg rounded-xl border-0">
+      <div className="shadow-lg rounded-xl border-0">
+        <div className="flex gap-1">
+          <Button
+            onClick={() => handleTypeFilter(null)}
+            className={`rounded-t-[140px] min-w-[120px] border-b-0 ${
+              filters.scheduleTypeId.includes(null)
+                ? "border-[#138d75] text-white bg-[#138d75] hover:!bg-[#138d75] hover:!text-white hover:!border-[#138d75]"
+                : "border-[#34495e] text-[#34495e] hover:!border-[#34495e] hover:!text-[#34495e]"
+            }`}
+          >
+            <Clock4 size={17} />
+            Theo ngày
+          </Button>
+          <Button
+            onClick={() => handleTypeFilter(ScheduleType.Weekly)}
+            className={`rounded-t-[120px] min-w-[120px] border-b-0  ${
+              filters.scheduleTypeId.includes(ScheduleType.Weekly)
+                ? "border-[#e67e22] text-white bg-[#e67e22] hover:!border-[#e67e22] hover:!text-white hover:!bg-[#e67e22]"
+                : "border-[#34495e] text-[#34495e] hover:!border-[#34495e] hover:!text-[#34495e]"
+            }`}
+          >
+            <CalendarDays size={17} />
+            Theo tuần
+          </Button>
+          <Button
+            // type={
+            //   filters.scheduleTypeId.includes(ScheduleType.Monthly)
+            //     ? "primary"
+            //     : "default"
+            // }
+            onClick={() => handleTypeFilter(ScheduleType.Monthly)}
+            className={`rounded-t-[120px] min-w-[120px] border-b-0  ${
+              filters.scheduleTypeId.includes(ScheduleType.Monthly)
+                ? "border-[#2980b9] text-white bg-[#2980b9] hover:!border-[#2980b9] hover:!text-white hover:!bg-[#2980b9]"
+                : "border-[#34495e] text-[#34495e] hover:!border-[#34495e] hover:!text-[#34495e]"
+            }`}
+          >
+            <CalendarRange size={17} />
+            Theo tháng
+          </Button>
         </div>
+      </div>
 
-        <Table
-          columns={columns}
-          dataSource={filteredData}
-          showSorterTooltip={false}
-          size="small"
-          pagination={{
-            // pageSize: 8,
-            showSizeChanger: true,
-            pageSizeOptions: ["5", "10"],
-            showTotal: (total) => `Tổng ${total} chuyến thăm`,
-          }}
-          className={`w-full ${getHeaderBackgroundColor()} [&_.ant-table-thead_th]:!font-medium [&_.ant-table-thead_th]:!py-3 [&_.ant-table-thead_th]:!text-sm hover:[&_.ant-table-tbody_tr]:bg-blue-50/30 [&_.ant-table]:!rounded-none [&_.ant-table-container]:!rounded-none [&_.ant-table-thead>tr>th:first-child]:!rounded-tl-none [&_.ant-table-thead>tr>th:last-child]:!rounded-tr-none [&_.ant-table-thead_th]:!transition-none`}
-          loading={isLoading}
-          onRow={(record) => ({
-            onDoubleClick: () => onRowClick(record),
-            className: "cursor-pointer hover:bg-gray-50",
-          })}
-        />
-      </Card>
-    </div>
+      <Table
+        columns={columns}
+        dataSource={filteredData}
+        showSorterTooltip={false}
+        size="middle"
+        bordered={false}
+        pagination={{
+          // pageSize: 8,
+          showSizeChanger: true,
+          pageSizeOptions: ["5", "10"],
+          size: "small",
+          showTotal: (total) => `Tổng ${total} chuyến thăm`,
+        }}
+        className={`w-full ${getHeaderBackgroundColor()} [&_.ant-table-thead_th]:!font-medium [&_.ant-table-thead_th]:!py-3 [&_.ant-table-thead_th]:!text-sm hover:[&_.ant-table-tbody_tr]:bg-blue-50/30 [&_.ant-table]:!rounded-none [&_.ant-table-container]:!rounded-none [&_.ant-table-thead>tr>th:first-child]:!rounded-tl-none [&_.ant-table-thead>tr>th:last-child]:!rounded-tr-none [&_.ant-table-thead_th]:!transition-none`}
+        loading={isLoading}
+        onRow={(record) => ({
+          onDoubleClick: () => onRowClick(record),
+          className: "cursor-pointer hover:bg-gray-50",
+        })}
+      />
+    </Card>
   );
 };
 
