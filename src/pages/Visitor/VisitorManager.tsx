@@ -44,12 +44,27 @@ const VisitorManager = () => {
   const userRole = localStorage.getItem("userRole");
   const [filteredData, setFilteredData] = useState<Visitor[]>([]);
   const [activeStatus, setActiveStatus] = useState<string>("");
+  // const {
+  //   data,
+  //   isLoading: isLoadingData,
+  //   error,
+  //   refetch,
+  // } = useGetAllVisitorsQuery({ pageNumber: -1, pageSize: -1 }); 
   const {
     data,
     isLoading: isLoadingData,
     error,
     refetch,
-  } = useGetAllVisitorsQuery({ pageNumber: -1, pageSize: -1 }); // Fetch all visitors
+  } = useGetAllVisitorsQuery(
+    { pageNumber: -1, pageSize: -1 },
+    {
+      pollingInterval: 1000,  
+ 
+      refetchOnMountOrArgChange: true,
+      refetchOnFocus: true,
+      refetchOnReconnect: true,
+    }
+  );
 
   useEffect(() => {
     let result = data || [];
@@ -170,7 +185,9 @@ const VisitorManager = () => {
   ];
 
   const handleVisitorCreated = () => {
-    refetch();
+    refetch().then(() => {
+      setIsModalVisible(false);
+    });
   };
   const handleTableChange = (pagination: any) => {
     setCurrentPage(pagination.current || 1);
@@ -182,8 +199,9 @@ const VisitorManager = () => {
     setIsEditModalVisible(true);
   };
   const closeEditModal = () => {
-    refetch();
-    setIsEditModalVisible(false);
+    refetch().then(() => {
+      setIsEditModalVisible(false);
+    });
   };
 
   const showCreateModal = () => {
@@ -203,6 +221,7 @@ const VisitorManager = () => {
       onOk: async () => {
         try {
           await deleteVisitor({ id: visitorId }).unwrap();
+          await refetch();
           notification.success({
             message: `Thay đổi trạng thái thành công!`,
           });
@@ -281,7 +300,10 @@ const VisitorManager = () => {
         <CreateNewVisitor
           isModalVisible={isModalVisible}
           setIsModalVisible={closeCreateModal}
-          onVisitorCreated={handleVisitorCreated}
+          onVisitorCreated={() => {
+            handleVisitorCreated();
+            refetch();  
+          }}
         />
       )}
       {isEditModalVisible && (
@@ -289,6 +311,10 @@ const VisitorManager = () => {
           isEditModalVisible={isEditModalVisible}
           setIsEditModalVisible={closeEditModal}
           id={idVisitor}
+          onUpdateSuccess={() => {
+            refetch();
+            closeEditModal();
+          }}
         />
       )}
 
