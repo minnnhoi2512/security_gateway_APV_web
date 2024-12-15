@@ -112,7 +112,6 @@ const ScheduleUserDetailModal: React.FC<ScheduleUserModalDetailProps> = ({
   };
 
   console.log("Data detail nhiem vu: ", data);
-  
 
   const handleDescriptionModalClose = () => {
     setDescriptionIsModalVisible(false);
@@ -164,16 +163,31 @@ const ScheduleUserDetailModal: React.FC<ScheduleUserModalDetailProps> = ({
   };
   return (
     <Modal
-      title="Chi tiết nhiệm vụ đã giao"
+      title={
+        <div className="flex items-center justify-between py-1">
+          <div className="flex items-center space-x-2">
+            <FileTextOutlined className="text-blue-500" />
+            <span className="font-medium">Chi tiết nhiệm vụ đã giao</span>
+          </div>
+          {status && (
+            <Tag
+              color={scheduleStatusMap[status]?.color || "gray"}
+              className="text-xs px-2 py-0.5 rounded-full"
+            >
+              {scheduleStatusMap[status].text || "Trạng thái không xác định"}
+            </Tag>
+          )}
+        </div>
+      }
       visible={isVisible}
       onCancel={handleClose}
-      width={900}
+      width={800}
       footer={[
         userRole !== "Staff" && (
           <Button
             key="approve"
             type="primary"
-            className="bg-blue-500 mr-2"
+            className="bg-blue-500 hover:bg-blue-600 mr-2"
             onClick={() => handleApproveSchedule(selectedRecord?.id || 0)}
             disabled={selectedRecord?.status !== ScheduleUserStatus.Pending}
           >
@@ -185,7 +199,7 @@ const ScheduleUserDetailModal: React.FC<ScheduleUserModalDetailProps> = ({
             key="reject"
             type="primary"
             danger
-            className="mr-2"
+            className="mr-2 hover:opacity-90"
             onClick={() => handleRejectSchedule(selectedRecord?.id || 0)}
             disabled={selectedRecord?.status !== ScheduleUserStatus.Pending}
           >
@@ -196,7 +210,7 @@ const ScheduleUserDetailModal: React.FC<ScheduleUserModalDetailProps> = ({
           <Button
             key="createVisit"
             type="primary"
-            className="bg-green-500 mr-2"
+            className="bg-green-500 hover:bg-green-600 mr-2"
             onClick={() =>
               navigate("/schedule-staff/createNewVisitList", {
                 state: { from: selectedRecord },
@@ -212,263 +226,347 @@ const ScheduleUserDetailModal: React.FC<ScheduleUserModalDetailProps> = ({
       ]}
       className="rounded-lg shadow-md"
     >
-      <div className="max-h-[70vh] overflow-y-auto">
+      <div className="max-h-[65vh] overflow-y-auto">
         {selectedRecord && (
-          <Collapse defaultActiveKey={["1"]} className="mb-4">
-            <Panel
-              header={
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-lg">
-                    Thông tin nhiệm vụ
-                  </span>
-                  {status && (
-                    <Tag
-                      color={
-                        scheduleStatusMap[status as ScheduleUserStatus]
-                          ?.color || "gray"
-                      }
-                      className="text-sm"
-                    >
-                      {scheduleStatusMap[status].text ||
-                        "Trạng thái không xác định"}
-                    </Tag>
-                  )}
-                </div>
-              }
-              key="1"
-              className="bg-gray-50 rounded-lg p-4 shadow-sm"
-            >
-              <div className="grid grid-cols-2 gap-4 text-gray-700">
-                <div className="flex items-center">
-                  <FileTextOutlined className="mr-2 text-blue-500" />
-                  <strong>Tiêu đề:</strong>{" "}
-                  <span className="ml-1">{selectedRecord.title}</span>
-                </div>
-                <div className="flex items-center">
-                  <InfoCircleOutlined className="mr-2 text-green-500" />
-                  <strong>Mô tả:</strong>{" "}
-                  <span className="ml-1">
-                    {selectedRecord.description || "Không"}
-                  </span>
-                </div>
-                <div className="flex items-center">
-                  <CalendarOutlined className="mr-2 text-green-500" />
-                  <strong>Ngày giao và thời gian:</strong>{" "}
-                  <span className="ml-1">
-                    {formatDateTime(selectedRecord.assignTime)}
-                  </span>
-                </div>
-                <div className="flex items-center">
-                  <CalendarOutlined className="mr-2 text-red-500" />
-                  <strong>Hạn hoàn thành:</strong>{" "}
-                  <span className="ml-1">
-                    {formatDateTime(selectedRecord.deadlineTime)}
-                  </span>
-                </div>
-                <div className="flex items-center">
-                  <UserOutlined className="mr-2 text-orange-500" />
-                  <strong>Người giao:</strong>{" "}
-                  <span className="ml-1">
-                    {selectedRecord.assignFrom.fullName}
-                  </span>
-                </div>
-                <div className="flex items-center">
-                  <UserOutlined className="mr-2 text-purple-500" />
-                  <strong>Người nhận:</strong>{" "}
-                  <span className="ml-1">
-                    {selectedRecord.assignTo.fullName}
-                  </span>
-                </div>
-                <div className="flex items-center">
-                  <strong>Tên lịch trình:</strong>{" "}
-                  <span className="ml-1">
-                    {selectedRecord.schedule.scheduleName}
-                  </span>
-                </div>
-                <div className="flex items-center">
-                  <strong>Loại lịch trình:</strong>{" "}
-                  <span className="ml-1">
-                    {translateScheduleType(
-                      selectedRecord.schedule.scheduleType.scheduleTypeName
-                    )}
-                  </span>
-                </div>
-                <div className="col-span-2">
-                  <strong>Ghi chú:</strong>{" "}
-                  <span className="ml-1">{selectedRecord.note || "Không"}</span>
-                </div>
+          <div className="space-y-4">
+            {/* Task Information Section */}
+            <div className="bg-white rounded-lg p-3">
+              <div className="font-medium text-gray-800 mb-3">
+                Thông tin nhiệm vụ
               </div>
-            </Panel>
-          </Collapse>
-        )}
-
-        {/* Appointment Details */}
-        {data && !isError && (
-          <Collapse defaultActiveKey={["2"]} className="mb-4">
-            <Panel
-              header={
-                <div className="flex items-center justify-between">
-                  <span className="font-semi text-lg">
-                    Thông tin chuyến thăm
-                  </span>
-                </div>
-              }
-              key="2"
-              className="bg-gray-50 rounded-lg p-4 shadow-sm"
-            >
-              <div className="grid grid-cols-2 gap-4 text-gray-700">
-                <div className="flex items-center">
-                  <FileTextOutlined className="mr-2 text-blue-500" />
-                  <strong>Tên chuyến thăm:</strong>{" "}
-                  <span className="ml-1">{data.visitName}</span>
-                </div>
-                <div className="flex items-center">
-                  <TeamOutlined className="mr-2 text-teal-500" />
-                  <strong>Số lượng dự kiến:</strong>{" "}
-                  <span className="ml-1">{data.visitQuantity}</span>
-                </div>
-                <div className="flex items-center">
-                  <CalendarOutlined className="mr-2 text-green-500" />
-                  <strong>Ngày và giờ bắt đầu:</strong>{" "}
-                  <span className="ml-1">
-                    {formatDateTime(data.expectedStartTime)}
-                  </span>
-                </div>
-                <div className="flex items-center">
-                  <CalendarOutlined className="mr-2 text-red-500" />
-                  <strong>Ngày và giờ hết hạn:</strong>{" "}
-                  <span className="ml-1">
-                    {formatDateTime(data.expectedEndTime)}
-                  </span>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="bg-gray-50 p-2 rounded">
+                  <div className="flex items-start">
+                    <FileTextOutlined className="mr-2 text-blue-500 mt-1" />
+                    <div>
+                      <div className="text-xs text-gray-500">Tiêu đề</div>
+                      <div className="font-medium">{selectedRecord.title}</div>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="flex items-center">
-                  <UserOutlined className="mr-2 text-purple-500" />
-                  <strong>Người tạo:</strong>{" "}
-                  <span className="ml-1">
-                    {data.createBy ? data.createBy.fullName : "Không"}
-                  </span>
+                <div className="bg-gray-50 p-2 rounded">
+                  <div className="flex items-start">
+                    <InfoCircleOutlined className="mr-2 text-green-500 mt-1" />
+                    <div>
+                      <div className="text-xs text-gray-500">Mô tả</div>
+                      <div>{selectedRecord.description || "Không"}</div>
+                    </div>
+                  </div>
                 </div>
-                <div className="col-span-2">
-                  <strong>Mô tả:</strong>{" "}
-                  <span
-                    className="ml-1"
-                    onDoubleClick={handleDescriptionDoubleClick}
-                  >
-                    {HtmlContent({ htmlString: truncatedDescription })}
-                  </span>
-                  <Modal
-                    title="Chi tiết mô tả"
-                    visible={isDescriptionModalVisible}
-                    onCancel={handleDescriptionModalClose}
-                    footer={null}
-                  >
-                    <HtmlContent htmlString={data.description} />
-                  </Modal>
+
+                <div className="bg-gray-50 p-2 rounded">
+                  <div className="flex items-start">
+                    <CalendarOutlined className="mr-2 text-green-500 mt-1" />
+                    <div>
+                      <div className="text-xs text-gray-500">
+                        Thời gian giao
+                      </div>
+                      <div>{formatDateTime(selectedRecord.assignTime)}</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 p-2 rounded">
+                  <div className="flex items-start">
+                    <CalendarOutlined className="mr-2 text-red-500 mt-1" />
+                    <div>
+                      <div className="text-xs text-gray-500">
+                        Hạn hoàn thành
+                      </div>
+                      <div>{formatDateTime(selectedRecord.deadlineTime)}</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 p-2 rounded">
+                  <div className="flex items-start">
+                    <UserOutlined className="mr-2 text-orange-500 mt-1" />
+                    <div>
+                      <div className="text-xs text-gray-500">Người giao</div>
+                      <div>{selectedRecord.assignFrom.fullName}</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 p-2 rounded">
+                  <div className="flex items-start">
+                    <UserOutlined className="mr-2 text-purple-500 mt-1" />
+                    <div>
+                      <div className="text-xs text-gray-500">Người nhận</div>
+                      <div>{selectedRecord.assignTo.fullName}</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="col-span-2 bg-blue-50 p-2 rounded">
+                  <div className="flex items-start">
+                    <CalendarOutlined className="mr-2 text-blue-500 mt-1" />
+                    <div>
+                      <div className="text-xs text-gray-500">
+                        Tên lịch trình
+                      </div>
+                      <div className="font-medium">
+                        {selectedRecord.schedule.scheduleName}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 p-2 rounded">
+                  <div className="flex items-start">
+                    <CalendarOutlined className="mr-2 text-teal-500 mt-1" />
+                    <div>
+                      <div className="text-xs text-gray-500">
+                        Loại lịch trình
+                      </div>
+                      <div>
+                        {translateScheduleType(
+                          selectedRecord.schedule.scheduleType.scheduleTypeName
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 p-2 rounded">
+                  <div className="flex items-start">
+                    <InfoCircleOutlined className="mr-2 text-gray-500 mt-1" />
+                    <div>
+                      <div className="text-xs text-gray-500">Ghi chú</div>
+                      <div>{selectedRecord.note || "Không"}</div>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </Panel>
-            {data.visitDetail && data.visitDetail.length > 0 && (
-              <Panel
-                header="Danh sách chi tiết khách"
-                key="3"
-                className="bg-gray-50 rounded-lg p-4 shadow-sm"
-              >
-                <Collapse className="mb-4">
-                  {data.visitDetail.map((detail: any, index: number) => (
-                    <Panel
-                      header={`Khách ${index + 1}: ${
-                        detail.visitor.visitorName
-                      }`}
-                      key={detail.visitDetailId}
-                      className="bg-gray-50 rounded-lg p-4 shadow-sm"
-                    >
-                      <div className="grid grid-cols-2 gap-4 text-gray-700">
-                        <div className="flex items-center">
-                          <CalendarOutlined className="mr-2 text-green-500" />
-                          <strong>Giờ bắt đầu dự kiến:</strong>{" "}
-                          <span className="ml-1">
-                            {formatTimeOnly(detail.expectedStartHour)}
-                          </span>
+            </div>
+
+            {/* Visit Information Section */}
+            {data && !isError && (
+              <div className="bg-white rounded-lg p-3">
+                <div className="font-medium text-gray-800 mb-3">
+                  Thông tin chuyến thăm
+                </div>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div className="bg-gray-50 p-2 rounded">
+                    <div className="flex items-start">
+                      <FileTextOutlined className="mr-2 text-blue-500 mt-1" />
+                      <div>
+                        <div className="text-xs text-gray-500">
+                          Tên chuyến thăm
                         </div>
-                        <div className="flex items-center">
-                          <CalendarOutlined className="mr-2 text-red-500" />
-                          <strong>Giờ kết thúc dự kiến:</strong>{" "}
-                          <span className="ml-1">
-                            {formatTimeOnly(detail.expectedEndHour)}
-                          </span>
+                        <div>{data.visitName}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-50 p-2 rounded">
+                    <div className="flex items-start">
+                      <TeamOutlined className="mr-2 text-teal-500 mt-1" />
+                      <div>
+                        <div className="text-xs text-gray-500">
+                          Số lượng dự kiến
                         </div>
-                        <div className="flex items-center">
-                          <CheckCircleOutlined className="mr-2 text-green-500" />
-                          <strong>Trạng thái:</strong>{" "}
-                          <span className="ml-1">
-                            {detail.status ? "Đã xác nhận" : "Chưa xác nhận"}
-                          </span>
+                        <div>{data.visitQuantity}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-50 p-2 rounded">
+                    <div className="flex items-start">
+                      <CalendarOutlined className="mr-2 text-green-500 mt-1" />
+                      <div>
+                        <div className="text-xs text-gray-500">
+                          Thời gian bắt đầu
                         </div>
-                        <div className="flex items-center">
-                          <UserOutlined className="mr-2 text-orange-500" />
-                          <strong>Tên khách:</strong>{" "}
-                          <span className="ml-1">
-                            {detail.visitor.visitorName}
-                          </span>
+                        <div>{formatDateTime(data.expectedStartTime)}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-50 p-2 rounded">
+                    <div className="flex items-start">
+                      <CalendarOutlined className="mr-2 text-red-500 mt-1" />
+                      <div>
+                        <div className="text-xs text-gray-500">
+                          Thời gian kết thúc
                         </div>
-                        <div className="flex items-center">
-                          <BankOutlined className="mr-2 text-purple-500" />
-                          <strong>Công ty:</strong>{" "}
-                          <span className="ml-1">
-                            {detail.visitor.companyName}
-                          </span>
-                        </div>
-                        <div className="flex items-center">
-                          <PhoneOutlined className="mr-2 text-blue-500" />
-                          <strong>Số điện thoại:</strong>{" "}
-                          <span className="ml-1">
-                            {detail.visitor.phoneNumber}
-                          </span>
-                        </div>
-                        <div className="flex items-center">
-                          <IdcardOutlined className="mr-2 text-gray-500" />
-                          <strong>Số thẻ:</strong>{" "}
-                          <span className="ml-1">
-                            {detail.visitor.credentialsCard}
-                          </span>
+                        <div>{formatDateTime(data.expectedEndTime)}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-50 p-2 rounded">
+                    <div className="flex items-start">
+                      <UserOutlined className="mr-2 text-purple-500 mt-1" />
+                      <div>
+                        <div className="text-xs text-gray-500">Người tạo</div>
+                        <div>
+                          {data.createBy ? data.createBy.fullName : "Không"}
                         </div>
                       </div>
-                    </Panel>
-                  ))}
-                </Collapse>
-              </Panel>
-            )}
-          </Collapse>
-        )}
-        <Modal
-          title="Xem trước lịch"
-          visible={modalViewSchedule}
-          onCancel={handleCloseViewSchedule}
-          footer={null}
-        >
-          {isViewMonthlySchedule && (
-            <ReadOnlyMonthCalendar
-              daysOfSchedule={
-                selectedRecord?.schedule.daysOfSchedule || undefined
-              }
-            />
-          )}
-          {isViewWeeklySchedule && (
-            <ReadOnlyWeekCalendar
-              daysOfSchedule={
-                selectedRecord?.schedule.daysOfSchedule || undefined
-              }
-            />
-          )}
-        </Modal>
+                    </div>
+                  </div>
 
-        {!data && !isError && (
-          <div className="text-center text-gray-500">
-            Lịch trình chưa được tạo cuộc hẹn
+                  <div className="col-span-2 bg-gray-50 p-2 rounded">
+                    <div className="flex items-start">
+                      <InfoCircleOutlined className="mr-2 text-blue-500 mt-1" />
+                      <div>
+                        <div className="text-xs text-gray-500">Mô tả</div>
+                        <div
+                          className="cursor-pointer hover:text-blue-500"
+                          onDoubleClick={handleDescriptionDoubleClick}
+                        >
+                          <HtmlContent htmlString={truncatedDescription} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Visitor Details Section */}
+                {data.visitDetail && data.visitDetail.length > 0 && (
+                  <div className="mt-4">
+                    <div className="font-medium text-gray-800 mb-3">
+                      Danh sách chi tiết khách
+                    </div>
+                    <div className="space-y-3">
+                      {data.visitDetail.map((detail: any, index: number) => (
+                        <div
+                          key={detail.visitDetailId}
+                          className="bg-gray-50 p-3 rounded"
+                        >
+                          <div className="font-medium text-gray-700 mb-2">
+                            Khách {index + 1}: {detail.visitor.visitorName}
+                          </div>
+                          <div className="grid grid-cols-2 gap-3 text-sm">
+                            <div className="flex items-start">
+                              <CalendarOutlined className="mr-2 text-green-500 mt-1" />
+                              <div>
+                                <div className="text-xs text-gray-500">
+                                  Giờ bắt đầu dự kiến
+                                </div>
+                                <div>
+                                  {formatTimeOnly(detail.expectedStartHour)}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-start">
+                              <CalendarOutlined className="mr-2 text-red-500 mt-1" />
+                              <div>
+                                <div className="text-xs text-gray-500">
+                                  Giờ kết thúc dự kiến
+                                </div>
+                                <div>
+                                  {formatTimeOnly(detail.expectedEndHour)}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-start">
+                              <CheckCircleOutlined className="mr-2 text-green-500 mt-1" />
+                              <div>
+                                <div className="text-xs text-gray-500">
+                                  Trạng thái
+                                </div>
+                                <div>
+                                  {detail.status
+                                    ? "Đã xác nhận"
+                                    : "Chưa xác nhận"}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-start">
+                              <UserOutlined className="mr-2 text-orange-500 mt-1" />
+                              <div>
+                                <div className="text-xs text-gray-500">
+                                  Tên khách
+                                </div>
+                                <div>{detail.visitor.visitorName}</div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-start">
+                              <BankOutlined className="mr-2 text-purple-500 mt-1" />
+                              <div>
+                                <div className="text-xs text-gray-500">
+                                  Công ty
+                                </div>
+                                <div>{detail.visitor.companyName}</div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-start">
+                              <PhoneOutlined className="mr-2 text-blue-500 mt-1" />
+                              <div>
+                                <div className="text-xs text-gray-500">
+                                  Số điện thoại
+                                </div>
+                                <div>{detail.visitor.phoneNumber}</div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-start col-span-2">
+                              <IdcardOutlined className="mr-2 text-gray-500 mt-1" />
+                              <div>
+                                <div className="text-xs text-gray-500">
+                                  Số thẻ
+                                </div>
+                                <div>{detail.visitor.credentialsCard}</div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {!data && !isError && (
+              <div className="text-center text-gray-500 py-4">
+                Lịch trình chưa được tạo cuộc hẹn
+              </div>
+            )}
           </div>
         )}
       </div>
+
+      {/* Description Modal */}
+      <Modal
+        title="Chi tiết mô tả"
+        visible={isDescriptionModalVisible}
+        onCancel={handleDescriptionModalClose}
+        footer={null}
+      >
+        <HtmlContent htmlString={data?.description} />
+      </Modal>
+
+      {/* Schedule Preview Modal */}
+      <Modal
+        title="Xem trước lịch"
+        visible={modalViewSchedule}
+        onCancel={handleCloseViewSchedule}
+        footer={null}
+      >
+        {isViewMonthlySchedule && (
+          <ReadOnlyMonthCalendar
+            daysOfSchedule={
+              selectedRecord?.schedule.daysOfSchedule || undefined
+            }
+          />
+        )}
+        {isViewWeeklySchedule && (
+          <ReadOnlyWeekCalendar
+            daysOfSchedule={
+              selectedRecord?.schedule.daysOfSchedule || undefined
+            }
+          />
+        )}
+      </Modal>
     </Modal>
   );
 };
