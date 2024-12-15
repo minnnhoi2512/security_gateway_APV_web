@@ -67,7 +67,7 @@ const VisitorManager = () => {
   );
 
   useEffect(() => {
-    let result = data || [];
+    let result = data ;
 
     // First filter by status
     // if (activeStatus !== 'all') {
@@ -361,7 +361,7 @@ const VisitorManager = () => {
               pagination={{
                 current: currentPage,
                 pageSize,
-                total: filteredData.length,
+                total: filteredData?.length,
                 showSizeChanger: true,
                 pageSizeOptions: ["5", "10"],
                 size: "small",

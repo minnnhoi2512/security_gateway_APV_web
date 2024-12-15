@@ -112,7 +112,6 @@ const CardManager = () => {
         await createQRCard({
           CardTypeId: cardTypeId,
           CardVerified: cardVerified,
-          ImageLogo: imageLogo,
         });
       }
       refetch();
@@ -200,27 +199,6 @@ const CardManager = () => {
       render: (date: Date | undefined) =>
         date ? moment.tz(date, "Asia/Ho_Chi_Minh").format("DD/MM/YYYY") : "",
     },
-    {
-      title: "Ngày Hủy",
-      dataIndex: "lastCancelDate",
-      key: "lastCancelDate",
-      sorter: (a: QRCardType, b: QRCardType) =>
-        new Date(a.lastCancelDate || "").getTime() -
-        new Date(b.lastCancelDate || "").getTime(),
-      render: (date: Date | undefined) =>
-        date ? moment.tz(date, "Asia/Ho_Chi_Minh").format("DD/MM/YYYY") : "",
-    },
-    // {
-    //   title: "Loại Thẻ",
-    //   dataIndex: "qrCardTypename",
-    //   key: "qrCardTypename",
-    //   sorter: (a: QRCardType, b: QRCardType) =>
-    //     (a.qrCardTypename || "").localeCompare(b.qrCardTypename || ""),
-    //   render: (text: CardType) => {
-    //     const { colorCardType, textCardType } = typeCardMap[text] || {};
-    //     return <Tag color={colorCardType}>{textCardType}</Tag>;
-    //   },
-    // },
     {
       title: "Loại Thẻ",
       dataIndex: "qrCardTypename",
@@ -361,22 +339,7 @@ const CardManager = () => {
               <Option value="2">Thẻ cho ra vào theo lịch trình</Option>
             </Select>
           </Form.Item>
-          <Form.Item
-            name="imageLogo"
-            label="Logo"
-            valuePropName="fileList"
-            getValueFromEvent={(e) => (Array.isArray(e) ? e : e && e.fileList)}
-            rules={[{ required: true, message: "Vui lòng tải lên logo!" }]}
-          >
-            <Upload
-              name="logo"
-              listType="picture"
-              beforeUpload={() => false}
-              maxCount={1} // Ensure only one image can be uploaded
-            >
-              <Button icon={<UploadOutlined />}>Tải lên logo</Button>
-            </Upload>
-          </Form.Item>
+        
         </Form>
       </Modal>
       {error ? (

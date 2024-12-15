@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Button,
   Table,
@@ -30,6 +30,8 @@ import {
 } from "../../services/department.service";
 import { useGetListUsersByDepartmentIdQuery } from "../../services/user.service";
 import { Plus } from "lucide-react";
+import DepartmentUser from "./DepartmentUser";
+import DepartmentManager from "../User/DepartmentManager";
 
 const { confirm } = Modal;
 
@@ -59,15 +61,6 @@ const DepartManager = () => {
     ? data.filter((department) => ![1, 2, 3].includes(department.departmentId))
     : [];
   const totalDepartments = departments ? departments.length : 0;
-
-  const {
-    data: userListData,
-    isLoading: isUserListLoading,
-    error: userListError,
-  } = useGetListUsersByDepartmentIdQuery(
-    { departmentId: selectedDepartmentId!, pageNumber: 1, pageSize: 100 },
-    { skip: selectedDepartmentId === null }
-  );
 
   const filteredData = departments.filter((dept: any) =>
     dept.departmentName.toLowerCase().includes(searchText.toLowerCase())
@@ -137,7 +130,10 @@ const DepartManager = () => {
       ),
     },
   ];
-
+  const viewUserList = (departmentId: number) => {
+    setSelectedDepartmentId(departmentId);
+    setIsUserListModalVisible(true);
+  };
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchText(e.target.value);
   };
@@ -230,11 +226,6 @@ const DepartManager = () => {
         console.log("Hủy xóa");
       },
     });
-  };
-
-  const viewUserList = (departmentId: number) => {
-    setSelectedDepartmentId(departmentId);
-    setIsUserListModalVisible(true);
   };
 
   return (
@@ -341,51 +332,12 @@ const DepartManager = () => {
       </Modal>
 
       {/* User List Modal */}
-      <Modal
-        title={<h2 className="text-lg font-semibold">Danh sách người dùng</h2>}
-        open={isUserListModalVisible}
-        onCancel={() => setIsUserListModalVisible(false)}
-        footer={null}
-        width={800}
-        className="rounded-lg"
-      >
-        {userListError ? (
-          <p className="text-red-500">
-            Đã xảy ra lỗi khi tải danh sách người dùng!
-          </p>
-        ) : (
-          <Card className="shadow-lg rounded-xl border-0">
-            <Table
-              columns={[
-                {
-                  title: "Tên đầy đủ",
-                  dataIndex: "fullName",
-                  key: "fullName",
-                },
-                { title: "Email", dataIndex: "email", key: "email" },
-                {
-                  title: "Số điện thoại",
-                  dataIndex: "phoneNumber",
-                  key: "phoneNumber",
-                },
-                {
-                  title: "Vai trò",
-                  dataIndex: ["role", "roleName"],
-                  key: "roleName",
-                },
-                { title: "Trạng thái", dataIndex: "status", key: "status" },
-              ]}
-              dataSource={userListData}
-              loading={isUserListLoading}
-              pagination={{ pageSize: 5 }}
-              rowKey="userId"
-              size="middle"
-              bordered={false}
-              className="w-full [&_thead_th]:!bg-[#34495e] [&_thead_th]:!text-white [&_thead_th]:!font-medium [&_thead_th]:!py-3 [&_thead_th]:!text-sm hover:[&_tbody_tr]:bg-blue-50/30 [&_table]:!rounded-none [&_table-container]:!rounded-none [&_thead>tr>th:first-child]:!rounded-tl-none [&_thead>tr>th:last-child]:!rounded-tr-none [&_thead_th]:!transition-none"
-            />
-          </Card>
-        )}
-      </Modal>
+      <DepartmentUser
+        departmentId={selectedDepartmentId || 0}
+        isUserListModalVisible={isUserListModalVisible}
+        setIsUserListModalVisible={setIsUserListModalVisible}
+        isUserListLoading={isLoading}
+      />
 
       {error ? (
         <p className="text-red-500 text-center">

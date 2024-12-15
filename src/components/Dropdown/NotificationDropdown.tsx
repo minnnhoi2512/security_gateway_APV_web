@@ -42,7 +42,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = () => {
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const notificationListRef = useRef<HTMLDivElement>(null);
   const userRole = localStorage.getItem("userRole");
-  console.log("Noti nè cu: ", notificaitionData);
+  // console.log("Noti nè cu: ", notificaitionData);
 
   // useEffect(() => {
   //

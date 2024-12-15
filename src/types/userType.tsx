@@ -3,7 +3,7 @@ import Role from "./roleType";
 type User = {
   userId?: number;
   userName: string;
-  password: string;
+  password?: string;
   fullName: string;
   email: string;
   image?: string;
