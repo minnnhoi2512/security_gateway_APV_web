@@ -347,7 +347,7 @@ const CustomerVisitStaff = () => {
     );
   }
   return (
-    <Content className="px-6 mt-10">
+    <Content className="p-2 max-w-[1200px] mx-auto mt-10">
       <div className="flex gap-4">
         <div className="flex flex-1 gap-2 mt-2 mb-2">
           <Input
