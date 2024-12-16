@@ -62,22 +62,15 @@ const DetailVisitor: React.FC<DetailVisitorProps> = ({
   const [frontImage, setFrontImage] = useState<string | null>(null);
   const [backImage, setBackImage] = useState<string | null>(null);
   const [blurImage, setBlurImage] = useState<string | null>(null);
+  const [allowSetType, setAllowSetType] = useState(false);
   const [isDetecting, setIsDetecting] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   // console.log(visitorData)
   useEffect(() => {
     if (visitorData) {
-      const frontImage = visitorData.visitorImage.find(
-        (image) => image.imageType === "CitizenIdentificationCard_FRONT"
-      )?.imageURL;
-
-      const backImage = visitorData.visitorImage.find(
-        (image) => image.imageType === "CitizenIdentificationCard_BACK"
-      )?.imageURL;
-
-      const blurImage = visitorData.visitorImage.find(
-        (image) => image.imageType === "CitizenIdentificationCard_BLUR"
-      )?.imageURL;
-
+      const frontImage = visitorData.visitorImage[0]?.imageURL;
+      const backImage = visitorData.visitorImage[1]?.imageURL;
+      const blurImage = visitorData.visitorImage[2]?.imageURL;
       setFormData({
         visitorName: visitorData.visitorName,
         companyName: visitorData.companyName,
@@ -157,7 +150,8 @@ const DetailVisitor: React.FC<DetailVisitorProps> = ({
   };
   const callDetectAPI = async (formData: any) => {
     setIsDetecting(true);
-    // console.log(formData);
+    setAllowSetType(false);
+    setIsProcessing(true);
     try {
       // console.log(formData.credentialCardTypeId)
       const formDataDetect = new FormData();
@@ -195,6 +189,7 @@ const DetailVisitor: React.FC<DetailVisitorProps> = ({
       const formattedName = capitalizeFirstLetter(name);
       // console.log(formattedName);
       // console.log(convertFile);
+
       setFormData((prevData) => ({
         ...prevData,
         visitorName: formattedName,
@@ -220,6 +215,7 @@ const DetailVisitor: React.FC<DetailVisitorProps> = ({
       });
     } finally {
       setIsDetecting(false);
+      setIsProcessing(false);
     }
   };
   const handleFileDrop = (e: React.DragEvent<HTMLDivElement>, type: string) => {
@@ -298,6 +294,7 @@ const DetailVisitor: React.FC<DetailVisitorProps> = ({
   };
 
   const clearImages = () => {
+    setAllowSetType(true);
     setFrontImage(null);
     setBackImage(null);
     setIsDetecting(true);
@@ -344,6 +341,7 @@ const DetailVisitor: React.FC<DetailVisitorProps> = ({
             <Button
               loading={isUpdating}
               onClick={handleUpdate}
+              disabled={isProcessing}
               className="min-w-[120px] bg-buttonColor text-white hover:!text-buttonColor hover:!bg-white hover:!border-buttonColor hover:!border-2 border-0 shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center h-10"
               icon={<Plus className="w-4 h-4 mr-1" />}
             >
@@ -380,7 +378,7 @@ const DetailVisitor: React.FC<DetailVisitorProps> = ({
               value={formData.credentialCardTypeId}
               onChange={handleSelectChange}
               placeholder="Chọn loại thẻ"
-              disabled={!isEditable}
+              disabled={!allowSetType}
               className="w-full"
             >
               <Option value={1}>Căn cước công dân</Option>
@@ -493,14 +491,16 @@ const DetailVisitor: React.FC<DetailVisitorProps> = ({
             <label className="block text-sm font-medium text-gray-700">
               Tên khách
             </label>
-            <Input
-              name="visitorName"
-              value={formData.visitorName}
-              onChange={handleInputChange}
-              placeholder="Nhập tên khách"
-              disabled={true}
-              status={errorVisitor?.visitorName ? "error" : ""}
-            />
+            <Spin spinning={isProcessing}>
+              <Input
+                name="visitorName"
+                value={formData.visitorName}
+                onChange={handleInputChange}
+                placeholder="Nhập tên khách"
+                disabled={true}
+                status={errorVisitor?.visitorName ? "error" : ""}
+              />
+            </Spin>
             {errorVisitor?.visitorName && (
               <p className="text-sm text-red-600 bg-red-50 p-2 rounded">
                 {errorVisitor.visitorName[0]}
@@ -568,14 +568,18 @@ const DetailVisitor: React.FC<DetailVisitorProps> = ({
               <label className="block text-sm font-medium text-gray-700">
                 Số thẻ
               </label>
-              <Input
-                name="credentialsCard"
-                value={formData.credentialsCard}
-                onChange={handleInputChange}
-                placeholder="Nhập mã thẻ"
-                disabled={true}
-                status={errorVisitor?.credentialsCard ? "error" : ""}
-              />
+              <Spin spinning={isProcessing}>
+                {" "}
+                <Input
+                  name="credentialsCard"
+                  value={formData.credentialsCard}
+                  onChange={handleInputChange}
+                  placeholder="Nhập mã thẻ"
+                  disabled={true}
+                  status={errorVisitor?.credentialsCard ? "error" : ""}
+                />
+              </Spin>
+
               {errorVisitor?.credentialsCard && (
                 <p className="text-sm text-red-600 bg-red-50 p-2 rounded">
                   {errorVisitor.credentialsCard[0]}

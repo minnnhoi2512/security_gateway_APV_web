@@ -455,9 +455,7 @@ const DetailCustomerVisit: React.FC = () => {
               <Button
                 size="middle"
                 onClick={() =>
-                  navigate(
-                    `listVisitorSession/${record.visitor.visitorId}`
-                  )
+                  navigate(`listVisitorSession/${record.visitor.visitorId}`)
                 }
               >
                 <SearchOutlined />
@@ -717,11 +715,7 @@ const DetailCustomerVisit: React.FC = () => {
                       <Button
                         type="link"
                         className="text-blue-600 hover:text-blue-800 text-base"
-                        onClick={() =>
-                          navigate(
-                            `listSession`
-                          )
-                        }
+                        onClick={() => navigate(`listSession`)}
                       >
                         Xem chi tiết
                       </Button>
@@ -795,6 +789,17 @@ const DetailCustomerVisit: React.FC = () => {
               </Button>
             )}
             {status === "Active" && (
+              <div className="">
+                <Button
+                  type="primary"
+                  className="mb-4"
+                  onClick={handleToggleMode}
+                >
+                  {isEditMode ? "Lưu" : "Chỉnh sửa"}
+                </Button>
+              </div>
+            )}
+            {visitData?.visitStatus === "Pending" && (
               <div className="">
                 <Button
                   type="primary"

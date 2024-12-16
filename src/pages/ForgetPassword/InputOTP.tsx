@@ -26,7 +26,7 @@ const InputOTP = () => {
       navigate("/resetNewPassword");
       notification.success({ message: "Xác nhận thành công" });
     } catch (error) {
-      notification.error({ message: "Xác nhận thất bại" });
+      // notification.error({ message: "Xác nhận thất bại" });
     }
   };
 

@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useGetVisitGraphqlMutation } from "../../services/visitGraphql.service";
 import { setListOfVisitorSession } from "../../redux/slices/visitorSession.slice";
+import { formatDateLocal } from "../../utils/ultil";
 
 type SecurityRes = {
   userId?: number;
@@ -443,7 +444,7 @@ const HistoryDetail = () => {
                 <InfoRow label="Cổng vào" value={gateIn?.gateName} />
                 <InfoRow
                   label="Thời gian"
-                  value={dayjs(checkinTime).format("HH:mm, DD/MM/YYYY")}
+                  value={formatDateLocal(checkinTime)}
                 />
               </div>
             </DetailCard>
@@ -460,7 +461,7 @@ const HistoryDetail = () => {
                   label="Thời gian"
                   value={
                     checkoutTime
-                      ? dayjs(checkoutTime).format("HH:mm, DD/MM/YYYY")
+                      ? formatDateLocal(checkoutTime)
                       : "N/A"
                   }
                 />

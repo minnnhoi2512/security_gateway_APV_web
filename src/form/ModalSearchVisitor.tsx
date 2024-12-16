@@ -33,21 +33,20 @@ const VisitorSearchModal: React.FC<VisitorSearchModalProps> = ({
     onVisitorSelected([visitor]);
   };
   const renderImages = (images: any[]) => {
-    console.log(images[0].imageType)
-    return images
-      .filter(image => image.imageType === "CitizenIdentificationCard_FRONT")
-      .map((image, index) => (
-        <Image
-          key={index}
-          src={`data:image/jpeg;base64,${image.imageURL}`}
-          alt="Visitor image"
-          width={50}
-          height={50}
-          preview={false}
-          style={{ objectFit: "cover" }}
-        />
-      ));
+    const image = images[0];
+    return (
+      <Image
+        key={1}
+        src={`data:image/jpeg;base64,${image.imageURL}`}
+        alt="Visitor image"
+        width={50}
+        height={50}
+        preview={false}
+        style={{ objectFit: "cover" }}
+      />
+    );
   };
+
   return (
     <Modal
       title="Tìm kiếm khách"

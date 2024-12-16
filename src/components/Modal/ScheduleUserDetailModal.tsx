@@ -61,10 +61,7 @@ const formatDateTime = (dateString: string | undefined) => {
   const dateObj = new Date(dateString);
   return isNaN(dateObj.getTime())
     ? "Không xác định"
-    : `${dateObj.toLocaleDateString("vi-VN")} ${dateObj.toLocaleTimeString(
-        "en-US",
-        { hour: "2-digit", minute: "2-digit", hour12: true }
-      )}`;
+    : dateObj.toLocaleDateString("vi-VN");
 };
 
 // Helper function to format only the time
@@ -112,7 +109,6 @@ const ScheduleUserDetailModal: React.FC<ScheduleUserModalDetailProps> = ({
   };
 
   console.log("Data detail nhiem vu: ", data);
-  
 
   const handleDescriptionModalClose = () => {
     setDescriptionIsModalVisible(false);
@@ -192,6 +188,18 @@ const ScheduleUserDetailModal: React.FC<ScheduleUserModalDetailProps> = ({
             Từ chối
           </Button>
         ),
+        userRole !== "Staff" && (
+          <Button
+            key="reject"
+            type="primary"
+            danger
+            className="mr-2"
+            onClick={() => handleRejectSchedule(selectedRecord?.id || 0)}
+            disabled={selectedRecord?.status !== ScheduleUserStatus.Assigned}
+          >
+            Hủy nhiệm vụ
+          </Button>
+        ),
         userRole === "Staff" && status === "Assigned" && (
           <Button
             key="createVisit"
@@ -218,9 +226,7 @@ const ScheduleUserDetailModal: React.FC<ScheduleUserModalDetailProps> = ({
             <Panel
               header={
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-lg">
-                    Thông tin nhiệm vụ
-                  </span>
+                  <span className="font-bold text-lg">Thông tin nhiệm vụ</span>
                   {status && (
                     <Tag
                       color={

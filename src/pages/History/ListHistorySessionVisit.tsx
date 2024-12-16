@@ -6,6 +6,7 @@ import { setListOfVisitorSession } from "../../redux/slices/visitorSession.slice
 import { useDispatch } from "react-redux";
 import { useParams } from "react-router";
 import dayjs from "dayjs";
+import { formatDateLocal } from "../../utils/ultil";
 
 const { Content } = Layout;
 
@@ -25,11 +26,11 @@ const renderSession = (session: VisitorSessionType) => (
           {session.visit.visitName}
         </Descriptions.Item>
         <Descriptions.Item label="Thời gian vào">
-          {dayjs(session.checkinTime).format("DD/MM/YYYY HH:mm")}
+          {formatDateLocal(session.checkinTime)}
         </Descriptions.Item>
         <Descriptions.Item label="Thời gian ra">
           {session.checkoutTime
-            ? dayjs(session.checkoutTime).format("DD/MM/YYYY HH:mm")
+            ? formatDateLocal(session.checkoutTime)
             : "N/A"}
         </Descriptions.Item>
         <Descriptions.Item label="Cổng vào">
