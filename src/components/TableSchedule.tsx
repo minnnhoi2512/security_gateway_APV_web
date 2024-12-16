@@ -125,7 +125,7 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({
           case "ProcessWeek":
             return (
               <Tag
-                color="green"
+                color="#e67e22"
                 style={{ minWidth: "80px", textAlign: "center" }}
               >
                 Theo tuần
@@ -134,7 +134,7 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({
           case "ProcessMonth":
             return (
               <Tag
-                color="orange"
+                color="#2980b9"
                 style={{ minWidth: "80px", textAlign: "center" }}
               >
                 Theo tháng

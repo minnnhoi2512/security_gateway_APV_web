@@ -194,11 +194,11 @@ const CustomerVisitStaff = () => {
         const scheduleTypeId = scheduleUser?.schedule.scheduleType
           .scheduleTypeId as ScheduleType;
         if (scheduleTypeId === undefined)
-          return <Tag color="default">Theo ngày</Tag>;
+          return <Tag color="#138d75">Theo ngày</Tag>;
         const { colorScheduleType, textScheduleType } = typeMap[
           scheduleTypeId
         ] || {
-          color: "default",
+          color: "#138d75",
           text: "Theo ngày",
         };
         return (

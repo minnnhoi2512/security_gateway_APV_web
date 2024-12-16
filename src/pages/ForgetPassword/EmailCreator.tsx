@@ -1,17 +1,20 @@
 import React, { useState } from "react";
-import { Input, Button, Result, notification } from "antd";
+import { Input, Button, notification } from "antd";
 import { useForgetPasswordUserMutation } from "../../services/forgetPassword.service";
 import { useNavigate } from "react-router";
 
 const EmailCreator = () => {
   const [email, setEmail] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
   const [inputEmail] = useForgetPasswordUserMutation();
   const navigate = useNavigate();
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
   };
 
   const handleSubmit = async () => {
+    setLoading(true);
     try {
       const result = await inputEmail({ email }).unwrap();
       localStorage.setItem("email", email);
@@ -19,11 +22,12 @@ const EmailCreator = () => {
       if (result) {
         navigate("/confirmOTP");
       }
-    } catch (error) {
-      //   console.log(error.data.errors.email[0]);
+    } catch (error: any) {
       notification.error({
         message: error.data.errors.email[0] || "Email không tồn tại",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -99,6 +103,9 @@ const EmailCreator = () => {
             alt="Apache Vietnam Office"
             className="w-full h-full object-cover"
           />
+          <Button type="primary" block onClick={handleSubmit} loading={loading}>
+            {loading ? "Đang gửi OTP" : "Xác nhận"}
+          </Button>
         </div>
       </div>
     </div>

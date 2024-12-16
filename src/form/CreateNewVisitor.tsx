@@ -425,6 +425,7 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
                 onChange={handleInputChange}
                 placeholder="Nhập tên khách"
                 status={errorVisitor?.visitorName ? "error" : ""}
+                disabled={true}
               />
             </Spin>
             {errorVisitor?.visitorName && (
@@ -502,6 +503,7 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
                   onChange={handleInputChange}
                   placeholder="Nhập mã thẻ"
                   status={errorVisitor?.credentialsCard ? "error" : ""}
+                  disabled={true}
                 />
               </Spin>
               {errorVisitor?.credentialsCard && (

@@ -164,9 +164,9 @@ const Profile: React.FC = () => {
               }`}
           >
             {isEditing ? (
-              <XIcon size={20} className="text-white" />
+              <XIcon size={20} className="text-black" />
             ) : (
-              <PencilIcon size={20} className="text-white" />
+              <PencilIcon size={20} className="text-black" />
             )}
           </button>
         </div>

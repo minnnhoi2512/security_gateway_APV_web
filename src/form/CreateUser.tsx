@@ -6,13 +6,10 @@ import {
   Input,
   Upload,
   Select,
-  Card,
   Typography,
-  Row,
-  Col,
   notification,
 } from "antd";
-import { useLocation } from "react-router-dom";
+
 import {
   DeleteOutlined,
   LockOutlined,
@@ -30,9 +27,18 @@ import {
   useGetListUserByRoleQuery,
 } from "../services/user.service";
 import { useGetListDepartmentsQuery } from "../services/department.service";
-import DepartmentType from "../types/departmentType";
+import { isEntityError } from "../utils/helpers";
 
-const { Content } = Layout;
+interface FormData {
+  fullName: string;
+  email: string;
+  phoneNumber: string;
+  userName: string;
+  password: string;
+  departmentId: number;
+  roleId: string;
+}
+
 const { Title, Text } = Typography;
 interface CreateUserProps {
   onSuccess?: () => void;
@@ -55,8 +61,12 @@ const CreateUser: React.FC<CreateUserProps> = ({ onSuccess }) => {
   const [departmentId, setDepartmentId] = useState<number | undefined>(
     undefined
   );
+  const [hidden, setHidden] = useState(true);
   const [editDisable, setEditDisabled] = useState(false);
   const [createNewUser] = useCreateNewUserMutation();
+
+  type FormError = { [key in keyof FormData]?: string[] } | null;
+  const [errorVisitor, setErrorVisitor] = useState<FormError>(null);
 
   const { data: listDepartment } = useGetListDepartmentsQuery({
     pageNumber: -1,
@@ -133,11 +143,22 @@ const CreateUser: React.FC<CreateUserProps> = ({ onSuccess }) => {
       await createNewUser(user).unwrap();
       setFaceImg([]);
       form.resetFields();
+      setErrorVisitor(null);
+      setDepartmentId(undefined);
+      setRoleId("");
+      setFaceImg([]);
+      setFullName("");
+      setEmail("");
+      setPhoneNumber("");
+      setUsername("");
+      setPassword("");
       refetchUserList();
       onSuccess?.();
       notification.success({ message: "Tạo người dùng thành công!" });
     } catch (error) {
-      console.error("Failed to create user:", error);
+      if (isEntityError(error)) {
+        setErrorVisitor(error.data.errors as FormError);
+      }
       notification.error({ message: "Tạo người dùng thất bại!" });
     }
   };
@@ -165,7 +186,6 @@ const CreateUser: React.FC<CreateUserProps> = ({ onSuccess }) => {
               <Form.Item
                 name="fullName"
                 label={<span className="text-gray-600">Họ và Tên</span>}
-                rules={[{ required: true, message: "Vui lòng nhập họ và tên" }]}
               >
                 <Input
                   prefix={<UserOutlined className="text-gray-400" />}
@@ -173,16 +193,20 @@ const CreateUser: React.FC<CreateUserProps> = ({ onSuccess }) => {
                   onChange={(e) => setFullName(e.target.value)}
                   className="rounded-md"
                   size="middle"
+                  value={fullName}
+                  status={errorVisitor?.fullName ? "error" : ""}
                 />
+                <span></span>
+                {errorVisitor?.fullName && (
+                  <p className="text-sm text-red-600 bg-red-50 p-2 rounded">
+                    {errorVisitor.fullName[0]}
+                  </p>
+                )}
               </Form.Item>
 
               <Form.Item
                 name="email"
                 label={<span className="text-gray-600">Email</span>}
-                rules={[
-                  { required: true, message: "Vui lòng nhập email" },
-                  { type: "email", message: "Email không hợp lệ" },
-                ]}
               >
                 <Input
                   prefix={<MailOutlined className="text-gray-400" />}
@@ -190,15 +214,20 @@ const CreateUser: React.FC<CreateUserProps> = ({ onSuccess }) => {
                   onChange={(e) => setEmail(e.target.value)}
                   className="rounded-md"
                   size="middle"
+                  value={email}
+                  status={errorVisitor?.email ? "error" : ""}
                 />
+                <span></span>
+                {errorVisitor?.email && (
+                  <p className="text-sm text-red-600 bg-red-50 p-2 rounded">
+                    {errorVisitor.email[0]}
+                  </p>
+                )}
               </Form.Item>
 
               <Form.Item
                 name="phoneNumber"
                 label={<span className="text-gray-600">Số điện thoại</span>}
-                rules={[
-                  { required: true, message: "Vui lòng nhập số điện thoại" },
-                ]}
               >
                 <Input
                   prefix={<PhoneOutlined className="text-gray-400" />}
@@ -206,7 +235,15 @@ const CreateUser: React.FC<CreateUserProps> = ({ onSuccess }) => {
                   onChange={(e) => setPhoneNumber(e.target.value)}
                   className="rounded-md"
                   size="middle"
+                  value={phoneNumber}
+                  status={errorVisitor?.phoneNumber ? "error" : ""}
                 />
+                <span></span>
+                {errorVisitor?.phoneNumber && (
+                  <p className="text-sm text-red-600 bg-red-50 p-2 rounded">
+                    {errorVisitor.phoneNumber[0]}
+                  </p>
+                )}
               </Form.Item>
             </div>
 
@@ -214,9 +251,6 @@ const CreateUser: React.FC<CreateUserProps> = ({ onSuccess }) => {
               <Form.Item
                 name="username"
                 label={<span className="text-gray-600">Tên đăng nhập</span>}
-                rules={[
-                  { required: true, message: "Vui lòng nhập tên đăng nhập" },
-                ]}
               >
                 <Input
                   prefix={<UserOutlined className="text-gray-400" />}
@@ -224,13 +258,20 @@ const CreateUser: React.FC<CreateUserProps> = ({ onSuccess }) => {
                   onChange={(e) => setUsername(e.target.value)}
                   className="rounded-md"
                   size="middle"
+                  value={username}
+                  status={errorVisitor?.userName ? "error" : ""}
                 />
+                <span></span>
+                {errorVisitor?.userName && (
+                  <p className="text-sm text-red-600 bg-red-50 p-2 rounded">
+                    {errorVisitor.userName[0]}
+                  </p>
+                )}
               </Form.Item>
 
               <Form.Item
                 name="password"
                 label={<span className="text-gray-600">Mật khẩu</span>}
-                rules={[{ required: true, message: "Vui lòng nhập mật khẩu" }]}
               >
                 <Input.Password
                   prefix={<LockOutlined className="text-gray-400" />}
@@ -238,40 +279,55 @@ const CreateUser: React.FC<CreateUserProps> = ({ onSuccess }) => {
                   onChange={(e) => setPassword(e.target.value)}
                   className="rounded-md"
                   size="middle"
+                  value={password}
+                  status={errorVisitor?.password ? "error" : ""}
                 />
+                <span></span>
+                {errorVisitor?.password && (
+                  <p className="text-sm text-red-600 bg-red-50 p-2 rounded">
+                    {errorVisitor.password[0]}
+                  </p>
+                )}
               </Form.Item>
 
               {userRole !== "DepartmentManager" && (
                 <Form.Item
                   name="departmentId"
                   label={<span className="text-gray-600">Phòng ban</span>}
-                  rules={[
-                    { required: true, message: "Vui lòng chọn phòng ban" },
-                  ]}
                 >
                   <Select
                     placeholder="Chọn phòng ban"
                     onChange={(value) => {
                       setDepartmentId(value);
+                      console.log(value === 3);
+                      if (value === 3 || value === 2) {
+                        setHidden(true);
+                      } else setHidden(false);
                       const selectedDepartment = listDepartment.find(
                         (dept) => dept.departmentId === value
                       );
                       if (selectedDepartment?.departmentName === "Security") {
                         setRoleId("5");
                       }
+                      if (selectedDepartment?.departmentName === "Manager") {
+                        setRoleId("2");
+                      }
                     }}
                     className="rounded-md"
                     size="middle"
+                    status={errorVisitor?.departmentId ? "error" : ""}
+                    value={departmentId}
                   >
                     {listDepartment
                       ?.filter((department) => {
-                        if (userRole === "Manager") {
+                        if (userRole === "Admin") {
+                          return department.departmentName !== "Admin";
+                        } else if (userRole === "Manager") {
                           return (
                             department.departmentName !== "Admin" &&
                             department.departmentName !== "Manager"
                           );
-                        }
-                        return true;
+                        } else return true;
                       })
                       ?.map((department) => (
                         <Select.Option
@@ -286,6 +342,12 @@ const CreateUser: React.FC<CreateUserProps> = ({ onSuccess }) => {
                         </Select.Option>
                       ))}
                   </Select>
+                  <span></span>
+                  {errorVisitor?.departmentId && (
+                    <p className="text-sm text-red-600 bg-red-50 p-2 rounded">
+                      {errorVisitor.departmentId[0]}
+                    </p>
+                  )}
                 </Form.Item>
               )}
             </div>
@@ -295,22 +357,28 @@ const CreateUser: React.FC<CreateUserProps> = ({ onSuccess }) => {
             <Form.Item
               name="roleId"
               label={<span className="text-gray-600">Vai trò</span>}
-              rules={[{ required: true, message: "Vui lòng chọn vai trò" }]}
+              hidden={hidden}
             >
               <Select
                 placeholder="Chọn vai trò"
                 onChange={(value) => setRoleId(value)}
                 className="rounded-md"
                 size="middle"
+                value={roleId}
               >
-                {userRole === "Admin" && (
-                  <>
-                    <Select.Option value="1">Quản trị viên</Select.Option>
-                    <Select.Option value="2">Quản lý</Select.Option>
-                  </>
+                {departmentId?.toString() === "2" && (
+                  <Select.Option value="2">Quản lý</Select.Option>
                 )}
-                <Select.Option value="3">Quản lý phòng ban</Select.Option>
-                <Select.Option value="4">Nhân viên</Select.Option>
+                {departmentId?.toString() === "3" && (
+                  <Select.Option value="5">Bảo vệ</Select.Option>
+                )}
+                {departmentId?.toString() !== "2" &&
+                  departmentId?.toString() !== "3" && (
+                    <>
+                      <Select.Option value="3">Quản lý phòng ban</Select.Option>
+                      <Select.Option value="4">Nhân viên</Select.Option>
+                    </>
+                  )}
               </Select>
             </Form.Item>
           )}
@@ -398,7 +466,21 @@ const CreateUser: React.FC<CreateUserProps> = ({ onSuccess }) => {
 
           <Form.Item className="mb-0 mt-4">
             <div className="flex justify-end gap-2">
-              <Button onClick={() => form.resetFields()} className="rounded-md">
+              <Button
+                onClick={() => {
+                  form.resetFields();
+                  setErrorVisitor(null);
+                  setDepartmentId(undefined);
+                  setRoleId("");
+                  setFaceImg([]);
+                  setFullName("");
+                  setEmail("");
+                  setPhoneNumber("");
+                  setUsername("");
+                  setPassword("");
+                }}
+                className="rounded-md"
+              >
                 Đặt lại
               </Button>
               <Button
