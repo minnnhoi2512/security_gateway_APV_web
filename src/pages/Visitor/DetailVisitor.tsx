@@ -289,7 +289,7 @@ const DetailVisitor: React.FC<DetailVisitorProps> = ({
       if (isEntityError(error)) {
         setErrorVisitor(error.data.errors as FormError);
       }
-      notification.error({ message: "Đã có lỗi xảy ra khi cập nhật." });
+      // notification.error({ message: "Đã có lỗi xảy ra khi cập nhật." });
     }
   };
 
@@ -389,10 +389,14 @@ const DetailVisitor: React.FC<DetailVisitorProps> = ({
           </div>
 
           <div className="space-y-4">
-            {(frontImage || backImage) && (
-              <Button onClick={showConfirm} className="mb-4">
-                Xóa ảnh thẻ CCCD/GPLX cũ
-              </Button>
+            {userRole !== "Staff" && (
+              <>
+                {(frontImage || backImage) && (
+                  <Button onClick={showConfirm} className="mb-4">
+                    Xóa ảnh thẻ CCCD/GPLX cũ
+                  </Button>
+                )}
+              </>
             )}
             <div className="relative border-2 border-dashed rounded-lg p-4 hover:border-blue-500 transition-all duration-300 group">
               {frontImage ? (
