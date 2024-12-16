@@ -652,14 +652,14 @@ const Schedule = () => {
           <div className="flex justify-end space-x-3">
             <Button
               onClick={handleCancelAssigned}
-              className="px-4 h-8 rounded-md hover:bg-gray-100 text-sm"
+              className="px-5 h-8 text-white rounded-md bg-buttonCancel hover:!bg-white hover:!border-1 hover:!border-buttonCancel hover:!text-buttonCancel text-sm "
             >
               Hủy bỏ
             </Button>
             <Button
               type="primary"
               htmlType="submit"
-              className="px-5 h-8 rounded-md bg-green-600 hover:bg-green-700 text-sm border-none"
+              className="px-5 h-8 rounded-md bg-green-600 hover:!bg-white  hover:!border-green-600 hover:!text-green-600 text-sm  "
             >
               Xác nhận
             </Button>
