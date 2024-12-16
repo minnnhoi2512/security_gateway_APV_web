@@ -99,88 +99,124 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
     }
   };
 
-  const handleFileDrop = (
-    e: React.DragEvent<HTMLDivElement>,
-    typeImage: string
-  ) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files[0];
-    const event = {
-      target: { files: [file] },
-    } as unknown as React.ChangeEvent<HTMLInputElement>;
-    handleFileChange(event, typeImage);
-  };
-
-  const base64ToFile = (
-    base64String: string,
-    fileName: string = "image.jpg"
-  ): File => {
+  const base64ToFile = (base64String: string, fileName: string = 'image.jpg'): File => {
     try {
-      const base64Content = base64String.replace(
-        /^data:image\/(png|jpeg|jpg);base64,/,
-        ""
-      );
+      // Remove data URI prefix if present
+      const base64Content = base64String.replace(/^data:image\/(png|jpeg|jpg);base64,/, '');
+      
+      // Convert base64 to binary
       const byteString = window.atob(base64Content);
+      
+      // Create array buffer
       const arrayBuffer = new ArrayBuffer(byteString.length);
       const uint8Array = new Uint8Array(arrayBuffer);
-
+      
+      // Fill array buffer
       for (let i = 0; i < byteString.length; i++) {
         uint8Array[i] = byteString.charCodeAt(i);
       }
-
-      const blob = new Blob([arrayBuffer], { type: "image/jpeg" });
-      return new File([blob], fileName, { type: "image/jpeg" });
+      
+      // Create Blob and File
+      const blob = new Blob([arrayBuffer], { type: 'image/jpeg' });
+      return new File([blob], fileName, { type: 'image/jpeg' });
     } catch (error) {
-      console.error("Error converting base64 to file:", error);
-      throw new Error("Failed to convert base64 to file");
+      // console.error('Error converting base64 to file:', error);
+      throw new Error('Failed to convert base64 to file');
     }
   };
-
-  const callDetectAPI = async (formData: FormData) => {
+  const capitalizeFirstLetter = (str: string) => {
+    return str
+      .toLowerCase()
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+  const callDetectAPI = async (formData: any) => {
     setIsDetecting(true);
     try {
       const formDataDetect = new FormData();
       formDataDetect.append(
         "file",
-        formData.visitorCredentialFrontImageFromRequest!
+        formData.visitorCredentialFrontImageFromRequest
       );
-
       let response = null;
       if (formData.credentialCardTypeId === 1) {
         response = await detectAPI.post("/IdentityCard", formDataDetect, {
-          headers: { "Content-Type": "multipart/form-data" },
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
         });
       } else if (formData.credentialCardTypeId === 2) {
         response = await detectAPI.post("/DrivingLicense", formDataDetect, {
-          headers: { "Content-Type": "multipart/form-data" },
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
         });
       }
 
-      const { id, name, birth, imgblur } = response.data;
+      const { id, name, birth ,imgblur} = response.data;
+
 
       if (!birth.toString().includes("/")) {
+        setFormData((prev) => ({
+          ...prev,
+          visitorName: "",
+          companyName: "",
+          phoneNumber: "",
+          email : "",
+          credentialsCard: "",
+          imgBlur : null,
+          visitorCredentialFrontImageFromRequest: null,
+          visitorCredentialBackImageFromRequest: null ,
+        }));
         return notification.warning({
-          message: `Hệ thống không nhận diện được thẻ`,
-          description: "Vui lòng nhập thông tin.",
+          message: `Hệ thống không nhận diện được ảnh`,
+          description: "Vui lòng chọn đúng loại giấy tờ.",
         });
       }
-
-      const convertFile = base64ToFile(imgblur);
-      setFormData((prev) => ({
-        ...prev,
-        visitorName: name,
+      const formattedName = capitalizeFirstLetter(name);
+      const convertFile = base64ToFile(imgblur)
+      // console.log(convertFile);
+      setFormData((prevData) => ({
+        ...prevData,
+        visitorName: formattedName,
         credentialsCard: id,
-        imgBlur: convertFile,
+        imgBlur : convertFile,
       }));
     } catch (error) {
+      setFormData((prev) => ({
+        ...prev,
+        visitorName: "",
+        companyName: "",
+        phoneNumber: "",
+        email : "",
+        credentialsCard: "",
+        imgBlur : null,
+        visitorCredentialFrontImageFromRequest: null ,
+        visitorCredentialBackImageFromRequest: null ,
+      }));
       notification.warning({
-        message: `Hệ thống không nhận diện được thẻ`,
-        description: "Vui lòng nhập thông tin.",
+        message: `Hệ thống không nhận diện được ảnh`,
+        description: "Vui lòng chọn đúng loại giấy tờ.",
       });
     } finally {
       setIsDetecting(false);
     }
   };
+  // const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const { name, value } = e.target;
+  //   setFormData((prevData) => ({
+  //     ...prevData,
+  //     [name]: value,
+  //   }));
+  // };
+
+  // const handleSelectChange = (value: number) => {
+  //   setFormData((prevData) => ({
+  //     ...prevData,
+  //     credentialCardTypeId: value,
+  //   }));
+  // };
 
   const handleOk = async () => {
     if (!formData.visitorCredentialFrontImageFromRequest) {
@@ -189,6 +225,7 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
     }
     try {
       const response = await createVisitor(formData).unwrap();
+      console.log(response)
       onVisitorCreated?.(response);
       setIsModalVisible(false);
       setFormData({
@@ -196,11 +233,11 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
         companyName: "",
         phoneNumber: "",
         credentialCardTypeId: 0,
-        email: "",
+        email : "",
         credentialsCard: "",
-        imgBlur: null,
-        visitorCredentialFrontImageFromRequest: null,
-        visitorCredentialBackImageFromRequest: null,
+        imgBlur : null as File | null,
+        visitorCredentialFrontImageFromRequest: null as File | null,
+        visitorCredentialBackImageFromRequest: null as File | null,
       });
       notification.success({
         message: "Thành công",
@@ -220,14 +257,144 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
       visitorName: "",
       companyName: "",
       phoneNumber: "",
-      email: "",
+      email : "",
       credentialCardTypeId: 0,
       credentialsCard: "",
-      imgBlur: null,
-      visitorCredentialFrontImageFromRequest: null,
-      visitorCredentialBackImageFromRequest: null,
+      imgBlur :  null as File | null,
+      visitorCredentialFrontImageFromRequest: null as File | null,
+      visitorCredentialBackImageFromRequest: null as File | null,
     });
   };
+
+  const handleFileDrop = (
+    e: React.DragEvent<HTMLDivElement>,
+    typeImage: string
+  ) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    const event = {
+      target: { files: [file] },
+    } as unknown as React.ChangeEvent<HTMLInputElement>;
+    handleFileChange(event, typeImage);
+  };
+
+  // const base64ToFile = (
+  //   base64String: string,
+  //   fileName: string = "image.jpg"
+  // ): File => {
+  //   try {
+  //     const base64Content = base64String.replace(
+  //       /^data:image\/(png|jpeg|jpg);base64,/,
+  //       ""
+  //     );
+  //     const byteString = window.atob(base64Content);
+  //     const arrayBuffer = new ArrayBuffer(byteString.length);
+  //     const uint8Array = new Uint8Array(arrayBuffer);
+
+  //     for (let i = 0; i < byteString.length; i++) {
+  //       uint8Array[i] = byteString.charCodeAt(i);
+  //     }
+
+  //     const blob = new Blob([arrayBuffer], { type: "image/jpeg" });
+  //     return new File([blob], fileName, { type: "image/jpeg" });
+  //   } catch (error) {
+  //     console.error("Error converting base64 to file:", error);
+  //     throw new Error("Failed to convert base64 to file");
+  //   }
+  // };
+
+  // const callDetectAPI = async (formData: FormData) => {
+  //   setIsDetecting(true);
+  //   try {
+  //     const formDataDetect = new FormData();
+  //     formDataDetect.append(
+  //       "file",
+  //       formData.visitorCredentialFrontImageFromRequest!
+  //     );
+
+  //     let response = null;
+  //     if (formData.credentialCardTypeId === 1) {
+  //       response = await detectAPI.post("/IdentityCard", formDataDetect, {
+  //         headers: { "Content-Type": "multipart/form-data" },
+  //       });
+  //     } else if (formData.credentialCardTypeId === 2) {
+  //       response = await detectAPI.post("/DrivingLicense", formDataDetect, {
+  //         headers: { "Content-Type": "multipart/form-data" },
+  //       });
+  //     }
+
+  //     const { id, name, birth, imgblur } = response.data;
+
+  //     if (!birth.toString().includes("/")) {
+  //       return notification.warning({
+  //         message: `Hệ thống không nhận diện được thẻ`,
+  //         description: "Vui lòng nhập thông tin.",
+  //       });
+  //     }
+
+  //     const convertFile = base64ToFile(imgblur);
+  //     setFormData((prev) => ({
+  //       ...prev,
+  //       visitorName: name,
+  //       credentialsCard: id,
+  //       imgBlur: convertFile,
+  //     }));
+  //   } catch (error) {
+  //     notification.warning({
+  //       message: `Hệ thống không nhận diện được thẻ`,
+  //       description: "Vui lòng nhập thông tin.",
+  //     });
+  //   } finally {
+  //     setIsDetecting(false);
+  //   }
+  // };
+
+  // const handleOk = async () => {
+  //   if (!formData.visitorCredentialFrontImageFromRequest) {
+  //     notification.error({ message: "Vui lòng nhập hình ảnh thẻ!" });
+  //     return;
+  //   }
+  //   try {
+  //     const response = await createVisitor(formData).unwrap();
+  //     onVisitorCreated?.(response);
+  //     setIsModalVisible(false);
+  //     setFormData({
+  //       visitorName: "",
+  //       companyName: "",
+  //       phoneNumber: "",
+  //       credentialCardTypeId: 0,
+  //       email: "",
+  //       credentialsCard: "",
+  //       imgBlur: null,
+  //       visitorCredentialFrontImageFromRequest: null,
+  //       visitorCredentialBackImageFromRequest: null,
+  //     });
+  //     notification.success({
+  //       message: "Thành công",
+  //       description: "Khách mới đã được tạo thành công.",
+  //     });
+  //   } catch (error) {
+  //     if (isEntityError(error)) {
+  //       setErrorVisitor(error.data.errors as FormError);
+  //     }
+  //     notification.error({ message: "Có lỗi xảy ra khi tạo mới khách." });
+  //   }
+  // };
+
+  // const handleCancel = () => {
+  //   setIsModalVisible(false);
+  //   setFormData({
+  //     visitorName: "",
+  //     companyName: "",
+  //     phoneNumber: "",
+  //     email: "",
+  //     credentialCardTypeId: 0,
+  //     credentialsCard: "",
+  //     imgBlur: null,
+  //     visitorCredentialFrontImageFromRequest: null,
+  //     visitorCredentialBackImageFromRequest: null,
+  //   });
+  // };
 
   return (
     <Modal

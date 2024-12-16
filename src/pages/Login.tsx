@@ -40,7 +40,12 @@ function Login() {
       }
     }
   }, [navigate]);
-
+  const handleForgotPasswordClick = (
+    e: React.MouseEvent<HTMLAnchorElement>
+  ) => {
+    e.preventDefault();
+    navigate("/forgetPassword");
+  };
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     try {
@@ -145,7 +150,11 @@ function Login() {
               </div>
             </div>
 
-            <a href="#" className="text-sm text-blue-400 hover:underline block">
+            <a
+              href="/forgetPassword"
+              className="text-sm text-blue-400 hover:underline block"
+              // onClick={handleForgotPasswordClick}
+            >
               Quên mật khẩu?
             </a>
 

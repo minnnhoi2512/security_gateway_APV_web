@@ -12,7 +12,7 @@ const queryClient = new QueryClient();
 
 const App = () => {
   return (
-    <React.StrictMode>
+    // <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <ConfigProvider locale={locale}>
           <Provider store={store}>
@@ -21,7 +21,7 @@ const App = () => {
           </Provider>
       </ConfigProvider>
     </QueryClientProvider>
-    </React.StrictMode>
+    // </React.StrictMode>
   );
 };
 

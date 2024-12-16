@@ -174,7 +174,7 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({
       ),
     },
     {
-      title: <div style={{ textAlign: "left" }}>Ngày cập nhập</div>,
+      title: <div style={{ textAlign: "left" }}>Ngày cập nhật</div>,
       dataIndex: "updateTime",
       key: "updateTime",
       render: (createDate: string) => (

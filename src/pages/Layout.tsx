@@ -32,6 +32,7 @@ import "./layout.css";
 import { chatDB } from "../api/firebase";
 import { routes } from "../UI/routeConstants";
 import { ChevronRight } from "lucide-react";
+import { getToken } from "../utils/jwtToken";
 
 const { Sider, Content } = Layout;
 
@@ -186,8 +187,7 @@ const LayoutPage = ({ children }: { children: any }) => {
       userId: Number(userId),
     });
   data = notificaitionData as NotificationType[];
-  // console.log(notificaitionData as NotificationType[])
-
+  const jwt = getToken();
   useEffect(() => {
     if (data?.length > 0 && takingNew) {
       toast("Bạn có thông báo mới");

@@ -157,7 +157,7 @@ const Dashboard: React.FC = () => {
     }
   }, [data, sessionYear, selectedYear, selectedMonth]);
 
-  console.log(recentSession);
+  // console.log(recentSession);
   const months = [
     { value: 1, label: "Tháng 1" },
     { value: 2, label: "Tháng 2" },
