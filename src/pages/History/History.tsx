@@ -201,7 +201,7 @@ const History = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    console.log(dataList);
+    // console.log(dataList);
     if (dataList) {
       const updatedData = dataList.map((element, index) => ({
         visitorSessionId: element.visitorSessionId,
