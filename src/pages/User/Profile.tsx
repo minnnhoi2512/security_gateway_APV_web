@@ -19,11 +19,22 @@ import {
 import defaultImg from "../../assets/default-user-image.png";
 import { roleTextMap, UserRoleText } from "../../types/Enum/UserRoleText";
 import upload from "../../api/upload";
+import { isEntityError } from "../../utils/helpers";
+
+type FormData = {
+  userName: string;
+  fullName: string;
+  email: string;
+  phoneNumber: string;
+  departmentName: string;
+  image: string;
+  departmentId?: number;
+};
 
 const Profile: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { idUser } = useParams();
 
-  const userId = Number(id) || Number(localStorage.getItem("userId"));
+  const userId = Number(idUser) || Number(localStorage.getItem("userId"));
   const {
     data: user,
     isLoading,
@@ -33,94 +44,93 @@ const Profile: React.FC = () => {
   const [roleText, setRoleText] = useState<string>("");
   const [updateUser] = useUpdateUserMutation();
   const [isEditing, setIsEditing] = useState(false);
-  const [form] = Form.useForm();
-  const [image, setImage] = useState(user?.image || "");
-  const [file, setFile] = useState<File>(null);
+
+  type FormError = { [key in keyof FormData]?: string[] } | null;
+  const [errorVisitor, setErrorVisitor] = useState<FormError>(null);
+  const [formData, setFormData] = useState<FormData>({
+    userName: "",
+    fullName: "",
+    email: "",
+    phoneNumber: "",
+    departmentName: "",
+    image: "",
+  });
+  const [file, setFile] = useState<File | null>(null);
+
   useEffect(() => {
-    if (user) {
-      form.setFieldsValue({
-        userName: user.userName,
-        fullName: user.fullName,
-        email: user.email,
-        phoneNumber: user.phoneNumber,
-        departmentName: user.department?.departmentName || "N/A",
-        image: user.image || defaultImg,
-      });
-      setImage(user.image);
-      setRoleText(
-        user?.role?.roleName
-          ? roleTextMap[user.role.roleName as UserRoleText]?.textRole
-          : "N/A"
-      );
-    }
-  }, [user, form]);
+    setFormData({
+      userName: user.userName || "N/A",
+      fullName: user.fullName || "N/A",
+      email: user.email || "N/A",
+      phoneNumber: user.phoneNumber || "N/A",
+      departmentName: user.department?.departmentName || "N/A",
+      image: user.image || defaultImg,
+    });
+    setRoleText(
+      user?.role?.roleName
+        ? roleTextMap[user.role.roleName as UserRoleText]?.textRole
+        : "N/A"
+    );
+    setErrorVisitor(null);
+  }, [idUser, user,isEditing]);
 
-  //   try {
-  //     const payload: any = {
-  //       ...values,
-  //       roleID: user?.role?.roleId || 0,
-  //       status: user?.status || "Inactive",
-  //     };
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
 
-  //     // Nếu user có role Admin hoặc Manager, không gửi departmentId
-  //     if (
-  //       user?.role?.roleName !== "Admin" &&
-  //       user?.role?.roleName !== "Manager"
-  //     ) {
-  //       payload.departmentId = user?.department?.departmentId || 0;
-  //     }
-
-  //     await updateUser({ User: payload, idUser: userId }).unwrap();
-  //     notification.success({ message: "Cập nhật thông tin thành công!" });
-
-  //     refetch(); // Gọi lại API để lấy dữ liệu mới nhất
-  //   } catch (e: any) {
-  //     console.error("Lỗi API:", e);
-  //     if (e.data?.errors) {
-  //       Object.entries(e.data.errors).forEach(([key, value]) => {
-  //         console.error(`Lỗi ở ${key}: ${value}`);
-  //       });
-  //     }
-  //     notification.error({
-  //       message: `Cập nhật thất bại: ${e.data?.message || "Có lỗi xảy ra"}`,
-  //     });
-  //   }
-  // };
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImage(reader.result as string);
+        setFormData((prevData) => ({
+          ...prevData,
+          image: reader.result as string,
+        }));
       };
       reader.readAsDataURL(file);
     }
   };
-  const handleSubmit = async (values: any) => {
+
+  const handleSubmit = async () => {
     try {
       let downloadURL = null;
       if (file != null) {
         downloadURL = await upload(file);
       }
 
-      console.log(downloadURL);
       const payload = {
-        ...values,
+        ...formData,
         image: downloadURL || user?.image,
         roleID: user?.role?.roleId || 0,
         status: user?.status || "Inactive",
       };
       payload.departmentId = user?.department?.departmentId || 0;
-      await updateUser({ User: payload, idUser: userId }).unwrap();
+      const result = await updateUser({
+        User: payload,
+        idUser: userId,
+      }).unwrap();
+      console.log(result);
       setIsEditing(false);
       setFile(null);
-      setImage(downloadURL);
+      setFormData((prevData) => ({
+        ...prevData,
+        image: downloadURL,
+      }));
       notification.success({ message: "Cập nhật thông tin thành công!" });
       refetch();
-    } catch (e: any) {
+    } catch (error: any) {
+      // console.log(error);
+      if (isEntityError(error)) {
+        setErrorVisitor(error.data.errors as FormError);
+      }
       notification.error({
-        message: `Cập nhật thất bại: ${e.data?.message || "Có lỗi xảy ra"}`,
+        message: `Cập nhật thất bại`,
       });
     }
   };
@@ -144,16 +154,6 @@ const Profile: React.FC = () => {
         <div className="relative h-48 bg-backgroundPage">
           <button
             onClick={() => {
-              setImage(user?.image || "");
-              setFile(null);
-              form.setFieldsValue({
-                userName: user.userName,
-                fullName: user.fullName,
-                email: user.email,
-                phoneNumber: user.phoneNumber,
-                departmentName: user.department?.departmentName || "N/A",
-                image: user.image || defaultImg,
-              });
               setIsEditing(!isEditing);
             }}
             className={`absolute top-3 right-4 rounded-full p-3 transition-all duration-300 hover:scale-110 shadow-lg
@@ -178,7 +178,7 @@ const Profile: React.FC = () => {
             <div className="relative group">
               <div className="w-32 h-32 rounded-full border-4 border-white shadow-md overflow-hidden bg-white">
                 <img
-                  src={image || user?.image}
+                  src={formData.image || user?.image}
                   alt="Profile"
                   className="w-full h-full object-cover"
                 />
@@ -196,13 +196,11 @@ const Profile: React.FC = () => {
               </div>
             </div>
             <h1 className="mt-4 text-2xl font-bold text-gray-800">
-              {user?.fullName}
+              {formData.fullName}
             </h1>
             <div className="flex items-center gap-2 mt-1 text-gray-600">
               <MapPinIcon size={16} />
-              <span className="text-sm">
-                {user?.department?.departmentName || "N/A"}
-              </span>
+              <span className="text-sm">{formData.departmentName}</span>
             </div>
 
             {/* Status and Role Tags */}
@@ -221,7 +219,6 @@ const Profile: React.FC = () => {
 
           {/* Form Section */}
           <Form
-            form={form}
             layout="vertical"
             onFinish={handleSubmit}
             className="max-w-xl mx-auto"
@@ -229,65 +226,88 @@ const Profile: React.FC = () => {
             <div className="space-y-4">
               <Form.Item name="userName" label="Tên đăng nhập">
                 <Input
+                  name="userName"
+                  value={formData.userName || "N/A"}
+                  onChange={handleInputChange}
                   prefix={<User size={16} className="text-gray-400 mr-2" />}
                   readOnly
                   className="bg-gray-50 rounded-lg"
+                  status={errorVisitor?.userName ? "error" : ""}
                 />
+                <span className="text-sm text-gray-600">
+                 
+                </span>
+                {errorVisitor?.userName && (
+                  <p className="text-sm text-red-600 bg-red-50 p-2 rounded">
+                    {errorVisitor.userName[0]}
+                  </p>
+                )}
               </Form.Item>
             </div>
-            <Form.Item
-              name="fullName"
-              label="Họ và tên"
-              rules={[{ required: true, message: "Vui lòng nhập họ và tên" }]}
-            >
+            <Form.Item name="fullName" label="Họ và tên">
               <Input
+                name="fullName"
+                value={formData.fullName || "N/A"}
+                onChange={handleInputChange}
                 prefix={<Building size={16} className="text-gray-400 mr-2" />}
                 readOnly={!isEditing}
                 className={`rounded-lg ${!isEditing ? "bg-gray-50" : ""}`}
+                status={errorVisitor?.fullName ? "error" : ""}
               />
+               <span className="text-sm text-gray-600">
+                 
+                 </span>
+              {errorVisitor?.fullName && (
+                <p className="text-sm text-red-600 bg-red-50 p-2 rounded">
+                  {errorVisitor.fullName[0]}
+                </p>
+              )}
             </Form.Item>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Form.Item
-                name="email"
-                label="Email"
-                rules={[
-                  { required: true, message: "Vui lòng nhập email" },
-                  { type: "email", message: "Email không hợp lệ" },
-                ]}
-              >
+              <Form.Item name="email" label="Email">
                 <Input
+                  name="email"
+                  value={formData.email || "N/A"}
+                  onChange={handleInputChange}
                   prefix={<Mail size={16} className="text-gray-400 mr-2" />}
                   readOnly={!isEditing}
                   className={`rounded-lg ${!isEditing ? "bg-gray-50" : ""}`}
+                  status={errorVisitor?.email ? "error" : ""}
                 />
+                 <span className="text-sm text-gray-600">
+                 
+                 </span>
+                {errorVisitor?.email && (
+                  <p className="text-sm text-red-600 bg-red-50 p-2 rounded">
+                    {errorVisitor.email[0]}
+                  </p>
+                )}
               </Form.Item>
 
-              {/* Right Column */}
-              <div>
-                <Form.Item
-                  label="Số điện thoại"
+              <Form.Item
+                label="Số điện thoại"
+                name="phoneNumber"
+                className="mb-4"
+              >
+                <Input
                   name="phoneNumber"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Vui lòng nhập số điện thoại",
-                    },
-                    {
-                      pattern: /^[0-9]+$/,
-                      message: "Số điện thoại không hợp lệ",
-                    },
-                  ]}
-                  className="mb-4"
-                >
-                  <Input
-                    readOnly={!isEditing}
-                    className={`rounded-lg ${!isEditing ? "bg-gray-100" : ""}`}
-                  />
-                </Form.Item>
-
-               
-              </div>
+                  value={formData.phoneNumber || "N/A"}
+                  onChange={handleInputChange}
+                  prefix={<Phone size={16} className="text-gray-400 mr-2" />}
+                  readOnly={!isEditing}
+                  className={`rounded-lg ${!isEditing ? "bg-gray-50" : ""}`}
+                  status={errorVisitor?.phoneNumber ? "error" : ""}
+                />
+                  <span className="text-sm text-gray-600">
+                 
+                 </span>
+                {errorVisitor?.phoneNumber && (
+                  <p className="text-sm text-red-600 bg-red-50 p-2 rounded">
+                    {errorVisitor.phoneNumber[0]}
+                  </p>
+                )}
+              </Form.Item>
             </div>
 
             {isEditing && (

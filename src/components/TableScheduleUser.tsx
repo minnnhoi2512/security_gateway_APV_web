@@ -41,7 +41,7 @@ const TableScheduleUser: React.FC<ScheduleAssignedTableProps> = ({
     visitStatus: [],
     scheduleTypeId: [],
   });
-  console.log(data);
+  // console.log(data);
   const [filteredData, setFilteredData] = useState<ScheduleUserType[]>(data);
   const [animationActive, setAnimationActive] = useState<boolean>(true);
 

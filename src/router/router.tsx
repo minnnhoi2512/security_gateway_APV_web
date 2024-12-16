@@ -38,7 +38,9 @@ import HistoryDetail from "../pages/History/HistoryDetail";
 import ListHistorySessonVisit from "../pages/History/ListHistorySessionVisit";
 import ListHistorySessionVisitor from "../pages/History/ListHistorySessionVisitor";
 import { getToken } from "../utils/jwtToken";
-import ForgetPassword from "../pages/ForgetPassword";
+import EmailCreator from "../pages/ForgetPassword/EmailCreator";
+import InputOTP from "../pages/ForgetPassword/InputOTP";
+import ResetNewPassword from "../pages/ForgetPassword/ResetNewPassword";
 
 const ContentRouter = () => {
   const userRole = localStorage.getItem("userRole"); // Get user role from local storage
@@ -49,9 +51,7 @@ const ContentRouter = () => {
 
   const dispatch = useDispatch();
   useEffect(() => {
-    if (!jwt) {
-      navigate("/");
-    } else if (userRole) {
+    if (userRole) {
       const user: UserConnectionHubType = {
         userId: userId,
         role: userRole,
@@ -70,7 +70,10 @@ const ContentRouter = () => {
           </LayoutPage>
         }
       />
-      <Route index path="/forgetPassword" element={<ForgetPassword />} />
+      <Route index path="/forgetPassword" element={<EmailCreator />} />
+      <Route index path="/confirmOTP" element={<InputOTP />} />
+      <Route index path="/resetNewPassword" element={<ResetNewPassword />} />
+
       <Route
         index
         path="/manager"

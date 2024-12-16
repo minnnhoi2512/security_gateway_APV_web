@@ -147,8 +147,16 @@ const StyledBreadcrumb = ({
 
 const LayoutPage = ({ children }: { children: any }) => {
   const [collapsed, setCollapsed] = useState(false);
+
   const userId = Number(localStorage.getItem("userId"));
   const location = useLocation();
+  const jwt = getToken();
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (!jwt) {
+      navigate("/");
+    }
+  }, [jwt, navigate]);
   const [breadcrumbItems, setBreadcrumbItems] = useState(
     generateBreadcrumbItems(location, routes)
   );
@@ -167,7 +175,6 @@ const LayoutPage = ({ children }: { children: any }) => {
         return roleName;
     }
   };
-  const navigate = useNavigate();
   const [markAsRead] = useMarkNotiReadMutation();
   const takingNew = useSelector<any>(
     (s) => s.notification.takingNew
@@ -187,7 +194,6 @@ const LayoutPage = ({ children }: { children: any }) => {
       userId: Number(userId),
     });
   data = notificaitionData as NotificationType[];
-  const jwt = getToken();
   useEffect(() => {
     if (data?.length > 0 && takingNew) {
       toast("Bạn có thông báo mới");

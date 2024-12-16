@@ -203,20 +203,7 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
       setIsDetecting(false);
     }
   };
-  // const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const { name, value } = e.target;
-  //   setFormData((prevData) => ({
-  //     ...prevData,
-  //     [name]: value,
-  //   }));
-  // };
 
-  // const handleSelectChange = (value: number) => {
-  //   setFormData((prevData) => ({
-  //     ...prevData,
-  //     credentialCardTypeId: value,
-  //   }));
-  // };
 
   const handleOk = async () => {
     if (!formData.visitorCredentialFrontImageFromRequest) {
@@ -278,123 +265,6 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
     handleFileChange(event, typeImage);
   };
 
-  // const base64ToFile = (
-  //   base64String: string,
-  //   fileName: string = "image.jpg"
-  // ): File => {
-  //   try {
-  //     const base64Content = base64String.replace(
-  //       /^data:image\/(png|jpeg|jpg);base64,/,
-  //       ""
-  //     );
-  //     const byteString = window.atob(base64Content);
-  //     const arrayBuffer = new ArrayBuffer(byteString.length);
-  //     const uint8Array = new Uint8Array(arrayBuffer);
-
-  //     for (let i = 0; i < byteString.length; i++) {
-  //       uint8Array[i] = byteString.charCodeAt(i);
-  //     }
-
-  //     const blob = new Blob([arrayBuffer], { type: "image/jpeg" });
-  //     return new File([blob], fileName, { type: "image/jpeg" });
-  //   } catch (error) {
-  //     console.error("Error converting base64 to file:", error);
-  //     throw new Error("Failed to convert base64 to file");
-  //   }
-  // };
-
-  // const callDetectAPI = async (formData: FormData) => {
-  //   setIsDetecting(true);
-  //   try {
-  //     const formDataDetect = new FormData();
-  //     formDataDetect.append(
-  //       "file",
-  //       formData.visitorCredentialFrontImageFromRequest!
-  //     );
-
-  //     let response = null;
-  //     if (formData.credentialCardTypeId === 1) {
-  //       response = await detectAPI.post("/IdentityCard", formDataDetect, {
-  //         headers: { "Content-Type": "multipart/form-data" },
-  //       });
-  //     } else if (formData.credentialCardTypeId === 2) {
-  //       response = await detectAPI.post("/DrivingLicense", formDataDetect, {
-  //         headers: { "Content-Type": "multipart/form-data" },
-  //       });
-  //     }
-
-  //     const { id, name, birth, imgblur } = response.data;
-
-  //     if (!birth.toString().includes("/")) {
-  //       return notification.warning({
-  //         message: `Hệ thống không nhận diện được thẻ`,
-  //         description: "Vui lòng nhập thông tin.",
-  //       });
-  //     }
-
-  //     const convertFile = base64ToFile(imgblur);
-  //     setFormData((prev) => ({
-  //       ...prev,
-  //       visitorName: name,
-  //       credentialsCard: id,
-  //       imgBlur: convertFile,
-  //     }));
-  //   } catch (error) {
-  //     notification.warning({
-  //       message: `Hệ thống không nhận diện được thẻ`,
-  //       description: "Vui lòng nhập thông tin.",
-  //     });
-  //   } finally {
-  //     setIsDetecting(false);
-  //   }
-  // };
-
-  // const handleOk = async () => {
-  //   if (!formData.visitorCredentialFrontImageFromRequest) {
-  //     notification.error({ message: "Vui lòng nhập hình ảnh thẻ!" });
-  //     return;
-  //   }
-  //   try {
-  //     const response = await createVisitor(formData).unwrap();
-  //     onVisitorCreated?.(response);
-  //     setIsModalVisible(false);
-  //     setFormData({
-  //       visitorName: "",
-  //       companyName: "",
-  //       phoneNumber: "",
-  //       credentialCardTypeId: 0,
-  //       email: "",
-  //       credentialsCard: "",
-  //       imgBlur: null,
-  //       visitorCredentialFrontImageFromRequest: null,
-  //       visitorCredentialBackImageFromRequest: null,
-  //     });
-  //     notification.success({
-  //       message: "Thành công",
-  //       description: "Khách mới đã được tạo thành công.",
-  //     });
-  //   } catch (error) {
-  //     if (isEntityError(error)) {
-  //       setErrorVisitor(error.data.errors as FormError);
-  //     }
-  //     notification.error({ message: "Có lỗi xảy ra khi tạo mới khách." });
-  //   }
-  // };
-
-  // const handleCancel = () => {
-  //   setIsModalVisible(false);
-  //   setFormData({
-  //     visitorName: "",
-  //     companyName: "",
-  //     phoneNumber: "",
-  //     email: "",
-  //     credentialCardTypeId: 0,
-  //     credentialsCard: "",
-  //     imgBlur: null,
-  //     visitorCredentialFrontImageFromRequest: null,
-  //     visitorCredentialBackImageFromRequest: null,
-  //   });
-  // };
 
   return (
     <Modal

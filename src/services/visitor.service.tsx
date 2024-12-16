@@ -40,7 +40,7 @@ export const visitorAPI = createApi({
         phoneNumber: string;
         credentialsCard: string;
         email: string;
-        imgBlur:   File | null,
+        imgBlur: File | null;
         credentialCardTypeId: number;
         visitorCredentialFrontImageFromRequest: File | null;
         visitorCredentialBackImageFromRequest: File | null;
@@ -52,14 +52,17 @@ export const visitorAPI = createApi({
         formData.append("visitorName", newVisitor.visitorName);
         formData.append("companyName", newVisitor.companyName);
         formData.append("email", newVisitor.email);
-       
+
         formData.append("phoneNumber", newVisitor.phoneNumber);
         formData.append("credentialsCard", newVisitor.credentialsCard);
         formData.append(
           "credentialCardTypeId",
           newVisitor.credentialCardTypeId.toString()
         );
-        formData.append("visitorCredentialBlurImageFromRequest", newVisitor.imgBlur);
+        formData.append(
+          "visitorCredentialBlurImageFromRequest",
+          newVisitor.imgBlur
+        );
         if (newVisitor.visitorCredentialFrontImageFromRequest) {
           formData.append(
             "visitorCredentialFrontImageFromRequest",
@@ -88,6 +91,7 @@ export const visitorAPI = createApi({
         companyName: string;
         phoneNumber: string;
         credentialsCard: string;
+        email: string;
         credentialCardTypeId: number;
         visitorCredentialFrontImageFromRequest: string;
         visitorCredentialBackImageFromRequest: string;
@@ -99,6 +103,7 @@ export const visitorAPI = createApi({
         // console.log(updatedVisitor.visitorCredentialBlurImageFromRequest.toString())
         formData.append("visitorName", updatedVisitor.visitorName);
         formData.append("companyName", updatedVisitor.companyName);
+        formData.append("email", updatedVisitor.email);
         formData.append("phoneNumber", updatedVisitor.phoneNumber);
         formData.append("credentialsCard", updatedVisitor.credentialsCard);
         formData.append(

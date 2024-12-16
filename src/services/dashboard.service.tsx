@@ -1,5 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import baseAPI from "../api/baseAPI";
+import { getToken } from "../utils/jwtToken";
 
 interface DailyCount {
   day: number;
@@ -22,7 +23,17 @@ interface VisitorSessionMonthResponse {
 
 export const dashBoardAPI = createApi({
   reducerPath: "dashBoardAPI",
-  baseQuery: fetchBaseQuery({ baseUrl: `${baseAPI}/api/Dashboard` }),
+  baseQuery: fetchBaseQuery({
+    baseUrl: `${baseAPI}/api/Dashboard`,
+    prepareHeaders: (headers) => {
+      const token = getToken();
+      if (token) {
+        headers.set("Authorization", `Bearer ${token}`);
+      }
+      headers.set("Content-Type", "application/json"); // Default content type
+      return headers;
+    },
+  }),
   endpoints: (builder) => ({
     getDashboardVisit: builder.query<any, any>({
       query: () => ({
@@ -66,17 +77,20 @@ export const dashBoardAPI = createApi({
         method: "GET",
       }),
     }),
-    getDashboardVisitorSSYear: builder.query<any, {year : number}>({
+    getDashboardVisitorSSYear: builder.query<any, { year: number }>({
       query: (year) => ({
         url: `VisitorSessionYear`,
         method: "GET",
-        params : {year : year.year}
+        params: { year: year.year },
       }),
     }),
-    getDashboardVisitorSessionMonth: builder.query<VisitorSessionMonthResponse, VisitorSessionMonthParams>({
+    getDashboardVisitorSessionMonth: builder.query<
+      VisitorSessionMonthResponse,
+      VisitorSessionMonthParams
+    >({
       query: (params) => ({
         url: `VisitorSessionMonth`,
-        params: { year: params.year, month: params.month }
+        params: { year: params.year, month: params.month },
       }),
     }),
     getRecentSession: builder.query<any, any>({
@@ -105,5 +119,5 @@ export const {
   useGetDashboardVisitorSSYearQuery,
   useGetDashboardVisitorSessionMonthQuery,
   useGetRecentSessionQuery,
-  useGetTaskQuery
+  useGetTaskQuery,
 } = dashBoardAPI;

@@ -38,10 +38,30 @@ export const routes = [
     breadcrumbName: "Chi tiết chuyến thăm",
     hideInBreadcrumb: true
   },
+  {
+    path: "/customerVisit/detailVisit/:id/listSession",
+    breadcrumbName: "Danh sách ra vào của chuyến thăm",
+    hideInBreadcrumb: true
+  },
+  {
+    path: "/customerVisit/detailVisit/:id/listVisitorSession",
+    breadcrumbName: "Lượt ra vào của khách",
+    hideInBreadcrumb: true
+  },
   { path: "/dashboard", breadcrumbName: "Thông tin chung" },
+  { path: "/dashboard/sessionDetail", breadcrumbName: "Chi tiết lượt ra vào" },
   {
     path: "/customerVisitStaff/createNewVisitList",
     breadcrumbName: "Tạo mới chuyến thăm trong ngày",
+  },
+  {
+    path: "/customerVisitStaff/detailVisit/:id/listSession",
+    breadcrumbName: "Danh sách ra vào của chuyến thăm",
+  },
+  {
+    path: "/customerVisitStaff/detailVisit/:id/listVisitorSession",
+    breadcrumbName: "Lượt ra vào của khách",
+    hideInBreadcrumb: true
   },
   {
     path: "/customerVisit/createNewVisitList",

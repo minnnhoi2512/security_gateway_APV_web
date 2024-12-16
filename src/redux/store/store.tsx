@@ -20,6 +20,7 @@ import { rtkQueryErrorLogger } from "../../middleware";
 import { scheduleStaffAPI } from "../../services/scheduleStaff.service";
 import { gateAPI } from "../../services/gate.service";
 import { dashBoardAPI } from "../../services/dashboard.service";
+import { passwordAPI } from "../../services/forgetPassword.service";
 
 
 export const store = configureStore({
@@ -38,6 +39,7 @@ export const store = configureStore({
     [scheduleStaffAPI.reducerPath] : scheduleStaffAPI.reducer,
     [gateAPI.reducerPath] : gateAPI.reducer,
     [dashBoardAPI.reducerPath] : dashBoardAPI.reducer,
+    [passwordAPI.reducerPath] : passwordAPI.reducer,
     filterTabs: filterTabReducer,
     visitDetailList : visitDetailListReducer,
     visitorSession : visitorSessionReducer,
@@ -52,6 +54,7 @@ export const store = configureStore({
       .concat(visitListAPI.middleware)
       .concat(visitDetailListAPI.middleware)
       .concat(qrCardAPI.middleware)
+      .concat(passwordAPI.middleware)
       .concat(scheduleAPI.middleware, rtkQueryErrorLogger)
       .concat(scheduleUserAPI.middleware)
       .concat(departmentAPI.middleware)
