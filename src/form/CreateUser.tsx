@@ -11,6 +11,7 @@ import {
 } from "antd";
 
 import {
+  DeleteOutlined,
   LockOutlined,
   MailOutlined,
   PhoneOutlined,
@@ -54,7 +55,9 @@ const CreateUser: React.FC<CreateUserProps> = ({ onSuccess }) => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [faceImg, setFaceImg] = useState<File[]>([]);
   const [roleId, setRoleId] = useState("");
+  const [fileList, setFileList] = useState([]);
   const [imageUrl, setImageUrl] = useState("");
+
   const [departmentId, setDepartmentId] = useState<number | undefined>(
     undefined
   );
@@ -75,6 +78,42 @@ const CreateUser: React.FC<CreateUserProps> = ({ onSuccess }) => {
     pageSize: -1,
     role: "All",
   });
+
+  const handleReset = () => {
+    form.resetFields();
+    setFileList([]);
+    setImageUrl("");
+    setFaceImg([]);
+  };
+
+  const handleImageUpload = ({ file, fileList: newFileList }) => {
+    setFileList(newFileList);
+
+    // Tạo URL cho preview
+    if (file.status !== "removed") {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result;
+        if (typeof result === "string") {
+          setImageUrl(result);
+        }
+      };
+      reader.readAsDataURL(file.originFileObj);
+      setFaceImg([file.originFileObj]);
+    } else {
+      // Reset khi xóa file
+      setImageUrl("");
+      setFaceImg([]);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (imageUrl) {
+        URL.revokeObjectURL(imageUrl);
+      }
+    };
+  }, [imageUrl]);
 
   const handleCreateUser = async () => {
     try {
@@ -347,7 +386,7 @@ const CreateUser: React.FC<CreateUserProps> = ({ onSuccess }) => {
           <Form.Item
             label={<span className="text-gray-600">Ảnh đại diện</span>}
           >
-            <Upload
+            {/* <Upload
               beforeUpload={(file) => {
                 setFaceImg((prev) => [...prev, file]);
                 return false;
@@ -361,7 +400,68 @@ const CreateUser: React.FC<CreateUserProps> = ({ onSuccess }) => {
               >
                 <span className="ml-2">Tải ảnh lên</span>
               </Button>
-            </Upload>
+            </Upload> */}
+            {!imageUrl ? (
+              <Upload
+                accept="image/*"
+                fileList={fileList}
+                onChange={handleImageUpload}
+                beforeUpload={(file) => {
+                  // Thêm beforeUpload giống như code cũ
+                  setFaceImg((prev) => [...prev, file]);
+                  return false;
+                }}
+                maxCount={1}
+                listType="picture"
+                className="w-full"
+              >
+                <Button
+                  icon={<UploadOutlined />}
+                  className="w-full h-20 flex items-center justify-center border-2 border-dashed hover:border-blue-500 hover:text-blue-500 transition-colors"
+                >
+                  <span className="ml-2">Tải ảnh lên</span>
+                </Button>
+              </Upload>
+            ) : (
+              <div className="space-y-4">
+                <div className="relative inline-block">
+                  <img
+                    src={imageUrl}
+                    alt="Preview"
+                    className="max-w-[200px] rounded-lg shadow-sm"
+                  />
+                  <div className="mt-2 flex gap-2">
+                    <Upload
+                      accept="image/*"
+                      beforeUpload={(file) => {
+                        setFaceImg((prev) => [...prev, file]);
+                        return false;
+                      }}
+                      showUploadList={false}
+                      onChange={handleImageUpload}
+                    >
+                      <Button
+                        icon={<UploadOutlined />}
+                        className="hover:text-blue-500"
+                      >
+                        Tải ảnh mới
+                      </Button>
+                    </Upload>
+                    <Button
+                      icon={<DeleteOutlined />}
+                      onClick={() => {
+                        setImageUrl("");
+                        setFileList([]);
+                        setFaceImg([]);
+                      }}
+                      className="hover:text-red-500"
+                    >
+                      Xóa ảnh
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
           </Form.Item>
 
           <Form.Item className="mb-0 mt-4">

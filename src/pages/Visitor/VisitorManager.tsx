@@ -263,41 +263,27 @@ const VisitorManager = () => {
   return (
     <Content className="p-2 max-w-[1200px] mx-auto mt-10">
       <div className="flex justify-between items-center mb-4">
-        <div className="flex flex-col mb-2">
-          <div className="flex gap-4 items-center">
-            <div className="flex flex-1 gap-2">
-              <Input
-                placeholder="Tìm kiếm theo tên khách"
-                value={searchText}
-                onChange={handleSearchChange}
-                prefix={<SearchOutlined />}
-                style={{
-                  width: 300,
-
-                  borderRadius: 5,
-                }}
-              />
-            </div>
-            <Button
-              onClick={showCreateModal}
-              className="group relative px-6 py-4 bg-buttonColor hover:!bg-buttonColor hover:!border-buttonColor rounded-lg shadow-lg hover:!shadow-green-500/50 transition-all duration-300 transform hover:!scale-105"
-            >
-              <div className="flex items-center gap-2 text-white">
-                <Plus className="w-6 h-6 group-hover:!rotate-180 transition-transform duration-500" />
-                <span className="font-medium text-lg">Tạo mới</span>
-              </div>
-            </Button>
-          </div>
+        <div className="flex gap-2">
+          <Input
+            placeholder="Tìm kiếm theo tên khách"
+            value={searchText}
+            onChange={handleSearchChange}
+            prefix={<SearchOutlined />}
+            style={{
+              width: 300,
+              borderRadius: 5,
+            }}
+          />
         </div>
-
-        {/* <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 shadow-sm"
+        <Button
           onClick={showCreateModal}
+          className="group relative px-6 py-4 bg-buttonColor hover:!bg-buttonColor hover:!border-buttonColor rounded-lg shadow-lg hover:!shadow-green-500/50 transition-all duration-300 transform hover:!scale-105"
         >
-          Tạo mới khách
-        </Button> */}
+          <div className="flex items-center gap-2 text-white">
+            <Plus className="w-6 h-6 group-hover:!rotate-180 transition-transform duration-500" />
+            <span className="font-medium text-lg">Tạo mới</span>
+          </div>
+        </Button>
       </div>
 
       <Divider />

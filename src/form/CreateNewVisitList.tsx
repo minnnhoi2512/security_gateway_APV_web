@@ -98,18 +98,7 @@ const CreateNewVisitList: React.FC = () => {
       setIsWeekCalendarVisible(false);
     }
   };
-  const formatDateTime = (dateString: Date) => {
-    // Create a Date object from the input string
-    const date = new Date(dateString);
 
-    // Extract day, month, and year
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-
-    // Return formatted date as DD/MM/YYYY
-    return `${day}/${month}/${year}`;
-  };
   const handleVisitorSelection = (visitor: any) => {
     console.log(visitor);
     setSelectedVisitors((prevVisitors) => {
@@ -178,15 +167,15 @@ const CreateNewVisitList: React.FC = () => {
       new Date(expectedStartTime).toDateString() === currentDate.toDateString();
 
     // Define the minimum start time if today (current time + 30 minutes)
-    const minStartHour = new Date(currentDate.getTime() + (-1 * 60000));
+    const minStartHour = new Date(currentDate.getTime() + -1 * 60000);
 
     if (nameValue === "startHour") {
       if (isToday) {
         const [selectedHours, selectedMinutes] = value.split(":").map(Number);
         const selectedTime = new Date();
         selectedTime.setHours(selectedHours, selectedMinutes, 0, 0);
-        console.log(minStartHour)
-        console.log(selectedTime)
+        console.log(minStartHour);
+        console.log(selectedTime);
         // Check if the selected start time is before the minimum allowed start time
         if (selectedTime <= minStartHour) {
           notification.warning({
@@ -204,9 +193,15 @@ const CreateNewVisitList: React.FC = () => {
           startHour && value > startHour ? selectedVisitors[index].endHour : "",
       };
     } else if (nameValue === "endHour") {
-      if (value <= startHour) {
+      if (
+        dayjs(value, "HH:mm:ss").isBefore(
+          dayjs(startHour, "HH:mm:ss").add(30, "minute")
+        )
+      ) {
         // Optionally show a message to the user
-        notification.warning({ message: "Giờ ra phải sau giờ vào!" }); // Adjust the message to your needs
+        notification.warning({
+          message: "Giờ ra dự kiến phải hơn 30 phút so với giờ vào dự kiến!",
+        }); // Adjust the message to your needs
         return; // Do not update endHour if it is not valid
       }
 
@@ -309,9 +304,9 @@ const CreateNewVisitList: React.FC = () => {
         navigate(-1);
       } catch (error: any) {
         // console.log(error.data.message);
-        notification.error({
-          message: "Đã có lỗi xảy ra khi tạo lịch hẹn. Vui lòng thử lại.",
-        });
+        // notification.error({
+        //   message: "Đã có lỗi xảy ra khi tạo lịch hẹn. Vui lòng thử lại.",
+        // });
       }
     } catch (error) {
       notification.error({ message: "Vui lòng kiểm tra thông tin đã nhập." });
@@ -332,7 +327,7 @@ const CreateNewVisitList: React.FC = () => {
       new Date(expectedStartTime).toDateString() === currentDate.toDateString();
 
     // Define the minimum start time if today (current time + 30 minutes)
-    const minStartHour = new Date(currentDate.getTime() + (-1 * 60000));
+    const minStartHour = new Date(currentDate.getTime() + -1 * 60000);
 
     if (isToday) {
       const [selectedHours, selectedMinutes] = startHour.split(":").map(Number);
@@ -373,12 +368,14 @@ const CreateNewVisitList: React.FC = () => {
   const handleEndHourChangeForAll = (time: any) => {
     let endHour = time?.format("HH:mm:ss");
     const isEndHourValid = dayjs(endHour, "HH:mm:ss").isAfter(
-      dayjs(selectedVisitors[0]?.startHour, "HH:mm:ss") // Ensure startHour is valid
+      dayjs(selectedVisitors[0]?.startHour, "HH:mm:ss").add(30, "minute") // Ensure startHour is at least 30 minutes before endHour
     );
     // console.log(endHour);
     // If endHour is not valid, clear it and show a warning
     if (!isEndHourValid && endHour !== null && endHour !== undefined) {
-      notification.warning({ message: "Giờ ra phải sau giờ vào!" });
+      notification.warning({
+        message: "Giờ ra dự kiến phải hơn 30 phút so với giờ vào dự kiến!",
+      });
       setEndHourForAll(null);
       const updatedVisitors = selectedVisitors.map((visitor) => ({
         ...visitor,
@@ -458,7 +455,7 @@ const CreateNewVisitList: React.FC = () => {
         render: (_: any, record: any, index: any) =>
           selectedVisitors[index]?.visitorName ? (
             <TimePicker
-              format="HH:mm:ss"
+              format="HH:mm"
               value={
                 record.startHour ? dayjs(record.startHour, "HH:mm:ss") : null
               } // Display the current startHour
@@ -475,7 +472,7 @@ const CreateNewVisitList: React.FC = () => {
         render: (_: any, record: any, index: any) =>
           selectedVisitors[index]?.visitorName ? (
             <TimePicker
-              format="HH:mm:ss"
+              format="HH:mm"
               value={record.endHour ? dayjs(record.endHour, "HH:mm:ss") : null} // Display the current endHour
               onChange={(time) => {
                 // Check if startHour is selected
@@ -562,6 +559,16 @@ const CreateNewVisitList: React.FC = () => {
                     {
                       required: true,
                       message: "Vui lòng nhập tên chuyến thăm",
+                    },
+                    {
+                      min: 5,
+                      max: 100,
+                      message:
+                        "Tên chuyến thăm phải có ít nhất 5 ký tự và tối đa 100 ký tự",
+                    },
+                    {
+                      pattern: /^[a-zA-Z0-9\s]*$/,
+                      message: "Tên chuyến thăm không được chứa ký tự đặc biệt",
                     },
                   ]}
                 >
@@ -673,12 +680,12 @@ const CreateNewVisitList: React.FC = () => {
                             Giờ vào tất cả khách
                           </label>
                           <TimePicker
-                            format="HH:mm:ss"
+                            format="HH:mm"
                             placeholder="Giờ vào"
                             className="w-full rounded border-gray-300"
                             value={
                               startHourForAll
-                                ? dayjs(startHourForAll, "HH:mm:ss")
+                                ? dayjs(startHourForAll, "HH:mm")
                                 : null
                             }
                             onChange={handleStartHourChangeForAll}
@@ -690,12 +697,12 @@ const CreateNewVisitList: React.FC = () => {
                             Giờ ra tất cả khách
                           </label>
                           <TimePicker
-                            format="HH:mm:ss"
+                            format="HH:mm"
                             placeholder="Giờ ra"
                             className="w-full rounded border-gray-300"
                             value={
                               endHourForAll
-                                ? dayjs(endHourForAll, "HH:mm:ss")
+                                ? dayjs(endHourForAll, "HH:mm")
                                 : null
                             }
                             onChange={handleEndHourChangeForAll}

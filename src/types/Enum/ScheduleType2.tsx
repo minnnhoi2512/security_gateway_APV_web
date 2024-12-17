@@ -4,6 +4,6 @@ export enum ScheduleType2 {
 }
 
 export const typeMap: { [key in ScheduleType2]: { colorScheduleType: string; textScheduleType: string } } = {
-    [ScheduleType2.Weekly]: { colorScheduleType: "blue", textScheduleType: "Theo tuần" },
+    [ScheduleType2.Weekly]: { colorScheduleType: "#e67e22", textScheduleType: "Theo tuần" },
     [ScheduleType2.Monthly]: { colorScheduleType: "green", textScheduleType: "Theo tháng" },
 };
