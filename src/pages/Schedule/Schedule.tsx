@@ -451,14 +451,11 @@ const Schedule = () => {
                 rules={[
                   {
                     required: true,
-                    message: "Tên nhiệm vụ không được để trống",
-                  },
-                  {
                     min: 5,
                     max: 100,
                     message:
                       "Tên nhiệm vụ phải có ít nhất 5 ký tự và tối đa 100 ký tự",
-                  },,
+                  }
                 ]}
               >
                 <Input
