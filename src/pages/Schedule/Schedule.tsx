@@ -60,9 +60,19 @@ interface Filters {
   visitStatus: VisitStatus[];
   scheduleTypeId: any[];
 }
-
+interface FormData {
+  title: string;
+  description: string;
+  note: string;
+  deadlineTime: string;
+  scheduleId: number;
+  assignToId: number;
+  startDate?: string;
+  endDate?: string;
+}
 const Schedule = () => {
-  type FormError = { [key in keyof typeof assignData]: string } | null;
+  type FormError = { [key in keyof FormData]?: string[] } | null;
+  const [errorVisitor, setErrorVisitor] = useState<FormError>(null);
   const [filterStatus, setFilterStatus] = useState<boolean | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [errorAssignSchedule, setMysit] = useState<FormError>();
@@ -443,7 +453,12 @@ const Schedule = () => {
                     required: true,
                     message: "Tên nhiệm vụ không được để trống",
                   },
-                  { min: 5, message: "Tên nhiệm vụ phải có ít nhất 5 ký tự" },
+                  {
+                    min: 5,
+                    max: 100,
+                    message:
+                      "Tên nhiệm vụ phải có ít nhất 5 ký tự và tối đa 100 ký tự",
+                  },,
                 ]}
               >
                 <Input
@@ -536,7 +551,13 @@ const Schedule = () => {
                   onChange={handleDateChange}
                   className="w-full rounded-md h-8"
                   format="DD/MM/YYYY"
+                  status={errorAssignSchedule?.deadlineTime ? "error" : ""}
                 />
+                {errorAssignSchedule?.deadlineTime && (
+                  <p className="mt-2 text-sm text-red-600 bg-red-50 p-2 rounded">
+                    {errorAssignSchedule.deadlineTime[0]}
+                  </p>
+                )}
               </Form.Item>
             </div>
 
@@ -557,7 +578,13 @@ const Schedule = () => {
                   onChange={handleStartDateChange}
                   className="w-full rounded-md h-8"
                   format="DD/MM/YYYY"
+                  status={errorAssignSchedule?.startDate ? "error" : ""}
                 />
+                {errorAssignSchedule?.startDate && (
+                  <p className=" mt-2 text-sm text-red-600 bg-red-50 p-2 rounded">
+                    {errorAssignSchedule.startDate[0]}
+                  </p>
+                )}
               </Form.Item>
 
               <Form.Item
@@ -589,7 +616,13 @@ const Schedule = () => {
                   onChange={handleEndDateChange}
                   className="w-full rounded-md h-8"
                   format="DD/MM/YYYY"
+                  status={errorAssignSchedule?.endDate ? "error" : ""}
                 />
+                {errorAssignSchedule?.endDate && (
+                  <p className="mt-2 text-sm text-red-600 bg-red-50 p-2 rounded">
+                    {errorAssignSchedule.endDate[0]}
+                  </p>
+                )}
               </Form.Item>
             </div>
           </div>

@@ -227,7 +227,7 @@ const Profile: React.FC = () => {
               <Form.Item name="userName" label="Tên đăng nhập">
                 <Input
                   name="userName"
-                  value={formData.userName || "N/A"}
+                  value={formData.userName}
                   onChange={handleInputChange}
                   prefix={<User size={16} className="text-gray-400 mr-2" />}
                   readOnly
@@ -247,7 +247,7 @@ const Profile: React.FC = () => {
             <Form.Item name="fullName" label="Họ và tên">
               <Input
                 name="fullName"
-                value={formData.fullName || "N/A"}
+                value={formData.fullName}
                 onChange={handleInputChange}
                 prefix={<Building size={16} className="text-gray-400 mr-2" />}
                 readOnly={!isEditing}
@@ -268,7 +268,7 @@ const Profile: React.FC = () => {
               <Form.Item name="email" label="Email">
                 <Input
                   name="email"
-                  value={formData.email || "N/A"}
+                  value={formData.email}
                   onChange={handleInputChange}
                   prefix={<Mail size={16} className="text-gray-400 mr-2" />}
                   readOnly={!isEditing}
@@ -292,7 +292,7 @@ const Profile: React.FC = () => {
               >
                 <Input
                   name="phoneNumber"
-                  value={formData.phoneNumber || "N/A"}
+                  value={formData.phoneNumber}
                   onChange={handleInputChange}
                   prefix={<Phone size={16} className="text-gray-400 mr-2" />}
                   readOnly={!isEditing}

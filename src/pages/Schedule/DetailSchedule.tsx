@@ -59,12 +59,14 @@ const DetailSchedule = ({ scheduleId, onUpdateSuccess }: any) => {
   const [selectedDays, setSelectedDays] = useState<number[]>([]);
   const [selectedDates, setSelectedDates] = useState<number[]>([]);
   const navigate = useNavigate();
+  const [showError, setShowError] = useState<boolean>(false);
 
   const [isProcessWeek, setIsProcessWeek] = useState(false);
   const [isProcessMonth, setIsProcessMonth] = useState(false);
   const [editableDescription, setEditableDescription] = useState<string>("");
 
   useEffect(() => {
+    refetch();
     if (scheduleData) {
       const daysArray = scheduleData.daysOfSchedule
         ? scheduleData.daysOfSchedule.split(",").map(Number)
@@ -85,6 +87,7 @@ const DetailSchedule = ({ scheduleId, onUpdateSuccess }: any) => {
       if (scheduleTypeName === "ProcessMonth" && scheduleData.daysOfSchedule) {
         setSelectedDates(daysArray);
       }
+      setShowError(false);
     }
   }, [scheduleData, form]);
 
@@ -119,6 +122,7 @@ const DetailSchedule = ({ scheduleId, onUpdateSuccess }: any) => {
         ? prevDays.filter((d) => d !== dayValue)
         : [...prevDays, dayValue]
     );
+    setShowError(false); // Hide error when a date is selected
   };
 
   const handleDateClick = (date: number) => {
@@ -127,6 +131,7 @@ const DetailSchedule = ({ scheduleId, onUpdateSuccess }: any) => {
         ? prevDates.filter((d) => d !== date)
         : [...prevDates, date]
     );
+    setShowError(false); // Hide error when a date is selected
   };
 
   const renderScheduleTypeTag = (
@@ -155,6 +160,14 @@ const DetailSchedule = ({ scheduleId, onUpdateSuccess }: any) => {
 
   const handleFinish = async (values: { status: string }) => {
     // console.log(scheduleData);
+    if (selectedDates.length === 0) {
+      setShowError(true);
+      return;
+    }
+    if (selectedDays.length === 0) {
+      setShowError(true);
+      return;
+    }
     const scheduleNewName = form.getFieldValue("scheduleName");
     try {
       const parsedValues = {
@@ -176,10 +189,12 @@ const DetailSchedule = ({ scheduleId, onUpdateSuccess }: any) => {
       refetch();
       scheduleUserRefetch();
       refetchAll();
-      notification.success({ message: "Dự án đã được cập nhật thành công!" });
+      notification.success({
+        message: "Lịch trình đã được cập nhật thành công!",
+      });
       onUpdateSuccess(); // Call the callback to close the modal
     } catch (error) {
-      notification.error({ message: "Đã xảy ra lỗi khi cập nhật dự án." });
+      notification.error({ message: "Đã xảy ra lỗi khi cập nhật lịch trình." });
     }
   };
   return (
@@ -204,7 +219,12 @@ const DetailSchedule = ({ scheduleId, onUpdateSuccess }: any) => {
                 name="scheduleName"
                 rules={[
                   { required: true, message: "Vui lòng nhập tên lịch trình!" },
-                  { min: 5, message: "Tên lịch trình phải có ít nhất 5 ký tự" },
+                  {
+                    min: 5,
+                    max: 100,
+                    message:
+                      "Tên lịch trình phải có ít nhất 5 ký tự và tối đa 100 ký tự",
+                  },
                 ]}
               >
                 <Input
@@ -306,6 +326,11 @@ const DetailSchedule = ({ scheduleId, onUpdateSuccess }: any) => {
                       </div>
                     ))}
                   </div>
+                  {showError && (
+                    <span className="text-red-500 text-sm">
+                      Chọn ít nhất một ngày trong tuần.
+                    </span>
+                  )}
                 </div>
               )}
 
@@ -330,6 +355,11 @@ const DetailSchedule = ({ scheduleId, onUpdateSuccess }: any) => {
                       </div>
                     ))}
                   </div>
+                  {showError && (
+                    <span className="text-red-500 text-sm">
+                      Chọn ít nhất một ngày trong tháng.
+                    </span>
+                  )}
                 </div>
               )}
             </div>
@@ -355,22 +385,21 @@ const DetailSchedule = ({ scheduleId, onUpdateSuccess }: any) => {
           </Button>
         </div>
         <Modal
-        visible={showCalendarModal}
-        onCancel={handleCloseModal}
-        footer={null}
-        title="Xem lịch"
-        centered
-        width="30%"
-        style={{ top: "-5.5%" }}
-      >
-        {isProcessMonth ? (
-          <ReadOnlyMonthCalendar daysOfSchedule={daysOfSchedule} />
-        ) : isProcessWeek ? (
-          <ReadOnlyWeekCalendar daysOfSchedule={daysOfSchedule} />
-        ) : null}
-      </Modal>
+          visible={showCalendarModal}
+          onCancel={handleCloseModal}
+          footer={null}
+          title="Xem lịch"
+          centered
+          width="30%"
+          style={{ top: "-5.5%" }}
+        >
+          {isProcessMonth ? (
+            <ReadOnlyMonthCalendar daysOfSchedule={daysOfSchedule} />
+          ) : isProcessWeek ? (
+            <ReadOnlyWeekCalendar daysOfSchedule={daysOfSchedule} />
+          ) : null}
+        </Modal>
       </Form>
- 
     </div>
   );
 };
