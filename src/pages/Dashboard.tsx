@@ -218,6 +218,21 @@ const Dashboard: React.FC = () => {
     refetchRecentSession,
   ]);
 
+  // const getUserData = () => {
+  //   if (!userData) return [];
+  //   const translations: { [key: string]: string } = {
+  //     admin: "Quản trị viên",
+  //     manager: "Quản lý",
+  //     departmentManager: "Quản lý phòng ban",
+  //     staff: "Nhân viên",
+  //     security: "Bảo vệ",
+  //   };
+  //   return Object.entries(userData as UserData).map(([role, value]) => ({
+  //     name: translations[role] || role,
+  //     value: value,
+  //   }));
+  // };
+
   const getUserData = () => {
     if (!userData) return [];
     const translations: { [key: string]: string } = {
@@ -227,21 +242,43 @@ const Dashboard: React.FC = () => {
       staff: "Nhân viên",
       security: "Bảo vệ",
     };
-    return Object.entries(userData as UserData).map(([role, value]) => ({
-      name: translations[role] || role,
-      value: value,
-    }));
+    return Object.entries(userData as UserData)
+      .filter(([_, value]) => value > 0)
+      .map(([role, value]) => ({
+        name: translations[role] || role,
+        value: value,
+      }));
   };
+
+  // const getScheduleData = () => {
+  //   if (!scheduleData) return [];
+  //   return [
+  //     { name: "Tuần", value: scheduleData.week },
+  //     { name: "Tháng", value: scheduleData.month },
+  //   ];
+  // };
 
   const getScheduleData = () => {
     if (!scheduleData) return [];
     return [
       { name: "Tuần", value: scheduleData.week },
       { name: "Tháng", value: scheduleData.month },
-    ];
+    ].filter((item) => item.value > 0);
   };
+
+  // const getTaskData = () => {
+  //   console.log(task);
+  //   if (!task) return [];
+  //   return [
+  //     { name: "Chờ phê duyệt", value: task.pending },
+  //     { name: "Đã phê duyệt", value: task.approved },
+  //     { name: "Chờ tạo", value: task.assigned },
+  //     { name: "Đã từ chối", value: task.rejected },
+  //     { name: "Đã hết hạn", value: task.expired },
+  //   ];
+  // };
+
   const getTaskData = () => {
-    console.log(task);
     if (!task) return [];
     return [
       { name: "Chờ phê duyệt", value: task.pending },
@@ -249,16 +286,39 @@ const Dashboard: React.FC = () => {
       { name: "Chờ tạo", value: task.assigned },
       { name: "Đã từ chối", value: task.rejected },
       { name: "Đã hết hạn", value: task.expired },
-    ];
+    ].filter((item) => item.value > 0);
   };
+
+  // const getVisitByType = () => {
+  //   if (!visitData) return [];
+  //   return [
+  //     { name: "Ngày", value: visitData.daily },
+  //     { name: "Tuần", value: visitData.week },
+  //     { name: "Tháng", value: visitData.month },
+  //   ];
+  // };
+
   const getVisitByType = () => {
     if (!visitData) return [];
     return [
       { name: "Ngày", value: visitData.daily },
       { name: "Tuần", value: visitData.week },
       { name: "Tháng", value: visitData.month },
-    ];
+    ].filter((item) => item.value > 0);
   };
+
+  // const getVisitByStatus = () => {
+  //   if (!visitData) return [];
+  //   return [
+  //     { name: "Đã vô hiệu hóa", value: visitData.cancel || 0 },
+  //     { name: "Đã hết hạn", value: visitData.inactive || 0 },
+  //     { name: "Vi phạm", value: visitData.violation || 0 },
+  //     { name: "Cần duyệt", value: visitData.activeTemporary || 0 },
+  //     { name: "Còn hiệu lực", value: visitData.active || 0 },
+  //     { name: "Chờ phê duyệt", value: visitData.pending || 0 },
+  //   ];
+  // };
+
   const getVisitByStatus = () => {
     if (!visitData) return [];
     return [
@@ -268,27 +328,78 @@ const Dashboard: React.FC = () => {
       { name: "Cần duyệt", value: visitData.activeTemporary || 0 },
       { name: "Còn hiệu lực", value: visitData.active || 0 },
       { name: "Chờ phê duyệt", value: visitData.pending || 0 },
-    ];
+    ].filter((item) => item.value > 0);
   };
+
+  // const getSessionStatusData = () => {
+  //   if (visitorSessionStatusTodayData.every(item => item.count === 0)) {
+  //     return [];
+  //   } else {
+  //     const translations: { [key: string]: string } = {
+  //       CheckIn: "Đã vào",
+  //       CheckOut: "Đã ra",
+  //       // UnCheckOut: "Đã ra",
+  //     };
+  //     return visitorSessionStatusTodayData.map((item) => ({
+  //       name: translations[item.status] || item.status,
+  //       value: item.count || 0,
+  //     }));
+  //   }
+  // };
+
   const getSessionStatusData = () => {
-    if (visitorSessionStatusTodayData.every(item => item.count === 0)) {
-      return [];
-    } else {
-      const translations: { [key: string]: string } = {
-        CheckIn: "Đã vào",
-        CheckOut: "Đã ra",
-        // UnCheckOut: "Đã ra",
-      };
-      return visitorSessionStatusTodayData.map((item) => ({
+    if (!visitorSessionStatusTodayData) return [];
+    const translations: { [key: string]: string } = {
+      CheckIn: "Đã vào",
+      CheckOut: "Đã ra",
+    };
+    return visitorSessionStatusTodayData
+      .filter((item) => item.count > 0)
+      .map((item) => ({
         name: translations[item.status] || item.status,
         value: item.count || 0,
       }));
-    }
   };
+
   const years = Array.from(
     { length: 5 },
     (_, i) => new Date().getFullYear() - i
   );
+
+  const renderPieChart = (data: any[], colors: string[]) => {
+    if (!data || data.length === 0) {
+      return (
+        <div className="flex justify-center items-center h-[300px] text-gray-500">
+          Không có dữ liệu để hiển thị
+        </div>
+      );
+    }
+
+    return (
+      <ResponsiveContainer width="100%" height={300}>
+        <PieChart>
+          <Pie
+            data={data}
+            cx="50%"
+            cy="50%"
+            labelLine={false}
+            label={({ name, value }) => `${name}: ${value}`}
+            outerRadius={80}
+            dataKey="value"
+          >
+            {data.map((_, index) => (
+              <Cell
+                key={`cell-${index}`}
+                fill={colors[index % colors.length]}
+              />
+            ))}
+          </Pie>
+          <Tooltip />
+          <Legend />
+        </PieChart>
+      </ResponsiveContainer>
+    );
+  };
 
   const COLORS = {
     users: ["#1890FF", "#13C2C2", "#52C41A", "#FAAD14", "#F5222D"],
@@ -368,7 +479,7 @@ const Dashboard: React.FC = () => {
 
       <Row gutter={[16, 16]}>
         <Col xs={24} lg={8}>
-          <Card
+          {/* <Card
             title="Phân bố người dùng"
             className="h-full"
             style={{ minHeight: "300px" }}
@@ -395,6 +506,17 @@ const Dashboard: React.FC = () => {
                   <Legend />
                 </PieChart>
               </ResponsiveContainer>
+            )}
+          </Card> */}
+          <Card
+            title="Phân bố người dùng"
+            className="h-full"
+            style={{ minHeight: "300px" }}
+          >
+            {isLoadingUser ? (
+              <LoadingSpinner />
+            ) : (
+              renderPieChart(getUserData(), COLORS.users)
             )}
           </Card>
         </Col>
@@ -577,7 +699,13 @@ const Dashboard: React.FC = () => {
               <List
                 dataSource={recentSession}
                 renderItem={(session: RecentSession) => (
-                  <List.Item onClick={()=> navigate(`/dashboard/sessionDetail/${session.visitorSessionId}`)}>
+                  <List.Item
+                    onClick={() =>
+                      navigate(
+                        `/dashboard/sessionDetail/${session.visitorSessionId}`
+                      )
+                    }
+                  >
                     <List.Item.Meta
                       title={`Phiên #${session?.visitorSessionId}`}
                       description={
