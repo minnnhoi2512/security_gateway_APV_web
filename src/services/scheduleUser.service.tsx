@@ -54,6 +54,12 @@ export const scheduleUserAPI = createApi({
                 method: 'PUT',
             }),
         }),
+        cancelSchedule: builder.mutation<any, number>({
+            query: (scheduleUserId) => ({
+                url: `Cancel/${scheduleUserId}`,
+                method: 'PUT',
+            }),
+        }),
     }),
 });
 
@@ -62,5 +68,6 @@ export const {
     useGetSchedulesUserByStatusQuery,
     useAssignScheduleMutation,
     useRejectScheduleMutation,
-    useApproveScheduleMutation
+    useApproveScheduleMutation,
+    useCancelScheduleMutation,
 } = scheduleUserAPI;
