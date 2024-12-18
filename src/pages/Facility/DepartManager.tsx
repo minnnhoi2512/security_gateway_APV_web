@@ -56,7 +56,7 @@ const DepartManager = () => {
     pageNumber: -1,
     pageSize: -1,
   });
-
+  
   const departments = data
     ? data.filter((department) => ![1, 2, 3].includes(department.departmentId))
     : [];
