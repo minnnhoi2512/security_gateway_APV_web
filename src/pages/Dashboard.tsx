@@ -88,7 +88,7 @@ const Dashboard: React.FC = () => {
   const showTaskView = () => {
     setIsScheduleView(false);
   };
-  const [visitMode, setVisitMode] = useState<"type" | "status">("type");
+  const [visitMode, setVisitMode] = useState<"type" | "status">("status");
   const [selectedYear, setSelectedYear] = useState<any>(
     new Date().getFullYear()
   );
