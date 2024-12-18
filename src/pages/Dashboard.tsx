@@ -78,12 +78,13 @@ interface VisitorSessionMonthResponse {
 const Dashboard: React.FC = () => {
   const [dataSession, setDataSession] =
     useState<VisitorSessionMonthResponse | null>(null);
-  const [isScheduleView, setIsScheduleView] = useState(true);
+  const [isScheduleView, setIsScheduleView] = useState(false);
   const navigate = useNavigate();
   const showScheduleView = () => {
     setIsScheduleView(true);
   };
-
+  const userRole = localStorage.getItem("userRole");
+  console.log(userRole);
   const showTaskView = () => {
     setIsScheduleView(false);
   };
@@ -271,7 +272,7 @@ const Dashboard: React.FC = () => {
     ];
   };
   const getSessionStatusData = () => {
-    if (visitorSessionStatusTodayData.every(item => item.count === 0)) {
+    if (visitorSessionStatusTodayData.every((item) => item.count === 0)) {
       return [];
     } else {
       const translations: { [key: string]: string } = {
@@ -328,76 +329,86 @@ const Dashboard: React.FC = () => {
   return (
     <div className="p-6 bg-gray-50">
       <Row gutter={[16, 16]} className="mb-6">
-        <Col xs={24} sm={8}>
-          <Card size="small" style={{ minHeight: "200px" }}>
-            <Statistic
-              title="Thẻ ra vào của hệ thống"
-              value={cardStatus?.[0]?.count ?? 0}
-              prefix={<IdcardOutlined className="text-green-500" />}
-              suffix={`/ ${cardIssue?.totalCard ?? 0}`}
-            />
-            <div className="mt-2 text-sm text-gray-600">
-              <div>Đã cấp: {cardIssue?.totalCardIssue ?? 0}</div>
-              <div>Đã mất: {cardStatus?.[1]?.count ?? 0}</div>
-              <div>
-                Còn trong hệ thống:{" "}
-                {cardStatus?.[0]?.count - cardIssue?.totalCardIssue || "N/A"}
+        {userRole != "Staff" && userRole != "DepartmentManager" && (
+          <Col xs={24} sm={8}>
+            <Card size="small" style={{ minHeight: "200px" }}>
+              <Statistic
+                title="Thẻ ra vào của hệ thống"
+                value={cardStatus?.[0]?.count ?? 0}
+                prefix={<IdcardOutlined className="text-green-500" />}
+                suffix={`/ ${cardIssue?.totalCard ?? 0}`}
+              />
+              <div className="mt-2 text-sm text-gray-600">
+                <div>Đã cấp: {cardIssue?.totalCardIssue ?? 0}</div>
+                <div>Đã mất: {cardStatus?.[1]?.count ?? 0}</div>
+                <div>
+                  Còn trong hệ thống:{" "}
+                  {cardStatus?.[0]?.count - cardIssue?.totalCardIssue || "N/A"}
+                </div>
               </div>
-            </div>
-          </Card>
-        </Col>
-        <Col xs={24} sm={8}>
-          <Card size="small" style={{ minHeight: "200px" }}>
-            <Statistic
-              title="Khách trong hệ thống"
-              value={visitorData?.active ?? 0}
-              prefix={<UserOutlined className="text-purple-500" />}
-              suffix={`/ ${visitorData?.total ?? 0}`}
-            />
-            <div className="mt-2 text-sm text-gray-600">
-              <div>Tổng số khách: {visitorData?.total ?? 0}</div>
-              <div>Số khách hợp lệ: {visitorData?.active ?? 0}</div>
-              <div>
-                Số khách trong danh sách đen:{" "}
-                {visitorData?.total - visitorData?.active}
+            </Card>
+          </Col>
+        )}
+
+        {userRole != "Staff" && userRole != "DepartmentManager" && (
+          <Col xs={24} sm={8}>
+            <Card size="small" style={{ minHeight: "200px" }}>
+              <Statistic
+                title="Khách trong hệ thống"
+                value={visitorData?.active ?? 0}
+                prefix={<UserOutlined className="text-purple-500" />}
+                suffix={`/ ${visitorData?.total ?? 0}`}
+              />
+              <div className="mt-2 text-sm text-gray-600">
+                <div>Tổng số khách: {visitorData?.total ?? 0}</div>
+                <div>Số khách hợp lệ: {visitorData?.active ?? 0}</div>
+                <div>
+                  Số khách trong danh sách đen:{" "}
+                  {visitorData?.total - visitorData?.active}
+                </div>
               </div>
-            </div>
-          </Card>
-        </Col>
+            </Card>
+          </Col>
+        )}
       </Row>
 
       <Row gutter={[16, 16]}>
-        <Col xs={24} lg={8}>
-          <Card
-            title="Phân bố người dùng"
-            className="h-full"
-            style={{ minHeight: "300px" }}
-          >
-            {isLoadingUser ? (
-              <LoadingSpinner />
-            ) : (
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={getUserData()}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, value }) => `${name}: ${value}`}
-                    outerRadius={80}
-                    dataKey="value"
-                  >
-                    {getUserData().map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS.users[index]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            )}
-          </Card>
-        </Col>
+        {userRole != "Staff" && userRole != "DepartmentManager" && (
+          <Col xs={24} lg={8}>
+            <Card
+              title="Phân bố người dùng"
+              className="h-full"
+              style={{ minHeight: "300px" }}
+            >
+              {isLoadingUser ? (
+                <LoadingSpinner />
+              ) : (
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={getUserData()}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, value }) => `${name}: ${value}`}
+                      outerRadius={80}
+                      dataKey="value"
+                    >
+                      {getUserData().map((entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={COLORS.users[index]}
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              )}
+            </Card>
+          </Col>
+        )}
         <Col xs={24} lg={8}>
           <Card
             title={
@@ -412,13 +423,15 @@ const Dashboard: React.FC = () => {
                   {isScheduleView ? "Lịch trình tổng quan" : "Nhiệm vụ"}
                 </span>
                 <div>
-                  <Button
-                    onClick={showScheduleView}
-                    size="small"
-                    type={isScheduleView ? "primary" : "default"}
-                  >
-                    Lịch trình
-                  </Button>
+                  {userRole != "Staff" && (
+                    <Button
+                      onClick={showScheduleView}
+                      size="small"
+                      type={isScheduleView ? "primary" : "default"}
+                    >
+                      Lịch trình
+                    </Button>
+                  )}
                   <Button
                     onClick={showTaskView}
                     size="small"
@@ -523,6 +536,7 @@ const Dashboard: React.FC = () => {
             )}
           </Card>
         </Col>
+
         <Col xs={24} lg={8}>
           <Card
             title="Trạng thái lượt ra vào hôm nay"
@@ -561,6 +575,26 @@ const Dashboard: React.FC = () => {
             )}
           </Card>
         </Col>
+        {(userRole == "Staff" || userRole == "DepartmentManager") && (
+          <Col xs={24} sm={8}>
+            <Card size="small" style={{ minHeight: "200px" }}>
+              <Statistic
+                title="Khách trong hệ thống"
+                value={visitorData?.active ?? 0}
+                prefix={<UserOutlined className="text-purple-500" />}
+                suffix={`/ ${visitorData?.total ?? 0}`}
+              />
+              <div className="mt-2 text-sm text-gray-600">
+                <div>Tổng số khách: {visitorData?.total ?? 0}</div>
+                <div>Số khách hợp lệ: {visitorData?.active ?? 0}</div>
+                <div>
+                  Số khách trong danh sách đen:{" "}
+                  {visitorData?.total - visitorData?.active}
+                </div>
+              </div>
+            </Card>
+          </Col>
+        )}
         <Col xs={24} lg={16}>
           <Card
             title="Lượt ra vào gần đây"
@@ -577,7 +611,13 @@ const Dashboard: React.FC = () => {
               <List
                 dataSource={recentSession}
                 renderItem={(session: RecentSession) => (
-                  <List.Item onClick={()=> navigate(`/dashboard/sessionDetail/${session.visitorSessionId}`)}>
+                  <List.Item
+                    onClick={() =>
+                      navigate(
+                        `/dashboard/sessionDetail/${session.visitorSessionId}`
+                      )
+                    }
+                  >
                     <List.Item.Meta
                       title={`Phiên #${session?.visitorSessionId}`}
                       description={
