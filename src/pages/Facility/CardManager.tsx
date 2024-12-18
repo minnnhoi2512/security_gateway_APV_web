@@ -105,7 +105,7 @@ const CardManager = () => {
       const numberOfCards = Number(values.numberOfCards);
       const cardTypeId = values.cardType;
       // console.log(values.imageLogo[0])
-      const imageLogo = values.imageLogo[0].originFileObj;
+      
 
       for (let i = 0; i < numberOfCards; i++) {
         const cardVerified = uuidv4();
