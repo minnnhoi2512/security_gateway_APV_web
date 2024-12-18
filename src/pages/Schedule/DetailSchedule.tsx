@@ -31,7 +31,16 @@ import {
   EditOutlined,
   FileTextOutlined,
 } from "@ant-design/icons";
+import vi from "timeago.js/lib/lang/vi";
+import { isEntityError } from "../../utils/helpers";
 
+interface FormData {
+  scheduleName: string;
+  description: string;
+  status: string;
+  scheduleTypeName: string;
+  daysOfSchedule: string;
+}
 const { Option } = Select;
 const dayOptions = ["Hai", "Ba", "Tư", "Năm", "Sáu", "Bảy", "CN"];
 const dayValues = [1, 2, 3, 4, 5, 6, 7];
@@ -58,15 +67,29 @@ const DetailSchedule = ({ scheduleId, onUpdateSuccess }: any) => {
   const [daysOfSchedule, setDaysOfSchedule] = useState<string>("");
   const [selectedDays, setSelectedDays] = useState<number[]>([]);
   const [selectedDates, setSelectedDates] = useState<number[]>([]);
-  const navigate = useNavigate();
-  const [showError, setShowError] = useState<boolean>(false);
+  type FormError = { [key in keyof FormData]?: string[] } | null;
+  const [errorVisitor, setErrorVisitor] = useState<FormError>(null);
 
   const [isProcessWeek, setIsProcessWeek] = useState(false);
   const [isProcessMonth, setIsProcessMonth] = useState(false);
   const [editableDescription, setEditableDescription] = useState<string>("");
+  useEffect(() => {
+    const daysArray = scheduleData.daysOfSchedule
+      ? scheduleData.daysOfSchedule.split(",").map(Number)
+      : [];
+    setSelectedDays(daysArray);
+    setErrorVisitor(null);
+    form.setFieldsValue({
+      ...scheduleData,
+      status: scheduleData.status.toString(),
+      scheduleTypeName: scheduleData.scheduleType?.scheduleTypeName,
+      daysOfSchedule: scheduleData.daysOfSchedule,
+    });
+  }, [onUpdateSuccess]);
 
   useEffect(() => {
     refetch();
+    // Clear daysOfSchedule before setting new data
     if (scheduleData) {
       const daysArray = scheduleData.daysOfSchedule
         ? scheduleData.daysOfSchedule.split(",").map(Number)
@@ -87,7 +110,7 @@ const DetailSchedule = ({ scheduleId, onUpdateSuccess }: any) => {
       if (scheduleTypeName === "ProcessMonth" && scheduleData.daysOfSchedule) {
         setSelectedDates(daysArray);
       }
-      setShowError(false);
+      // setShowError(false);
     }
   }, [scheduleData, form]);
 
@@ -122,7 +145,7 @@ const DetailSchedule = ({ scheduleId, onUpdateSuccess }: any) => {
         ? prevDays.filter((d) => d !== dayValue)
         : [...prevDays, dayValue]
     );
-    setShowError(false); // Hide error when a date is selected
+    // setShowError(false); // Hide error when a date is selected
   };
 
   const handleDateClick = (date: number) => {
@@ -131,7 +154,7 @@ const DetailSchedule = ({ scheduleId, onUpdateSuccess }: any) => {
         ? prevDates.filter((d) => d !== date)
         : [...prevDates, date]
     );
-    setShowError(false); // Hide error when a date is selected
+    // setShowError(false); // Hide error when a date is selected
   };
 
   const renderScheduleTypeTag = (
@@ -160,14 +183,14 @@ const DetailSchedule = ({ scheduleId, onUpdateSuccess }: any) => {
 
   const handleFinish = async (values: { status: string }) => {
     // console.log(scheduleData);
-    if (selectedDates.length === 0) {
-      setShowError(true);
-      return;
-    }
-    if (selectedDays.length === 0) {
-      setShowError(true);
-      return;
-    }
+    // if (selectedDates.length === 0) {
+    //   setShowError(true);
+    //   return;
+    // }
+    // if (selectedDays.length === 0) {
+    //   setShowError(true);
+    //   return;
+    // }
     const scheduleNewName = form.getFieldValue("scheduleName");
     try {
       const parsedValues = {
@@ -194,7 +217,9 @@ const DetailSchedule = ({ scheduleId, onUpdateSuccess }: any) => {
       });
       onUpdateSuccess(); // Call the callback to close the modal
     } catch (error) {
-      notification.error({ message: "Đã xảy ra lỗi khi cập nhật lịch trình." });
+      if (isEntityError(error)) {
+        setErrorVisitor(error.data.errors as FormError);
+      }
     }
   };
   return (
@@ -326,10 +351,10 @@ const DetailSchedule = ({ scheduleId, onUpdateSuccess }: any) => {
                       </div>
                     ))}
                   </div>
-                  {showError && (
-                    <span className="text-red-500 text-sm">
-                      Chọn ít nhất một ngày trong tuần.
-                    </span>
+                  {errorVisitor?.daysOfSchedule && (
+                    <p className="text-sm text-red-600 bg-red-50 p-2 rounded">
+                      {errorVisitor.daysOfSchedule[0]}
+                    </p>
                   )}
                 </div>
               )}
@@ -355,10 +380,10 @@ const DetailSchedule = ({ scheduleId, onUpdateSuccess }: any) => {
                       </div>
                     ))}
                   </div>
-                  {showError && (
-                    <span className="text-red-500 text-sm">
-                      Chọn ít nhất một ngày trong tháng.
-                    </span>
+                  {errorVisitor?.daysOfSchedule && (
+                    <p className="text-sm text-red-600 bg-red-50 p-2 rounded">
+                      {errorVisitor.daysOfSchedule[0]}
+                    </p>
                   )}
                 </div>
               )}
