@@ -160,7 +160,7 @@ const DetailCustomerVisit: React.FC = () => {
         if (invalidVisit) {
           return notification.error({
             message: "Lỗi chọn giờ",
-            description: "Vui lòng kiểm tra lại thời gian ra vào.",
+            description: "Vui lòng kiểm tra lại thời gian ra cần hơn thời gian vào 30 phút.",
           });
         } else {
           const updatedVisitData = {
@@ -191,9 +191,9 @@ const DetailCustomerVisit: React.FC = () => {
           notification.success({ message: "Chỉnh sửa thành công!" });
         }
       } catch (error) {
-        notification.error({
-          message: "Chỉnh sửa thất bại, vui lòng kiểm tra thông tin!",
-        });
+        // notification.error({
+        //   message: "Chỉnh sửa thất bại, vui lòng kiểm tra thông tin!",
+        // });
         return;
       }
     }

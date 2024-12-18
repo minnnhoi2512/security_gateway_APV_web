@@ -318,7 +318,7 @@ const CreateNewVisitList: React.FC = () => {
         setIsSubmitting(false);
       }
     } catch (error) {
-      notification.error({ message: "Vui lòng kiểm tra thông tin đã nhập." });
+      // notification.error({ message: "Vui lòng kiểm tra thông tin đã nhập." });
       setIsSubmitting(false);
     }
   };
