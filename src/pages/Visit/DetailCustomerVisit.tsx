@@ -505,7 +505,7 @@ const DetailCustomerVisit: React.FC = () => {
             onChange={(time) =>
               getHourString(time, "expectedStartHour", index, editableStartDate)
             }
-            disabled={!isEditMode || record.isDeleted}
+            disabled={!isEditMode || record.isDeleted || !isEditableToday()}
             format="HH:mm"
             style={isError ? timePickerStyles.error : undefined} // Apply error style
             key={record.visitor.visitorId}
@@ -913,6 +913,7 @@ const DetailCustomerVisit: React.FC = () => {
                 scheduleTypeId === undefined &&
                 visitData?.visitStatus !== "ActiveTemporary" &&
                 visitData?.visitStatus !== "Inactive" &&
+                visitData?.visitStatus !== "Cancelled" &&
                 visitData?.visitStatus !== "Violation") ||
                 (scheduleTypeId !== undefined &&
                   visitData?.visitStatus !== "ActiveTemporary" &&

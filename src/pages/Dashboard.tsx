@@ -341,7 +341,7 @@ const Dashboard: React.FC = () => {
               <div>Đã mất: {cardStatus?.[1]?.count ?? 0}</div>
               <div>
                 Còn trong hệ thống:{" "}
-                {cardStatus?.[0]?.count - cardIssue?.totalCardIssue}
+                {cardStatus?.[0]?.count - cardIssue?.totalCardIssue || "N/A"}
               </div>
             </div>
           </Card>

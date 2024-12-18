@@ -279,6 +279,48 @@ const CreateNewVisitList: React.FC = () => {
         })),
         responsiblePersonId: userId,
       };
+      let validData = true;
+      if (requestData.expectedStartTime) {
+        const expectedStartTimeDate = new Date(requestData.expectedStartTime);
+        const currentDate = new Date();
+
+        const isSameDay =
+          expectedStartTimeDate.getFullYear() === currentDate.getFullYear() &&
+          expectedStartTimeDate.getMonth() === currentDate.getMonth() &&
+          expectedStartTimeDate.getDate() === currentDate.getDate();
+        // console.log(isSameDay);
+
+        if (isSameDay) {
+          selectedVisitors.forEach((visitor) => {
+            const [hours, minutes, seconds] = visitor.startHour
+              .split(":")
+              .map(Number);
+            const selectedVisitorTime = new Date(
+              currentDate.getFullYear(),
+              currentDate.getMonth(),
+              currentDate.getDate(),
+              hours,
+              minutes + 1,
+              seconds
+            );
+
+            if (selectedVisitorTime < currentDate) {
+              // expectedStartHour is before the current time
+
+              validData = false;
+              return; // Stop further execution
+            }
+          });
+        }
+        // console.log(!isSubmitting);
+        // if (!isSubmitting) return;
+      }
+      if (!validData) {
+        notification.warning({
+          message: "Giờ bắt đầu dự kiến không được trước thời gian hiện tại!",
+        });
+        return;
+      }
       if (
         scheduleTypeName === "ProcessWeek" ||
         scheduleTypeName === "ProcessMonth"
@@ -318,7 +360,7 @@ const CreateNewVisitList: React.FC = () => {
         setIsSubmitting(false);
       }
     } catch (error) {
-      // notification.error({ message: "Vui lòng kiểm tra thông tin đã nhập." });
+      notification.error({ message: "Vui lòng kiểm tra thông tin đã nhập." });
       setIsSubmitting(false);
     }
   };
@@ -340,7 +382,9 @@ const CreateNewVisitList: React.FC = () => {
     const minStartHour = new Date(currentDate.getTime() + -1 * 60000);
 
     if (isToday) {
-      const [selectedHours, selectedMinutes] = startHour.split(":").map(Number);
+      const [selectedHours, selectedMinutes] = startHour
+        ?.split(":")
+        .map(Number);
       const selectedTime = new Date();
       selectedTime.setHours(selectedHours, selectedMinutes, 0, 0);
 
