@@ -102,7 +102,7 @@ const CreateNewVisitList: React.FC = () => {
   };
 
   const handleVisitorSelection = (visitor: any) => {
-    console.log(visitor);
+    // console.log(visitor);
     setSelectedVisitors((prevVisitors) => {
       if (visitor[0].status === "Unactive") {
         notification.warning({
@@ -176,8 +176,8 @@ const CreateNewVisitList: React.FC = () => {
         const [selectedHours, selectedMinutes] = value.split(":").map(Number);
         const selectedTime = new Date();
         selectedTime.setHours(selectedHours, selectedMinutes, 0, 0);
-        console.log(minStartHour);
-        console.log(selectedTime);
+        // console.log(minStartHour);
+        // console.log(selectedTime);
         // Check if the selected start time is before the minimum allowed start time
         if (selectedTime <= minStartHour) {
           notification.warning({
@@ -283,7 +283,7 @@ const CreateNewVisitList: React.FC = () => {
         scheduleTypeName === "ProcessWeek" ||
         scheduleTypeName === "ProcessMonth"
       ) {
-        console.log(expectedStartTime);
+        // console.log(expectedStartTime);
         requestData.expectedStartTime = convertToVietnamTime(expectedStartTime);
         requestData.expectedEndTime = convertToVietnamTime(expectedEndTime);
         // console.log(state.from.schedule.scheduleId)
@@ -421,6 +421,7 @@ const CreateNewVisitList: React.FC = () => {
         dataIndex: "visitorImage",
         key: "visitorImage",
         render: (image: string) => {
+          // console.log(image);
           // Check if the image string is null, empty, or starts with the base64 prefix
           if (!image) {
             return null; // or return a placeholder, e.g., <div>No Image</div>
@@ -518,9 +519,9 @@ const CreateNewVisitList: React.FC = () => {
     ];
 
     const visitorsData = selectedVisitors.map((visitor, index) => {
-      const frontImage = visitor?.visitorImage.find(
-        (image) => image.imageType === "CitizenIdentificationCard_FRONT"
-      );
+      const frontImage =
+        visitor?.visitorImage.length > 0 ? visitor.visitorImage[0] : null;
+
       return {
         id: index + 1,
         visitorName: visitor?.visitorName,

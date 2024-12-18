@@ -351,15 +351,62 @@ const DetailCustomerVisit: React.FC = () => {
     nameValue: string,
     index: number
   ) => {
+    const currentTime = dayjs();
+    let isValid = true;
+    console.log(value);
+    if (value == null) return;
     setVisitors((prevVisitors) => {
-      const updatedVisitors = prevVisitors.map((visitor, i) =>
-        i === index
-          ? {
+      const updatedVisitors = prevVisitors.map((visitor, i) => {
+        if (i === index) {
+          if (editableStartDate.isSame(currentTime, "day")) {
+            if (
+              nameValue === "expectedStartHour" &&
+              value &&
+              value.isBefore(currentTime.add(-1, "minute"))
+            ) {
+              isValid = false;
+              notification.warning({
+                message: "Lỗi chọn giờ",
+                description: "Giờ vào dự kiến phải hơn giờ hiện tại.",
+              });
+            } else if (nameValue === "expectedEndHour" && value) {
+              const startTime = dayjs(visitor["expectedStartHour"], "HH:mm:ss");
+              if (
+                startTime.isValid() &&
+                value.isBefore(startTime.add(30, "minute"))
+              ) {
+                isValid = false;
+                notification.warning({
+                  message: "Lỗi chọn giờ",
+                  description:
+                    "Giờ ra dự kiến phải sau 30 phút so với giờ vào dự kiến.",
+                });
+              }
+            }
+          } else if (nameValue === "expectedEndHour") {
+            const startTime = dayjs(visitor["expectedStartHour"], "HH:mm:ss");
+            if (
+              startTime.isValid() &&
+              value.isBefore(startTime.add(30, "minute"))
+            ) {
+              isValid = false;
+              notification.warning({
+                message: "Lỗi chọn giờ",
+                description:
+                  "Giờ ra dự kiến phải sau 30 phút so với giờ vào dự kiến.",
+              });
+            }
+          }
+
+          if (isValid) {
+            return {
               ...visitor,
               [nameValue]: value ? value.format("HH:mm:ss") : "",
-            }
-          : visitor
-      );
+            };
+          }
+        }
+        return visitor;
+      });
 
       return updatedVisitors;
     });
@@ -410,7 +457,7 @@ const DetailCustomerVisit: React.FC = () => {
             value={text ? dayjs(text, "HH:mm:ss") : null}
             onChange={(time) => getHourString(time, "expectedStartHour", index)}
             disabled={!isEditMode || record.isDeleted}
-            format="HH:mm:ss"
+            format="HH:mm"
             style={isError ? timePickerStyles.error : undefined} // Apply error style
             key={record.visitor.visitorId}
           />
@@ -428,7 +475,7 @@ const DetailCustomerVisit: React.FC = () => {
             value={text ? dayjs(text, "HH:mm:ss") : null}
             onChange={(time) => handleEndHourChange(time, index, record)}
             disabled={!isEditMode || record.isDeleted}
-            format="HH:mm:ss"
+            format="HH:mm"
             style={isError ? timePickerStyles.error : undefined} // Apply error style
             key={record.visitor.visitorId}
           />
