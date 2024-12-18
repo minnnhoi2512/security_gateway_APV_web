@@ -65,7 +65,7 @@ const DetailCustomerVisit: React.FC = () => {
   } = useGetDetailVisitQuery({
     visitId: Number(id),
   });
-  // console.log(visitData);
+  console.log(visitData);
   const navigate = useNavigate();
   const [updateVisitBeforeStartDate] = useUpdateVisitBeforeStartDateMutation();
   const [updateVisitAfterStartDate] = useUpdateVisitAfterStartDateMutation();
@@ -97,6 +97,7 @@ const DetailCustomerVisit: React.FC = () => {
   const [isDescriptionModalVisible, setIsDescriptionModalVisible] =
     useState(false);
   const [status, setStatusVisit] = useState<VisitStatus | String>("");
+  const [editStatus, setEditStatus] = useState<boolean>(true);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
   const [isHistoryModalVisible, setIsHistoryModalVisible] = useState(false);
   const convertToDayjs = (date: string | Date | Dayjs): Dayjs => {
@@ -114,6 +115,13 @@ const DetailCustomerVisit: React.FC = () => {
     ).startOf("day");
     return !dayjs().isSameOrAfter(startOfExpectedStartTime, "day");
   };
+  const isEditableHour = () => {
+    const endOfExpectedStartTime = dayjs(visitData?.expectedStartTime).endOf(
+      "hour"
+    );
+    return dayjs().isSameOrBefore(endOfExpectedStartTime);
+  };
+  // console.log(isEditableHour());
   // console.log();
   useEffect(() => {
     setSelectedVisitId(Number(id));
@@ -160,7 +168,8 @@ const DetailCustomerVisit: React.FC = () => {
         if (invalidVisit) {
           return notification.error({
             message: "Lỗi chọn giờ",
-            description: "Vui lòng kiểm tra lại thời gian ra cần hơn thời gian vào 30 phút.",
+            description:
+              "Vui lòng kiểm tra lại thời gian ra cần hơn thời gian vào 30 phút.",
           });
         } else {
           const updatedVisitData = {
@@ -371,7 +380,11 @@ const DetailCustomerVisit: React.FC = () => {
   ) => {
     const currentTime = dayjs();
     let isValid = true;
-
+    console.log(
+      "tao ne : ",
+      value.isBefore(currentTime.add(-1, "minute")) ||
+        scheduleTypeId != undefined
+    );
     setVisitors((prevVisitors) => {
       const updatedVisitors = prevVisitors.map((visitor, i) => {
         if (i === index) {
@@ -383,7 +396,8 @@ const DetailCustomerVisit: React.FC = () => {
           if (editableStartDate.isSame(currentTime, "day")) {
             if (
               nameValue === "expectedStartHour" &&
-              value.isBefore(currentTime.add(-1, "minute"))
+              !(value?.isBefore(currentTime.add(-1, "minute")) ||
+                scheduleTypeId != undefined)
             ) {
               isValid = false;
               notification.warning({
@@ -392,7 +406,7 @@ const DetailCustomerVisit: React.FC = () => {
               });
             } else if (nameValue === "expectedEndHour") {
               const startTime = dayjs(visitor["expectedStartHour"], "HH:mm:ss");
-              console.log(startTime);
+              // console.log(startTime);
               if (!startTime.isValid()) {
                 isValid = false;
                 notification.warning({
@@ -419,7 +433,7 @@ const DetailCustomerVisit: React.FC = () => {
             }
           } else if (nameValue === "expectedEndHour") {
             const startTime = dayjs(visitor["expectedStartHour"], "HH:mm:ss");
-            console.log(startTime);
+            // console.log(startTime);
             if (!startTime.isValid()) {
               isValid = false;
               notification.warning({
@@ -505,7 +519,7 @@ const DetailCustomerVisit: React.FC = () => {
             onChange={(time) =>
               getHourString(time, "expectedStartHour", index, editableStartDate)
             }
-            disabled={!isEditMode || record.isDeleted || !isEditableToday()}
+            disabled={!isEditMode || record.isDeleted}
             format="HH:mm"
             style={isError ? timePickerStyles.error : undefined} // Apply error style
             key={record.visitor.visitorId}
@@ -594,7 +608,7 @@ const DetailCustomerVisit: React.FC = () => {
         handleReport();
       },
       onCancel() {
-        console.log("Cancel");
+        // console.log("Cancel");
       },
     });
   };
@@ -606,7 +620,7 @@ const DetailCustomerVisit: React.FC = () => {
         handleCancel();
       },
       onCancel() {
-        console.log("Cancel");
+        // console.log("Cancel");
       },
     });
   };
@@ -744,7 +758,7 @@ const DetailCustomerVisit: React.FC = () => {
                           date && date.isBefore(dayjs(), "day")
                         }
                       />
-                      {scheduleTypeId !== undefined   && (
+                      {scheduleTypeId !== undefined && (
                         <div>
                           <span>Ngày hết hạn</span>
                           <DatePicker
