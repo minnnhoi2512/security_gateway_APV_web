@@ -50,7 +50,11 @@ type ScheduleType = "DailyVisit" | "ProcessWeek" | "ProcessMonth" | string;
 const DetailSchedule = ({ scheduleId, onUpdateSuccess }: any) => {
   const [form] = Form.useForm();
   const userId = Number(localStorage.getItem("userId"));
-  const { data: scheduleData, refetch } = useGetDetailScheduleQuery({
+  const {
+    data: scheduleData,
+    refetch,
+    isLoading: scheduleDetailLoading,
+  } = useGetDetailScheduleQuery({
     idSchedule: scheduleId,
   });
   const [updateSchedule, { isLoading }] = useUpdateScheduleMutation();
@@ -74,16 +78,21 @@ const DetailSchedule = ({ scheduleId, onUpdateSuccess }: any) => {
   const [isProcessMonth, setIsProcessMonth] = useState(false);
   const [editableDescription, setEditableDescription] = useState<string>("");
   useEffect(() => {
-    const daysArray = scheduleData.daysOfSchedule
-      ? scheduleData.daysOfSchedule.split(",").map(Number)
+    const daysArray = scheduleData?.daysOfSchedule
+      ? scheduleData?.daysOfSchedule?.split(",").map(Number)
       : [];
-    setSelectedDays(daysArray);
+    const scheduleTypeName = scheduleData?.scheduleType?.scheduleTypeName;
+    if (scheduleTypeName === "ProcessMonth" && scheduleData.daysOfSchedule) {
+      setSelectedDates(daysArray);
+    } else {
+      setSelectedDays(daysArray);
+    }
     setErrorVisitor(null);
     form.setFieldsValue({
       ...scheduleData,
-      status: scheduleData.status.toString(),
-      scheduleTypeName: scheduleData.scheduleType?.scheduleTypeName,
-      daysOfSchedule: scheduleData.daysOfSchedule,
+      status: scheduleData?.status.toString(),
+      // scheduleTypeName: scheduleData?.scheduleType?.scheduleTypeName,
+      daysOfSchedule: scheduleData?.daysOfSchedule,
     });
   }, [onUpdateSuccess]);
 
@@ -353,7 +362,7 @@ const DetailSchedule = ({ scheduleId, onUpdateSuccess }: any) => {
                   </div>
                   {errorVisitor?.daysOfSchedule && (
                     <p className="text-sm text-red-600 bg-red-50 p-2 rounded">
-                      {errorVisitor.daysOfSchedule[0]}
+                      {errorVisitor?.daysOfSchedule[0]}
                     </p>
                   )}
                 </div>
@@ -382,7 +391,7 @@ const DetailSchedule = ({ scheduleId, onUpdateSuccess }: any) => {
                   </div>
                   {errorVisitor?.daysOfSchedule && (
                     <p className="text-sm text-red-600 bg-red-50 p-2 rounded">
-                      {errorVisitor.daysOfSchedule[0]}
+                      {errorVisitor?.daysOfSchedule[0]}
                     </p>
                   )}
                 </div>
