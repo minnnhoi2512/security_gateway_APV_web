@@ -94,7 +94,7 @@ const DetailSchedule = ({ scheduleId, onUpdateSuccess }: any) => {
       // scheduleTypeName: scheduleData?.scheduleType?.scheduleTypeName,
       daysOfSchedule: scheduleData?.daysOfSchedule,
     });
-  }, [onUpdateSuccess, selectedDays]);
+  }, [onUpdateSuccess]);
 
   useEffect(() => {
     refetch();
