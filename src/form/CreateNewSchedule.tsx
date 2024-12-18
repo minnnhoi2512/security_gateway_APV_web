@@ -112,127 +112,236 @@ const CreateNewSchedule: React.FC = () => {
   };
 
   return (
-    <Card style={{ maxWidth: 800, margin: "auto", padding: 24 }}>
-      <Form form={form} layout="vertical" onFinish={handleFinish}>
-        <Form.Item
-          label="Loại lịch trình"
-          name="scheduleTypeId"
-          rules={[
-            { required: true, message: "Vui lòng chọn loại lịch trình!" },
-          ]}
-        >
-          <Select
-            placeholder="Chọn loại lịch trình"
-            onChange={handleScheduleTypeChange}
-          >
-            {filteredScheduleTypes?.map((scheduleType) => (
-              <Option
-                key={scheduleType.scheduleTypeId}
-                value={scheduleType.scheduleTypeId}
-              >
-                {scheduleType.scheduleTypeName === "ProcessWeek"
-                  ? "Theo tuần"
-                  : scheduleType.scheduleTypeName === "ProcessMonth"
-                  ? "Theo tháng"
-                  : scheduleType.scheduleTypeName}
-              </Option>
-            ))}
-          </Select>
-        </Form.Item>
-        <Form.Item
-          label={
-            isProcessWeek
-              ? "Chọn thứ trong tuần"
-              : isProcessMonth
-              ? "Chọn ngày trong tháng"
-              : "Ngày thực hiện"
-          }
-          name="daysOfSchedule"
-        >
-          {isProcessWeek ? (
-            <Checkbox.Group
-              options={dayOptions}
-              value={selectedDays}
-              onChange={handleDaysOfScheduleChange}
-            />
-          ) : isProcessMonth ? (
-            <Checkbox.Group
-              value={selectedDays}
-              onChange={handleDaysOfScheduleChange}
-              className="grid grid-cols-7 gap-2"
-            >
-              {Array.from({ length: 31 }, (_, index) => (
-                <Checkbox key={index + 1} value={index + 1}>
-                  Ngày {index + 1}
-                </Checkbox>
-              ))}
-            </Checkbox.Group>
-          ) : null}
+    <Card className="max-w-3xl mx-auto shadow-sm rounded-lg">
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={handleFinish}
+        className="space-y-6"
+      >
+        {/* Form Header */}
+        <div className="text-xl font-medium text-gray-800 mb-6">
+          Tạo lịch trình mới
+        </div>
 
-          {daysOfSchedule.length > 0 && (
-            <Button
-              type="primary"
-              onClick={handlePreviewCalendar}
-              className="mt-4"
-            >
-              Xem trước lịch
-            </Button>
-          )}
 
-          <Modal
-            visible={showCalendarModal}
-            onCancel={handleCloseModal}
-            footer={null}
-            title="Xem lịch"
-          >
-            {isProcessMonth ? (
-              <ReadOnlyMonthCalendar daysOfSchedule={daysOfSchedule} />
-            ) : isProcessWeek ? (
-              <ReadOnlyWeekCalendar daysOfSchedule={daysOfSchedule} />
-            ) : null}
-          </Modal>
-        </Form.Item>
+
+        {/* Schedule Type */}
+        <div className="bg-white rounded-lg p-4">
         <Form.Item
-          label="Tiêu đề"
+          label={<span className="font-medium">Tiêu đề</span>}
           name="scheduleName"
           rules={[{ required: true, message: "Vui lòng nhập tiêu đề!" }]}
         >
-          <Input placeholder="Nhập tiêu đề lịch trình" />
+          <Input placeholder="Nhập tiêu đề lịch trình" className="w-full" />
         </Form.Item>
-        <Form.Item
-          name="description"
-          label="Mô tả"
-          rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}
-        >
-          <ReactQuill
-            value={editorState}
-            onChange={setEditorState}
-            className="h-64 mb-10" // Increased height
-            theme="snow"
-            modules={{
-              toolbar: [
-                [{ header: [1, 2, false] }],
-                ["bold", "italic", "underline", "strike"],
-                [{ list: "ordered" }, { list: "bullet" }],
-                ["link", "image", "clean"],
-              ],
-            }}
-          />
-        </Form.Item>
-        <Form.Item>
-          <Button type="primary" htmlType="submit" loading={isLoading}>
-            Tạo mới lịch trình
-          </Button>
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-base">📅</span>
+            <span className="font-medium">Loại lịch trình</span>
+          </div>
+          {/* <Form.Item
+            name="scheduleTypeId"
+            className="mb-4"
+            rules={[
+              { required: true, message: "Vui lòng chọn loại lịch trình!" },
+            ]}
+          >
+            <Select
+              placeholder="Chọn loại lịch trình"
+              onChange={handleScheduleTypeChange}
+              className="w-full"
+            >
+              {filteredScheduleTypes?.map((scheduleType) => (
+                <Option
+                  key={scheduleType.scheduleTypeId}
+                  value={scheduleType.scheduleTypeId}
+                >
+                  <div className="flex items-center gap-2">
+                    {scheduleType.scheduleTypeName === "ProcessWeek" ? (
+                      <div className="px-3 py-1 bg-green-100 text-green-600 rounded-full text-sm">
+                        Theo tuần
+                      </div>
+                    ) : scheduleType.scheduleTypeName === "ProcessMonth" ? (
+                      <div className="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-sm">
+                        Theo tháng
+                      </div>
+                    ) : (
+                      scheduleType.scheduleTypeName
+                    )}
+                  </div>
+                </Option>
+              ))}
+            </Select>
+          </Form.Item> */}
+          <Form.Item
+            name="scheduleTypeId"
+            className="mb-4"
+            rules={[
+              { required: true, message: "Vui lòng chọn loại lịch trình!" },
+            ]}
+          >
+            <Select
+              placeholder="Chọn loại lịch trình"
+              onChange={handleScheduleTypeChange}
+              className="w-full"
+            >
+              {filteredScheduleTypes?.map((scheduleType) => (
+                <Option
+                  key={scheduleType.scheduleTypeId}
+                  value={scheduleType.scheduleTypeId}
+                >
+                  <div className="flex items-center gap-2">
+                    {scheduleType.scheduleTypeName === "ProcessWeek" ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                        <span className="text-gray-600">Theo tuần</span>
+                      </div>
+                    ) : scheduleType.scheduleTypeName === "ProcessMonth" ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                        <span className="text-gray-600">Theo tháng</span>
+                      </div>
+                    ) : (
+                      scheduleType.scheduleTypeName
+                    )}
+                  </div>
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+
+          {/* Week/Month Selection */}
+          {(isProcessWeek || isProcessMonth) && (
+            <>
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-base">📅</span>
+                <span className="font-medium">
+                  {isProcessWeek ? "Chọn thứ" : "Chọn ngày"}
+                </span>
+              </div>
+              <Form.Item name="daysOfSchedule" className="mb-4">
+                {isProcessWeek ? (
+                  <Checkbox.Group
+                    value={selectedDays}
+                    onChange={handleDaysOfScheduleChange}
+                    className="flex flex-wrap gap-2"
+                  >
+                    {dayOptions.map((day) => (
+                      <label
+                        key={day.value}
+                        className={`inline-flex items-center justify-center px-6 py-2 rounded-md cursor-pointer select-none transition-colors ${
+                          selectedDays.includes(day.value)
+                            ? "bg-blue-500 text-white"
+                            : "bg-white text-gray-600 border border-gray-200"
+                        }`}
+                      >
+                        <Checkbox value={day.value} className="hidden" />
+                        {day.label}
+                      </label>
+                    ))}
+                  </Checkbox.Group>
+                ) : (
+                  <Checkbox.Group
+                    value={selectedDays}
+                    onChange={handleDaysOfScheduleChange}
+                    className="grid grid-cols-7 gap-2"
+                  >
+                    {Array.from({ length: 31 }, (_, index) => (
+                      <label
+                        key={index + 1}
+                        className={`inline-flex items-center justify-center p-2 rounded-md cursor-pointer select-none transition-colors ${
+                          selectedDays.includes(index + 1)
+                            ? "bg-blue-500 text-white"
+                            : "bg-white text-gray-600 border border-gray-200"
+                        }`}
+                      >
+                        <Checkbox value={index + 1} className="hidden" />
+                        <span>{index + 1}</span>
+                      </label>
+                    ))}
+                  </Checkbox.Group>
+                )}
+              </Form.Item>
+
+              {daysOfSchedule.length > 0 && (
+                <Button
+                  type="primary"
+                  onClick={handlePreviewCalendar}
+                  className="bg-blue-500 hover:bg-blue-600"
+                >
+                  Xem trước lịch
+                </Button>
+              )}
+            </>
+          )}
+        </div>
+
+        {/* Title & Description */}
+        <div className="bg-white rounded-lg p-4">
+          {/* <Form.Item
+            label={<span className="font-medium">Tiêu đề</span>}
+            name="scheduleName"
+            rules={[{ required: true, message: "Vui lòng nhập tiêu đề!" }]}
+          >
+            <Input placeholder="Nhập tiêu đề lịch trình" className="w-full" />
+          </Form.Item> */}
+
+          <Form.Item
+            name="description"
+            label={<span className="font-medium">Mô tả</span>}
+            rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}
+          >
+            <ReactQuill
+              value={editorState}
+              onChange={setEditorState}
+              className="bg-white"
+              style={{ height: "200px" }}
+              theme="snow"
+              modules={{
+                toolbar: [
+                  [{ header: [1, 2, false] }],
+                  ["bold", "italic", "underline"],
+                  [{ list: "ordered" }, { list: "bullet" }],
+                  ["link", "clean"],
+                ],
+              }}
+            />
+          </Form.Item>
+        </div>
+
+        {/* Form Actions */}
+        <div className="flex justify-end gap-3">
           <Button
-            type="default"
-            onClick={() => {
-              navigate(-1);
-            }}
-            style={{ marginLeft: 8 }}
+            onClick={() => navigate(-1)}
+            className="hover:bg-gray-100 hover:!border-gray-200 hover:!text-gray-400"
           >
             Hủy
           </Button>
-        </Form.Item>
+          <Button
+            type="primary"
+            htmlType="submit"
+            loading={isLoading}
+            className="bg-buttonColor hover:!bg-buttonColor hover:!scale-95"
+          >
+            Tạo mới lịch trình
+          </Button>
+        </div>
+
+        {/* Calendar Preview Modal */}
+        <Modal
+          visible={showCalendarModal}
+          onCancel={handleCloseModal}
+          footer={null}
+          title={<span className="font-medium">Xem lịch</span>}
+          width={600}
+          className="rounded-lg"
+        >
+          {isProcessMonth ? (
+            <ReadOnlyMonthCalendar daysOfSchedule={daysOfSchedule} />
+          ) : isProcessWeek ? (
+            <ReadOnlyWeekCalendar daysOfSchedule={daysOfSchedule} />
+          ) : null}
+        </Modal>
       </Form>
     </Card>
   );

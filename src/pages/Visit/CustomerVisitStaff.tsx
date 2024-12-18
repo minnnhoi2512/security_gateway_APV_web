@@ -63,18 +63,17 @@ const CustomerVisitStaff = () => {
     scheduleTypeId: [],
   });
 
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const autoFilter = searchParams.get("autoFilter");
 
-    useEffect(() => {
-      const searchParams = new URLSearchParams(location.search);
-      const autoFilter = searchParams.get("autoFilter");
-  
-      if (autoFilter === "pending") {
-        setIsActive(true);
-        handleStatusFilter(VisitStatus.ActiveTemporary);
-        const newUrl = window.location.pathname;
-        window.history.replaceState({}, "", newUrl);
-      }
-    }, []);
+    if (autoFilter === "pending") {
+      setIsActive(true);
+      handleStatusFilter(VisitStatus.ActiveTemporary);
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, "", newUrl);
+    }
+  }, []);
 
   const getCountByStatus = (status: VisitStatus) => {
     return data?.filter((item: any) => item.visitStatus === status).length || 0;
@@ -165,7 +164,9 @@ const CustomerVisitStaff = () => {
             textDecoration: "underline",
           }}
           onClick={() => {
-            navigate(`/customerVisitStaff/detailVisit/${record.visitId}/listSession`)
+            navigate(
+              `/customerVisitStaff/detailVisit/${record.visitId}/listSession`
+            );
           }}
         >
           {text} Lượt
@@ -395,7 +396,7 @@ const CustomerVisitStaff = () => {
                   <small className="text-gray-500 block mb-2">Trạng thái</small>
                   <div className="flex flex-wrap items-center gap-2">
                     {Object.values(VisitStatus)
-                      .filter((status) => status !== "Pending")
+                     
                       .map((status) => {
                         const { colorVisitStatus, textVisitStatus } =
                           visitStatusMap[status];
@@ -586,7 +587,6 @@ const CustomerVisitStaff = () => {
           </div>
 
           <Button
-             
             onClick={() => setIsCreateModalVisible(true)}
             className="group relative px-6 py-4 bg-buttonColor hover:!bg-buttonColor hover:!border-buttonColor rounded-lg shadow-lg hover:!shadow-green-500/50 transition-all duration-300 transform hover:!scale-105"
           >
@@ -820,7 +820,7 @@ const CustomerVisitStaff = () => {
           <ListHistorySessonVisit visitId={selectedVisitId} />
         )}
       </Modal> */}
-      <Modal
+      {/* <Modal
         title={<span style={{ fontSize: "30px" }}>Chọn loại chuyến thăm</span>}
         visible={isCreateModalVisible}
         onCancel={() => setIsCreateModalVisible(false)}
@@ -868,6 +868,56 @@ const CustomerVisitStaff = () => {
               Tạo chuyến thăm theo lịch trình
             </Button>
           </div>
+        </div>
+      </Modal> */}
+      <Modal
+        title={
+          <div className="text-center mb-6">
+            <span className="text-2xl font-medium text-backgroundPage">Chọn loại chuyến thăm</span>
+          </div>
+        }
+        visible={isCreateModalVisible}
+        onCancel={() => setIsCreateModalVisible(false)}
+        footer={null}
+        width={600}
+        centered
+        className="visit-type-modal"
+      >
+        <div className="flex items-center justify-center space-x-8 px-8 py-6">
+          <Button
+            // type="primary"
+            onClick={() => {
+              setIsCreateModalVisible(false);
+              navigate("/customerVisitStaff/createNewVisitList");
+            }}
+            className="border-buttonColor text-buttonColor hover:!bg-buttonColor hover:!border-buttonColor hover:!text-white flex-1 h-24 text-base font-medium flex items-center justify-center hover:scale-105 transition-transform"
+            style={{
+              maxWidth: "220px",
+              whiteSpace: "normal",
+              lineHeight: "1.5",
+            }}
+          >
+            Tạo chuyến thăm trong ngày
+          </Button>
+
+          <Button
+            // type="primary"
+            onClick={() => {
+              setIsCreateModalVisible(false);
+              navigate("/schedule-staff");
+              notification.info({
+                message: "Vui lòng chọn lịch trình để tạo chuyến thăm",
+              });
+            }}
+            className="border-buttonColor text-buttonColor hover:!bg-buttonColor hover:!border-buttonColor hover:!text-white flex-1 h-24 text-base font-medium flex items-center justify-center hover:scale-105 transition-transform"
+            style={{
+              maxWidth: "220px",
+              whiteSpace: "normal",
+              lineHeight: "1.5",
+            }}
+          >
+            Tạo chuyến thăm theo lịch trình
+          </Button>
         </div>
       </Modal>
     </Content>
