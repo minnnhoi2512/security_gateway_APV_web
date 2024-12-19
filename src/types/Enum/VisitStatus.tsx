@@ -5,6 +5,7 @@ export enum VisitStatus {
     ActiveTemporary = "ActiveTemporary",
     Violation = "Violation",
     Inactive = "Inactive",
+    // Expired = "Expired",
 }
 
 export const visitStatusMap: { [key in VisitStatus]: { colorVisitStatus: string; textVisitStatus: string } } = {

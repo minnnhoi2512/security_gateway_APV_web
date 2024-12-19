@@ -35,6 +35,7 @@ import { CardStatusType, typeCardStatusMap } from "../../types/Enum/CardStatus";
 import { CardType, typeCardMap } from "../../types/Enum/CardType";
 import { v4 as uuidv4 } from "uuid";
 import { Plus } from "lucide-react";
+import Logo from '../../assets/logo.png';
 
 const { Option } = Select;
 const CardManager = () => {
@@ -46,7 +47,7 @@ const CardManager = () => {
     pageNumber: 1,
     pageSize: 100,
   });
-  console.log("card: ", data);
+  // console.log("card: ", data);
 
   const qrCards = data?.qrCards || data || [];
   const [visibleCardVerifications, setVisibleCardVerifications] = useState<{
@@ -99,19 +100,24 @@ const CardManager = () => {
       [key]: !prev[key],
     }));
   };
+  const convertUrlToFile = async (url: string, filename: string, mimeType: string) => {
+    const response = await fetch(url);
+    const buffer = await response.arrayBuffer();
+    return new File([buffer], filename, { type: mimeType });
+  };
   const handleOk = async () => {
     try {
       const values = await form.validateFields();
       const numberOfCards = Number(values.numberOfCards);
       const cardTypeId = values.cardType;
-      // console.log(values.imageLogo[0])
-      const imageLogo = values.imageLogo[0].originFileObj;
+      const imageLogo = await convertUrlToFile(Logo, 'logo.png', 'image/png');
 
       for (let i = 0; i < numberOfCards; i++) {
         const cardVerified = uuidv4();
         await createQRCard({
           CardTypeId: cardTypeId,
           CardVerified: cardVerified,
+          ImageLogo : imageLogo
         });
       }
       refetch();

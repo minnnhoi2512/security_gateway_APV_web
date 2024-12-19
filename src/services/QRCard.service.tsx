@@ -16,13 +16,13 @@ export const qrCardAPI = createApi({
     ),
     createQRCard: builder.mutation<
       void,
-      { CardVerified: string; CardTypeId: number }
+      { CardVerified: string; CardTypeId: number; ImageLogo: File }
     >({
-      query: ({ CardVerified, CardTypeId }) => {
+      query: ({ CardVerified, CardTypeId, ImageLogo }) => {
         const formData = new FormData();
         formData.append("CardVerified", CardVerified);
         formData.append("CardTypeId", CardTypeId.toString());
-
+        formData.append("ImageLogo", ImageLogo);
         return {
           url: `Card`,
           method: "POST",

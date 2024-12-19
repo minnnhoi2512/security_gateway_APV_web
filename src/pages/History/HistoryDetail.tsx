@@ -184,7 +184,7 @@ const HistoryDetail = () => {
   const [selectedImage, setSelectedImage] = useState<SessionsImageRes | null>(
     null
   );
-
+ 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -254,7 +254,7 @@ const HistoryDetail = () => {
       `,
     };
   }
-
+ 
   const getImageTypeInfo = (imageType: string) => {
     switch (imageType) {
       case "CheckIn_Body":
@@ -339,7 +339,7 @@ const HistoryDetail = () => {
     gateOut,
     status,
   } = result[0];
-
+  console.log(qrCardId)
   return (
     <Content className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-5xl mx-auto">
@@ -411,17 +411,17 @@ const HistoryDetail = () => {
               </DetailCard>
             </div>
 
-            <DetailCard icon={Clock} title="Thời gian" className="h-full">
+            {/* <DetailCard icon={Clock} title="Thời gian" className="h-full">
               <div className="space-y-2">
                 <div className="text-3xl font-semibold text-gray-900">
                   {checkoutTime
-                    ? dayjs(checkoutTime).diff(checkinTime, "hour")
+                    ? dayjs(checkoutTime).diff(checkinTime, "minutes")
                     : "--"}
-                  <span className="text-lg text-gray-500 ml-1">giờ</span>
+                  <span className="text-lg text-gray-500 ml-1">phút</span>
                 </div>
-                <p className="text-sm text-gray-500">Thời gian hoàn thành</p>
+                <p className="text-sm text-gray-500">Thời gian chuyến thăm</p>
               </div>
-            </DetailCard>
+            </DetailCard> */}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

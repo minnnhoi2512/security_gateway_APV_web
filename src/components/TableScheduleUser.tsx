@@ -96,13 +96,31 @@ const TableScheduleUser: React.FC<ScheduleAssignedTableProps> = ({
       dataIndex: "note",
       key: "note",
       render: (note: string) => {
+        if (!note) return null;
+
         return (
           <div className="flex flex-col text-left">
-            <span className="text-gray-500 text-sm">{note}</span>
+            <Tooltip title={note}>
+              <span className="text-gray-500 text-sm">
+                {note.length > 100 ? `${note.substring(0, 40)}...` : note}
+              </span>
+            </Tooltip>
           </div>
         );
       },
     },
+    // {
+    //   title: "Ghi chú",
+    //   dataIndex: "note",
+    //   key: "note",
+    //   render: (note: string) => {
+    //     return (
+    //       <div className="flex flex-col text-left">
+    //         <span className="text-gray-500 text-sm">{note}</span>
+    //       </div>
+    //     );
+    //   },
+    // },
     {
       title: "Thời hạn hoàn thành",
       dataIndex: "deadlineTime",

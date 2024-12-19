@@ -5,6 +5,7 @@ import { ScheduleUserType } from "../../types/ScheduleUserType";
 import { useGetVisitByScheduleUserIdQuery } from "../../services/visitList.service";
 import {
   useApproveScheduleMutation,
+  useCancelScheduleMutation,
   useRejectScheduleMutation,
 } from "../../services/scheduleUser.service";
 import { isEntityError } from "../../utils/helpers";
@@ -99,6 +100,7 @@ const ScheduleUserDetailModal: React.FC<ScheduleUserModalDetailProps> = ({
   );
   const [rejectSchedule] = useRejectScheduleMutation();
   const [approveSchedule] = useApproveScheduleMutation();
+  const [cancelSchedule] = useCancelScheduleMutation();
   const [isDescriptionModalVisible, setDescriptionIsModalVisible] =
     useState(false);
   const [isViewMonthlySchedule, setIsViewMonthlySchedule] = useState(false);
@@ -117,12 +119,12 @@ const ScheduleUserDetailModal: React.FC<ScheduleUserModalDetailProps> = ({
   const handleRejectSchedule = async (id: number) => {
     try {
       await rejectSchedule(id).unwrap();
-      notification.success({ message: "Đã từ chối lịch trình thành công" });
+      notification.success({ message: "Đã từ chối nhiệm vụ thành công" });
       handleClose();
       refetch();
     } catch (error) {
       notification.error({
-        message: "Không thể từ chối lịch trình",
+        message: "Không thể từ chối nhiệm vụ",
         description: "Lỗi xảy ra khi từ chối",
       });
     }
@@ -131,19 +133,33 @@ const ScheduleUserDetailModal: React.FC<ScheduleUserModalDetailProps> = ({
   const handleApproveSchedule = async (id: number) => {
     try {
       await approveSchedule(id).unwrap();
-      notification.success({ message: "Đã duyệt lịch trình thành công" });
+      notification.success({ message: "Đã duyệt nhiệm vụ thành công" });
       refetch();
       handleClose();
     } catch (error) {
       if (isEntityError(error)) {
         notification.error({
-          message: "Không thể duyệt lịch trình",
+          message: "Không thể duyệt nhiệm vụ",
           description: "Lỗi xảy ra khi duyệt",
         });
       }
     }
   };
-
+  const handleCancelSchedule = async (id: number) => {
+    try {
+      await cancelSchedule(id).unwrap();
+      notification.success({ message: "Đã hủy nhiệm vụ thành công" });
+      refetch();
+      handleClose();
+    } catch (error) {
+      if (isEntityError(error)) {
+        notification.error({
+          message: "Không thể hủy nhiệm vụ",
+          description: "Lỗi xảy ra khi hủy",
+        });
+      }
+    }
+  };
   const status = selectedRecord?.status as ScheduleUserStatus;
   const truncatedDescription =
     data?.description.length > 100
@@ -209,7 +225,7 @@ const ScheduleUserDetailModal: React.FC<ScheduleUserModalDetailProps> = ({
             type="primary"
             danger
             className="mr-2"
-            onClick={() => handleRejectSchedule(selectedRecord?.id || 0)}
+            onClick={() => handleCancelSchedule(selectedRecord?.id || 0)}
             disabled={selectedRecord?.status !== ScheduleUserStatus.Assigned}
           >
             Hủy nhiệm vụ
@@ -537,7 +553,7 @@ const ScheduleUserDetailModal: React.FC<ScheduleUserModalDetailProps> = ({
 
             {!data && !isError && (
               <div className="text-center text-gray-500 py-4">
-                Lịch trình chưa được tạo cuộc hẹn
+                Nhiệm vụ chưa có chuyến thăm nào
               </div>
             )}
           </div>

@@ -200,11 +200,6 @@ const DetailVisitor: React.FC<DetailVisitorProps> = ({
     } catch (error) {
       setFormData((prev) => ({
         ...prev,
-        visitorName: "",
-        companyName: "",
-        phoneNumber: "",
-        email: "",
-        credentialsCard: "",
         imgBlur: null,
         visitorCredentialFrontImageFromRequest: null,
         visitorCredentialBackImageFromRequest: null,

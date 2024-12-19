@@ -9,6 +9,7 @@ import {
   Modal,
   Image,
   notification,
+  Spin,
 } from "antd";
 import "./customerScrollBar.css";
 import "react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
@@ -80,6 +81,7 @@ const CreateNewVisitList: React.FC = () => {
   const [editorState, setEditorState] = useState<string>("");
   const [isModalCalendarVisible, setIsModalCalendarVisible] = useState(false);
   const [startHourForAll, setStartHourForAll] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [endHourForAll, setEndHourForAll] = useState<string | null>(null);
   const visitQuantity = form.getFieldValue("visitQuantity");
   const [expectedStartTime, setExpectedStartTime] = useState<Dayjs | null>(
@@ -100,7 +102,7 @@ const CreateNewVisitList: React.FC = () => {
   };
 
   const handleVisitorSelection = (visitor: any) => {
-    console.log(visitor);
+    // console.log(visitor);
     setSelectedVisitors((prevVisitors) => {
       if (visitor[0].status === "Unactive") {
         notification.warning({
@@ -174,8 +176,8 @@ const CreateNewVisitList: React.FC = () => {
         const [selectedHours, selectedMinutes] = value.split(":").map(Number);
         const selectedTime = new Date();
         selectedTime.setHours(selectedHours, selectedMinutes, 0, 0);
-        console.log(minStartHour);
-        console.log(selectedTime);
+        // console.log(minStartHour);
+        // console.log(selectedTime);
         // Check if the selected start time is before the minimum allowed start time
         if (selectedTime <= minStartHour) {
           notification.warning({
@@ -237,6 +239,8 @@ const CreateNewVisitList: React.FC = () => {
         return; // Stop further execution
       }
 
+      setIsSubmitting(true);
+
       // Validate the form fields
       await form.validateFields();
 
@@ -249,6 +253,8 @@ const CreateNewVisitList: React.FC = () => {
         notification.warning({
           message: "Vui lòng nhập đủ thông tin giờ ra và giờ vào!",
         });
+        setIsSubmitting(false);
+
         return; // Stop further execution
       }
 
@@ -273,11 +279,53 @@ const CreateNewVisitList: React.FC = () => {
         })),
         responsiblePersonId: userId,
       };
+      let validData = true;
+      if (requestData.expectedStartTime) {
+        const expectedStartTimeDate = new Date(requestData.expectedStartTime);
+        const currentDate = new Date();
+
+        const isSameDay =
+          expectedStartTimeDate.getFullYear() === currentDate.getFullYear() &&
+          expectedStartTimeDate.getMonth() === currentDate.getMonth() &&
+          expectedStartTimeDate.getDate() === currentDate.getDate();
+        // console.log(isSameDay);
+
+        if (isSameDay) {
+          selectedVisitors.forEach((visitor) => {
+            const [hours, minutes, seconds] = visitor.startHour
+              .split(":")
+              .map(Number);
+            const selectedVisitorTime = new Date(
+              currentDate.getFullYear(),
+              currentDate.getMonth(),
+              currentDate.getDate(),
+              hours,
+              minutes + 1,
+              seconds
+            );
+
+            if (selectedVisitorTime < currentDate) {
+              // expectedStartHour is before the current time
+
+              validData = false;
+              return; // Stop further execution
+            }
+          });
+        }
+        // console.log(!isSubmitting);
+        // if (!isSubmitting) return;
+      }
+      if (!validData) {
+        notification.warning({
+          message: "Giờ bắt đầu dự kiến không được trước thời gian hiện tại!",
+        });
+        return;
+      }
       if (
         scheduleTypeName === "ProcessWeek" ||
         scheduleTypeName === "ProcessMonth"
       ) {
-        console.log(expectedStartTime);
+        // console.log(expectedStartTime);
         requestData.expectedStartTime = convertToVietnamTime(expectedStartTime);
         requestData.expectedEndTime = convertToVietnamTime(expectedEndTime);
         // console.log(state.from.schedule.scheduleId)
@@ -303,13 +351,18 @@ const CreateNewVisitList: React.FC = () => {
         refetch();
         navigate(-1);
       } catch (error: any) {
-        // console.log(error.data.message);
-        // notification.error({
-        //   message: "Đã có lỗi xảy ra khi tạo lịch hẹn. Vui lòng thử lại.",
-        // });
+        if (error.data.status === 400) {
+          notification.error({
+            message: "Vui lòng kiểm tra thông tin đã nhập.",
+          });
+        }
+        setIsSubmitting(false);
+      } finally {
+        setIsSubmitting(false);
       }
     } catch (error) {
       notification.error({ message: "Vui lòng kiểm tra thông tin đã nhập." });
+      setIsSubmitting(false);
     }
   };
 
@@ -330,7 +383,9 @@ const CreateNewVisitList: React.FC = () => {
     const minStartHour = new Date(currentDate.getTime() + -1 * 60000);
 
     if (isToday) {
-      const [selectedHours, selectedMinutes] = startHour.split(":").map(Number);
+      const [selectedHours, selectedMinutes] = startHour
+        ?.split(":")
+        .map(Number);
       const selectedTime = new Date();
       selectedTime.setHours(selectedHours, selectedMinutes, 0, 0);
 
@@ -411,6 +466,7 @@ const CreateNewVisitList: React.FC = () => {
         dataIndex: "visitorImage",
         key: "visitorImage",
         render: (image: string) => {
+          // console.log(image);
           // Check if the image string is null, empty, or starts with the base64 prefix
           if (!image) {
             return null; // or return a placeholder, e.g., <div>No Image</div>
@@ -508,9 +564,9 @@ const CreateNewVisitList: React.FC = () => {
     ];
 
     const visitorsData = selectedVisitors.map((visitor, index) => {
-      const frontImage = visitor?.visitorImage.find(
-        (image) => image.imageType === "CitizenIdentificationCard_FRONT"
-      );
+      const frontImage =
+        visitor?.visitorImage.length > 0 ? visitor.visitorImage[0] : null;
+
       return {
         id: index + 1,
         visitorName: visitor?.visitorName,
@@ -540,251 +596,261 @@ const CreateNewVisitList: React.FC = () => {
   };
 
   return (
-    <div>
-      <div className="max-w mx-auto px-4 py-6">
-        <Form form={form} layout="vertical">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {/* Left Column - Basic Information - Now smaller */}
-            <div className="lg:col-span-1 flex flex-col">
-              <div className="bg-white rounded-lg shadow-2xl p-6 flex-grow">
-                <h2 className="text-lg font-medium text-gray-900 mb-6">
-                  Thông tin cơ bản
-                </h2>
-
-                <Form.Item
-                  required
-                  name="title"
-                  label="Tên chuyến thăm"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Vui lòng nhập tên chuyến thăm",
-                    },
-                    {
-                      min: 5,
-                      max: 100,
-                      message:
-                        "Tên chuyến thăm phải có ít nhất 5 ký tự và tối đa 100 ký tự",
-                    },
-                    {
-                      pattern: /^[a-zA-Z0-9\s]*$/,
-                      message: "Tên chuyến thăm không được chứa ký tự đặc biệt",
-                    },
-                  ]}
-                >
-                  <Input
-                    placeholder="Nhập tên chuyến thăm"
-                    className="rounded border-gray-300"
-                  />
-                </Form.Item>
-
-                {scheduleTypeName !== "ProcessWeek" &&
-                  scheduleTypeName !== "ProcessMonth" && (
-                    <Form.Item
-                      required
-                      name="expectedStartTime"
-                      label="Ngày đến thăm"
-                      rules={[
-                        { required: true, message: "Vui lòng chọn thời gian" },
-                      ]}
-                    >
-                      <DatePicker
-                        format="DD/MM/YYYY"
-                        placeholder="Chọn thời gian"
-                        className="w-full rounded border-gray-300"
-                        disabledDate={(current) =>
-                          current && current < dayjs().startOf("day")
-                        }
-                      />
-                    </Form.Item>
-                  )}
-
-                {(scheduleTypeName === "ProcessWeek" ||
-                  scheduleTypeName === "ProcessMonth") && (
-                  <div className="space-y-2 ">
-                    <Button
-                      type="primary"
-                      onClick={() => showModalCalendar(scheduleTypeName)}
-                      className="w-full bg-blue-600 hover:bg-blue-700 mt-2"
-                    >
-                      Xem lịch
-                    </Button>
-
-                    {expectedStartTime && expectedEndTime && (
-                      <div className="p-3 bg-gray-50 rounded text-gray-600 text-sm">
-                        Từ {formatDateLocal(expectedStartTime.toString())} Đến{" "}
-                        {formatDateLocal(expectedEndTime.toString())}
-                      </div>
-                    )}
-                    {!expectedStartTime && !expectedEndTime && (
-                      <div className="text-red-500">
-                        Vui lòng chọn thời gian
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Description moved to its own card with full width */}
-              <div className="bg-white rounded-lg shadow-2xl p-6 mt-4 flex-grow">
-                <Form.Item
-                  required
-                  name="description"
-                  label="Mô tả"
-                  rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}
-                >
-                  <ReactQuill
-                    value={editorState}
-                    onChange={setEditorState}
-                    className="h-64 mb-10" // Increased height
-                    theme="snow"
-                    modules={{
-                      toolbar: [
-                        [{ header: [1, 2, false] }],
-                        ["bold", "italic", "underline", "strike"],
-                        [{ list: "ordered" }, { list: "bullet" }],
-                        ["link", "image", "clean"],
-                      ],
-                    }}
-                  />
-                </Form.Item>
-              </div>
-            </div>
-
-            {/* Right Column - Visitor Details - Now wider */}
-            {
-              <div className="lg:col-span-2 flex flex-col">
+    <Spin spinning={isSubmitting} tip="Đang xử lý...">
+      <div>
+        <div className="max-w mx-auto px-4 py-6">
+          <Form form={form} layout="vertical">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              {/* Left Column - Basic Information - Now smaller */}
+              <div className="lg:col-span-1 flex flex-col">
                 <div className="bg-white rounded-lg shadow-2xl p-6 flex-grow">
-                  <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-lg font-medium text-gray-900">
-                      Chi tiết khách thăm
-                    </h2>
+                  <h2 className="text-lg font-medium text-gray-900 mb-6">
+                    Thông tin cơ bản
+                  </h2>
 
-                    <Button
-                      type="primary"
-                      onClick={handleAddVisitor}
-                      className="bg-blue-600 hover:bg-blue-700"
-                    >
-                      Thêm khách
-                    </Button>
-                  </div>
+                  <Form.Item
+                    required
+                    name="title"
+                    label="Tên chuyến thăm"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Vui lòng nhập tên chuyến thăm",
+                      },
+                      {
+                        min: 5,
+                        max: 100,
+                        message:
+                          "Tên chuyến thăm phải có ít nhất 5 ký tự và tối đa 100 ký tự",
+                      },
+                      {
+                        pattern: /^[^!@#$%^&*+=\[\]{};"\\|<>?~`]+$/,
+                        message:
+                          "Tên chuyến thăm không được chứa ký tự đặc biệt",
+                      },
+                    ]}
+                  >
+                    <Input
+                      placeholder="Nhập tên chuyến thăm"
+                      className="rounded border-gray-300"
+                    />
+                  </Form.Item>
 
-                  {selectedVisitors.length > 0 && (
-                    <div className="mb-6">
-                      <h3 className="text-base font-medium text-gray-900 mb-3">
-                        Chọn giờ cho tất cả khách:
-                      </h3>
-                      <div className="grid grid-cols-4 gap-4">
-                        <div className="col-span-2 flex flex-col">
-                          <label className="text-sm text-gray-700 mb-1">
-                            Giờ vào tất cả khách
-                          </label>
-                          <TimePicker
-                            format="HH:mm"
-                            placeholder="Giờ vào"
-                            className="w-full rounded border-gray-300"
-                            value={
-                              startHourForAll
-                                ? dayjs(startHourForAll, "HH:mm")
-                                : null
-                            }
-                            onChange={handleStartHourChangeForAll}
-                            style={{ width: "100%" }}
-                          />
+                  {scheduleTypeName !== "ProcessWeek" &&
+                    scheduleTypeName !== "ProcessMonth" && (
+                      <Form.Item
+                        required
+                        name="expectedStartTime"
+                        label="Ngày đến thăm"
+                        rules={[
+                          {
+                            required: true,
+                            message: "Vui lòng chọn thời gian",
+                          },
+                        ]}
+                      >
+                        <DatePicker
+                          format="DD/MM/YYYY"
+                          placeholder="Chọn thời gian"
+                          className="w-full rounded border-gray-300"
+                          disabledDate={(current) =>
+                            current && current < dayjs().startOf("day")
+                          }
+                        />
+                      </Form.Item>
+                    )}
+
+                  {(scheduleTypeName === "ProcessWeek" ||
+                    scheduleTypeName === "ProcessMonth") && (
+                    <div className="space-y-2 ">
+                      <Button
+                        type="primary"
+                        onClick={() => showModalCalendar(scheduleTypeName)}
+                        className="w-full bg-blue-600 hover:bg-blue-700 mt-2"
+                      >
+                        Xem lịch
+                      </Button>
+
+                      {expectedStartTime && expectedEndTime && (
+                        <div className="p-3 bg-gray-50 rounded text-gray-600 text-sm">
+                          Từ {formatDateLocal(expectedStartTime.toString())} Đến{" "}
+                          {formatDateLocal(expectedEndTime.toString())}
                         </div>
-                        <div className="col-span-2 flex flex-col">
-                          <label className="text-sm text-gray-700 mb-1">
-                            Giờ ra tất cả khách
-                          </label>
-                          <TimePicker
-                            format="HH:mm"
-                            placeholder="Giờ ra"
-                            className="w-full rounded border-gray-300"
-                            value={
-                              endHourForAll
-                                ? dayjs(endHourForAll, "HH:mm")
-                                : null
-                            }
-                            onChange={handleEndHourChangeForAll}
-                            style={{ width: "100%" }}
-                          />
+                      )}
+                      {!expectedStartTime && !expectedEndTime && (
+                        <div className="text-red-500">
+                          Vui lòng chọn thời gian
                         </div>
-                      </div>
+                      )}
                     </div>
                   )}
+                </div>
 
-                  <div style={{ height: "420px" }}>{renderVisitorsTable()}</div>
+                {/* Description moved to its own card with full width */}
+                <div className="bg-white rounded-lg shadow-2xl p-6 mt-4 flex-grow">
+                  <Form.Item
+                    required
+                    name="description"
+                    label="Mô tả"
+                    rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}
+                  >
+                    <ReactQuill
+                      value={editorState}
+                      onChange={setEditorState}
+                      className="h-64 mb-10" // Increased height
+                      theme="snow"
+                      modules={{
+                        toolbar: [
+                          [{ header: [1, 2, false] }],
+                          ["bold", "italic", "underline", "strike"],
+                          [{ list: "ordered" }, { list: "bullet" }],
+                          ["link", "image", "clean"],
+                        ],
+                      }}
+                    />
+                  </Form.Item>
                 </div>
               </div>
-            }
-          </div>
 
-          {/* Bottom Actions */}
-          <div className="flex justify-end space-x-4 mt-6">
-            <Button
-              onClick={handleCancel}
-              className="px-4 py-2 border border-gray-300 rounded-md "
-            >
-              Quay lại
-            </Button>
-            <Button
-              onClick={() => {
-                form.resetFields();
-                setSelectedVisitors([]);
-                setStartHourForAll(null);
-                setEndHourForAll(null);
-              }}
-              className="px-4 py-2 border border-gray-300 rounded-md bg-red-500 text-white hover:bg-red-600"
-            >
-              Xóa hết thông tin
-            </Button>
-            <Button
-              type="primary"
-              onClick={handleSubmit}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md"
-            >
-              Tạo mới
-            </Button>
-          </div>
-        </Form>
-      </div>
+              {/* Right Column - Visitor Details - Now wider */}
+              {
+                <div className="lg:col-span-2 flex flex-col">
+                  <div className="bg-white rounded-lg shadow-2xl p-6 flex-grow">
+                    <div className="flex justify-between items-center mb-6">
+                      <h2 className="text-lg font-medium text-gray-900">
+                        Chi tiết khách thăm
+                      </h2>
 
-      {/* Modals */}
-      <Modal
-        title={<span className="text-lg font-medium">Xem lịch</span>}
-        visible={isModalCalendarVisible}
-        onCancel={handleCancelCalendar}
-        onOk={handleOk}
-        cancelText="Quay lại"
-        className="rounded-lg"
-        width={720}
-      >
-        <div className="min-h-[400px]">
-          {scheduleTypeName === "ProcessMonth" && (
-            <ReadOnlyMonthCalendar2
-              daysOfSchedule={daysOfSchedule}
-              expectedStartTime={expectedStartTime}
-              expectedEndTime={expectedEndTime}
-            />
-          )}
-          {scheduleTypeName === "ProcessWeek" && (
-            <ReadOnlyWeekCalendar2
-              daysOfSchedule={daysOfSchedule}
-              expectedStartTime={expectedStartTime}
-              expectedEndTime={expectedEndTime}
-            />
-          )}
+                      <Button
+                        type="primary"
+                        onClick={handleAddVisitor}
+                        className="bg-buttonColor hover:!bg-buttonColor hover:!scale-90"
+                      >
+                        Thêm khách
+                      </Button>
+                    </div>
+
+                    {selectedVisitors.length > 0 && (
+                      <div className="mb-6">
+                        <h3 className="text-base font-medium text-gray-900 mb-3">
+                          Chọn giờ cho tất cả khách:
+                        </h3>
+                        <div className="grid grid-cols-4 gap-4">
+                          <div className="col-span-2 flex flex-col">
+                            <label className="text-sm text-gray-700 mb-1">
+                              Giờ vào tất cả khách
+                            </label>
+                            <TimePicker
+                              format="HH:mm"
+                              placeholder="Giờ vào"
+                              className="w-full rounded border-gray-300"
+                              value={
+                                startHourForAll
+                                  ? dayjs(startHourForAll, "HH:mm")
+                                  : null
+                              }
+                              onChange={handleStartHourChangeForAll}
+                              style={{ width: "100%" }}
+                            />
+                          </div>
+                          <div className="col-span-2 flex flex-col">
+                            <label className="text-sm text-gray-700 mb-1">
+                              Giờ ra tất cả khách
+                            </label>
+                            <TimePicker
+                              format="HH:mm"
+                              placeholder="Giờ ra"
+                              className="w-full rounded border-gray-300"
+                              value={
+                                endHourForAll
+                                  ? dayjs(endHourForAll, "HH:mm")
+                                  : null
+                              }
+                              onChange={handleEndHourChangeForAll}
+                              style={{ width: "100%" }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div style={{ height: "420px" }}>
+                      {renderVisitorsTable()}
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+
+            {/* Bottom Actions */}
+            <div className="flex justify-end space-x-4 mt-6">
+              <Button
+                onClick={handleCancel}
+                className="px-4 py-2 border border-gray-300 rounded-md hover:!scale-95 hover:!border-gray-300 hover:!text-gray-300"
+              >
+                Quay lại
+              </Button>
+              <Button
+                onClick={() => {
+                  form.resetFields();
+                  setSelectedVisitors([]);
+                  setStartHourForAll(null);
+                  setEndHourForAll(null);
+                }}
+                disabled={isSubmitting}
+                className="px-4 py-2 border border-gray-300 rounded-md bg-red-500 text-white hover:!bg-red-600 hover:!scale-95 hover:!border-red-600 hover:!text-white"
+              >
+                Xóa hết thông tin
+              </Button>
+              <Button
+                type="primary"
+                onClick={handleSubmit}
+                loading={isSubmitting}
+                className="px-4 py-2 bg-buttonColor hover:!bg-buttonColor hover:!scale-95 rounded-md"
+              >
+                Tạo mới
+              </Button>
+            </div>
+          </Form>
         </div>
-      </Modal>
 
-      {isModalVisible && (
-        <VisitorSearchModal
-          isModalVisible={isModalVisible}
-          setIsModalVisible={setIsModalVisible}
-          onVisitorSelected={handleVisitorSelection}
-        />
-      )}
-    </div>
+        {/* Modals */}
+        <Modal
+          title={<span className="text-lg font-medium">Xem lịch</span>}
+          visible={isModalCalendarVisible}
+          onCancel={handleCancelCalendar}
+          onOk={handleOk}
+          cancelText="Quay lại"
+          className="rounded-lg"
+          width={720}
+        >
+          <div className="min-h-[400px]">
+            {scheduleTypeName === "ProcessMonth" && (
+              <ReadOnlyMonthCalendar2
+                daysOfSchedule={daysOfSchedule}
+                expectedStartTime={expectedStartTime}
+                expectedEndTime={expectedEndTime}
+              />
+            )}
+            {scheduleTypeName === "ProcessWeek" && (
+              <ReadOnlyWeekCalendar2
+                daysOfSchedule={daysOfSchedule}
+                expectedStartTime={expectedStartTime}
+                expectedEndTime={expectedEndTime}
+              />
+            )}
+          </div>
+        </Modal>
+
+        {isModalVisible && (
+          <VisitorSearchModal
+            isModalVisible={isModalVisible}
+            setIsModalVisible={setIsModalVisible}
+            onVisitorSelected={handleVisitorSelection}
+          />
+        )}
+      </div>
+    </Spin>
   );
 };
 

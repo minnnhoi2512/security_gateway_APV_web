@@ -14,17 +14,21 @@ const DepartmentUser: React.FC<DepartmentUserProps> = ({
   setIsUserListModalVisible,
   departmentId,
 }) => {
-  console.log(departmentId);
   const {
     data: userListData,
     isLoading,
     refetch: refetchUserList,
-    isError
-  } = useGetListUsersByDepartmentIdQuery({
-    departmentId: departmentId,
-    pageNumber: 1,
-    pageSize: 100,
-  });
+    isError,
+  } = useGetListUsersByDepartmentIdQuery(
+    {
+      departmentId: departmentId,
+      pageNumber: 1,
+      pageSize: 100,
+    },
+    {
+      skip: departmentId === 0,
+    }
+  );
   return (
     <Modal
       title={<h2 className="text-lg font-semibold">Danh sách người dùng</h2>}
