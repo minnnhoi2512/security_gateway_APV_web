@@ -184,7 +184,7 @@ const HistoryDetail = () => {
   const [selectedImage, setSelectedImage] = useState<SessionsImageRes | null>(
     null
   );
-
+ 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -254,7 +254,7 @@ const HistoryDetail = () => {
       `,
     };
   }
-
+ 
   const getImageTypeInfo = (imageType: string) => {
     switch (imageType) {
       case "CheckIn_Body":
@@ -339,7 +339,7 @@ const HistoryDetail = () => {
     gateOut,
     status,
   } = result[0];
-
+  console.log(qrCardId)
   return (
     <Content className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-5xl mx-auto">
