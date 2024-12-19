@@ -22,6 +22,9 @@ const SetSignalR = async (
         skipNegotiation: false,
         transport: signalR.HttpTransportType.WebSockets
       })
+      .withAutomaticReconnect()
+      .withKeepAliveInterval(15)
+      .configureLogging(signalR.LogLevel.Information)
       .build();
 
     const startConnection = async () => {
