@@ -89,19 +89,22 @@ const generateBreadcrumbItems = (location: any, routes: any) => {
 
   const breadcrumbItems = uniqueItems.map((item, index) => {
     const isLast = index === uniqueItems.length - 1;
-
+    const isFirst = index === 0;
+  
     const baseStyles =
       "transition-all duration-200 rounded-md px-3 py-1.5 font-medium";
     const activeStyles = "text-blue-600 bg-blue-50 font-bold";
     const inactiveStyles = "text-gray-600 hover:text-blue-600 hover:bg-blue-50";
-
+  
     return {
       title: isLast ? (
         <span className={`${baseStyles} ${activeStyles}`}>{item.name}</span>
-      ) : (
+      ) : isFirst ? (
         <Link to={item.path} className={`${baseStyles} ${inactiveStyles}`}>
           {item.name}
         </Link>
+      ) : (
+        <span className={`${baseStyles} ${inactiveStyles}`}>{item.name}</span>
       ),
     };
   });
