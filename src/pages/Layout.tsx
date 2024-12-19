@@ -284,15 +284,31 @@ const LayoutPage = ({ children }: { children: any }) => {
   return (
     <Layout style={{ minHeight: "100vh" }}>
       <ToastContainer position="top-center" containerId="NotificationToast" />
-      <Sider
+      {/* <Sider
         trigger={null}
         collapsible
         collapsed={collapsed}
         width={280}
         style={{ backgroundColor: sharedBackgroundColor }}
         className="relative"
+      > */}
+      <Sider
+        trigger={null}
+        collapsible
+        collapsed={collapsed}
+        width={280}
+        style={{
+          backgroundColor: sharedBackgroundColor,
+          overflow: "hidden auto",
+          height: "100vh",
+          position: "fixed",
+          left: 0,
+          top: 0,
+          bottom: 0,
+        }}
+        className="relative"
       >
-        <div className="py-4 px-6 relative">
+        <div className="py-4 px-6 relative min-w-0">
           <Button
             type="text"
             icon={
@@ -365,8 +381,15 @@ const LayoutPage = ({ children }: { children: any }) => {
           {children}
         </Content>
       </Layout> */}
-      <Layout>
-        <Content className="bg-white rounded shadow min-h-[80vh]">
+      <Layout
+        style={{
+          marginLeft: collapsed ? 80 : 280,
+          transition: "margin-left 0.2s",
+          minWidth: 0,
+          width: "100%",
+        }}
+      >
+        <Content className="bg-white rounded shadow min-h-[80vh] overflow-x-hidden">
           <div className="sticky top-0 z-20 bg-white">
             <StyledBreadcrumb location={location} routes={routes} />
           </div>
