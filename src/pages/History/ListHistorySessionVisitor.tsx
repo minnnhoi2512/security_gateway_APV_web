@@ -1,5 +1,5 @@
-import { Layout, Tag, Spin, Descriptions, Card, Row, Col } from "antd";
-import { useEffect, useState } from "react";
+import { Layout, Tag, Spin, Descriptions, Card, Row, Col, Modal } from "antd";
+import React, { useEffect, useState } from "react";
 import { useGetVisitGraphqlMutation } from "../../services/visitGraphql.service";
 import VisitorSessionType from "../../types/visitorSessionType";
 import { setListOfVisitorSession } from "../../redux/slices/visitorSession.slice";
@@ -7,8 +7,65 @@ import { useDispatch } from "react-redux";
 import { useParams } from "react-router";
 import dayjs from "dayjs";
 import { formatDateLocal } from "../../utils/ultil";
+import { ArrowRight, Check, LogIn, LogOut, Shield, User } from "lucide-react";
+import { EyeOutlined } from "@ant-design/icons";
 
 const { Content } = Layout;
+
+const IconWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <div
+    className="w-8 h-8 rounded-full flex items-center justify-center"
+    style={{ backgroundColor: "#34495e" }}
+  >
+    {React.cloneElement(children as React.ReactElement, {
+      size: 16,
+      className: "text-white",
+    })}
+  </div>
+);
+
+const HistoryCard: React.FC<{ label: string; value: React.ReactNode }> = ({
+  label,
+  value,
+}) => (
+  <div className="flex flex-col">
+    <span className="text-xs text-gray-500">{label}</span>
+    <span className="text-sm font-medium">{value || "N/A"}</span>
+  </div>
+);
+
+const getStatusBadge = (status: String) => {
+  const statusStr = String(status).valueOf().toLowerCase();
+
+  if (statusStr === "checkin") {
+    return (
+      <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white rounded-full">
+        <LogIn size={16} />
+        <span>Đã vào</span>
+      </div>
+    );
+  }
+  if (statusStr === "checkout") {
+    return (
+      <div className="flex items-center gap-2 px-3 py-1.5 bg-red-600 text-white rounded-full">
+        <LogOut size={16} />
+        <span>Đã ra</span>
+      </div>
+    );
+  }
+  return <div className="px-3 py-1.5 bg-gray-200 rounded-full">{status}</div>;
+};
+
+const convertImageType = (type: String): string => {
+  const typeStr = String(type).valueOf();
+  const typeMap: Record<string, string> = {
+    CheckIn_Body: "Ảnh toàn thân lúc vào",
+    CheckOut_Body: "Ảnh toàn thân lúc ra",
+    CheckIn_Shoe: "Ảnh giày lúc vào",
+    CheckOut_Shoe: "Ảnh giày lúc ra",
+  };
+  return typeMap[typeStr] || typeStr;
+};
 
 const renderSession = (session: VisitorSessionType) => (
   <Card key={session.visitorSessionId.toString()} className="mb-4">
@@ -74,7 +131,10 @@ const ListHistorySessionVisitor = () => {
   const [result, setResult] = useState<VisitorSessionType[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const { id, visitorId } = useParams<{ id: string; visitorId: string }>();
-
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedImageType, setSelectedImageType] = useState<string | null>(
+    null
+  );
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -163,11 +223,178 @@ const ListHistorySessionVisitor = () => {
   if (result.length <= 0) return "Khách này chưa có thông tin ra vào";
 
   return (
-    <Content className="p-6 bg-gray-100">
-      <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-        Lịch sử lượt ra vào
+    // <Content className="p-6 bg-gray-100">
+    //   <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+    //     Lịch sử lượt ra vào
+    //   </h2>
+    //   {result.map(renderSession)}
+    // </Content>
+    <Content className="p-4 bg-gray-50">
+      <h2 className="text-xl font-semibold text-gray-800 mb-4">
+        Lịch sử ra vào
       </h2>
-      {result.map(renderSession)}
+
+      {result.map((session) => (
+        <Card
+          key={`session-${session.visitorSessionId}`}
+          className="mb-4 shadow-sm"
+        >
+          {/* Header with Session ID and Status */}
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex items-center gap-2">
+              <IconWrapper>
+                <User />
+              </IconWrapper>
+              <div>
+                <div className="font-medium">{session.visitor.visitorName}</div>
+                <div className="text-sm text-gray-500">
+                  {session.visitor.companyName}
+                </div>
+              </div>
+            </div>
+            {getStatusBadge(session.status)}
+          </div>
+
+          {/* Visit Details */}
+          <Row gutter={[16, 16]} className="mb-4">
+            <Col span={24}>
+              <HistoryCard label="Lịch trình" value={session.visit.visitName} />
+            </Col>
+          </Row>
+
+          {/* Check In/Out Info */}
+          <Row gutter={[16, 16]}>
+            <Col xs={24} sm={12}>
+              <Card className="bg-gray-50 border-none">
+                <div className="flex items-center gap-2 mb-2">
+                  <IconWrapper>
+                    <Shield />
+                  </IconWrapper>
+                  <span className="text-sm font-medium">Thông tin vào</span>
+                </div>
+                <Row gutter={[8, 8]}>
+                  <Col span={12}>
+                    <HistoryCard
+                      label="Bảo vệ"
+                      value={session.securityIn?.fullName}
+                    />
+                  </Col>
+                  <Col span={12}>
+                    <HistoryCard
+                      label="Cổng"
+                      value={session.gateIn?.gateName}
+                    />
+                  </Col>
+                  <Col span={24}>
+                    <HistoryCard
+                      label="Thời gian"
+                      value={formatDateLocal(session.checkinTime)}
+                    />
+                  </Col>
+                </Row>
+              </Card>
+            </Col>
+            <Col xs={24} sm={12}>
+              <Card className="bg-gray-50 border-none">
+                <div className="flex items-center gap-2 mb-2">
+                  <IconWrapper>
+                    <LogOut />
+                  </IconWrapper>
+                  <span className="text-sm font-medium">Thông tin ra</span>
+                </div>
+                <Row gutter={[8, 8]}>
+                  <Col span={12}>
+                    <HistoryCard
+                      label="Bảo vệ"
+                      value={session.securityOut?.fullName}
+                    />
+                  </Col>
+                  <Col span={12}>
+                    <HistoryCard
+                      label="Cổng"
+                      value={session.gateOut?.gateName}
+                    />
+                  </Col>
+                  <Col span={24}>
+                    <HistoryCard
+                      label="Thời gian"
+                      value={
+                        session.checkoutTime
+                          ? formatDateLocal(session.checkoutTime)
+                          : "N/A"
+                      }
+                    />
+                  </Col>
+                </Row>
+              </Card>
+            </Col>
+          </Row>
+
+          {/* Images */}
+          {session.images?.length > 0 && (
+            <div className="mt-4">
+              <div className="flex items-center gap-2 mb-2">
+                <IconWrapper>
+                  <EyeOutlined />
+                </IconWrapper>
+                <span className="text-sm font-medium">Hình ảnh</span>
+              </div>
+              <Row gutter={[8, 8]}>
+                {session.images.map((image, index) => (
+                  <Col
+                    key={`image-${session.visitorSessionId}-${index}`}
+                    xs={12}
+                    sm={8}
+                    md={6}
+                  >
+                    <div
+                      className="cursor-pointer relative group"
+                      onClick={() => {
+                        setSelectedImage(String(image.imageURL).valueOf());
+                        setSelectedImageType(String(image.imageType).valueOf());
+                      }}
+                    >
+                      <img
+                        src={image.imageURL}
+                        alt={`Image ${index + 1}`}
+                        className="w-full h-32 object-cover rounded"
+                      />
+                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center">
+                        <EyeOutlined className="text-white opacity-0 group-hover:opacity-100" />
+                      </div>
+                      <div className="text-xs text-center mt-1 px-2 py-1 bg-gray-100 rounded">
+                        {convertImageType(image.imageType)}
+                      </div>
+                    </div>
+                  </Col>
+                ))}
+              </Row>
+            </div>
+          )}
+        </Card>
+      ))}
+
+      <Modal
+        open={!!selectedImage}
+        footer={null}
+        onCancel={() => {
+          setSelectedImage(null);
+          setSelectedImageType(null);
+        }}
+        width="80%"
+        centered
+        title={
+          selectedImageType
+            ? convertImageType(selectedImageType as String)
+            : "Hình ảnh"
+        }
+      >
+        <img
+          src={selectedImage || ""}
+          alt="Full size"
+          className="w-full h-auto"
+        />
+      </Modal>
     </Content>
   );
 };
