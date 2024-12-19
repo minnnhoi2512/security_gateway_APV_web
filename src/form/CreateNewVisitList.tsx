@@ -351,10 +351,11 @@ const CreateNewVisitList: React.FC = () => {
         refetch();
         navigate(-1);
       } catch (error: any) {
-        // console.log(error.data.message);
-        // notification.error({
-        //   message: "Đã có lỗi xảy ra khi tạo lịch hẹn. Vui lòng thử lại.",
-        // });
+        if (error.data.status === 400) {
+          notification.error({
+            message: "Vui lòng kiểm tra thông tin đã nhập.",
+          });
+        }
         setIsSubmitting(false);
       } finally {
         setIsSubmitting(false);

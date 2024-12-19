@@ -906,7 +906,7 @@ const CustomerVisitStaff = () => {
               setIsCreateModalVisible(false);
               navigate("/schedule-staff");
               notification.info({
-                message: "Vui lòng chọn lịch trình để tạo chuyến thăm",
+                message: "Vui lòng chọn lịch trình từ nhiệm vụ để tạo chuyến thăm",
               });
             }}
             className="border-buttonColor text-buttonColor hover:!bg-buttonColor hover:!border-buttonColor hover:!text-white flex-1 h-24 text-base font-medium flex items-center justify-center hover:scale-105 transition-transform"
