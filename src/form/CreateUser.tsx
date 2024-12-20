@@ -299,7 +299,7 @@ const CreateUser: React.FC<CreateUserProps> = ({ onSuccess }) => {
                     placeholder="Chọn phòng ban"
                     onChange={(value) => {
                       setDepartmentId(value);
-                      console.log(value === 3);
+                      // console.log(value === 3);
                       if (value === 3 || value === 2) {
                         setHidden(true);
                       } else setHidden(false);

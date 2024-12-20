@@ -54,13 +54,13 @@ const CreateGate: React.FC = () => {
         cameraForm.resetFields();
       })
       .catch((info) => {
-        console.log("Validate Failed:", info);
+        // console.log("Validate Failed:", info);
       });
   };
 
   const onFinish = async (values: any) => {
     try {
-      console.log("haha")
+      // console.log("haha")
       const updatedCameras = values.cameras.map((camera: any) => ({
         ...camera,
         cameraURL: `${camera.cameraURL}`,
@@ -78,7 +78,7 @@ const CreateGate: React.FC = () => {
       form.resetFields();
       notification.success({ message: "Tạo cổng thành công!" });
     } catch (error) {
-      console.error("Error creating gate:", error);
+      // console.error("Error creating gate:", error);
       notification.error({ message: "Có lỗi xảy ra khi tạo cổng!" });
     }
   };

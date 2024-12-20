@@ -6,7 +6,7 @@ import Userinfo from "./userInfo/UserInfo";
 const Chat = () => {
   const userId = localStorage.getItem("userId");
   const { data: user } = useGetDetailUserQuery(Number(userId || 0));
-  console.log(user);
+  // console.log(user);
   return (
     <div className="list">
       <Userinfo user={user} />

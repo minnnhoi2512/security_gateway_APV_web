@@ -52,7 +52,7 @@ const ChatRoom: React.FC = () => {
         setMessages(messagesArray);
       },
       (error) => {
-        console.error("Error fetching messages:", error); // Log any errors
+        // console.error("Error fetching messages:", error); // Log any errors
       }
     );
     // Cleanup subscription on unmount

@@ -146,7 +146,7 @@ const DepartManager = () => {
     try {
       const values = await form.validateFields();
       const newValues = { ...values, acceptLevel: 1 };
-      console.log(newValues);
+      // console.log(newValues);
       await createDepartment(newValues).unwrap();
       setIsModalVisible(false);
       form.resetFields();
@@ -161,7 +161,7 @@ const DepartManager = () => {
         description: "Tạo mới phòng ban thất bại, vui lòng thử lại.",
       });
       
-      console.error("Failed to create department:", error);
+      // console.error("Failed to create department:", error);
     }
   };
 
@@ -201,7 +201,7 @@ const DepartManager = () => {
         message: "Thất bại",
         description: "Cập nhật phòng ban thất bại, vui lòng thử lại.",
       });
-      console.error("Failed to update department:", error);
+      // console.error("Failed to update department:", error);
     }
   };
 
@@ -223,11 +223,11 @@ const DepartManager = () => {
           notification.error({
             message: "Xóa phòng ban thất bại, vui lòng thử lại.",
           });
-          console.error("Failed to delete department:", error);
+          // console.error("Failed to delete department:", error);
         }
       },
       onCancel() {
-        console.log("Hủy xóa");
+        // console.log("Hủy xóa");
       },
     });
   };

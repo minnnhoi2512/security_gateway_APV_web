@@ -45,13 +45,13 @@ const ChatDetail = ({ chatId, sender, receiver }: { chatId: string, sender: any,
 
   const handleImg = async (e: any) => {
     const file = e.file;
-    console.log(file);
+    // console.log(file);
     try {
       const imgUrl = await upload(file);
       const newImageInput = { url: imgUrl, file: file };
       setNewImages((prevImages) => [...prevImages, newImageInput]);
     } catch (err) {
-      console.log(err);
+      // console.log(err);
     }
   };
 
@@ -76,7 +76,7 @@ const ChatDetail = ({ chatId, sender, receiver }: { chatId: string, sender: any,
         messages: arrayUnion(message),
       });
     } catch (err) {
-      console.log(err);
+      // console.log(err);
     } finally {
       setNewImages([]);
       setText("");

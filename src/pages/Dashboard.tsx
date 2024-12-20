@@ -84,7 +84,7 @@ const Dashboard: React.FC = () => {
     setIsScheduleView(true);
   };
   const userRole = localStorage.getItem("userRole");
-  console.log(userRole);
+  // console.log(userRole);
   const showTaskView = () => {
     setIsScheduleView(false);
   };

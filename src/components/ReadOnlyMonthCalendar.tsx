@@ -73,7 +73,7 @@ const ReadOnlyMonthCalendar: React.FC<ReadOnlyMonthCalendarProps> = ({
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
   const handleStartDateChange = (date: Dayjs | null) => {
-    console.log(date);
+    // console.log(date);
     setStartDate(date);
     setExpectedStartTime?.(date); // Use optional chaining to prevent errors
   };

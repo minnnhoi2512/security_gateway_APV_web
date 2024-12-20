@@ -151,8 +151,8 @@ const Schedule = () => {
 
       setFilteredData(filtered);
     }
-  }, [schedules, searchText, filterStatus, filterScheduleTypeId,userId]);
-console.log(staffData);
+  }, [schedules, searchText, filterStatus, filterScheduleTypeId, userId]);
+  // console.log(staffData);
   const handleFilterStatus = (status: boolean | null) => {
     setFilterStatus((prevStatus) => (prevStatus === status ? null : status));
   };
@@ -455,7 +455,7 @@ console.log(staffData);
                     max: 100,
                     message:
                       "Tên nhiệm vụ phải có ít nhất 5 ký tự và tối đa 100 ký tự",
-                  }
+                  },
                 ]}
               >
                 <Input
@@ -513,6 +513,9 @@ console.log(staffData);
                           </div>
                           <div className="text-xs text-gray-500">
                             {user.email}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {user.userMission} nhiệm vụ
                           </div>
                         </div>
                       </div>

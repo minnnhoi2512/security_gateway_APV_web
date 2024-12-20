@@ -125,7 +125,7 @@ const CardManager = () => {
       setIsModalVisible(false);
       form.resetFields();
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       notification.error({ message: "Đã xảy ra lỗi khi tạo thẻ!" });
     }
   };

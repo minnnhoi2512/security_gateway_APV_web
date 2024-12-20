@@ -21,7 +21,7 @@ const ReadOnlyWeekCalendar: React.FC<ReadOnlyMonthCalendarProps> = ({
   const [highlightedDates, setHighlightedDates] = useState<string[]>([]);
   const [startDate, setStartDate] = useState<Dayjs | null>(null);
   const [endDate, setEndDate] = useState<Dayjs | null>(null);
-  console.log(daysOfSchedule);
+  // console.log(daysOfSchedule);
   const months = [
     "tháng 1",
     "tháng 2",
@@ -73,7 +73,7 @@ const ReadOnlyWeekCalendar: React.FC<ReadOnlyMonthCalendarProps> = ({
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
   const handleStartDateChange = (date: Dayjs | null) => {
-    console.log(date);
+    // console.log(date);
     setStartDate(date);
     setExpectedStartTime?.(date); // Use optional chaining to prevent errors
   };

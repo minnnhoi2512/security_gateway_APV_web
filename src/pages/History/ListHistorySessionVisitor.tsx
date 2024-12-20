@@ -183,9 +183,9 @@ const ListHistorySessionVisitor = () => {
         });
         setResult(updatedVisitorData);
         dispatch(setListOfVisitorSession(updatedVisitorData));
-        console.log(updatedVisitorData);
+        // console.log(updatedVisitorData);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        // console.error("Error fetching data:", error);
       } finally {
         setLoading(false);
       }

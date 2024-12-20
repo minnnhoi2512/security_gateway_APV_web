@@ -106,7 +106,7 @@ const CreateNewSchedule: React.FC = () => {
       form.resetFields();
       navigate("/schedule");
     } catch (error) {
-      console.error("Error creating new schedule:", error);
+      // console.error("Error creating new schedule:", error);
       notification.error({ message: "Đã xảy ra lỗi khi tạo lịch trình." });
     }
   };
