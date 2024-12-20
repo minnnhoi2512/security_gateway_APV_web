@@ -111,7 +111,7 @@ const ScheduleStaff: React.FC<SchedulePageProps> = ({ status }) => {
   const handleRowClick = (record: ScheduleUserType) => {
     setSelectedRecord(record);
     setIsModalVisible(true);
-    console.log(record);
+    // console.log(record);
   };
 
   const handleModalClose = () => {

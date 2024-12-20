@@ -115,7 +115,7 @@ const Profile: React.FC = () => {
         User: payload,
         idUser: userId,
       }).unwrap();
-      console.log(result);
+      // console.log(result);
       setIsEditing(false);
       setFile(null);
       setFormData((prevData) => ({

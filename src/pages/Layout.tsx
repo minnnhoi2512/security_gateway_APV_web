@@ -189,7 +189,7 @@ const LayoutPage = ({ children }: { children: any }) => {
     if (userId) {
       navigate(`/profile/${userId}`);
     } else {
-      console.error("User ID không tồn tại.");
+      // console.error("User ID không tồn tại.");
     }
   };
   const { data: notificaitionData, refetch: refetchNoti } =

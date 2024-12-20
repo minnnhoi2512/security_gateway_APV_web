@@ -224,14 +224,14 @@ const HistoryDetail = () => {
         dispatch(setListOfVisitorSession(visitorData));
         // console.log(visitorData);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        // console.error("Error fetching data:", error);
       } finally {
         setLoading(false);
       }
     };
     fetchData();
   }, [id, dispatch, postGraphql]);
-  console.log(getImageVehicleSession);
+  // console.log(getImageVehicleSession);
 
   function makeQuery(visitorSessionId: number) {
     return {

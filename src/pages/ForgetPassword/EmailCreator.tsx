@@ -18,7 +18,7 @@ const EmailCreator = () => {
     try {
       const result = await inputEmail({ email }).unwrap();
       localStorage.setItem("email", email);
-      console.log(result);
+      // console.log(result);
       if (result) {
         navigate("/confirmOTP");
       }

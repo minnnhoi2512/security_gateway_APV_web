@@ -70,7 +70,7 @@ const History = () => {
     useState<VisitorSessionType | null>(null);
   const navigate = useNavigate();
   let dataVisit, isLoadingVisit;
-  console.log(sessionData);
+  // console.log(sessionData);
   if (userRole === "Staff") {
     ({ data: dataVisit, isLoading: isLoadingVisit } =
       useGetListVisitByResponsiblePersonIdQuery({
@@ -192,7 +192,7 @@ const History = () => {
           )
         );
       } catch (error) {
-        console.error("Error fetching data:", error);
+        // console.error("Error fetching data:", error);
       } finally {
         setLoading(false); // Stop loading
       }
@@ -244,7 +244,7 @@ const History = () => {
         };
       });
 
-      console.log(updatedData);
+      // console.log(updatedData);
       setUpdatedData(updatedData as VisitorSessionType[]);
       setFilteredData(updatedData as VisitorSessionType[]); // Update filteredData with the new data
     }

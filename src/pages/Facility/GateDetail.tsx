@@ -74,15 +74,15 @@ const GateDetail: React.FC = () => {
     }
   }, [selectedGate, form, isLoading, isSuccess]);
 
-  console.log(selectedGate);
-  console.log(
-    form.getFieldValue(["cameras", 0, "cameraURL"]) + "libs/index.m3u8"
-  );
+  // console.log(selectedGate);
+  // console.log(
+  //   form.getFieldValue(["cameras", 0, "cameraURL"]) + "libs/index.m3u8"
+  // );
   const handleAddCamera = () => {
     cameraForm
       .validateFields()
       .then((values) => {
-        console.log(values);
+        // console.log(values);
         const cameras = form.getFieldValue("cameras") || [];
         form.setFieldsValue({
           cameras: [
@@ -100,7 +100,7 @@ const GateDetail: React.FC = () => {
         cameraForm.resetFields();
       })
       .catch((info) => {
-        console.log("Validate Failed:", info);
+        // console.log("Validate Failed:", info);
       });
   };
 
@@ -125,7 +125,7 @@ const GateDetail: React.FC = () => {
       form.resetFields();
       notification.success({ message: "Chỉnh sửa cổng thành công!" });
     } catch (error) {
-      console.error("Error creating gate:", error);
+      // console.error("Error creating gate:", error);
       notification.error({ message: "Có lỗi xảy ra chỉnh sửa cổng!" });
     }
   };

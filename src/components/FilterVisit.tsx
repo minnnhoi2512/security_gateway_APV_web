@@ -53,7 +53,7 @@ const FilterVisit: React.FC = () => {
       scheduleTypeId as never,
       visitStatus
     );
-    console.log(body);
+    // console.log(body);
     postGraphql({
       query: body,
     })
@@ -170,7 +170,7 @@ const FilterVisit: React.FC = () => {
 }
 
         `;
-    console.log(queryPlain);
+    // console.log(queryPlain);
     var query: GraphqlQueryType = {
       query: queryPlain,
     };

@@ -48,7 +48,7 @@ const CreateQRCard = () => {
         message: "Đã xảy ra lỗi",
         description: "Đã xảy ra lỗi trong quá trình tạo thẻ hoặc QR Code.",
       });
-      console.error(error);
+      // console.error(error);
     }
   };
 
