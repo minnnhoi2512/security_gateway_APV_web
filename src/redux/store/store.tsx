@@ -21,6 +21,7 @@ import { scheduleStaffAPI } from "../../services/scheduleStaff.service";
 import { gateAPI } from "../../services/gate.service";
 import { dashBoardAPI } from "../../services/dashboard.service";
 import { passwordAPI } from "../../services/forgetPassword.service";
+import { sessionImageAPI } from "../../services/sessionImage.service";
 
 
 export const store = configureStore({
@@ -40,6 +41,7 @@ export const store = configureStore({
     [gateAPI.reducerPath] : gateAPI.reducer,
     [dashBoardAPI.reducerPath] : dashBoardAPI.reducer,
     [passwordAPI.reducerPath] : passwordAPI.reducer,
+    [sessionImageAPI.reducerPath] : sessionImageAPI.reducer,
     filterTabs: filterTabReducer,
     visitDetailList : visitDetailListReducer,
     visitorSession : visitorSessionReducer,
@@ -57,6 +59,7 @@ export const store = configureStore({
       .concat(passwordAPI.middleware)
       .concat(scheduleAPI.middleware, rtkQueryErrorLogger)
       .concat(scheduleUserAPI.middleware)
+      .concat(sessionImageAPI.middleware)
       .concat(departmentAPI.middleware)
       .concat(visitorAPI.middleware)
       .concat(scheduleTypeAPI.middleware)

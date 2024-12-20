@@ -180,7 +180,7 @@ const renderSession = (session: VisitorSessionType) => (
       <Descriptions.Item label="Công ty">
         {session.visitor.companyName}
       </Descriptions.Item>
-      <Descriptions.Item label="Tên lịch trình">
+      <Descriptions.Item label="Tên chuyến thăm">
         {session.visit.visitName}
       </Descriptions.Item>
       <Descriptions.Item label="Thời gian vào">
@@ -359,7 +359,7 @@ const ListHistorySessionVisit = () => {
           {/* Visit Details */}
           <Row gutter={[16, 16]} className="mb-4">
             <Col span={24}>
-              <HistoryCard label="Lịch trình" value={session.visit.visitName} />
+              <HistoryCard label="Chuyến thăm" value={session.visit.visitName} />
             </Col>
           </Row>
 

@@ -9,6 +9,7 @@ import dayjs from "dayjs";
 import { formatDateLocal } from "../../utils/ultil";
 import { ArrowRight, Check, LogIn, LogOut, Shield, User } from "lucide-react";
 import { EyeOutlined } from "@ant-design/icons";
+import { useGetImageVehicleSessionQuery } from "../../services/sessionImage.service";
 
 const { Content } = Layout;
 
@@ -79,7 +80,7 @@ const renderSession = (session: VisitorSessionType) => (
       <Descriptions.Item label="Công ty">
         {session.visitor.companyName}
       </Descriptions.Item>
-      <Descriptions.Item label="Tên lịch trình">
+      <Descriptions.Item label="Tên chuyến thăm">
         {session.visit.visitName}
       </Descriptions.Item>
       <Descriptions.Item label="Thời gian vào">
@@ -135,6 +136,8 @@ const ListHistorySessionVisitor = () => {
   const [selectedImageType, setSelectedImageType] = useState<string | null>(
     null
   );
+  const [imageVehicleSessions, setImageVehicleSessions] = useState([]);
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -154,8 +157,23 @@ const ListHistorySessionVisitor = () => {
     };
     fetchData();
   }, [id, dispatch, postGraphql]);
+  useEffect(() => {
+    console.log(result);
+    const fetchImageVehicleSessions = async () => {
+      const promises = result.map((item) =>
+        // console.log(item)
+        useGetImageVehicleSessionQuery({ id: Number(item.visitorSessionId) })
+      );
 
-  console.log(result);
+      const responses = await Promise.all(promises);
+      console.log(responses);
+      setImageVehicleSessions(responses);
+    };
+
+    fetchImageVehicleSessions();
+  }, [result,loading]);
+  console.log(imageVehicleSessions);
+
   function makeQuery(visitorId: number, visitId: number) {
     return {
       query: `
@@ -258,7 +276,10 @@ const ListHistorySessionVisitor = () => {
           {/* Visit Details */}
           <Row gutter={[16, 16]} className="mb-4">
             <Col span={24}>
-              <HistoryCard label="Lịch trình" value={session.visit.visitName} />
+              <HistoryCard
+                label="Chuyến thăm"
+                value={session.visit.visitName}
+              />
             </Col>
           </Row>
 

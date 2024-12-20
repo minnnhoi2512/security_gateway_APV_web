@@ -94,13 +94,13 @@ const DepartManager = () => {
       render: (date: string) =>
         date ? moment.tz(date, "Asia/Ho_Chi_Minh").format("DD/MM/YYYY") : "",
     },
-    {
-      title: "Cấp Độ",
-      dataIndex: "acceptLevel",
-      key: "acceptLevel",
-      sorter: (a: any, b: any) => a.acceptLevel - b.acceptLevel,
-      render: (acceptLevel: number) => <Tag color="blue">{acceptLevel}</Tag>,
-    },
+    // {
+    //   title: "Cấp Độ",
+    //   dataIndex: "acceptLevel",
+    //   key: "acceptLevel",
+    //   sorter: (a: any, b: any) => a.acceptLevel - b.acceptLevel,
+    //   render: (acceptLevel: number) => <Tag color="blue">{acceptLevel}</Tag>,
+    // },
     {
       title: "Hành động",
       key: "actions",
@@ -145,7 +145,9 @@ const DepartManager = () => {
   const handleOk = async () => {
     try {
       const values = await form.validateFields();
-      await createDepartment(values).unwrap();
+      const newValues = { ...values, acceptLevel: 1 };
+      console.log(newValues);
+      await createDepartment(newValues).unwrap();
       setIsModalVisible(false);
       form.resetFields();
       notification.success({
@@ -158,6 +160,7 @@ const DepartManager = () => {
         message: "Thất bại",
         description: "Tạo mới phòng ban thất bại, vui lòng thử lại.",
       });
+      
       console.error("Failed to create department:", error);
     }
   };
@@ -181,6 +184,7 @@ const DepartManager = () => {
   const handleUpdate = async () => {
     try {
       const values = await form.validateFields();
+      
       await updateDepartment({
         id: editingDepartment.departmentId,
         ...values,
@@ -286,9 +290,11 @@ const DepartManager = () => {
           <Form.Item
             label="Cấp Độ"
             name="acceptLevel"
+            className="hidden"
+            initialValue={1}
             rules={[{ required: true, message: "Vui lòng nhập cấp độ!" }]}
           >
-            <Input type="number" placeholder="Nhập cấp độ" />
+            <Input type="number" placeholder="Nhập cấp độ" value={1}/>
           </Form.Item>
         </Form>
       </Modal>
@@ -324,9 +330,10 @@ const DepartManager = () => {
           <Form.Item
             label="Cấp Độ"
             name="acceptLevel"
+            className="hidden"
             rules={[{ required: true, message: "Vui lòng nhập cấp độ!" }]}
           >
-            <Input type="number" placeholder="Nhập cấp độ" />
+            <Input type="number" placeholder="Nhập cấp độ" defaultValue={"1"}/>
           </Form.Item>
         </Form>
       </Modal>

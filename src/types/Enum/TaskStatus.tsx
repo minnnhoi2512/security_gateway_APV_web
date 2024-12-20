@@ -5,6 +5,7 @@ export enum TaskStatus {
     ActiveTemporary = "ActiveTemporary",
     Violation = "Violation",
     Rejected = "Rejected",
+    Cancel = "Cancel",
 }
 
 export const taskStatusMap: { [key in TaskStatus]: { colorVisitStatus: string; textVisitStatus: string } } = {
@@ -14,6 +15,7 @@ export const taskStatusMap: { [key in TaskStatus]: { colorVisitStatus: string; t
     [TaskStatus.ActiveTemporary]: { colorVisitStatus: "yellow", textVisitStatus: "Cần duyệt" },
     [TaskStatus.Violation]: { colorVisitStatus: "red", textVisitStatus: "Vi phạm" },
     [TaskStatus.Rejected]: { colorVisitStatus: "gray", textVisitStatus: "Đã từ chối" },
+    [TaskStatus.Cancel]: { colorVisitStatus: "gray", textVisitStatus: "Đã hủy" },
 };
 
 

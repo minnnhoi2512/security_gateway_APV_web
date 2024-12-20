@@ -65,7 +65,7 @@ const DetailCustomerVisit: React.FC = () => {
   } = useGetDetailVisitQuery({
     visitId: Number(id),
   });
-  console.log(visitData);
+
   const navigate = useNavigate();
   const [updateVisitBeforeStartDate] = useUpdateVisitBeforeStartDateMutation();
   const [updateVisitAfterStartDate] = useUpdateVisitAfterStartDateMutation();
@@ -82,7 +82,6 @@ const DetailCustomerVisit: React.FC = () => {
     pageSize: -1,
   });
 
-  // console.log();
   const [visitors, setVisitors] = useState<DetailVisitor[]>([]);
   const [visitQuantity, setVisitQuantity] = useState<number>(
     visitData?.visitQuantity || 0
@@ -94,15 +93,35 @@ const DetailCustomerVisit: React.FC = () => {
   const [scheduleTypeId, setScheduleTypeId] = useState<ScheduleType | null>(
     null
   );
+  const [updatedDetailVisitData, setUpdatedDetailVisitData] = useState<any>([]);
   const [isDescriptionModalVisible, setIsDescriptionModalVisible] =
     useState(false);
   const [status, setStatusVisit] = useState<VisitStatus | String>("");
-  const [editStatus, setEditStatus] = useState<boolean>(true);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
   const [isHistoryModalVisible, setIsHistoryModalVisible] = useState(false);
   const convertToDayjs = (date: string | Date | Dayjs): Dayjs => {
     return dayjs(date);
   };
+  useEffect(() => {
+    if (visitData && detailVisitData) {
+      const updatedDetailVisitData = detailVisitData.map((detailVisit) => {
+        const matchingDetail = visitData.visitDetail.find(
+          (detail) => detail.visitDetailId === detailVisit.visitDetailId
+        );
+
+        if (matchingDetail) {
+          return {
+            ...detailVisit,
+            visitorSessionCurrentDay: matchingDetail.visitorSessionCurrentDay,
+          };
+        }
+
+        return detailVisit;
+      });
+
+      setVisitors(updatedDetailVisitData);
+    }
+  }, [visitData, detailVisitData]);
   const isEditable = () => {
     const endOfExpectedStartTime = dayjs(visitData?.expectedStartTime).endOf(
       "day"
@@ -125,7 +144,7 @@ const DetailCustomerVisit: React.FC = () => {
   // console.log();
   useEffect(() => {
     setSelectedVisitId(Number(id));
-    setVisitors(detailVisitData);
+    // setVisitors(detailVisitData);
     setVisitQuantity(visitData?.visitQuantity);
     setEditableVisitName(visitData?.visitName);
     setEditableDescription(visitData?.description);
@@ -396,8 +415,10 @@ const DetailCustomerVisit: React.FC = () => {
           if (editableStartDate.isSame(currentTime, "day")) {
             if (
               nameValue === "expectedStartHour" &&
-              !(value?.isBefore(currentTime.add(-1, "minute")) ||
-                scheduleTypeId != undefined)
+              !(
+                value?.isBefore(currentTime.add(-1, "minute")) ||
+                scheduleTypeId != undefined
+              )
             ) {
               isValid = false;
               notification.warning({
@@ -512,6 +533,7 @@ const DetailCustomerVisit: React.FC = () => {
       dataIndex: "expectedStartHour",
       key: "expectedStartHour",
       render: (text: string, record: DetailVisitor, index: number) => {
+        // console.log(record);
         const isError = !text && !isEditMode; // Check if there is no value and edit mode is not active
         return (
           <TimePicker
@@ -519,7 +541,11 @@ const DetailCustomerVisit: React.FC = () => {
             onChange={(time) =>
               getHourString(time, "expectedStartHour", index, editableStartDate)
             }
-            disabled={!isEditMode || record.isDeleted}
+            disabled={
+              !isEditMode ||
+              record.isDeleted ||
+              record?.visitorSessionCurrentDay >= 0 && scheduleTypeId === undefined
+            }
             format="HH:mm"
             style={isError ? timePickerStyles.error : undefined} // Apply error style
             key={record.visitor.visitorId}

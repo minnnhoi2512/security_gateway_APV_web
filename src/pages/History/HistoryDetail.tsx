@@ -21,6 +21,7 @@ import {
 import { useGetVisitGraphqlMutation } from "../../services/visitGraphql.service";
 import { setListOfVisitorSession } from "../../redux/slices/visitorSession.slice";
 import { formatDateLocal } from "../../utils/ultil";
+import { useGetImageVehicleSessionQuery } from "../../services/sessionImage.service";
 
 type SecurityRes = {
   userId?: number;
@@ -45,6 +46,9 @@ type VisitorSessionType = {
     visitorId: number;
     visitorName: string;
     companyName: string;
+    visitCard : {
+      visitCardId: number;
+    }
   };
   qrCardId?: number;
   visit: {
@@ -184,7 +188,8 @@ const HistoryDetail = () => {
   const [selectedImage, setSelectedImage] = useState<SessionsImageRes | null>(
     null
   );
- 
+  const {data: getImageVehicleSession} = useGetImageVehicleSessionQuery({id: Number(id)});
+  // const [vehicleImage, setVehicleImage] = useState<any>([])
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -195,6 +200,7 @@ const HistoryDetail = () => {
           (payload.data.visitorSession?.items as VisitorSessionType[]) || [];
         setResult(visitorData);
         dispatch(setListOfVisitorSession(visitorData));
+        // console.log(visitorData);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -203,6 +209,7 @@ const HistoryDetail = () => {
     };
     fetchData();
   }, [id, dispatch, postGraphql]);
+  console.log(getImageVehicleSession)
 
   function makeQuery(visitorSessionId: number) {
     return {
@@ -219,7 +226,10 @@ const HistoryDetail = () => {
               visitor {
                 visitorId,
                 visitorName,
-                companyName
+                companyName,
+                visitCard{
+                      visitCardId
+                }
               },
               checkinTime,
               checkoutTime,
@@ -254,7 +264,7 @@ const HistoryDetail = () => {
       `,
     };
   }
- 
+
   const getImageTypeInfo = (imageType: string) => {
     switch (imageType) {
       case "CheckIn_Body":
@@ -339,7 +349,7 @@ const HistoryDetail = () => {
     gateOut,
     status,
   } = result[0];
-  console.log(qrCardId)
+  // console.log(visitor.visitCard);
   return (
     <Content className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-5xl mx-auto">
@@ -399,11 +409,11 @@ const HistoryDetail = () => {
                   </div> */}
                   <div className="flex justify-between text-sm text-gray-500">
                     <span>
-                      {dayjs(checkinTime).format("HH:mm, DD/MM/YYYY")}
+                      {formatDateLocal(checkinTime)}
                     </span>
                     <span>
                       {checkoutTime
-                        ? dayjs(checkoutTime).format("HH:mm, DD/MM/YYYY")
+                        ? formatDateLocal(checkinTime)
                         : "Đang diễn ra"}
                     </span>
                   </div>
@@ -429,8 +439,8 @@ const HistoryDetail = () => {
               <div className="divide-y divide-gray-100">
                 <InfoRow label="Tên khách" value={visitor.visitorName} />
                 <InfoRow label="Công ty" value={visitor.companyName} />
-                <InfoRow label="Lịch trình" value={visit.visitName} />
-                <InfoRow label="QR Card ID" value={qrCardId || "N/A"} />
+                <InfoRow label="Chuyến thăm" value={visit.visitName} />
+                <InfoRow label="QR Card ID" value={visitor.visitCard[0].visitCardId || "N/A"} />
               </div>
             </DetailCard>
 
@@ -459,11 +469,7 @@ const HistoryDetail = () => {
                 <InfoRow label="Cổng ra" value={gateOut?.gateName} />
                 <InfoRow
                   label="Thời gian"
-                  value={
-                    checkoutTime
-                      ? formatDateLocal(checkoutTime)
-                      : "N/A"
-                  }
+                  value={checkoutTime ? formatDateLocal(checkoutTime) : "N/A"}
                 />
               </div>
             </DetailCard>

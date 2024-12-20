@@ -7,4 +7,5 @@ export type DetailVisitor = {
   status: boolean;
   visitorId? : number
   isDeleted?: boolean; // Add this line
+  visitorSessionCurrentDay? : number; //
 };
