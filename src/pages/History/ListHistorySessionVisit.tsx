@@ -308,6 +308,7 @@ const ListHistorySessionVisit = () => {
                 visitorId,
                 visitorName,
                 companyName,
+                credentialsCard,
                 visitCard{
                       visitCardId
                 }

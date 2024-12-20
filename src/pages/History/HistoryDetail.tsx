@@ -43,6 +43,7 @@ type SessionsImageRes = {
 type VisitorSessionType = {
   visitorSessionId: number;
   visitor: {
+    credentialsCard?: string;
     visitorId: number;
     visitorName: string;
     companyName: string;
@@ -248,6 +249,7 @@ const HistoryDetail = () => {
                 visitorId,
                 visitorName,
                 companyName,
+                credentialsCard,
                 visitCard{
                       visitCardId
                 }
@@ -576,8 +578,8 @@ const HistoryDetail = () => {
                 <InfoRow label="Công ty" value={visitor.companyName} />
                 <InfoRow label="Chuyến thăm" value={visit.visitName} />
                 <InfoRow
-                  label="QR Card ID"
-                  value={visitor.visitCard[0].visitCardId || "N/A"}
+                  label="CCCD/GPLX"
+                  value={visitor.credentialsCard || "N/A"}
                 />
               </div>
             </DetailCard>

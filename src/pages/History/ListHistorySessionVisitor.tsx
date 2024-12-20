@@ -218,6 +218,7 @@ const ListHistorySessionVisitor = () => {
                 visitorId,
                 visitorName,
                 companyName,
+                credentialsCard,
                 visitCard{
                       visitCardId
                 }
