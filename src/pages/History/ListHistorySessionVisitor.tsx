@@ -151,8 +151,8 @@ const ListHistorySessionVisitor = () => {
   const [selectedImageType, setSelectedImageType] = useState<string | null>(
     null
   );
-  const [imageVehicleSessions, setImageVehicleSessions] = useState([]);
-  const { data: vehicleImageArray } = useGetImageVehicleSessionByVisitorQuery({
+  // const [imageVehicleSessions, setImageVehicleSessions] = useState([]);
+  const { data: vehicleImageArray,isLoading } = useGetImageVehicleSessionByVisitorQuery({
     visitId: Number(id),
     visitorId: Number(visitorId),
   });
@@ -191,7 +191,7 @@ const ListHistorySessionVisitor = () => {
       }
     };
     fetchData();
-  }, [id, dispatch, postGraphql]);
+  }, [id, dispatch, postGraphql,visitorId,isLoading,vehicleImageArray]);
 
   function makeQuery(visitorId: number, visitId: number) {
     return {
@@ -261,7 +261,7 @@ const ListHistorySessionVisitor = () => {
   }
 
   // if (result.length <= 0) return "Khách này chưa có thông tin ra vào";
-  if (result.length === 0) {
+  if (result.length === 0 && loading === false) {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-5xl mx-auto p-6">
