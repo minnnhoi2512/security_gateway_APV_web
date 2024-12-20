@@ -38,6 +38,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = () => {
       userId: Number(userId),
     });
   timeago.register("vi", vi);
+  const isNew = useSelector<any, boolean>((s) => s.notification.isNew);
   const [visibleNotifications, setVisibleNotifications] = useState(7);
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const notificationListRef = useRef<HTMLDivElement>(null);
@@ -47,13 +48,12 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = () => {
   // useEffect(() => {
   //
   // }, [notificaitionData]);
-
   useEffect(() => {
     if (notificaitionData?.length > 0 && takingNew) {
-      toast("Bạn có thông báo mới");
       refetchNoti();
+      toast("Bạn có thông báo mới");  
     }
-  }, []);
+  }, [isNew]);
 
   // const handleViewMore = () => {
   //   setVisibleNotifications((prev) =>

@@ -47,7 +47,7 @@ const SetSignalR = async (
         //     title: title,
         //     message: message,
         //   });
-
+        console.log("ReceiveNotification")
           // const notiList = JSON.parse(localStorage.getItem("notification") as string) as NotificationType[]
           // if(notiList){
           //   notiList.push(notification)
