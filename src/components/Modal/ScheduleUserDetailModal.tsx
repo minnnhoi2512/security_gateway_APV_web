@@ -71,10 +71,10 @@ const formatTimeOnly = (timeString: string | undefined) => {
   const dateObj = new Date(`1970-01-01T${timeString}`);
   return isNaN(dateObj.getTime())
     ? "Không xác định"
-    : dateObj.toLocaleTimeString("en-US", {
+    : dateObj.toLocaleTimeString("vi-VN", {
         hour: "2-digit",
         minute: "2-digit",
-        hour12: true,
+        hour12: false,
       });
 };
 

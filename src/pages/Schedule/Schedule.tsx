@@ -151,8 +151,8 @@ const Schedule = () => {
 
       setFilteredData(filtered);
     }
-  }, [schedules, searchText, filterStatus, filterScheduleTypeId]);
-
+  }, [schedules, searchText, filterStatus, filterScheduleTypeId,userId]);
+console.log(staffData);
   const handleFilterStatus = (status: boolean | null) => {
     setFilterStatus((prevStatus) => (prevStatus === status ? null : status));
   };
