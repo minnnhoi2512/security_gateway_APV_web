@@ -19,6 +19,8 @@ import dayjs from "dayjs";
 import { formatDateLocal } from "../../utils/ultil";
 import { EyeOutlined } from "@ant-design/icons";
 import {
+  AlertCircle,
+  ArrowLeft,
   ArrowRight,
   Check,
   LogIn,
@@ -321,7 +323,35 @@ const ListHistorySessionVisit = () => {
     return <Spin />;
   }
 
-  if (result.length <= 0) return "Khách này chưa có thông tin ra vào";
+  // if (result.length <= 0) return "Khách này chưa có thông tin ra vào";
+  if (result.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-5xl mx-auto p-6">
+          <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+            <div className="mb-4 flex justify-center">
+              <div className="p-3 bg-orange-100 rounded-full">
+                <AlertCircle className="w-8 h-8 text-orange-600" />
+              </div>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Không tìm thấy thông tin
+            </h3>
+            <p className="text-gray-500 mb-6">
+              Khách này chưa có thông tin ra vào
+            </p>
+            <button
+              onClick={() => window.history.back()}
+              className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors duration-200"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Quay lại
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+}
 
   return (
     // <Content className="p-6 bg-gray-100">

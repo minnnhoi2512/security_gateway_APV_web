@@ -46,9 +46,9 @@ type VisitorSessionType = {
     visitorId: number;
     visitorName: string;
     companyName: string;
-    visitCard : {
+    visitCard: {
       visitCardId: number;
-    }
+    };
   };
   qrCardId?: number;
   visit: {
@@ -66,39 +66,45 @@ type VisitorSessionType = {
   images: SessionsImageRes[];
 };
 
+type VehicleImageRes = {
+  vehicleSessionImageId: number;
+  imageType: string;
+  imageURL: string;
+};
+
 const { Content } = Layout;
 
-const ImageModal = ({
-  visible,
-  image,
-  onClose,
-}: {
-  visible: boolean;
-  image: SessionsImageRes | null;
-  onClose: () => void;
-}) => (
-  <Modal
-    open={visible}
-    footer={null}
-    onCancel={onClose}
-    width={800}
-    className="p-0"
-    centered
-  >
-    {image && (
-      <div className="p-4">
-        <img
-          src={image.imageURL}
-          alt={image.imageType || "Visit image"}
-          className="w-full h-auto rounded-lg"
-        />
-        {image.imageType && (
-          <p className="mt-2 text-center text-gray-600">{image.imageType}</p>
-        )}
-      </div>
-    )}
-  </Modal>
-);
+// const ImageModal = ({
+//   visible,
+//   image,
+//   onClose,
+// }: {
+//   visible: boolean;
+//   image: SessionsImageRes | null;
+//   onClose: () => void;
+// }) => (
+//   <Modal
+//     open={visible}
+//     footer={null}
+//     onCancel={onClose}
+//     width={800}
+//     className="p-0"
+//     centered
+//   >
+//     {image && (
+//       <div className="p-4">
+//         <img
+//           src={image.imageURL}
+//           alt={image.imageType || "Visit image"}
+//           className="w-full h-auto rounded-lg"
+//         />
+//         {image.imageType && (
+//           <p className="mt-2 text-center text-gray-600">{image.imageType}</p>
+//         )}
+//       </div>
+//     )}
+//   </Modal>
+// );
 
 const StatusBadge = ({ status }: { status: string }) => {
   const getStatusStyles = (
@@ -166,6 +172,19 @@ const DetailCard = ({
     <div className="p-4">{children}</div>
   </div>
 );
+// const InfoRow = ({
+//   label,
+//   value,
+// }: {
+//   label: string;
+//   value: string | number | null | undefined;
+// }) => (
+//   <div className="flex justify-between items-center py-2">
+//     <span className="text-sm text-gray-500">{label}</span>
+//     <span className="font-medium text-gray-900">{value || "N/A"}</span>
+//   </div>
+// );
+
 const InfoRow = ({
   label,
   value,
@@ -173,9 +192,9 @@ const InfoRow = ({
   label: string;
   value: string | number | null | undefined;
 }) => (
-  <div className="flex justify-between items-center py-2">
-    <span className="text-sm text-gray-500">{label}</span>
-    <span className="font-medium text-gray-900">{value || "N/A"}</span>
+  <div className="flex items-start justify-between py-2 gap-4">
+    <span className="text-sm text-gray-500 whitespace-nowrap">{label}</span>
+    <span className="font-medium text-gray-900 text-right break-words">{value || "Chưa có"}</span>
   </div>
 );
 
@@ -188,7 +207,9 @@ const HistoryDetail = () => {
   const [selectedImage, setSelectedImage] = useState<SessionsImageRes | null>(
     null
   );
-  const {data: getImageVehicleSession} = useGetImageVehicleSessionQuery({id: Number(id)});
+  const { data: getImageVehicleSession } = useGetImageVehicleSessionQuery({
+    id: Number(id),
+  });
   // const [vehicleImage, setVehicleImage] = useState<any>([])
   useEffect(() => {
     const fetchData = async () => {
@@ -209,7 +230,7 @@ const HistoryDetail = () => {
     };
     fetchData();
   }, [id, dispatch, postGraphql]);
-  console.log(getImageVehicleSession)
+  console.log(getImageVehicleSession);
 
   function makeQuery(visitorSessionId: number) {
     return {
@@ -291,13 +312,26 @@ const HistoryDetail = () => {
           icon: <Footprints className="w-4 h-4 mr-1.5" />,
           color: "from-blue-900/50",
         };
+      // case "CheckIn_Vehicle":
+      //   return {
+      //     label: "Ảnh xe lúc vào",
+      //     icon: <Car className="w-4 h-4 mr-1.5" />,
+      //     color: "from-green-900/50",
+      //   };
+      // case "CheckOut_Vehicle":
+      //   return {
+      //     label: "Ảnh xe lúc ra",
+      //     icon: <Car className="w-4 h-4 mr-1.5" />,
+      //     color: "from-blue-900/50",
+      //   };
       case "CheckIn_Vehicle":
         return {
           label: "Ảnh xe lúc vào",
           icon: <Car className="w-4 h-4 mr-1.5" />,
           color: "from-green-900/50",
         };
-      case "CheckOut_Vehicle":
+      // case "CheckOut_Vehicle":
+      case "LicensePlate_Out":
         return {
           label: "Ảnh xe lúc ra",
           icon: <Car className="w-4 h-4 mr-1.5" />,
@@ -310,6 +344,68 @@ const HistoryDetail = () => {
           color: "from-gray-900/50",
         };
     }
+  };
+
+  const ImageModal = ({
+    visible,
+    image,
+    onClose,
+  }: {
+    visible: boolean;
+    image:
+      | (
+          | SessionsImageRes
+          | {
+              visitorSessionsImageId?: number;
+              imageType?: string;
+              imageURL: string;
+            }
+        )
+      | null;
+    onClose: () => void;
+  }) => (
+    <Modal
+      open={visible}
+      footer={null}
+      onCancel={onClose}
+      width={800}
+      className="p-0"
+      centered
+    >
+      {image && (
+        <div className="p-4">
+          <img
+            src={image.imageURL.replace(/"+$/, "")} // Remove any trailing quotes in URL
+            alt={image.imageType || "Visit image"}
+            className="w-full h-auto rounded-lg"
+          />
+          {image.imageType && (
+            <p className="mt-2 text-center text-gray-600">
+              {getImageTypeInfo(image.imageType).label}
+            </p>
+          )}
+        </div>
+      )}
+    </Modal>
+  );
+
+  const getAllImages = () => {
+    const sessionImages = result[0]?.images || [];
+
+    // Safely handle vehicle images
+    const vehicleSession =
+      Array.isArray(getImageVehicleSession) && getImageVehicleSession.length > 0
+        ? getImageVehicleSession[0]
+        : null;
+
+    const vehicleImages =
+      vehicleSession?.images?.map((image) => ({
+        visitorSessionsImageId: image.vehicleSessionImageId,
+        imageType: image.imageType,
+        imageURL: image.imageURL.replace(/"+$/, ""),
+      })) || [];
+
+    return [...sessionImages, ...vehicleImages];
   };
 
   if (loading) {
@@ -337,7 +433,7 @@ const HistoryDetail = () => {
 
   const {
     visitorSessionId,
-    images,
+    // images,
     visitor,
     checkinTime,
     checkoutTime,
@@ -350,6 +446,9 @@ const HistoryDetail = () => {
     status,
   } = result[0];
   // console.log(visitor.visitCard);
+  const allImages = getAllImages();
+  // console.log("All combined images:", allImages);
+
   return (
     <Content className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-5xl mx-auto">
@@ -387,14 +486,14 @@ const HistoryDetail = () => {
                     <div className="flex items-center space-x-2">
                       <div className="w-2 h-2 bg-[#58d68d] rounded-full"></div>
                       <span className="text-sm">
-                        {gateIn?.gateName || "N/A"}
+                        {gateIn?.gateName || "Chưa có"}
                       </span>
                     </div>
                     <div className="border-b border-dashed border-gray-300 flex-grow mx-4"></div>
                     <div className="flex items-center space-x-2">
                       <div className="w-2 h-2 bg-[#e74c3c] rounded-full"></div>
                       <span className="text-sm">
-                        {gateOut?.gateName || "N/A"}
+                        {gateOut?.gateName || "Chưa có"}
                       </span>
                     </div>
                   </div>
@@ -408,9 +507,7 @@ const HistoryDetail = () => {
                     />
                   </div> */}
                   <div className="flex justify-between text-sm text-gray-500">
-                    <span>
-                      {formatDateLocal(checkinTime)}
-                    </span>
+                    <span>{formatDateLocal(checkinTime)}</span>
                     <span>
                       {checkoutTime
                         ? formatDateLocal(checkinTime)
@@ -421,17 +518,55 @@ const HistoryDetail = () => {
               </DetailCard>
             </div>
 
-            {/* <DetailCard icon={Clock} title="Thời gian" className="h-full">
+            {/* {Array.isArray(getImageVehicleSession) &&
+              getImageVehicleSession.length > 0 && (
+                <DetailCard
+                  icon={Clock}
+                  title="Thông tin xe"
+                  className="h-full"
+                >
+                  <div className="space-y-2">
+                    <div className="divide-y divide-gray-100">
+                      <InfoRow
+                        label="Biển số xe"
+                        value={getImageVehicleSession[0]?.licensePlate}
+                      />
+                    </div>
+                  </div>
+                </DetailCard>
+              )} */}
+
+            <DetailCard icon={Car} title="Thông tin xe" className="h-full">
               <div className="space-y-2">
-                <div className="text-3xl font-semibold text-gray-900">
-                  {checkoutTime
-                    ? dayjs(checkoutTime).diff(checkinTime, "minutes")
-                    : "--"}
-                  <span className="text-lg text-gray-500 ml-1">phút</span>
+                <div className="divide-y divide-gray-100">
+                  {Array.isArray(getImageVehicleSession) &&
+                  getImageVehicleSession.length > 0 ? (
+                    <InfoRow
+                      label="Biển số xe"
+                      value={getImageVehicleSession[0]?.licensePlate}
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center py-4 text-gray-500">
+                      Khách không sử dụng phương tiện
+                    </div>
+                  )}
                 </div>
-                <p className="text-sm text-gray-500">Thời gian chuyến thăm</p>
               </div>
-            </DetailCard> */}
+            </DetailCard>
+            {/* {getImageVehicleSession && (
+              <DetailCard icon={Car} title="Thông tin xe" className="mt-6">
+                <div className="divide-y divide-gray-100">
+                  <InfoRow
+                    label="Biển số xe"
+                    value={getImageVehicleSession.licensePlate}
+                  />
+                  <InfoRow
+                    label="Mã phiên xe"
+                    value={getImageVehicleSession.vehicleSessionId}
+                  />
+                </div>
+              </DetailCard>
+            )} */}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -440,7 +575,10 @@ const HistoryDetail = () => {
                 <InfoRow label="Tên khách" value={visitor.visitorName} />
                 <InfoRow label="Công ty" value={visitor.companyName} />
                 <InfoRow label="Chuyến thăm" value={visit.visitName} />
-                <InfoRow label="QR Card ID" value={visitor.visitCard[0].visitCardId || "N/A"} />
+                <InfoRow
+                  label="QR Card ID"
+                  value={visitor.visitCard[0].visitCardId || "N/A"}
+                />
               </div>
             </DetailCard>
 
@@ -469,17 +607,17 @@ const HistoryDetail = () => {
                 <InfoRow label="Cổng ra" value={gateOut?.gateName} />
                 <InfoRow
                   label="Thời gian"
-                  value={checkoutTime ? formatDateLocal(checkoutTime) : "N/A"}
+                  value={checkoutTime ? formatDateLocal(checkoutTime) : "Chưa có"}
                 />
               </div>
             </DetailCard>
           </div>
         </div>
 
-        {images && images.length > 0 && (
+        {allImages && allImages.length > 0 && (
           <DetailCard icon={Camera} title="Hình ảnh" className="mt-6">
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {images.map((image, index) => (
+              {allImages.map((image, index) => (
                 <div
                   key={index}
                   className="cursor-pointer relative group"
@@ -487,20 +625,12 @@ const HistoryDetail = () => {
                 >
                   <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden shadow-sm group-hover:shadow-md transition-all duration-200">
                     <img
-                      src={image.imageURL}
+                      src={image.imageURL.replace(/"+$/, "")}
                       alt={`Visit image ${index + 1}`}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                     />
                   </div>
 
-                  {/*     
-                  {image.imageType && (
-                    <div className="absolute bottom-0 inset-x-0 p-2 bg-gradient-to-t from-black/50 to-transparent group-hover:from-black/70 rounded-b-lg transition-all duration-200">
-                      <p className="text-white text-sm text-center truncate px-2">
-                        {image.imageType}
-                      </p>
-                    </div>
-                  )} */}
                   {image.imageType && (
                     <div
                       className={`absolute bottom-0 inset-x-0 p-2 bg-gradient-to-t ${
