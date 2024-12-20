@@ -27,6 +27,7 @@ import {
   Shield,
   User,
 } from "lucide-react";
+import { useGetImageVehicleSessionByVisitQuery } from "../../services/sessionImage.service";
 
 const { Content } = Layout;
 
@@ -237,12 +238,16 @@ const ListHistorySessionVisit = () => {
   const [selectedImageType, setSelectedImageType] = useState<string | null>(
     null
   );
-
+  const { data: vehicleImageArray } = useGetImageVehicleSessionByVisitQuery({
+    visitId: Number(id),
+  });
+  // console.log(vehicleImage);
   const handleImageClick = (imageUrl: string, imageType: String) => {
     setSelectedImage(String(imageUrl).valueOf());
     setSelectedImageType(String(imageType).valueOf());
   };
   useEffect(() => {
+    // console.log("image xe : ", vehicleImageArray);
     const fetchData = async () => {
       setLoading(true);
       const body = makeQuery(Number(id));
@@ -251,8 +256,25 @@ const ListHistorySessionVisit = () => {
         const visitorData =
           (payload.data.visitorSession?.items as VisitorSessionType[]) ||
           ([] as VisitorSessionType[]);
-        setResult(visitorData);
-        dispatch(setListOfVisitorSession(visitorData));
+
+        // Add vehicleImage attribute to each item in visitorData based on visitorSessionId
+        const updatedVisitorData = visitorData.map((item) => {
+          const vehicleImageForSession = vehicleImageArray.find(
+            (session) => session.visitorSessionId === item.visitorSessionId
+          );
+          // console.log(vehicleImageForSession)
+          // console.log("item : ", item);
+          return {
+            ...item,
+            vehicleImage: vehicleImageForSession
+              ? vehicleImageForSession
+              : null,
+          };
+        });
+
+        setResult(updatedVisitorData);
+        dispatch(setListOfVisitorSession(updatedVisitorData));
+        console.log(updatedVisitorData);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -260,9 +282,8 @@ const ListHistorySessionVisit = () => {
       }
     };
     fetchData();
-  }, [id, dispatch, postGraphql]);
+  }, [id, dispatch, postGraphql, vehicleImageArray]);
 
-  console.log(result);
   function makeQuery(visitId: number) {
     return {
       query: `
@@ -281,7 +302,10 @@ const ListHistorySessionVisit = () => {
               visitor {
                 visitorId,
                 visitorName,
-                companyName
+                companyName,
+                visitCard{
+                      visitCardId
+                }
               },
               checkinTime,
               checkoutTime,
@@ -359,7 +383,10 @@ const ListHistorySessionVisit = () => {
           {/* Visit Details */}
           <Row gutter={[16, 16]} className="mb-4">
             <Col span={24}>
-              <HistoryCard label="Chuyến thăm" value={session.visit.visitName} />
+              <HistoryCard
+                label="Chuyến thăm"
+                value={session.visit.visitName}
+              />
             </Col>
           </Row>
 

@@ -18,7 +18,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { setListOfVisitorSession } from "../../redux/slices/visitorSession.slice";
 import VisitorSessionType from "../../types/visitorSessionType";
 import { formatDate, formatDateLocal } from "../../utils/ultil";
-import HistoryDetail from "./HistoryDetail";
 import dayjs, { Dayjs } from "dayjs";
 import {
   useGetListVisitQuery,
@@ -37,6 +36,7 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router";
+import { useGetListSessionQuery } from "../../services/sessionImage.service";
 
 const { Option } = Select;
 
@@ -49,6 +49,7 @@ const History = () => {
   const [checkinTimeFilter, setCheckinTimeFilter] = useState<Dayjs | null>(
     null
   );
+  const { data: sessionData,isLoading } = useGetListSessionQuery({});
   const [checkoutTimeFilter, setCheckoutTimeFilter] = useState<Dayjs | null>(
     null
   );
@@ -69,7 +70,7 @@ const History = () => {
     useState<VisitorSessionType | null>(null);
   const navigate = useNavigate();
   let dataVisit, isLoadingVisit;
-
+  console.log(sessionData);
   if (userRole === "Staff") {
     ({ data: dataVisit, isLoading: isLoadingVisit } =
       useGetListVisitByResponsiblePersonIdQuery({
@@ -203,43 +204,51 @@ const History = () => {
   useEffect(() => {
     // console.log(dataList);
     if (dataList) {
-      const updatedData = dataList.map((element, index) => ({
-        visitorSessionId: element.visitorSessionId,
-        visitor: {
-          visitorId: element.visitor.visitorId,
-          visitorName: element.visitor.visitorName,
-          companyName: element.visitor.companyName,
-        },
-        visit: {
-          visitId: element.visit.visitId,
-          visitName: element.visit.visitName,
-        },
-        visitDetailId: element.visitDetailId,
-        checkinTime: element.checkinTime,
-        checkoutTime: element.checkoutTime,
-        gateIn: {
-          gateId: element.gateIn?.gateId,
-          gateName: element.gateIn?.gateName,
-        },
-        gateOut: {
-          gateId: element.gateOut?.gateId,
-          gateName: element.gateOut?.gateName,
-        },
-        key: index.toString(),
-        securityIn: {
-          fullName: element.securityIn?.fullName,
-        },
-        securityOut: {
-          fullName: element.securityOut?.fullName,
-        },
-        status: element.status,
-        images: element.images,
-      }));
-      console.log(dataList);
+      const updatedData = dataList.map((element, index) => {
+        const session = sessionData?.find(
+          (session) => session.visitorSessionId === element.visitorSessionId
+        );
+
+        return {
+          visitorSessionId: element.visitorSessionId,
+          visitor: {
+            visitorId: element.visitor.visitorId,
+            visitorName: element.visitor.visitorName,
+            companyName: element.visitor.companyName,
+          },
+          visit: {
+            visitId: element.visit.visitId,
+            visitName: element.visit.visitName,
+          },
+          visitDetailId: element.visitDetailId,
+          checkinTime: element.checkinTime,
+          checkoutTime: element.checkoutTime,
+          gateIn: {
+            gateId: element.gateIn?.gateId,
+            gateName: element.gateIn?.gateName,
+          },
+          gateOut: {
+            gateId: element.gateOut?.gateId,
+            gateName: element.gateOut?.gateName,
+          },
+          key: index.toString(),
+          securityIn: {
+            fullName: element.securityIn?.fullName,
+          },
+          securityOut: {
+            fullName: element.securityOut?.fullName,
+          },
+          status: element.status,
+          images: element.images,
+          isVehicleSession: session ? session.isVehicleSession : false, // Add isVehicleSession attribute
+        };
+      });
+
+      console.log(updatedData);
       setUpdatedData(updatedData as VisitorSessionType[]);
       setFilteredData(updatedData as VisitorSessionType[]); // Update filteredData with the new data
     }
-  }, [dispatch, dataList]);
+  }, [dispatch, dataList,isLoading]);
 
   function MakeQuery() {
     return {
@@ -341,6 +350,22 @@ const History = () => {
       ),
       sorter: (a, b) =>
         new Date(a.checkoutTime).getTime() - new Date(b.checkoutTime).getTime(),
+    },
+    {
+      title: "Phương tiện",
+      key: "isVehicleSession",
+      dataIndex: "isVehicleSession",
+      render: (_, {isVehicleSession}) => (
+        <Tag
+          className={`${
+            isVehicleSession === true
+              ? "bg-green-50 border-green-200 text-green-600"
+              : "bg-gray-50 border-gray-200 text-gray-600"
+          } rounded-md`}
+        >
+          {isVehicleSession === true ? "Có sử dụng" : "Không sử dụng"}
+        </Tag>
+      ),
     },
     {
       title: "Trạng thái",
@@ -462,7 +487,6 @@ const History = () => {
   );
   if (loading) return <LoadingState />;
 
-  
   return (
     <Content className="p-2 max-w-[1200px] mx-auto mt-10">
       <div className="flex gap-4 mb-4">

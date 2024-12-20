@@ -9,7 +9,10 @@ import dayjs from "dayjs";
 import { formatDateLocal } from "../../utils/ultil";
 import { ArrowRight, Check, LogIn, LogOut, Shield, User } from "lucide-react";
 import { EyeOutlined } from "@ant-design/icons";
-import { useGetImageVehicleSessionQuery } from "../../services/sessionImage.service";
+import {
+  useGetImageVehicleSessionByVisitorQuery,
+  useGetImageVehicleSessionQuery,
+} from "../../services/sessionImage.service";
 
 const { Content } = Layout;
 
@@ -137,7 +140,11 @@ const ListHistorySessionVisitor = () => {
     null
   );
   const [imageVehicleSessions, setImageVehicleSessions] = useState([]);
-
+  const { data: vehicleImageArray } = useGetImageVehicleSessionByVisitorQuery({
+    visitId: Number(id),
+    visitorId: Number(visitorId),
+  });
+  // console.log(vehicleImageArray);
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -147,8 +154,24 @@ const ListHistorySessionVisitor = () => {
         const visitorData =
           (payload.data.visitorSession?.items as VisitorSessionType[]) ||
           ([] as VisitorSessionType[]);
-        setResult(visitorData);
-        dispatch(setListOfVisitorSession(visitorData));
+
+        // Add vehicleImage attribute to each item in visitorData based on visitorSessionId
+        const updatedVisitorData = visitorData.map((item) => {
+          const vehicleImageForSession = vehicleImageArray.find(
+            (session) => session.visitorSessionId === item.visitorSessionId
+          );
+          // console.log(vehicleImageForSession)
+          // console.log("item : ", item);
+          return {
+            ...item,
+            vehicleImage: vehicleImageForSession
+              ? vehicleImageForSession
+              : null,
+          };
+        });
+        setResult(updatedVisitorData);
+        dispatch(setListOfVisitorSession(updatedVisitorData));
+        console.log(updatedVisitorData);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -157,22 +180,6 @@ const ListHistorySessionVisitor = () => {
     };
     fetchData();
   }, [id, dispatch, postGraphql]);
-  useEffect(() => {
-    console.log(result);
-    const fetchImageVehicleSessions = async () => {
-      const promises = result.map((item) =>
-        // console.log(item)
-        useGetImageVehicleSessionQuery({ id: Number(item.visitorSessionId) })
-      );
-
-      const responses = await Promise.all(promises);
-      console.log(responses);
-      setImageVehicleSessions(responses);
-    };
-
-    fetchImageVehicleSessions();
-  }, [result,loading]);
-  console.log(imageVehicleSessions);
 
   function makeQuery(visitorId: number, visitId: number) {
     return {
@@ -198,7 +205,10 @@ const ListHistorySessionVisitor = () => {
               visitor {
                 visitorId,
                 visitorName,
-                companyName
+                companyName,
+                visitCard{
+                      visitCardId
+                }
               },
               checkinTime,
               checkoutTime,

@@ -287,6 +287,7 @@ const Dashboard: React.FC = () => {
       { name: "Chờ tạo", value: task.assigned },
       { name: "Đã từ chối", value: task.rejected },
       { name: "Đã hết hạn", value: task.expired },
+      { name: "Đã hủy", value: task.cancel },
     ].filter((item) => item.value > 0);
   };
 
@@ -329,6 +330,7 @@ const Dashboard: React.FC = () => {
       { name: "Cần duyệt", value: visitData.activeTemporary || 0 },
       { name: "Còn hiệu lực", value: visitData.active || 0 },
       { name: "Chờ phê duyệt", value: visitData.pending || 0 },
+      { name: "Đã xử lí vi phạm", value: visitData.violationResolved || 0 },
     ].filter((item) => item.value > 0);
   };
 

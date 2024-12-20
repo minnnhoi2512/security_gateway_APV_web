@@ -21,6 +21,7 @@ type VisitorSessionType = {
   gateOut: GateRes;
   status: String;
   images: SessionsImageRes[];
+  isVehicleSession? : Boolean;
 };
 type SecurityRes = {
   userId?: Number;

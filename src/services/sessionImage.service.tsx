@@ -24,8 +24,44 @@ export const sessionImageAPI = createApi({
         };
       },
     }),
+    getImageVehicleSessionByVisit: builder.query<any, { visitId: number }>({
+      query: ({ visitId }) => {
+        return {
+          url: `VehicleSession/Visit/${visitId}`,
+          method: "GET",
+        };
+      },
+    }),
+    getImageVehicleSessionByVisitor: builder.query<
+      any,
+      { visitId: number; visitorId: number }
+    >({
+      query: ({ visitId, visitorId }) => {
+        return {
+          url: `VehicleSession/Visit/${visitId}/Visitor/${visitorId}`,
+          method: "GET",
+        };
+      },
+    }),
+    getListSession: builder.query<any, any>({
+      query: () => {
+        return {
+          url: "",
+          method: "GET",
+          params: {
+            pageNumber: 1,
+            pageSize: 100,
+          },
+        };
+      },
+    }),
   }),
 });
 
 // Export the auto-generated hook for the query
-export const { useGetImageVehicleSessionQuery } = sessionImageAPI;
+export const {
+  useGetImageVehicleSessionQuery,
+  useGetListSessionQuery,
+  useGetImageVehicleSessionByVisitQuery,
+  useGetImageVehicleSessionByVisitorQuery,
+} = sessionImageAPI;
