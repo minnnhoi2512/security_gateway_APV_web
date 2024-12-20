@@ -5,7 +5,13 @@ import CameraType from "../types/cameraType";
 
 export const gateAPI = createApi({
   reducerPath: "gateAPI",
-  baseQuery: fetchBaseQuery({ baseUrl: `${baseAPI}/api/Gate` }),
+  baseQuery: fetchBaseQuery({
+    baseUrl: `${baseAPI}/api/Gate`,
+    prepareHeaders: (headers) => {
+      headers.set("Content-Type", "application/json");
+      return headers;
+    },
+  }),
   endpoints: (builder) => ({
     getListGate: builder.query<any, any>({
       query: () => ({
@@ -19,8 +25,8 @@ export const gateAPI = createApi({
         method: "GET",
       }),
     }),
-    getCameraById: builder.query<any, {gateId : number}>({
-      query: ({gateId}) => ({
+    getCameraById: builder.query<any, { gateId: number }>({
+      query: ({ gateId }) => ({
         url: `${gateId}`,
         method: "GET",
       }),
@@ -47,5 +53,5 @@ export const {
   useGetListCameraTypeQuery,
   useCreateGateMutation,
   useUpdateGateMutation,
-  useGetCameraByIdQuery
+  useGetCameraByIdQuery,
 } = gateAPI;

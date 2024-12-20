@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Modal, Form, Input, Table, Image, Button, Tag } from "antd";
+import React, { useEffect, useState } from "react";
+import { Modal, Form, Input, Table, Image, Button, Tag, Spin } from "antd";
 import CreateNewVisitor from "./CreateNewVisitor";
 import SearchVisitor from "./SearchVisitor";
 
@@ -20,6 +20,11 @@ const VisitorSearchModal: React.FC<VisitorSearchModalProps> = ({
 
   // New state for search results
   const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [displayResults, setDisplayResults] = useState<any[]>([]);
+  const [showTable, setShowTable] = useState(false);
+
+  const [displayData, setDisplayData] = useState<any[]>([]);
 
   const handleCredentialCardChange = (
     e: React.ChangeEvent<HTMLInputElement>
@@ -29,25 +34,56 @@ const VisitorSearchModal: React.FC<VisitorSearchModalProps> = ({
 
   const handleVisitorSelection = (visitor: any) => {
     setSearchResults([]);
+    setDisplayResults([]);
     setCredentialCard("");
     onVisitorSelected([visitor]);
   };
-  const renderImages = (images: any[]) => {
-    console.log(images[0].imageType)
-    return images
-      .filter(image => image.imageType === "CitizenIdentificationCard_FRONT")
-      .map((image, index) => (
-        <Image
-          key={index}
-          src={`data:image/jpeg;base64,${image.imageURL}`}
-          alt="Visitor image"
-          width={50}
-          height={50}
-          preview={false}
-          style={{ objectFit: "cover" }}
-        />
-      ));
+
+  const handleSearchResults = (results: any[]) => {
+    setSearchResults(results);
+    if (results.length > 0) {
+      setIsLoading(true);
+      setDisplayData([]); // Clear current display data
+      setTimeout(() => {
+        setDisplayData(results); // Update display data after loading
+        setIsLoading(false);
+      }, 1000);
+    } else {
+      setDisplayData([]);
+    }
   };
+
+  useEffect(() => {
+    if (searchResults.length > 0) {
+      setIsLoading(true);
+      setShowTable(false);
+
+      const timer = setTimeout(() => {
+        setShowTable(true);
+        setIsLoading(false);
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    } else {
+      setShowTable(false);
+    }
+  }, [searchResults]);
+
+  const renderImages = (images: any[]) => {
+    const image = images[0];
+    return (
+      <Image
+        key={1}
+        src={`data:image/jpeg;base64,${image.imageURL}`}
+        alt="Visitor image"
+        width={50}
+        height={50}
+        preview={false}
+        style={{ objectFit: "cover" }}
+      />
+    );
+  };
+
   return (
     <Modal
       title="Tìm kiếm khách"
@@ -82,55 +118,60 @@ const VisitorSearchModal: React.FC<VisitorSearchModalProps> = ({
           ></SearchVisitor>
         )}
       </Form.Item>
-
-      {searchResults.length > 0 && (
-        <Table
-          dataSource={searchResults}
-          columns={[
-            {
-              title: "Ảnh",
-              dataIndex: "visitorImage",
-              key: "visitorImage",
-              render: renderImages,
-            },
-            {
-              title: "Tên khách",
-              dataIndex: "visitorName",
-              key: "visitorName",
-            },
-            {
-              title: "Công ty",
-              dataIndex: "companyName",
-              key: "companyName",
-            },
-            {
-              title: "Mã thẻ",
-              dataIndex: "credentialsCard",
-              key: "credentialsCard",
-            },
-            {
-              title: "Trạng thái",
-              dataIndex: "status",
-              key: "status",
-              render: (status: string) => (
-                <Tag color={status === "Unactive" ? "red" : "green"}>
-                  {status === "Unactive" ? "Sổ đen" : "Hợp lệ"}
-                </Tag>
-              ),
-            },
-            {
-              title: "Hành động",
-              key: "action",
-              render: (_, visitor) => (
-                <Button onClick={() => handleVisitorSelection(visitor)}>
-                  Chọn
-                </Button>
-              ),
-            },
-          ]}
-          rowKey="visitorId"
-          pagination={false}
-        />
+      {isLoading ? (
+        <div style={{ textAlign: "center", margin: "20px 0" }}>
+          <Spin tip="Đang tìm kiếm..." />
+        </div>
+      ) : (
+        searchResults.length > 0 && (
+          <Table
+            dataSource={searchResults}
+            columns={[
+              {
+                title: "Ảnh",
+                dataIndex: "visitorImage",
+                key: "visitorImage",
+                render: renderImages,
+              },
+              {
+                title: "Tên khách",
+                dataIndex: "visitorName",
+                key: "visitorName",
+              },
+              {
+                title: "Công ty",
+                dataIndex: "companyName",
+                key: "companyName",
+              },
+              {
+                title: "Mã thẻ",
+                dataIndex: "credentialsCard",
+                key: "credentialsCard",
+              },
+              {
+                title: "Trạng thái",
+                dataIndex: "status",
+                key: "status",
+                render: (status: string) => (
+                  <Tag color={status === "Unactive" ? "red" : "green"}>
+                    {status === "Unactive" ? "Sổ đen" : "Hợp lệ"}
+                  </Tag>
+                ),
+              },
+              {
+                title: "Hành động",
+                key: "action",
+                render: (_, visitor) => (
+                  <Button onClick={() => handleVisitorSelection(visitor)}>
+                    Chọn
+                  </Button>
+                ),
+              },
+            ]}
+            rowKey="visitorId"
+            pagination={false}
+          />
+        )
       )}
       {searchResults.length <= 0 && (
         <div style={{ textAlign: "center", margin: "20px 0" }}>

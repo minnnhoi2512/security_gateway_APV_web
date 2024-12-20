@@ -14,14 +14,54 @@ export const routes = [
     hideInBreadcrumb: true
   },
   {
+    path: "/customerVisit/detailVisit/listSession",
+    breadcrumbName: "Danh sách lượt ra vào của chuyến thăm",
+  
+  },
+  {
+    path: "/customerVisitStaff/detailVisit/listSession",
+    breadcrumbName: "Danh sách lượt ra vào của chuyến thăm",
+  
+  },
+  {
+    path: "/customerVisit/detailVisit/listVisitorSession",
+    breadcrumbName: "Danh sách lượt ra vào của khách",
+  
+  },
+  {
+    path: "/profile",
+    breadcrumbName: "Thông tin cá nhân",
+  
+  },
+  {
     path: "/customerVisit/detailVisit",
     breadcrumbName: "Chi tiết chuyến thăm",
     hideInBreadcrumb: true
   },
+  {
+    path: "/customerVisit/detailVisit/:id/listSession",
+    breadcrumbName: "Danh sách ra vào của chuyến thăm",
+    hideInBreadcrumb: true
+  },
+  {
+    path: "/customerVisit/detailVisit/:id/listVisitorSession",
+    breadcrumbName: "Lượt ra vào của khách",
+    hideInBreadcrumb: true
+  },
   { path: "/dashboard", breadcrumbName: "Thông tin chung" },
+  { path: "/dashboard/sessionDetail", breadcrumbName: "Chi tiết lượt ra vào" },
   {
     path: "/customerVisitStaff/createNewVisitList",
     breadcrumbName: "Tạo mới chuyến thăm trong ngày",
+  },
+  {
+    path: "/customerVisitStaff/detailVisit/:id/listSession",
+    breadcrumbName: "Danh sách ra vào của chuyến thăm",
+  },
+  {
+    path: "/customerVisitStaff/detailVisit/:id/listVisitorSession",
+    breadcrumbName: "Lượt ra vào của khách",
+    hideInBreadcrumb: true
   },
   {
     path: "/customerVisit/createNewVisitList",
@@ -51,6 +91,10 @@ export const routes = [
   {
     path: "/history",
     breadcrumbName: "Lịch sử ra vào",
+  },
+  {
+    path: "/history/sessionDetail",
+    breadcrumbName: "Chi tiết lượt ra vào",
   },
   {
     path: "/user",

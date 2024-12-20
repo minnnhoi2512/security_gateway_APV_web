@@ -91,7 +91,7 @@ import { Calendar, CalendarSearch, ClipboardList, MessagesSquare, User, Users } 
       },
       {
         key: "schedule-staff",
-        icon: <ClipboardList className="text-lg" />,
+        icon:  <ClipboardList size={17} />,
         label: "Nhiệm vụ",
       },
       {

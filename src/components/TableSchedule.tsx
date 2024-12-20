@@ -96,7 +96,7 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({
     return "[&_.ant-table-thead_th]:!bg-[#34495e] [&_.ant-table-thead_th]:!text-white";
   };
 
-  console.log(schedules);
+  // console.log(schedules);
   const columns: ColumnsType<Schedule> = [
     {
       title: "Tên lịch trình",
@@ -125,7 +125,7 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({
           case "ProcessWeek":
             return (
               <Tag
-                color="green"
+                color="#e67e22"
                 style={{ minWidth: "80px", textAlign: "center" }}
               >
                 Theo tuần
@@ -134,7 +134,7 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({
           case "ProcessMonth":
             return (
               <Tag
-                color="orange"
+                color="#2980b9"
                 style={{ minWidth: "80px", textAlign: "center" }}
               >
                 Theo tháng
@@ -174,7 +174,7 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({
       ),
     },
     {
-      title: <div style={{ textAlign: "left" }}>Ngày cập nhập</div>,
+      title: <div style={{ textAlign: "left" }}>Ngày cập nhật</div>,
       dataIndex: "updateTime",
       key: "updateTime",
       render: (createDate: string) => (
@@ -214,50 +214,15 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({
   ];
 
   return (
-    // <>
-    //   <Table
-    //     columns={columns}
-    //     dataSource={schedules || []}
-    //     rowKey="scheduleId"
-    //     loading={schedulesIsLoading}
-    //     pagination={{
-    //       total: totalCount,
-    //       showSizeChanger: true,
-    //       pageSizeOptions: ["5", "10"],
-    //       size: "small",
-    //     }}
-    //     bordered
-    //      className="w-full [&_.ant-table-thead_th]:!bg-[#34495e] [&_.ant-table-thead_th]:!text-white"
-    //   />
-    //   <Modal
-    //     title={
-    //       <h1 className="text-3xl font-bold text-titleMain text-center mb-6">
-    //         Cập nhật lịch trình
-    //       </h1>
-    //     }
-    //     centered
-    //     width="68vw"
-    //     bodyStyle={{ padding: "20px", maxHeight: "90vh", overflowY: "auto" }}
-    //     visible={isModalVisible}
-    //     onCancel={handleCancel}
-    //     footer={null}
-    //   >
-    //     <DetailSchedule
-    //       scheduleId={selectedScheduleId}
-    //       onUpdateSuccess={handleCancel}
-    //     />
-    //   </Modal>
-    // </>
-
     <Card className="shadow-lg rounded-xl border-0">
       <div className="shadow-lg rounded-xl border-0">
         <div className="flex gap-1">
           <Button
-            onClick={() => handleTypeFilter(ScheduleType.Weekly)}  
+            onClick={() => handleTypeFilter(ScheduleType.Weekly)}
             className={`rounded-t-[120px] min-w-[120px] border-b-0  ${
               filters.scheduleTypeId.includes(ScheduleType.Weekly)
-                ? "border-[#e67e22] text-white bg-[#e67e22]"
-                : "border-[#34495e] text-[#34495e] hover:bg-yellow-50"
+                ? "border-[#e67e22] text-white bg-[#e67e22] hover:!border-[#e67e22] hover:!text-white hover:!bg-[#e67e22]"
+                : "border-[#34495e] text-[#34495e] hover:!border-[#34495e] hover:!text-[#34495e]"
             }`}
           >
             <CalendarDays size={17} />
@@ -265,11 +230,11 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({
           </Button>
 
           <Button
-            onClick={() => handleTypeFilter(ScheduleType.Monthly)}  
+            onClick={() => handleTypeFilter(ScheduleType.Monthly)}
             className={`rounded-t-[120px] min-w-[120px] border-b-0  ${
               filters.scheduleTypeId.includes(ScheduleType.Monthly)
-                ? "border-[#2980b9] text-white bg-[#2980b9]"
-                : "border-[#34495e] text-[#34495e] hover:bg-purple-50"
+                ? "border-[#2980b9] text-white bg-[#2980b9] hover:!border-[#2980b9] hover:!text-white hover:!bg-[#2980b9]"
+                : "border-[#34495e] text-[#34495e] hover:!border-[#34495e] hover:!text-[#34495e]"
             }`}
           >
             <CalendarRange size={17} />
@@ -280,7 +245,7 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({
       <Table
         columns={columns}
         showSorterTooltip={false}
-        dataSource={filteredSchedules || []}  
+        dataSource={filteredSchedules || []}
         // dataSource={schedules || []}
         rowKey="scheduleId"
         loading={schedulesIsLoading}
@@ -294,6 +259,24 @@ const TableSchedule: React.FC<ScheduleTableProps> = ({
         bordered={false}
         className={`w-full ${getHeaderBackgroundColor()} [&_.ant-table-thead_th]:!font-medium [&_.ant-table-thead_th]:!py-3 [&_.ant-table-thead_th]:!text-sm hover:[&_.ant-table-tbody_tr]:bg-blue-50/30 [&_.ant-table]:!rounded-none [&_.ant-table-container]:!rounded-none [&_.ant-table-thead>tr>th:first-child]:!rounded-tl-none [&_.ant-table-thead>tr>th:last-child]:!rounded-tr-none [&_.ant-table-thead_th]:!transition-none`}
       />
+      <Modal
+        title={
+          <h1 className="text-3xl font-bold text-titleMain text-center mb-6">
+            Cập nhật lịch trình
+          </h1>
+        }
+        centered
+        width="68vw"
+        bodyStyle={{ padding: "20px", maxHeight: "90vh", overflowY: "auto" }}
+        visible={isModalVisible}
+        onCancel={handleCancel}
+        footer={null}
+      >
+        <DetailSchedule
+          scheduleId={selectedScheduleId}
+          onUpdateSuccess={handleCancel}
+        />
+      </Modal>
     </Card>
   );
 };

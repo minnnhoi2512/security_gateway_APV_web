@@ -1,11 +1,19 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import baseAPI from "../api/baseAPI";
 import Visitor from "../types/visitorType";
+import { getToken } from "../utils/jwtToken";
 
 export const visitorAPI = createApi({
   reducerPath: "visitorAPI",
   baseQuery: fetchBaseQuery({
     baseUrl: `${baseAPI}/api/Visitor`,
+    prepareHeaders: (headers) => {
+      const token = getToken();
+      if (token) {
+        headers.set("Authorization", `Bearer ${token}`);
+      }
+      return headers;
+    },
   }),
   endpoints: (builder) => ({
     getAllVisitors: builder.query<
@@ -31,6 +39,8 @@ export const visitorAPI = createApi({
         companyName: string;
         phoneNumber: string;
         credentialsCard: string;
+        email: string;
+        imgBlur: File | null;
         credentialCardTypeId: number;
         visitorCredentialFrontImageFromRequest: File | null;
         visitorCredentialBackImageFromRequest: File | null;
@@ -41,13 +51,18 @@ export const visitorAPI = createApi({
 
         formData.append("visitorName", newVisitor.visitorName);
         formData.append("companyName", newVisitor.companyName);
+        formData.append("email", newVisitor.email);
+
         formData.append("phoneNumber", newVisitor.phoneNumber);
         formData.append("credentialsCard", newVisitor.credentialsCard);
         formData.append(
           "credentialCardTypeId",
           newVisitor.credentialCardTypeId.toString()
         );
-
+        formData.append(
+          "visitorCredentialBlurImageFromRequest",
+          newVisitor.imgBlur
+        );
         if (newVisitor.visitorCredentialFrontImageFromRequest) {
           formData.append(
             "visitorCredentialFrontImageFromRequest",
@@ -76,15 +91,19 @@ export const visitorAPI = createApi({
         companyName: string;
         phoneNumber: string;
         credentialsCard: string;
+        email: string;
         credentialCardTypeId: number;
         visitorCredentialFrontImageFromRequest: string;
         visitorCredentialBackImageFromRequest: string;
+        visitorCredentialBlurImageFromRequest: string;
       }
     >({
       query: ({ id, ...updatedVisitor }) => {
         const formData = new FormData();
+        // console.log(updatedVisitor.visitorCredentialBlurImageFromRequest.toString())
         formData.append("visitorName", updatedVisitor.visitorName);
         formData.append("companyName", updatedVisitor.companyName);
+        formData.append("email", updatedVisitor.email);
         formData.append("phoneNumber", updatedVisitor.phoneNumber);
         formData.append("credentialsCard", updatedVisitor.credentialsCard);
         formData.append(
@@ -94,6 +113,10 @@ export const visitorAPI = createApi({
         formData.append(
           "visitorCredentialFrontImageFromRequest",
           updatedVisitor.visitorCredentialFrontImageFromRequest.toString()
+        );
+        formData.append(
+          "visitorCredentialBlurImageFromRequest",
+          updatedVisitor.visitorCredentialBlurImageFromRequest.toString()
         );
         formData.append(
           "visitorCredentialBackImageFromRequest",

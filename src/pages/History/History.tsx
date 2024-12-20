@@ -18,7 +18,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { setListOfVisitorSession } from "../../redux/slices/visitorSession.slice";
 import VisitorSessionType from "../../types/visitorSessionType";
 import { formatDate, formatDateLocal } from "../../utils/ultil";
-import HistoryDetail from "./HistoryDetail";
 import dayjs, { Dayjs } from "dayjs";
 import {
   useGetListVisitQuery,
@@ -36,6 +35,8 @@ import {
   SearchOutlined,
   UserOutlined,
 } from "@ant-design/icons";
+import { useNavigate } from "react-router";
+import { useGetListSessionQuery } from "../../services/sessionImage.service";
 
 const { Option } = Select;
 
@@ -48,6 +49,7 @@ const History = () => {
   const [checkinTimeFilter, setCheckinTimeFilter] = useState<Dayjs | null>(
     null
   );
+  const { data: sessionData,isLoading } = useGetListSessionQuery({});
   const [checkoutTimeFilter, setCheckoutTimeFilter] = useState<Dayjs | null>(
     null
   );
@@ -66,9 +68,9 @@ const History = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedRecord, setSelectedRecord] =
     useState<VisitorSessionType | null>(null);
-
+  const navigate = useNavigate();
   let dataVisit, isLoadingVisit;
-
+  console.log(sessionData);
   if (userRole === "Staff") {
     ({ data: dataVisit, isLoading: isLoadingVisit } =
       useGetListVisitByResponsiblePersonIdQuery({
@@ -200,43 +202,53 @@ const History = () => {
   }, [dispatch]);
 
   useEffect(() => {
+    // console.log(dataList);
     if (dataList) {
-      const updatedData = dataList.map((element, index) => ({
-        visitorSessionId: element.visitorSessionId,
-        visitor: {
-          visitorId: element.visitor.visitorId,
-          visitorName: element.visitor.visitorName,
-          companyName: element.visitor.companyName,
-        },
-        visit: {
-          visitId: element.visit.visitId,
-        },
-        visitDetailId: element.visitDetailId,
-        checkinTime: element.checkinTime,
-        checkoutTime: element.checkoutTime,
-        gateIn: {
-          gateId: element.gateIn?.gateId,
-          gateName: element.gateIn?.gateName,
-        },
-        gateOut: {
-          gateId: element.gateOut?.gateId,
-          gateName: element.gateOut?.gateName,
-        },
-        key: index.toString(),
-        securityIn: {
-          fullName: element.securityIn?.fullName,
-        },
-        securityOut: {
-          fullName: element.securityOut?.fullName,
-        },
-        status: element.status,
-        images: element.images,
-      }));
-      console.log(dataList);
+      const updatedData = dataList.map((element, index) => {
+        const session = sessionData?.find(
+          (session) => session.visitorSessionId === element.visitorSessionId
+        );
+
+        return {
+          visitorSessionId: element.visitorSessionId,
+          visitor: {
+            visitorId: element.visitor.visitorId,
+            visitorName: element.visitor.visitorName,
+            companyName: element.visitor.companyName,
+          },
+          visit: {
+            visitId: element.visit.visitId,
+            visitName: element.visit.visitName,
+          },
+          visitDetailId: element.visitDetailId,
+          checkinTime: element.checkinTime,
+          checkoutTime: element.checkoutTime,
+          gateIn: {
+            gateId: element.gateIn?.gateId,
+            gateName: element.gateIn?.gateName,
+          },
+          gateOut: {
+            gateId: element.gateOut?.gateId,
+            gateName: element.gateOut?.gateName,
+          },
+          key: index.toString(),
+          securityIn: {
+            fullName: element.securityIn?.fullName,
+          },
+          securityOut: {
+            fullName: element.securityOut?.fullName,
+          },
+          status: element.status,
+          images: element.images,
+          isVehicleSession: session ? session.isVehicleSession : false, // Add isVehicleSession attribute
+        };
+      });
+
+      console.log(updatedData);
       setUpdatedData(updatedData as VisitorSessionType[]);
       setFilteredData(updatedData as VisitorSessionType[]); // Update filteredData with the new data
     }
-  }, [dispatch, dataList]);
+  }, [dispatch, dataList,isLoading]);
 
   function MakeQuery() {
     return {
@@ -283,69 +295,6 @@ const History = () => {
     };
   }
 
-  // const columns: TableProps<VisitorSessionType>["columns"] = [
-  //   {
-  //     title: "STT",
-  //     key: "index",
-  //     render: (_text, _record, index) => index + 1,
-  //   },
-  //   {
-  //     title: "Tên khách",
-  //     dataIndex: ["visitor", "visitorName"],
-  //     key: "visitorName",
-  //   },
-  //   {
-  //     title: "Cổng vào",
-  //     dataIndex: ["gateIn", "gateName"],
-  //     key: "gateName",
-  //   },
-  //   {
-  //     title: "Giờ Vào",
-  //     dataIndex: "checkinTime",
-  //     key: "checkinTime",
-  //     render: (text) => formatDateLocal(text),
-  //     sorter: (a, b) =>
-  //       new Date(a.checkinTime).getTime() - new Date(b.checkinTime).getTime(),
-  //   },
-  //   {
-  //     title: "Cổng ra",
-  //     dataIndex: ["gateOut", "gateName"],
-  //     key: "gateName",
-  //   },
-  //   {
-  //     title: "Giờ Ra",
-  //     dataIndex: "checkoutTime",
-  //     key: "checkoutTime",
-  //     render: (text) => formatDateLocal(text) || "Khách còn ở trong công ty",
-  //     sorter: (a, b) =>
-  //       new Date(a.checkoutTime).getTime() - new Date(b.checkoutTime).getTime(),
-  //   },
-  //   {
-  //     title: "Trạng thái",
-  //     key: "status",
-  //     dataIndex: "status",
-  //     render: (_, { status }) => (
-  //       <Tag color={status === "CheckIn" ? "volcano" : "green"}>
-  //         {status === "CheckIn" ? "Đã vào" : "Đã ra"}
-  //       </Tag>
-  //     ),
-  //   },
-  //   {
-  //     title: "Hành động",
-  //     key: "action",
-  //     render: (_, record) => (
-  //       <Button
-  //         size="middle"
-  //         onClick={() => {
-  //           setSelectedRecord(record);
-  //           setIsModalVisible(true);
-  //         }}
-  //       >
-  //         Chi tiết
-  //       </Button>
-  //     ),
-  //   },
-  // ];
   const columns: TableProps<VisitorSessionType>["columns"] = [
     // {
     //   title: "STT",
@@ -403,6 +352,22 @@ const History = () => {
         new Date(a.checkoutTime).getTime() - new Date(b.checkoutTime).getTime(),
     },
     {
+      title: "Phương tiện",
+      key: "isVehicleSession",
+      dataIndex: "isVehicleSession",
+      render: (_, {isVehicleSession}) => (
+        <Tag
+          className={`${
+            isVehicleSession === true
+              ? "bg-green-50 border-green-200 text-green-600"
+              : "bg-gray-50 border-gray-200 text-gray-600"
+          } rounded-md`}
+        >
+          {isVehicleSession === true ? "Có sử dụng" : "Không sử dụng"}
+        </Tag>
+      ),
+    },
+    {
       title: "Trạng thái",
       key: "status",
       dataIndex: "status",
@@ -414,7 +379,7 @@ const History = () => {
               : "bg-gray-50 border-gray-200 text-gray-600"
           } rounded-md`}
         >
-          {status === "CheckIn" ? "Còn hiệu lực" : "Hết hiệu lực"}
+          {status === "CheckIn" ? "Đã vào" : "Đã ra"}
         </Tag>
       ),
     },
@@ -429,8 +394,7 @@ const History = () => {
             className="flex justify-center text-blue-500 hover:text-blue-600"
             icon={<EyeOutlined />}
             onClick={() => {
-              setSelectedRecord(record);
-              setIsModalVisible(true);
+              navigate(`/history/sessionDetail/${record.visitorSessionId}`);
             }}
           />
           {/* <Button
@@ -456,7 +420,7 @@ const History = () => {
     new Set(updatedData.map((entry) => entry.gateOut?.gateName).filter(Boolean))
   );
   const filterContent = (
-    <Space direction="vertical">
+    <Space direction="vertical" className="w-64">
       <DatePicker
         placeholder="Chọn ngày vào"
         value={checkinTimeFilter}
@@ -522,32 +486,22 @@ const History = () => {
     </Space>
   );
   if (loading) return <LoadingState />;
+
   return (
-    <Content className="p-4 max-w-[1200px] mx-auto mt-7">
-      <Space
-        style={{
-          marginBottom: 16,
-          display: "flex",
-          justifyContent: "space-between",
-        }}
-      >
-        <Space>
+    <Content className="p-2 max-w-[1200px] mx-auto mt-10">
+      <div className="flex gap-4 mb-4">
+        <div className="flex flex-1 gap-2">
           <Input
             placeholder="Tìm kiếm theo tên khách"
             value={searchText}
             onChange={handleSearchTextChange}
-            prefix={<SearchOutlined />}
-            style={{
-              width: 300,
-              borderColor: "#1890ff",
-              borderRadius: 5,
-            }}
+            prefix={<SearchOutlined className="text-gray-400" />}
+            className="max-w-xs h-8"
           />
           <Popover content={filterContent} title="Bộ lọc" trigger="click">
             <Button icon={<FilterOutlined />} />
           </Popover>
-        </Space>
-
+        </div>
         <Button
           type="primary"
           size="large"
@@ -558,7 +512,8 @@ const History = () => {
         >
           Tạo mới
         </Button>
-      </Space>
+      </div>
+
       {/* <Table columns={columns} dataSource={filteredData} loading={loading} />{" "} */}
       <Card className="shadow-lg rounded-xl border-0">
         <div className="rounded-lg bg-white mx-auto" style={{ width: "100%" }}>
@@ -568,10 +523,11 @@ const History = () => {
             dataSource={filteredData}
             loading={loading}
             pagination={{
-              pageSize: 8,
+              // pageSize: 8,
               size: "small",
               className: "mt-4",
               showSizeChanger: true,
+              pageSizeOptions: ["5", "10", "20"],
               showTotal: (total) => `${total} kết quả`,
               position: ["bottomRight"],
             }}
@@ -588,14 +544,14 @@ const History = () => {
       </Card>
 
       {/* Apply loading here */}
-      <Modal
+      {/* <Modal
         title="Chi tiết lịch sử"
         visible={isModalVisible}
         onCancel={handleModalClose}
         footer={null}
       >
-        {selectedRecord && <HistoryDetail data={selectedRecord} />}
-      </Modal>
+        {selectedRecord && <HistoryDetail />}
+      </Modal> */}
     </Content>
   );
 };

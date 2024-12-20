@@ -1,25 +1,27 @@
 import { configureStore } from "@reduxjs/toolkit";
-import { userAPI } from "../services/user.service";
-import { visitListAPI } from "../services/visitList.service";
-import { visitDetailListAPI } from "../services/visitDetailList.service";
+import { userAPI } from "../../services/user.service";
+import { visitListAPI } from "../../services/visitList.service";
+import { visitDetailListAPI } from "../../services/visitDetailList.service";
 import { setupListeners } from "@reduxjs/toolkit/query";
-import { scheduleAPI } from "../services/schedule.service";
-import { qrCardAPI } from "../services/QRCard.service";
-import { departmentAPI } from "../services/department.service";
-import { visitorAPI } from "../services/visitor.service";
-import { scheduleTypeAPI } from "../services/scheduleType.service";
-import filterTabReducer from "./slices/filterTab.slice";
-import { visitGrapqlAPI } from "../services/visitGraphql.service";
-import visitDetailListReducer from "./slices/visitDetailList.slice";
-import hubConnectionReducer from "./slices/hubConnection.slice";
-import notificationReducer from "./slices/notification.slice";
-import { notificationAPI } from "../services/notification.service";
-import visitorSessionReducer from "./slices/visitorSession.slice";
-import { scheduleUserAPI } from "../services/scheduleUser.service";
-import { rtkQueryErrorLogger } from "../middleware";
-import { scheduleStaffAPI } from "../services/scheduleStaff.service";
-import { gateAPI } from "../services/gate.service";
-import { dashBoardAPI } from "../services/dashboard.service";
+import { scheduleAPI } from "../../services/schedule.service";
+import { qrCardAPI } from "../../services/QRCard.service";
+import { departmentAPI } from "../../services/department.service";
+import { visitorAPI } from "../../services/visitor.service";
+import { scheduleTypeAPI } from "../../services/scheduleType.service";
+import filterTabReducer from "../slices/filterTab.slice";
+import { visitGrapqlAPI } from "../../services/visitGraphql.service";
+import visitDetailListReducer from "../slices/visitDetailList.slice";
+import hubConnectionReducer from "../slices/hubConnection.slice";
+import notificationReducer from "../slices/notification.slice";
+import { notificationAPI } from "../../services/notification.service";
+import visitorSessionReducer from "../slices/visitorSession.slice";
+import { scheduleUserAPI } from "../../services/scheduleUser.service";
+import { rtkQueryErrorLogger } from "../../middleware";
+import { scheduleStaffAPI } from "../../services/scheduleStaff.service";
+import { gateAPI } from "../../services/gate.service";
+import { dashBoardAPI } from "../../services/dashboard.service";
+import { passwordAPI } from "../../services/forgetPassword.service";
+import { sessionImageAPI } from "../../services/sessionImage.service";
 
 
 export const store = configureStore({
@@ -38,6 +40,8 @@ export const store = configureStore({
     [scheduleStaffAPI.reducerPath] : scheduleStaffAPI.reducer,
     [gateAPI.reducerPath] : gateAPI.reducer,
     [dashBoardAPI.reducerPath] : dashBoardAPI.reducer,
+    [passwordAPI.reducerPath] : passwordAPI.reducer,
+    [sessionImageAPI.reducerPath] : sessionImageAPI.reducer,
     filterTabs: filterTabReducer,
     visitDetailList : visitDetailListReducer,
     visitorSession : visitorSessionReducer,
@@ -52,8 +56,10 @@ export const store = configureStore({
       .concat(visitListAPI.middleware)
       .concat(visitDetailListAPI.middleware)
       .concat(qrCardAPI.middleware)
+      .concat(passwordAPI.middleware)
       .concat(scheduleAPI.middleware, rtkQueryErrorLogger)
       .concat(scheduleUserAPI.middleware)
+      .concat(sessionImageAPI.middleware)
       .concat(departmentAPI.middleware)
       .concat(visitorAPI.middleware)
       .concat(scheduleTypeAPI.middleware)

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   HomeOutlined,
   MenuFoldOutlined,
@@ -31,10 +31,20 @@ import {
 import "./layout.css";
 import { chatDB } from "../api/firebase";
 import { routes } from "../UI/routeConstants";
+import { ChevronRight } from "lucide-react";
+import { getToken } from "../utils/jwtToken";
 
 const { Sider, Content } = Layout;
 
 const findRouteName = (url: string, routes: any): string => {
+  if (url.startsWith("/profile/")) {
+    return "Thông tin cá nhân";
+  }
+
+  // if (url.includes("/detailVisit")) {
+  //   return "Chi tiết chuyến thăm";
+  // }
+
   for (const route of routes) {
     const routePath = route.path.replace(/:\w+/g, "[^/]+"); // Replace dynamic segments with regex
     const regex = new RegExp(`^${routePath}$`);
@@ -58,67 +68,98 @@ const findRouteName = (url: string, routes: any): string => {
 
 const generateBreadcrumbItems = (location: any, routes: any) => {
   const pathSnippets = location.pathname.split("/").filter((i: string) => i);
-  // const breadcrumbItems = pathSnippets.map((snippet: string, index: number) => {
-  //   const url = `/${pathSnippets.slice(0, index + 1).join("/")}`;
-  //   const routeName = findRouteName(url, routes);
-  //   const isLast = index === pathSnippets.length - 1;
-  const breadcrumbItems = pathSnippets
-  .map((snippet: string, index: number) => {
+
+  const uniqueItems: { path: string; name: string }[] = [];
+
+  pathSnippets.forEach((snippet, index) => {
     const url = `/${pathSnippets.slice(0, index + 1).join("/")}`;
     const routeName = findRouteName(url, routes);
-    const isLast = index === pathSnippets.length - 1;
-    
- 
+
     if (!isNaN(Number(snippet))) {
-      return null;
+      return;
     }
-    
 
-    
+    if (
+      uniqueItems.length === 0 ||
+      uniqueItems[uniqueItems.length - 1].name !== routeName
+    ) {
+      uniqueItems.push({ path: url, name: routeName || snippet });
+    }
+  });
 
-  //   return {
-  //     title: isLast ? (
-  //       <span className="text-backgroundPage text-lg  font-bold">{routeName || snippet}</span>
-  //     ) : (
-  //       <Link 
-  //         to={url} 
-  //         className="text-gray-500 hover:text-blue-600 transition-colors"
-  //       >
-  //         {routeName || snippet}
-  //       </Link>
-  //     ),
-  //   };
-  // });
-  return {
-    title: isLast ? (
-      <span className="text-backgroundPage text-lg font-bold">{routeName || snippet}</span>
-    ) : (
-      <Link 
-        to={url} 
-        className="text-gray-500 hover:text-blue-600 transition-colors"
-      >
-        {routeName || snippet}
-      </Link>
-    ),
-  };
-})
-.filter((item): item is { title: JSX.Element } => item !== null);
+  const breadcrumbItems = uniqueItems.map((item, index) => {
+    const isLast = index === uniqueItems.length - 1;
+    const isFirst = index === 0;
+  
+    const baseStyles =
+      "transition-all duration-200 rounded-md px-3 py-1.5 font-medium";
+    const activeStyles = "text-blue-600 bg-blue-50 font-bold";
+    const inactiveStyles = "text-gray-600 hover:text-blue-600 hover:bg-blue-50";
+  
+    return {
+      title: isLast ? (
+        <span className={`${baseStyles} ${activeStyles}`}>{item.name}</span>
+      ) : isFirst ? (
+        <Link to={item.path} className={`${baseStyles} ${inactiveStyles}`}>
+          {item.name}
+        </Link>
+      ) : (
+        <span className={`${baseStyles} ${inactiveStyles}`}>{item.name}</span>
+      ),
+    };
+  });
 
   return [
     {
       title: (
-        <Link to="/dashboard" className="flex items-center text-gray-500 hover:text-blue-600 transition-colors">
-          <HomeOutlined className="text-lg" />
+        <Link
+          to="/dashboard"
+          className="flex items-center text-gray-600 hover:text-blue-600 transition-all duration-200
+                     hover:bg-blue-50 p-2 rounded-md"
+        >
+          <HomeOutlined className="w-5 h-5" />
         </Link>
       ),
     },
     ...breadcrumbItems,
   ];
 };
+
+const StyledBreadcrumb = ({
+  location,
+  routes,
+}: {
+  location: any;
+  routes: any;
+}) => {
+  const items = generateBreadcrumbItems(location, routes);
+
+  return (
+    <nav className="bg-white shadow-md px-4 py-3 mb-6">
+      <div className="flex items-center flex-wrap gap-2">
+        {items.map((item, index) => (
+          <React.Fragment key={index}>
+            {index > 0 && <ChevronRight className="w-5 h-5 text-gray-400" />}
+            <div className="flex items-center">{item.title}</div>
+          </React.Fragment>
+        ))}
+      </div>
+    </nav>
+  );
+};
+
 const LayoutPage = ({ children }: { children: any }) => {
   const [collapsed, setCollapsed] = useState(false);
+
   const userId = Number(localStorage.getItem("userId"));
   const location = useLocation();
+  const jwt = getToken();
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (!jwt) {
+      navigate("/");
+    }
+  }, [jwt, navigate]);
   const [breadcrumbItems, setBreadcrumbItems] = useState(
     generateBreadcrumbItems(location, routes)
   );
@@ -137,7 +178,6 @@ const LayoutPage = ({ children }: { children: any }) => {
         return roleName;
     }
   };
-  const navigate = useNavigate();
   const [markAsRead] = useMarkNotiReadMutation();
   const takingNew = useSelector<any>(
     (s) => s.notification.takingNew
@@ -157,8 +197,6 @@ const LayoutPage = ({ children }: { children: any }) => {
       userId: Number(userId),
     });
   data = notificaitionData as NotificationType[];
-  // console.log(notificaitionData as NotificationType[])
-
   useEffect(() => {
     if (data?.length > 0 && takingNew) {
       toast("Bạn có thông báo mới");
@@ -246,15 +284,31 @@ const LayoutPage = ({ children }: { children: any }) => {
   return (
     <Layout style={{ minHeight: "100vh" }}>
       <ToastContainer position="top-center" containerId="NotificationToast" />
-      <Sider
+      {/* <Sider
         trigger={null}
         collapsible
         collapsed={collapsed}
         width={280}
         style={{ backgroundColor: sharedBackgroundColor }}
         className="relative"
+      > */}
+      <Sider
+        trigger={null}
+        collapsible
+        collapsed={collapsed}
+        width={280}
+        style={{
+          backgroundColor: sharedBackgroundColor,
+          overflow: "hidden auto",
+          height: "100vh",
+          position: "fixed",
+          left: 0,
+          top: 0,
+          bottom: 0,
+        }}
+        className="relative"
       >
-        <div className="py-4 px-6 relative">
+        <div className="py-4 px-6 relative min-w-0">
           <Button
             type="text"
             icon={
@@ -319,10 +373,25 @@ const LayoutPage = ({ children }: { children: any }) => {
         <MenuNav />
       </Sider>
 
-      <Layout>
+      {/* <Layout>
         <Content className="bg-white rounded shadow min-h-[80vh]">
           <div className="sticky top-0 z-20 bg-white border-b border-gray-200">
-            <Breadcrumb items={breadcrumbItems} className="p-4 text-lg" />
+            <Breadcrumb items={breadcrumbItems} className="p-4  text-lg" />
+          </div>
+          {children}
+        </Content>
+      </Layout> */}
+      <Layout
+        style={{
+          marginLeft: collapsed ? 80 : 280,
+          transition: "margin-left 0.2s",
+          minWidth: 0,
+          width: "100%",
+        }}
+      >
+        <Content className="bg-white rounded shadow min-h-[80vh] overflow-x-hidden">
+          <div className="sticky top-0 z-20 bg-white">
+            <StyledBreadcrumb location={location} routes={routes} />
           </div>
           {children}
         </Content>

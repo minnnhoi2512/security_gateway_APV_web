@@ -1,4 +1,4 @@
-import { Layout, Button, Table, Tag, message, Input, Modal } from "antd";
+import { Layout, Button, Table, Tag, message, Input, Modal, Card } from "antd";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useGetListGateQuery } from "../../services/gate.service";
@@ -8,6 +8,7 @@ import { EditOutlined, VideoCameraOutlined } from "@ant-design/icons";
 import StreamingModal from "../../components/Modal/StreamingModal";
 import CreateGate from "../../form/CreateGate";
 import GateDetail from "./GateDetail";
+import { Plus } from "lucide-react";
 
 const { Content } = Layout;
 
@@ -42,11 +43,11 @@ const GateManager = () => {
     setModalDetail(true);
   };
   const columns = [
-    {
-      title: "ID",
-      dataIndex: "gateId",
-      key: "gateId",
-    },
+    // {
+    //   title: "ID",
+    //   dataIndex: "gateId",
+    //   key: "gateId",
+    // },
     {
       title: "Tên cổng",
       dataIndex: "gateName",
@@ -86,7 +87,9 @@ const GateManager = () => {
           <Button
             type="default"
             onClick={() =>
-              navigate(`/gate/detailGate/${record.gateId}`, { state: { selectedGate: record } })
+              navigate(`/gate/detailGate/${record.gateId}`, {
+                state: { selectedGate: record },
+              })
             }
           >
             <EditOutlined />
@@ -97,23 +100,36 @@ const GateManager = () => {
   ];
 
   return (
-    <Layout className="min-h-screen bg-white">
-      <Content className="p-6">
+    <Content className="p-2 max-w-[1200px] mx-auto mt-10">
+      <div className="flex gap-4 mb-4">
+        <div className="flex flex-1 gap-2"></div>
         <Button
-          type="primary"
-          className="mb-4 bg-blue-500 hover:bg-blue-600"
+          className="group relative px-6 py-4 bg-buttonColor hover:!bg-buttonColor hover:!border-buttonColor rounded-lg shadow-lg hover:!shadow-green-500/50 transition-all duration-300 transform hover:!scale-105"
           onClick={() => navigate("/gate/createGate")}
         >
-          Tạo mới cổng
+          <div className="flex items-center gap-2 text-white">
+            <Plus className="w-6 h-6 group-hover:!rotate-180 transition-transform duration-500" />
+            <span className="font-medium text-lg">Tạo mới</span>
+          </div>
         </Button>
-        <StreamingModal
-          selectedGate={selectedGate}
-          isVisible={isModalVisible}
-          onClose={handleVideoClose}
+      </div>
+
+      <StreamingModal
+        selectedGate={selectedGate}
+        isVisible={isModalVisible}
+        onClose={handleVideoClose}
+      />
+      <Card className="shadow-lg rounded-xl border-0 mt-4">
+        <Table
+          columns={columns}
+          dataSource={data}
+          pagination={false}
+          size="middle"
+          bordered={false}
+          className="w-full [&_thead_th]:!bg-[#34495e] [&_thead_th]:!text-white [&_thead_th]:!font-medium [&_thead_th]:!py-3 [&_thead_th]:!text-sm hover:[&_tbody_tr]:bg-blue-50/30 [&_table]:!rounded-none [&_table-container]:!rounded-none [&_thead>tr>th:first-child]:!rounded-tl-none [&_thead>tr>th:last-child]:!rounded-tr-none [&_thead_th]:!transition-none"
         />
-        <Table columns={columns} dataSource={data} pagination={false} />
-      </Content>
-    </Layout>
+      </Card>
+    </Content>
   );
 };
 

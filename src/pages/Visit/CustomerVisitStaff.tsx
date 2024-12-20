@@ -31,7 +31,7 @@ import { VisitStatus, visitStatusMap } from "../../types/Enum/VisitStatus";
 import { ScheduleType, typeMap } from "../../types/Enum/ScheduleType";
 import ListHistorySessonVisit from "../History/ListHistorySessionVisit";
 import NotFoundState from "../../components/State/NotFoundState";
-import { CalendarDays, CalendarRange, Clock4 } from "lucide-react";
+import { Bell, CalendarDays, CalendarRange, Clock4, Plus } from "lucide-react";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -54,6 +54,7 @@ const CustomerVisitStaff = () => {
   const [searchText, setSearchText] = useState<string>("");
   const [animationActive, setAnimationActive] = useState<boolean>(true);
   const [filteredData, setFilteredData] = useState<VisitListType[]>([]);
+  const [isHovered, setIsHovered] = useState(false);
   const [filters, setFilters] = useState<Filters>({
     expectedStartTime: null,
     expectedEndTime: null,
@@ -61,6 +62,19 @@ const CustomerVisitStaff = () => {
     visitStatus: [],
     scheduleTypeId: [],
   });
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const autoFilter = searchParams.get("autoFilter");
+
+    if (autoFilter === "pending") {
+      setIsActive(true);
+      handleStatusFilter(VisitStatus.ActiveTemporary);
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, "", newUrl);
+    }
+  }, []);
+
   const getCountByStatus = (status: VisitStatus) => {
     return data?.filter((item: any) => item.visitStatus === status).length || 0;
   };
@@ -150,8 +164,9 @@ const CustomerVisitStaff = () => {
             textDecoration: "underline",
           }}
           onClick={() => {
-            setSelectedVisitId(record.visitId);
-            setIsModalVisible(true);
+            navigate(
+              `/customerVisitStaff/detailVisit/${record.visitId}/listSession`
+            );
           }}
         >
           {text} Lượt
@@ -180,11 +195,11 @@ const CustomerVisitStaff = () => {
         const scheduleTypeId = scheduleUser?.schedule.scheduleType
           .scheduleTypeId as ScheduleType;
         if (scheduleTypeId === undefined)
-          return <Tag color="default">Theo ngày</Tag>;
+          return <Tag color="#138d75">Theo ngày</Tag>;
         const { colorScheduleType, textScheduleType } = typeMap[
           scheduleTypeId
         ] || {
-          color: "default",
+          color: "#138d75",
           text: "Theo ngày",
         };
         return (
@@ -241,6 +256,17 @@ const CustomerVisitStaff = () => {
       }
     }
     return "[&_.ant-table-thead_th]:!bg-[#34495e] [&_.ant-table-thead_th]:!text-white";
+  };
+
+  const [isActive, setIsActive] = useState(false);
+
+  const handleClick = (status) => {
+    setIsActive(!isActive);
+    if (!isActive) {
+      handleStatusFilter(status);
+    } else {
+      handleClearFilters();
+    }
   };
 
   useEffect(() => {
@@ -322,9 +348,9 @@ const CustomerVisitStaff = () => {
     );
   }
   return (
-    <Content className="px-6 mt-10">
+    <Content className="p-2 max-w-[1200px] mx-auto mt-10">
       <div className="flex gap-4">
-        <div className="flex flex-1 gap-2 mt-2">
+        <div className="flex flex-1 gap-2 mt-2 mb-2">
           <Input
             placeholder="Tìm kiếm chuyến thăm..."
             prefix={<SearchOutlined className="text-gray-400" />}
@@ -370,7 +396,7 @@ const CustomerVisitStaff = () => {
                   <small className="text-gray-500 block mb-2">Trạng thái</small>
                   <div className="flex flex-wrap items-center gap-2">
                     {Object.values(VisitStatus)
-                      .filter((status) => status !== "Pending")
+                     
                       .map((status) => {
                         const { colorVisitStatus, textVisitStatus } =
                           visitStatusMap[status];
@@ -455,13 +481,121 @@ const CustomerVisitStaff = () => {
         >
           Tạo mới
         </Button> */}
-        <Button
-          icon={<PlusOutlined />}
-          onClick={() => setIsCreateModalVisible(true)}
-          className="px-4 py-4 text-lg   rounded-lg bg-buttonColor hover:bg-opacity-90 transition-all shadow-md text-white flex items-center justify-center"
-        >
-          <span className="mb-[2px]">Tạo mới</span>
-        </Button>
+        <div className="flex items-center gap-2 mb-2">
+          <div
+            className={`
+ 
+      p-1 
+      animate-cardPulse 
+      transition-all 
+      duration-200
+      ${isActive ? "ring-2 ring-white" : ""}
+    `}
+          >
+            <div className="flex items-center gap-2 px-2">
+              {Object.values(VisitStatus)
+                .filter((status) => status === VisitStatus.ActiveTemporary)
+                .map((status) => {
+                  const { textVisitStatus } = visitStatusMap[status];
+                  const count = getCountByStatus(status);
+
+                  return (
+                    <button
+                      key={status}
+                      onClick={() => handleClick(status)}
+                      onMouseEnter={() => setIsHovered(true)}
+                      onMouseLeave={() => setIsHovered(false)}
+                      className={`
+                          relative
+                          group
+                          flex
+                          items-center
+                          gap-3
+                          animate-cardPulse
+                          bg-gradient-to-r
+                          from-orange-400
+                          to-orange-600
+                          hover:from-orange-500
+                          hover:to-orange-700
+                          px-4
+                          py-2
+                          rounded-lg
+                          shadow-lg
+                          hover:shadow-orange-500/50
+                          transition-all
+                          duration-300
+                          transform
+                          hover:scale-105
+                          ${isHovered ? "animate-pulse" : ""}
+                  ${isActive ? "" : ""}
+                `}
+                    >
+                      <Bell
+                        className={`
+                                w-5 
+                                h-5 
+                                text-white
+                                font-bold
+                                transition-transform
+                                duration-300
+                                ${isHovered ? "animate-bounce" : ""}
+                              `}
+                      />
+                      <span className="text-white font-bold">
+                        {textVisitStatus}
+                      </span>
+                      {count > 0 && (
+                        <span
+                          className={`
+                            absolute
+                            -top-2
+                            -right-2
+                            bg-red-500
+                            text-white
+                            text-xs
+                            font-bold
+                            rounded-full
+                            min-w-[24px]
+                            h-6
+                            flex
+                            items-center
+                            justify-center
+                            px-2
+                            animate-bounce
+                            shadow-lg
+                          `}
+                        >
+                          {count}
+                        </span>
+                      )}
+                      <div
+                        className={`
+            absolute
+            inset-0
+            rounded-lg
+            bg-gradient-to-r
+            from-orange-400/20
+            to-orange-600/20
+            animate-pulse
+            ${isHovered ? "opacity-100" : "opacity-0"}
+          `}
+                      />
+                    </button>
+                  );
+                })}
+            </div>
+          </div>
+
+          <Button
+            onClick={() => setIsCreateModalVisible(true)}
+            className="group relative px-6 py-4 bg-buttonColor hover:!bg-buttonColor hover:!border-buttonColor rounded-lg shadow-lg hover:!shadow-green-500/50 transition-all duration-300 transform hover:!scale-105"
+          >
+            <div className="flex items-center gap-2 text-white">
+              <Plus className="w-6 h-6 group-hover:!rotate-180 transition-transform duration-500" />
+              <span className="font-medium text-lg">Tạo mới</span>
+            </div>
+          </Button>
+        </div>
       </div>
       {/* <>
         <Space style={{ marginBottom: 16, display: "flex", flexWrap: "wrap" }}>
@@ -612,8 +746,8 @@ const CustomerVisitStaff = () => {
               onClick={() => handleTypeFilter(null)}
               className={`rounded-t-[140px] min-w-[120px] border-b-0 ${
                 filters.scheduleTypeId.includes(null)
-                  ? "border-[#138d75] text-white bg-[#138d75]  "
-                  : "border-[#34495e] text-[#34495e]  "
+                  ? "border-[#138d75] text-white bg-[#138d75] hover:!bg-[#138d75] hover:!text-white hover:!border-[#138d75]"
+                  : "border-[#34495e] text-[#34495e] hover:!border-[#34495e] hover:!text-[#34495e]"
               }`}
             >
               <Clock4 size={17} />
@@ -623,8 +757,8 @@ const CustomerVisitStaff = () => {
               onClick={() => handleTypeFilter(ScheduleType.Weekly)}
               className={`rounded-t-[120px] min-w-[120px] border-b-0  ${
                 filters.scheduleTypeId.includes(ScheduleType.Weekly)
-                  ? "border-[#e67e22] text-white bg-[#e67e22]"
-                  : "border-[#34495e] text-[#34495e] hover:bg-yellow-50"
+                  ? "border-[#e67e22] text-white bg-[#e67e22] hover:!border-[#e67e22] hover:!text-white hover:!bg-[#e67e22]"
+                  : "border-[#34495e] text-[#34495e] hover:!border-[#34495e] hover:!text-[#34495e]"
               }`}
             >
               <CalendarDays size={17} />
@@ -639,8 +773,8 @@ const CustomerVisitStaff = () => {
               onClick={() => handleTypeFilter(ScheduleType.Monthly)}
               className={`rounded-t-[120px] min-w-[120px] border-b-0  ${
                 filters.scheduleTypeId.includes(ScheduleType.Monthly)
-                  ? "border-[#2980b9] text-white bg-[#2980b9]"
-                  : "border-[#34495e] text-[#34495e] hover:bg-purple-50"
+                  ? "border-[#2980b9] text-white bg-[#2980b9] hover:!border-[#2980b9] hover:!text-white hover:!bg-[#2980b9]"
+                  : "border-[#34495e] text-[#34495e] hover:!border-[#34495e] hover:!text-[#34495e]"
               }`}
             >
               <CalendarRange size={17} />
@@ -667,7 +801,7 @@ const CustomerVisitStaff = () => {
           bordered={false}
           onRow={(record) => ({
             onDoubleClick: () =>
-              navigate(`/customerVisit/detailVisit/${record.visitId}`, {
+              navigate(`/customerVisitStaff/detailVisit/${record.visitId}`, {
                 state: { record },
               }),
             className: "cursor-pointer transition-colors",
@@ -675,7 +809,7 @@ const CustomerVisitStaff = () => {
         />
       </Card>
 
-      <Modal
+      {/* <Modal
         title="Lịch sử lượt ra vào"
         visible={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
@@ -685,8 +819,8 @@ const CustomerVisitStaff = () => {
         {selectedVisitId && (
           <ListHistorySessonVisit visitId={selectedVisitId} />
         )}
-      </Modal>
-      <Modal
+      </Modal> */}
+      {/* <Modal
         title={<span style={{ fontSize: "30px" }}>Chọn loại chuyến thăm</span>}
         visible={isCreateModalVisible}
         onCancel={() => setIsCreateModalVisible(false)}
@@ -734,6 +868,56 @@ const CustomerVisitStaff = () => {
               Tạo chuyến thăm theo lịch trình
             </Button>
           </div>
+        </div>
+      </Modal> */}
+      <Modal
+        title={
+          <div className="text-center mb-6">
+            <span className="text-2xl font-medium text-backgroundPage">Chọn loại chuyến thăm</span>
+          </div>
+        }
+        visible={isCreateModalVisible}
+        onCancel={() => setIsCreateModalVisible(false)}
+        footer={null}
+        width={600}
+        centered
+        className="visit-type-modal"
+      >
+        <div className="flex items-center justify-center space-x-8 px-8 py-6">
+          <Button
+            // type="primary"
+            onClick={() => {
+              setIsCreateModalVisible(false);
+              navigate("/customerVisitStaff/createNewVisitList");
+            }}
+            className="border-buttonColor text-buttonColor hover:!bg-buttonColor hover:!border-buttonColor hover:!text-white flex-1 h-24 text-base font-medium flex items-center justify-center hover:scale-105 transition-transform"
+            style={{
+              maxWidth: "220px",
+              whiteSpace: "normal",
+              lineHeight: "1.5",
+            }}
+          >
+            Tạo chuyến thăm trong ngày
+          </Button>
+
+          <Button
+            // type="primary"
+            onClick={() => {
+              setIsCreateModalVisible(false);
+              navigate("/schedule-staff");
+              notification.info({
+                message: "Vui lòng chọn lịch trình từ nhiệm vụ để tạo chuyến thăm",
+              });
+            }}
+            className="border-buttonColor text-buttonColor hover:!bg-buttonColor hover:!border-buttonColor hover:!text-white flex-1 h-24 text-base font-medium flex items-center justify-center hover:scale-105 transition-transform"
+            style={{
+              maxWidth: "220px",
+              whiteSpace: "normal",
+              lineHeight: "1.5",
+            }}
+          >
+            Tạo chuyến thăm theo lịch trình
+          </Button>
         </div>
       </Modal>
     </Content>

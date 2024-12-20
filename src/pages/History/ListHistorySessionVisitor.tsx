@@ -1,14 +1,4 @@
-import {
-  Layout,
-  Tag,
-  Spin,
-  Descriptions,
-  Card,
-  Row,
-  Col,
-  Modal,
-  Badge,
-} from "antd";
+import { Layout, Tag, Spin, Descriptions, Card, Row, Col, Modal } from "antd";
 import React, { useEffect, useState } from "react";
 import { useGetVisitGraphqlMutation } from "../../services/visitGraphql.service";
 import VisitorSessionType from "../../types/visitorSessionType";
@@ -17,7 +7,6 @@ import { useDispatch } from "react-redux";
 import { useParams } from "react-router";
 import dayjs from "dayjs";
 import { formatDateLocal } from "../../utils/ultil";
-import { EyeOutlined } from "@ant-design/icons";
 import {
   AlertCircle,
   ArrowLeft,
@@ -26,67 +15,16 @@ import {
   Check,
   LogIn,
   LogOut,
-  MapPin,
   Shield,
   User,
 } from "lucide-react";
-import { useGetImageVehicleSessionByVisitQuery } from "../../services/sessionImage.service";
+import { EyeOutlined } from "@ant-design/icons";
+import {
+  useGetImageVehicleSessionByVisitorQuery,
+  useGetImageVehicleSessionQuery,
+} from "../../services/sessionImage.service";
 
 const { Content } = Layout;
-
-interface Image {
-  imageURL: string;
-  imageType: String;
-}
-
-interface Visitor {
-  visitorId: number;
-  visitorName: string;
-  companyName: string;
-}
-
-interface Visit {
-  visitId: number;
-  visitName: string;
-}
-
-interface Security {
-  userId: number;
-  fullName: string;
-  phoneNumber: string;
-}
-
-interface Gate {
-  gateId: number;
-  gateName: string;
-}
-
-interface VisitorSession {
-  visitorSessionId: number;
-  images: Image[];
-  visitor: Visitor;
-  checkinTime: string;
-  checkoutTime: string | null;
-  qrCardId: number;
-  visitDetailId: number;
-  visit: Visit;
-  securityIn: Security | null;
-  securityOut: Security | null;
-  gateIn: Gate | null;
-  gateOut: Gate | null;
-  status: String;
-}
-
-interface HistoryCardProps {
-  label: string;
-  value: React.ReactNode;
-  className?: string;
-}
-
-interface VisitorHistoryListProps {
-  result: VisitorSession[];
-  loading: boolean;
-}
 
 const IconWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <div
@@ -144,35 +82,6 @@ const convertImageType = (type: String): string => {
   };
   return typeMap[typeStr] || typeStr;
 };
-
-interface VisitorHistoryProps {
-  result: Array<{
-    visitorSessionId: number;
-    visitor: {
-      visitorName: string;
-      companyName: string;
-    };
-    visit: {
-      visitName: string;
-    };
-    status: string;
-    checkinTime: string;
-    checkoutTime: string | null;
-    securityIn?: {
-      fullName: string;
-    } | null;
-    securityOut?: {
-      fullName: string;
-    } | null;
-    gateIn?: {
-      gateName: string;
-    } | null;
-    gateOut?: {
-      gateName: string;
-    } | null;
-    images: Image[];
-  }>;
-}
 
 const renderSession = (session: VisitorSessionType) => (
   <Card key={session.visitorSessionId.toString()} className="mb-4">
@@ -232,30 +141,26 @@ const renderSession = (session: VisitorSessionType) => (
   </Card>
 );
 
-const ListHistorySessionVisit = () => {
+const ListHistorySessionVisitor = () => {
   const dispatch = useDispatch();
   const [postGraphql] = useGetVisitGraphqlMutation();
   const [result, setResult] = useState<VisitorSessionType[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const { id } = useParams();
-
+  const { id, visitorId } = useParams<{ id: string; visitorId: string }>();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedImageType, setSelectedImageType] = useState<string | null>(
     null
   );
-  const { data: vehicleImageArray } = useGetImageVehicleSessionByVisitQuery({
+  // const [imageVehicleSessions, setImageVehicleSessions] = useState([]);
+  const { data: vehicleImageArray,isLoading } = useGetImageVehicleSessionByVisitorQuery({
     visitId: Number(id),
+    visitorId: Number(visitorId),
   });
-  // console.log(vehicleImage);
-  const handleImageClick = (imageUrl: string, imageType: String) => {
-    setSelectedImage(String(imageUrl).valueOf());
-    setSelectedImageType(String(imageType).valueOf());
-  };
+  // console.log(vehicleImageArray);
   useEffect(() => {
-    // console.log("image xe : ", vehicleImageArray);
     const fetchData = async () => {
       setLoading(true);
-      const body = makeQuery(Number(id));
+      const body = makeQuery(Number(visitorId), Number(id));
       try {
         const payload = await postGraphql({ query: body }).unwrap();
         const visitorData =
@@ -276,10 +181,9 @@ const ListHistorySessionVisit = () => {
               : null,
           };
         });
-
         setResult(updatedVisitorData);
         dispatch(setListOfVisitorSession(updatedVisitorData));
-        console.log("co image xe: ", updatedVisitorData);
+        console.log(updatedVisitorData);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -287,17 +191,23 @@ const ListHistorySessionVisit = () => {
       }
     };
     fetchData();
-  }, [id, dispatch, postGraphql, vehicleImageArray]);
+  }, [id, dispatch, postGraphql,visitorId,isLoading,vehicleImageArray]);
 
-  function makeQuery(visitId: number) {
+  function makeQuery(visitorId: number, visitId: number) {
     return {
       query: `
         query {
-          visitorSession(take: 100, order: [{ visitorSessionId: DESC }], where: { visit:  {
+          visitorSession(take: 100, order: [{ visitorSessionId: DESC }], where: { visitor:  {
+             visitorId:  {
+                eq: ${visitorId}
+             }
+          },
+          visit:  {
              visitId:  {
                 eq: ${visitId}
              }
-          }}) {
+          }
+             }) {
             items {
               visitorSessionId,
               images {
@@ -351,7 +261,7 @@ const ListHistorySessionVisit = () => {
   }
 
   // if (result.length <= 0) return "Khách này chưa có thông tin ra vào";
-  if (result.length === 0) {
+  if (result.length === 0 && loading === false) {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-5xl mx-auto p-6">
@@ -510,9 +420,10 @@ const ListHistorySessionVisit = () => {
                   >
                     <div
                       className="cursor-pointer relative group"
-                      onClick={() =>
-                        handleImageClick(image.imageURL, image.imageType)
-                      }
+                      onClick={() => {
+                        setSelectedImage(String(image.imageURL).valueOf());
+                        setSelectedImageType(String(image.imageType).valueOf());
+                      }}
                     >
                       <img
                         src={image.imageURL}
@@ -531,6 +442,7 @@ const ListHistorySessionVisit = () => {
               </Row>
             </div>
           )}
+
           <div className="mt-4">
             <div className="flex items-center gap-2 mb-2">
               <IconWrapper>
@@ -542,15 +454,12 @@ const ListHistorySessionVisit = () => {
             {session.vehicleImage ? (
               <>
                 <div className="bg-gray-50 p-3 rounded-lg mb-3">
-                  <Row gutter={[8, 8]}>
-                    <Col span={24}>
-                      <HistoryCard
-                        label="Biển số xe"
-                        value={session.vehicleImage.licensePlate}
-                      />
-                    </Col>
-                  </Row>
+                  <HistoryCard
+                    label="Biển số xe"
+                    value={session.vehicleImage.licensePlate}
+                  />
                 </div>
+
                 <Row gutter={[8, 8]}>
                   {session.vehicleImage.images.map((image, index) => (
                     <Col
@@ -561,12 +470,15 @@ const ListHistorySessionVisit = () => {
                     >
                       <div
                         className="cursor-pointer relative group"
-                        onClick={() =>
-                          handleImageClick(image.imageURL, image.imageType)
-                        }
+                        onClick={() => {
+                          setSelectedImage(
+                            String(image.imageURL).replace(/"+$/, "")
+                          );
+                          setSelectedImageType(String(image.imageType));
+                        }}
                       >
                         <img
-                          src={image.imageURL.replace(/"+$/, "")} // Remove any trailing quotes in URL
+                          src={image.imageURL.replace(/"+$/, "")}
                           alt={`Vehicle Image ${index + 1}`}
                           className="w-full h-32 object-cover rounded"
                         />
@@ -574,9 +486,7 @@ const ListHistorySessionVisit = () => {
                           <EyeOutlined className="text-white opacity-0 group-hover:opacity-100" />
                         </div>
                         <div className="text-xs text-center mt-1 px-2 py-1 bg-gray-100 rounded">
-                          {image.imageType === "CheckIn_Vehicle"
-                            ? "Ảnh xe lúc vào"
-                            : "Ảnh xe lúc ra"}
+                          {convertImageType(image.imageType)}
                         </div>
                       </div>
                     </Col>
@@ -585,13 +495,34 @@ const ListHistorySessionVisit = () => {
               </>
             ) : (
               <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-500">
-                Khách không có phương tiện đi kèm
+                Khách không đi kèm phương tiện
               </div>
             )}
           </div>
         </Card>
       ))}
 
+      {/* <Modal
+        open={!!selectedImage}
+        footer={null}
+        onCancel={() => {
+          setSelectedImage(null);
+          setSelectedImageType(null);
+        }}
+        width="80%"
+        centered
+        title={
+          selectedImageType
+            ? convertImageType(selectedImageType as String)
+            : "Hình ảnh"
+        }
+      >
+        <img
+          src={selectedImage || ""}
+          alt="Full size"
+          className="w-full h-auto"
+        />
+      </Modal> */}
       <Modal
         open={!!selectedImage}
         footer={null}
@@ -602,7 +533,9 @@ const ListHistorySessionVisit = () => {
         width="80%"
         centered
         title={
-          selectedImageType ? convertImageType(selectedImageType) : "Hình ảnh"
+          selectedImageType
+            ? convertImageType(selectedImageType as String)
+            : "Hình ảnh"
         }
       >
         <img
@@ -615,4 +548,4 @@ const ListHistorySessionVisit = () => {
   );
 };
 
-export default ListHistorySessionVisit;
+export default ListHistorySessionVisitor;

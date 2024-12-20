@@ -29,6 +29,7 @@ import CreateNewVisitor from "../../form/CreateNewVisitor";
 import DetailVisitor from "./DetailVisitor";
 import Visitor from "../../types/visitorType";
 import LoadingState from "../../components/State/LoadingState";
+import { Plus } from "lucide-react";
 
 const { confirm } = Modal;
 
@@ -42,16 +43,31 @@ const VisitorManager = () => {
   const [idVisitor, setIdVisitor] = useState<number>(0);
   const userRole = localStorage.getItem("userRole");
   const [filteredData, setFilteredData] = useState<Visitor[]>([]);
-  const [activeStatus, setActiveStatus] = useState<string>("Active"); // 'all', 'active', 'inactive'
+  const [activeStatus, setActiveStatus] = useState<string>("");
+  // const {
+  //   data,
+  //   isLoading: isLoadingData,
+  //   error,
+  //   refetch,
+  // } = useGetAllVisitorsQuery({ pageNumber: -1, pageSize: -1 });
   const {
     data,
     isLoading: isLoadingData,
     error,
     refetch,
-  } = useGetAllVisitorsQuery({ pageNumber: -1, pageSize: -1 }); // Fetch all visitors
+  } = useGetAllVisitorsQuery(
+    { pageNumber: -1, pageSize: -1 },
+    {
+      pollingInterval: 1000,
+
+      refetchOnMountOrArgChange: true,
+      refetchOnFocus: true,
+      refetchOnReconnect: true,
+    }
+  );
 
   useEffect(() => {
-    let result = data || [];
+    let result = data ;
 
     // First filter by status
     // if (activeStatus !== 'all') {
@@ -75,7 +91,7 @@ const VisitorManager = () => {
   }, [data, searchText, activeStatus]);
 
   const handleFilterStatus = (status: string) => {
-    setActiveStatus(status);
+    setActiveStatus((prevStatus) => (prevStatus === status ? "" : status));
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -169,7 +185,9 @@ const VisitorManager = () => {
   ];
 
   const handleVisitorCreated = () => {
-    refetch(); // Call refetch after creating a visitor
+    refetch().then(() => {
+      setIsModalVisible(false);
+    });
   };
   const handleTableChange = (pagination: any) => {
     setCurrentPage(pagination.current || 1);
@@ -181,8 +199,9 @@ const VisitorManager = () => {
     setIsEditModalVisible(true);
   };
   const closeEditModal = () => {
-    refetch();
-    setIsEditModalVisible(false);
+    refetch().then(() => {
+      setIsEditModalVisible(false);
+    });
   };
 
   const showCreateModal = () => {
@@ -202,6 +221,7 @@ const VisitorManager = () => {
       onOk: async () => {
         try {
           await deleteVisitor({ id: visitorId }).unwrap();
+          await refetch();
           notification.success({
             message: `Thay đổi trạng thái thành công!`,
           });
@@ -221,15 +241,17 @@ const VisitorManager = () => {
   const getButtonStyles = (status) => {
     if (status === "Active") {
       return activeStatus === "Active"
-        ? "border-[#138d75] text-white bg-[#138d75] hover:bg-[#138d75]/90"
-        : "border-[#34495e] text-[#34495e] hover:bg-[#138d75]/10";
+        ? "border-[#138d75] text-white bg-[#138d75] hover:!bg-[#138d75]/90 hover:!text-white hover:!bg-[#138d75]"
+        : "border-[#34495e] text-[#34495e] hover:!bg-white hover:!text-[#34495e] hover:!border-[#34495e]";
     }
     return activeStatus === "Unactive"
-      ? "border-[#c0392b] text-white bg-[#c0392b] hover:bg-[#c0392b]/90"
-      : "border-[#34495e] text-[#34495e] hover:bg-[#c0392b]/10";
+      ? "border-[#c0392b] text-white bg-[#c0392b]  hover:!border-[#c0392b] hover:!text-white hover:!bg-[#c0392b]"
+      : "border-[#34495e] text-[#34495e] hover:!bg-white hover:!text-[#34495e] hover:!border-[#34495e]";
   };
 
   const getTableHeaderStyle = () => {
+    if (!activeStatus)
+      return "[&_.ant-table-thead_th]:!bg-[#34495e] [&_.ant-table-thead_th]:!text-white";
     return activeStatus === "Active"
       ? "[&_.ant-table-thead_th]:!bg-[#138d75]/10 [&_.ant-table-thead_th]:!text-[#138d75]"
       : "[&_.ant-table-thead_th]:!bg-[#c0392b]/10 [&_.ant-table-thead_th]:!text-[#c0392b]";
@@ -239,34 +261,28 @@ const VisitorManager = () => {
     return <LoadingState />;
   }
   return (
-    <Content className="p-2 max-w-[1200px] mx-auto mt-7">
+    <Content className="p-2 max-w-[1200px] mx-auto mt-10">
       <div className="flex justify-between items-center mb-4">
-        <Input
-          placeholder="Tìm kiếm theo tên khách"
-          value={searchText}
-          onChange={handleSearchChange}
-          prefix={<SearchOutlined />}
-          style={{
-            width: 300,
-            borderColor: "#1890ff",
-            borderRadius: 5,
-          }}
-        />
-
-        {/* <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 shadow-sm"
-          onClick={showCreateModal}
-        >
-          Tạo mới khách
-        </Button> */}
+        <div className="flex gap-2">
+          <Input
+            placeholder="Tìm kiếm theo tên khách"
+            value={searchText}
+            onChange={handleSearchChange}
+            prefix={<SearchOutlined />}
+            style={{
+              width: 300,
+              borderRadius: 5,
+            }}
+          />
+        </div>
         <Button
-          icon={<PlusOutlined />}
           onClick={showCreateModal}
-          className="px-4 py-4 text-lg   rounded-lg bg-buttonColor hover:bg-opacity-90 transition-all   shadow-md text-white flex items-center justify-center"
+          className="group relative px-6 py-4 bg-buttonColor hover:!bg-buttonColor hover:!border-buttonColor rounded-lg shadow-lg hover:!shadow-green-500/50 transition-all duration-300 transform hover:!scale-105"
         >
-          <span className="mb-[2px]">Tạo mới</span>
+          <div className="flex items-center gap-2 text-white">
+            <Plus className="w-6 h-6 group-hover:!rotate-180 transition-transform duration-500" />
+            <span className="font-medium text-lg">Tạo mới</span>
+          </div>
         </Button>
       </div>
 
@@ -276,7 +292,10 @@ const VisitorManager = () => {
         <CreateNewVisitor
           isModalVisible={isModalVisible}
           setIsModalVisible={closeCreateModal}
-          onVisitorCreated={handleVisitorCreated}
+          onVisitorCreated={() => {
+            handleVisitorCreated();
+            refetch();
+          }}
         />
       )}
       {isEditModalVisible && (
@@ -284,6 +303,10 @@ const VisitorManager = () => {
           isEditModalVisible={isEditModalVisible}
           setIsEditModalVisible={closeEditModal}
           id={idVisitor}
+          onUpdateSuccess={() => {
+            refetch();
+            closeEditModal();
+          }}
         />
       )}
 
@@ -324,7 +347,7 @@ const VisitorManager = () => {
               pagination={{
                 current: currentPage,
                 pageSize,
-                total: filteredData.length,
+                total: filteredData?.length,
                 showSizeChanger: true,
                 pageSizeOptions: ["5", "10"],
                 size: "small",

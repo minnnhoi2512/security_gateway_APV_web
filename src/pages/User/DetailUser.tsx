@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Layout,
   Button,
@@ -23,22 +23,30 @@ import { v4 as uuidv4 } from "uuid";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { imageDB } from "../../api/firebase";
 import { roleMap, UserRole } from "../../types/Enum/UserRole";
+import { isEntityError } from "../../utils/helpers";
 
 const { Content } = Layout;
 const { Title, Text } = Typography;
 interface DetailUserProps {
-    userId: number;
-    onSuccess?: () => void;
-  }
+  userId: number;
+  onSuccess?: () => void;
+}
+interface FormData {
+  fullName: string;
+  email: string;
+}
 const DetailUser: React.FC<DetailUserProps> = ({ userId, onSuccess }) => {
-  const navigate = useNavigate();
-
   const [form] = Form.useForm();
   const [imgFace, setImgFace] = useState<string | null>(null);
   const [faceImg, setFaceImg] = useState<File[]>([]);
   const [updateUser] = useUpdateUserMutation();
 
+  type FormError = { [key in keyof FormData]?: string[] } | null;
+  const [errorVisitor, setErrorVisitor] = useState<FormError>(null);
   const { data: userData, isLoading, refetch } = useGetDetailUserQuery(userId);
+  const [updateProcess, setUpdateProcess] = useState(false);
+  const [email, setEmail] = useState<string | null>(null);
+  const [fullName, setFullName] = useState<string | null>(null);
   const { refetch: refetchUserList } = useGetListUserByRoleQuery({
     pageNumber: -1,
     pageSize: -1,
@@ -49,7 +57,9 @@ const DetailUser: React.FC<DetailUserProps> = ({ userId, onSuccess }) => {
     color: "black",
     text: "Không xác định",
   };
-
+  useEffect(() => {
+    setErrorVisitor(null);
+  }, []);
   const handleUpdateStatus = async () => {
     try {
       const faceImgPromises = faceImg.map((file) => {
@@ -63,8 +73,8 @@ const DetailUser: React.FC<DetailUserProps> = ({ userId, onSuccess }) => {
 
       const updatedUser: User = {
         ...userData,
-        fullName: form.getFieldValue("fullName"),
-        email: form.getFieldValue("email"),
+        fullName: fullName || userData.fullName,
+        email: email || userData.email,
         departmentId: userData.department.departmentId,
         roleID: userData.role.roleId,
         image: faceImgUrls[0] || userData.image,
@@ -79,6 +89,9 @@ const DetailUser: React.FC<DetailUserProps> = ({ userId, onSuccess }) => {
       onSuccess?.();
       notification.success({ message: `Cập nhật thành công` });
     } catch (error) {
+      if (isEntityError(error)) {
+        setErrorVisitor(error.data.errors as FormError);
+      }
       notification.error({ message: `Cập nhật thất bại` });
     }
   };
@@ -90,9 +103,17 @@ const DetailUser: React.FC<DetailUserProps> = ({ userId, onSuccess }) => {
     setImgFace(newUploadedImage);
   };
 
+  const handleFullNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFullName(e.target.value);
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+  };
+
   return (
     <Content className="w-full max-w-lg">
-      <Card className="shadow-sm border border-gray-200 rounded-lg p-4">
+      <Card className="shadow-sm border border-white rounded-lg p-4">
         {/* Header with Profile Image and Name */}
         <div className="flex flex-col items-center text-center mb-6">
           <img
@@ -122,15 +143,48 @@ const DetailUser: React.FC<DetailUserProps> = ({ userId, onSuccess }) => {
               label={<Text className="text-gray-700 font-semibold">Tên</Text>}
               rules={[{ required: true, message: "Vui lòng nhập tên!" }]}
             >
-              <Input placeholder="Nhập tên người dùng" className="rounded-md" />
+              <Input
+                placeholder="Nhập tên người dùng"
+                className="rounded-md"
+                status={errorVisitor?.fullName ? "error" : ""}
+                onChange={handleFullNameChange}
+              />
+              {errorVisitor?.fullName && (
+                <p className="mt-2 text-sm text-red-600 bg-red-50 p-2 rounded">
+                  {errorVisitor.fullName[0]}
+                </p>
+              )}
+            </Form.Item>
+            <Form.Item
+              name="userName"
+              label={
+                <Text className="text-gray-700 font-semibold">
+                  Tên đăng nhập
+                </Text>
+              }
+            >
+              <Input
+                placeholder="Nhập tên đăng nhập"
+                className="rounded-md"
+                disabled={true}
+              />
             </Form.Item>
 
             <Form.Item
               name="email"
               label={<Text className="text-gray-700 font-semibold">Email</Text>}
-              rules={[{ required: true, message: "Vui lòng nhập email!" }]}
             >
-              <Input placeholder="Nhập email" className="rounded-md" />
+              <Input
+                placeholder="Nhập email"
+                className="rounded-md"
+                status={errorVisitor?.email ? "error" : ""}
+                onChange={handleEmailChange}
+              />
+              {errorVisitor?.email && (
+                <p className="mt-2 text-sm text-red-600 bg-red-50 p-2 rounded">
+                  {errorVisitor.email[0]}
+                </p>
+              )}
             </Form.Item>
 
             <Form.Item
@@ -151,10 +205,16 @@ const DetailUser: React.FC<DetailUserProps> = ({ userId, onSuccess }) => {
               <Upload
                 listType="picture"
                 showUploadList={false}
+                className="w-full"
                 onChange={handleFaceImageChange}
                 maxCount={1}
               >
-                <Button icon={<UploadOutlined />}>Tải lên hình ảnh mặt</Button>
+                <Button
+                  icon={<UploadOutlined />}
+                  className="w-full h-20 flex items-center justify-center border-2 border-dashed hover:border-blue-500 hover:text-blue-500 transition-colors"
+                >
+                  <span className="ml-2">Tải ảnh lên</span>
+                </Button>
               </Upload>
               {imgFace && (
                 <div className="mt-2">
@@ -171,9 +231,8 @@ const DetailUser: React.FC<DetailUserProps> = ({ userId, onSuccess }) => {
 
             <div className="flex justify-end space-x-3">
               <Button
-                type="primary"
                 onClick={handleUpdateStatus}
-                className="rounded-md"
+                className="rounded-md bg-buttonColor text-white hover:!border-buttonColor hover:!text-buttonColor"
               >
                 Cập nhật
               </Button>

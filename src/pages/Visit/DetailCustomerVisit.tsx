@@ -12,7 +12,7 @@ import {
   Card,
   Divider,
 } from "antd";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   ClockCircleOutlined,
   InfoCircleOutlined,
@@ -34,7 +34,7 @@ import {
 import VisitorSearchModal from "../../form/ModalSearchVisitor";
 import { DetailVisitor } from "../../types/detailVisitorForVisit";
 import { convertToVietnamTime, formatDateWithourHour } from "../../utils/ultil";
-import ListHistorySesson from "../History/ListHistorySession";
+import ListHistorySesson from "../History/ListHistorySessionVisitor";
 import { ScheduleType, typeMap } from "../../types/Enum/ScheduleType";
 import { VisitStatus, visitStatusMap } from "../../types/Enum/VisitStatus";
 import ListHistorySessonVisit from "../History/ListHistorySessionVisit";
@@ -65,6 +65,8 @@ const DetailCustomerVisit: React.FC = () => {
   } = useGetDetailVisitQuery({
     visitId: Number(id),
   });
+
+  const navigate = useNavigate();
   const [updateVisitBeforeStartDate] = useUpdateVisitBeforeStartDateMutation();
   const [updateVisitAfterStartDate] = useUpdateVisitAfterStartDateMutation();
   const [updateVisitStatus] = useUpdateStatusVisitMutation();
@@ -80,7 +82,6 @@ const DetailCustomerVisit: React.FC = () => {
     pageSize: -1,
   });
 
-  // console.log();
   const [visitors, setVisitors] = useState<DetailVisitor[]>([]);
   const [visitQuantity, setVisitQuantity] = useState<number>(
     visitData?.visitQuantity || 0
@@ -92,6 +93,7 @@ const DetailCustomerVisit: React.FC = () => {
   const [scheduleTypeId, setScheduleTypeId] = useState<ScheduleType | null>(
     null
   );
+  const [updatedDetailVisitData, setUpdatedDetailVisitData] = useState<any>([]);
   const [isDescriptionModalVisible, setIsDescriptionModalVisible] =
     useState(false);
   const [status, setStatusVisit] = useState<VisitStatus | String>("");
@@ -100,6 +102,26 @@ const DetailCustomerVisit: React.FC = () => {
   const convertToDayjs = (date: string | Date | Dayjs): Dayjs => {
     return dayjs(date);
   };
+  useEffect(() => {
+    if (visitData && detailVisitData) {
+      const updatedDetailVisitData = detailVisitData.map((detailVisit) => {
+        const matchingDetail = visitData.visitDetail.find(
+          (detail) => detail.visitDetailId === detailVisit.visitDetailId
+        );
+
+        if (matchingDetail) {
+          return {
+            ...detailVisit,
+            visitorSessionCurrentDay: matchingDetail.visitorSessionCurrentDay,
+          };
+        }
+
+        return detailVisit;
+      });
+
+      setVisitors(updatedDetailVisitData);
+    }
+  }, [visitData, detailVisitData]);
   const isEditable = () => {
     const endOfExpectedStartTime = dayjs(visitData?.expectedStartTime).endOf(
       "day"
@@ -110,12 +132,19 @@ const DetailCustomerVisit: React.FC = () => {
     const startOfExpectedStartTime = dayjs(
       visitData?.expectedStartTime
     ).startOf("day");
-    return !dayjs().isSame(startOfExpectedStartTime, "day");
+    return !dayjs().isSameOrAfter(startOfExpectedStartTime, "day");
   };
+  const isEditableHour = () => {
+    const endOfExpectedStartTime = dayjs(visitData?.expectedStartTime).endOf(
+      "hour"
+    );
+    return dayjs().isSameOrBefore(endOfExpectedStartTime);
+  };
+  // console.log(isEditableHour());
   // console.log();
   useEffect(() => {
     setSelectedVisitId(Number(id));
-    setVisitors(detailVisitData);
+    // setVisitors(detailVisitData);
     setVisitQuantity(visitData?.visitQuantity);
     setEditableVisitName(visitData?.visitName);
     setEditableDescription(visitData?.description);
@@ -149,33 +178,50 @@ const DetailCustomerVisit: React.FC = () => {
             status: v.status,
           }));
 
-        const updatedVisitData = {
-          visitName: editableVisitName || visitData?.visitName, // Include other necessary fields
-          expectedStartTime:
-            convertToVietnamTime(editableStartDate?.toDate()) ||
-            visitData?.expectedStartTime,
-          expectedEndTime: convertToVietnamTime(expectedEndTimeFinally),
-          description: editableDescription,
-          visitDetail: visitDetail,
-          updateById: Number(userId),
-          visitQuantity: visitDetail.length,
-        };
-        if (isEditable() && visitData?.visitorSessionCount <= 0) {
-          await updateVisitBeforeStartDate({
-            visitId: visitId,
-            updateVisit: updatedVisitData,
-          }).unwrap();
-        } else {
-          await updateVisitAfterStartDate({
-            visitId: visitId,
-            updateVisit: updatedVisitData,
-          }).unwrap();
-        }
+        const invalidVisit = visitDetail.find((v) => {
+          const start = dayjs(v.expectedStartHour, "HH:mm:ss");
+          const end = dayjs(v.expectedEndHour, "HH:mm:ss");
+          return end.diff(start, "minute") <= 30;
+        });
 
-        refetchVisit();
-        refetchListVisitor();
-        notification.success({ message: "Chỉnh sửa thành công!" });
+        if (invalidVisit) {
+          return notification.error({
+            message: "Lỗi chọn giờ",
+            description:
+              "Vui lòng kiểm tra lại thời gian ra cần hơn thời gian vào 30 phút.",
+          });
+        } else {
+          const updatedVisitData = {
+            visitName: editableVisitName || visitData?.visitName, // Include other necessary fields
+            expectedStartTime:
+              convertToVietnamTime(editableStartDate?.toDate()) ||
+              visitData?.expectedStartTime,
+            expectedEndTime: convertToVietnamTime(expectedEndTimeFinally),
+            description: editableDescription,
+            visitDetail: visitDetail,
+            updateById: Number(userId),
+            visitQuantity: visitDetail.length,
+          };
+          if (isEditable() && visitData?.visitorSessionCount <= 0) {
+            await updateVisitBeforeStartDate({
+              visitId: visitId,
+              updateVisit: updatedVisitData,
+            }).unwrap();
+          } else {
+            await updateVisitAfterStartDate({
+              visitId: visitId,
+              updateVisit: updatedVisitData,
+            }).unwrap();
+          }
+
+          refetchVisit();
+          refetchListVisitor();
+          notification.success({ message: "Chỉnh sửa thành công!" });
+        }
       } catch (error) {
+        // notification.error({
+        //   message: "Chỉnh sửa thất bại, vui lòng kiểm tra thông tin!",
+        // });
         return;
       }
     }
@@ -226,7 +272,7 @@ const DetailCustomerVisit: React.FC = () => {
       notification.error({ message: "Từ chối thất bại!" });
     }
   };
-
+  // console.log(visitors)
   const timePickerStyles = {
     error: {
       borderColor: "red",
@@ -332,11 +378,11 @@ const DetailCustomerVisit: React.FC = () => {
 
     if (time && startHour && time.isBefore(startHour)) {
       // Show an error message or feedback
-      notification.warning({ message: "Giờ ra phải sau giờ vào" });
+      // notification.warning({ message: "Giờ ra phải sau giờ vào" });
       return; // Prevent setting the end hour if it's not valid
-    }
-
-    getHourString(time, "expectedEndHour", index); // Update end hour
+    } else {
+      getHourString(time, "expectedEndHour", index, editableStartDate);
+    } // Update end hour}
   };
   const handleDescriptionDoubleClick = () => {
     setIsDescriptionModalVisible(true);
@@ -348,17 +394,101 @@ const DetailCustomerVisit: React.FC = () => {
   const getHourString = (
     value: Dayjs | null,
     nameValue: string,
-    index: number
+    index: number,
+    editableStartDate: Dayjs
   ) => {
+    const currentTime = dayjs();
+    let isValid = true;
+    console.log(
+      "tao ne : ",
+      value.isBefore(currentTime.add(-1, "minute")) ||
+        scheduleTypeId != undefined
+    );
     setVisitors((prevVisitors) => {
-      const updatedVisitors = prevVisitors.map((visitor, i) =>
-        i === index
-          ? {
+      const updatedVisitors = prevVisitors.map((visitor, i) => {
+        if (i === index) {
+          if (value == null)
+            return {
+              ...visitor,
+              [nameValue]: null,
+            };
+          if (editableStartDate.isSame(currentTime, "day")) {
+            if (
+              nameValue === "expectedStartHour" &&
+              !(
+                value?.isBefore(currentTime.add(-1, "minute")) ||
+                scheduleTypeId != undefined
+              )
+            ) {
+              isValid = false;
+              notification.warning({
+                message: "Lỗi chọn giờ",
+                description: "Giờ vào dự kiến phải hơn giờ hiện tại.",
+              });
+            } else if (nameValue === "expectedEndHour") {
+              const startTime = dayjs(visitor["expectedStartHour"], "HH:mm:ss");
+              // console.log(startTime);
+              if (!startTime.isValid()) {
+                isValid = false;
+                notification.warning({
+                  message: "Lỗi chọn giờ",
+                  description: "Cần chọn thời gian ra trước.",
+                });
+              } else if (
+                startTime.isValid() &&
+                value.isBefore(startTime.add(30, "minute"))
+              ) {
+                isValid = false;
+                notification.warning({
+                  message: "Lỗi chọn giờ",
+                  description:
+                    "Giờ ra dự kiến phải sau 30 phút so với giờ vào dự kiến.",
+                });
+                if (isValid) {
+                  return {
+                    ...visitor,
+                    [nameValue]: null,
+                  };
+                }
+              }
+            }
+          } else if (nameValue === "expectedEndHour") {
+            const startTime = dayjs(visitor["expectedStartHour"], "HH:mm:ss");
+            // console.log(startTime);
+            if (!startTime.isValid()) {
+              isValid = false;
+              notification.warning({
+                message: "Lỗi chọn giờ",
+                description: "Cần chọn thời gian ra trước.",
+              });
+            } else if (
+              startTime.isValid() &&
+              value.isBefore(startTime.add(30, "minute"))
+            ) {
+              isValid = false;
+              notification.warning({
+                message: "Lỗi chọn giờ",
+                description:
+                  "Giờ ra dự kiến phải sau 30 phút so với giờ vào dự kiến.",
+              });
+              if (isValid) {
+                return {
+                  ...visitor,
+                  [nameValue]: null,
+                };
+              }
+            }
+          }
+
+          if (isValid) {
+            return {
               ...visitor,
               [nameValue]: value ? value.format("HH:mm:ss") : "",
-            }
-          : visitor
-      );
+            };
+          }
+        }
+        return visitor;
+      });
 
       return updatedVisitors;
     });
@@ -403,13 +533,20 @@ const DetailCustomerVisit: React.FC = () => {
       dataIndex: "expectedStartHour",
       key: "expectedStartHour",
       render: (text: string, record: DetailVisitor, index: number) => {
+        // console.log(record);
         const isError = !text && !isEditMode; // Check if there is no value and edit mode is not active
         return (
           <TimePicker
             value={text ? dayjs(text, "HH:mm:ss") : null}
-            onChange={(time) => getHourString(time, "expectedStartHour", index)}
-            disabled={!isEditMode || record.isDeleted}
-            format="HH:mm:ss"
+            onChange={(time) =>
+              getHourString(time, "expectedStartHour", index, editableStartDate)
+            }
+            disabled={
+              !isEditMode ||
+              record.isDeleted ||
+              record?.visitorSessionCurrentDay >= 0 && scheduleTypeId === undefined
+            }
+            format="HH:mm"
             style={isError ? timePickerStyles.error : undefined} // Apply error style
             key={record.visitor.visitorId}
           />
@@ -427,7 +564,7 @@ const DetailCustomerVisit: React.FC = () => {
             value={text ? dayjs(text, "HH:mm:ss") : null}
             onChange={(time) => handleEndHourChange(time, index, record)}
             disabled={!isEditMode || record.isDeleted}
-            format="HH:mm:ss"
+            format="HH:mm"
             style={isError ? timePickerStyles.error : undefined} // Apply error style
             key={record.visitor.visitorId}
           />
@@ -451,7 +588,12 @@ const DetailCustomerVisit: React.FC = () => {
         <>
           {!isEditMode && (
             <>
-              <Button size="middle" onClick={() => showHistoryModal(record)}>
+              <Button
+                size="middle"
+                onClick={() =>
+                  navigate(`listVisitorSession/${record.visitor.visitorId}`)
+                }
+              >
                 <SearchOutlined />
               </Button>
             </>
@@ -492,7 +634,7 @@ const DetailCustomerVisit: React.FC = () => {
         handleReport();
       },
       onCancel() {
-        console.log("Cancel");
+        // console.log("Cancel");
       },
     });
   };
@@ -504,7 +646,7 @@ const DetailCustomerVisit: React.FC = () => {
         handleCancel();
       },
       onCancel() {
-        console.log("Cancel");
+        // console.log("Cancel");
       },
     });
   };
@@ -537,10 +679,7 @@ const DetailCustomerVisit: React.FC = () => {
                   <p className="text-sm text-gray-500 space-y-2">
                     Tên danh sách:
                   </p>
-                  {isEditMode &&
-                  isEditableToday() &&
-                  (userRole != "Staff" ||
-                    visitData.visitStatus === "Pending") ? (
+                  {isEditMode && isEditableToday() ? (
                     <Input
                       value={editableVisitName}
                       onChange={handleNameChange}
@@ -555,10 +694,7 @@ const DetailCustomerVisit: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500 space-y-2">Mô tả:</p>
-                  {isEditMode &&
-                  isEditableToday() &&
-                  (userRole != "Staff" ||
-                    visitData.visitStatus === "Pending") ? (
+                  {isEditMode && isEditableToday() ? (
                     <ReactQuill
                       value={editableDescription}
                       onChange={handleDescriptionChange}
@@ -634,7 +770,7 @@ const DetailCustomerVisit: React.FC = () => {
                     </p>
                   </div>
                   <p className="text-sm text-gray-500 mt-4">Thời gian:</p>
-                  {isEditMode && userRole != "Staff" ? (
+                  {isEditMode && userRole === "DepartmentManager" ? (
                     <div className="space-y-2">
                       <span>Ngày bắt đầu</span>
                       <DatePicker
@@ -709,7 +845,7 @@ const DetailCustomerVisit: React.FC = () => {
                       <Button
                         type="link"
                         className="text-blue-600 hover:text-blue-800 text-base"
-                        onClick={() => setIsHistoryAllModalVisible(true)}
+                        onClick={() => navigate(`listSession`)}
                       >
                         Xem chi tiết
                       </Button>
@@ -731,72 +867,99 @@ const DetailCustomerVisit: React.FC = () => {
             rowKey="visitorId"
             pagination={false}
           />
-          <div
-            style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}
-            className="mt-4"
-          >
-            {(status === "ActiveTemporary" || status === "Violation") && (
-              <>
-                {status !== "Violation" && (
-                  <Button
-                    className="bg-yellow-500 text-white"
-                    onClick={showConfirm}
-                  >
-                    Báo cáo
-                  </Button>
+          {(userRole == "Staff" || userRole == "DepartmentManager") && (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "8px",
+              }}
+              className="mt-4"
+            >
+              {(status === "ActiveTemporary" || status === "Violation") && (
+                <>
+                  {status !== "Violation" && (
+                    <Button
+                      className="bg-yellow-500 text-white"
+                      onClick={showConfirm}
+                    >
+                      Báo cáo
+                    </Button>
+                  )}
+
+                  {status === "ActiveTemporary" && (
+                    <Button
+                      className="bg-green-500 text-white"
+                      onClick={handleApprove}
+                    >
+                      Chấp thuận
+                    </Button>
+                  )}
+                  {status === "Violation" && (
+                    <Button
+                      className="bg-green-500 text-white"
+                      onClick={handleApprove}
+                    >
+                      Gỡ vi phạm
+                    </Button>
+                  )}
+                </>
+              )}
+              {status === "Active" &&
+                !isEditMode &&
+                scheduleTypeId === undefined && (
+                  <div className="bg-red">
+                    <Button
+                      className="bg-red-500 text-white"
+                      onClick={showConfirmCancelled}
+                    >
+                      Vô hiệu hóa
+                    </Button>
+                  </div>
                 )}
 
-                {status !== "Violation" && (
+              {isEditMode && (
+                <Button
+                  type="default"
+                  onClick={handleAddGuest}
+                  className="mb-4"
+                >
+                  Thêm khách
+                </Button>
+              )}
+              {/* {status === "Active" && (
+                <div className="">
                   <Button
-                    className="bg-green-500 text-white"
-                    onClick={handleApprove}
+                    type="primary"
+                    className="mb-4"
+                    onClick={handleToggleMode}
                   >
-                    Chấp thuận
-                  </Button>
-                )}
-                {status === "Violation" && (
-                  <Button
-                    className="bg-green-500 text-white"
-                    onClick={handleApprove}
-                  >
-                    Gỡ vi phạm
-                  </Button>
-                )}
-              </>
-            )}
-            {status === "Active" &&
-              !isEditMode &&
-              scheduleTypeId === undefined && (
-                <div className="bg-red">
-                  <Button
-                    className="bg-red-500 text-white"
-                    onClick={showConfirmCancelled}
-                  >
-                    Vô hiệu hóa
+                    {isEditMode ? "Lưu" : "Chỉnh sửa"}
                   </Button>
                 </div>
               )}
-            {status === "Cancelled" &&
-              !isEditMode &&
-              scheduleTypeId === undefined && (
-                <div className="bg-red">
+              {visitData?.visitStatus === "Pending" && (
+                <div className="">
                   <Button
-                    className="bg-green-500 text-white"
-                    onClick={handleApprove}
+                    type="primary"
+                    className="mb-4"
+                    onClick={handleToggleMode}
                   >
-                    Gỡ vô hiệu hóa
+                    {isEditMode ? "Lưu" : "Chỉnh sửa"}
                   </Button>
                 </div>
-              )}
-            {isEditMode && (
-              <Button type="default" onClick={handleAddGuest} className="mb-4">
-                Thêm khách
-              </Button>
-            )}
-            {(isEditable() &&
-              scheduleTypeId == undefined &&
-              visitData?.visitStatus != "ActiveTemporary") ||
-              (visitData?.visitStatus != "Cancelled" && (
+              )} */}
+              {((isEditable() &&
+                scheduleTypeId === undefined &&
+                visitData?.visitStatus !== "ActiveTemporary" &&
+                visitData?.visitStatus !== "Inactive" &&
+                visitData?.visitStatus !== "Cancelled" &&
+                visitData?.visitStatus !== "Violation") ||
+                (scheduleTypeId !== undefined &&
+                  visitData?.visitStatus !== "ActiveTemporary" &&
+                  visitData?.visitStatus !== "Cancelled" &&
+                  visitData?.visitStatus !== "Inactive" &&
+                  visitData?.visitStatus !== "Violation")) && (
                 <Button
                   type="primary"
                   onClick={handleToggleMode}
@@ -804,17 +967,9 @@ const DetailCustomerVisit: React.FC = () => {
                 >
                   {isEditMode ? "Lưu" : "Chỉnh sửa"}
                 </Button>
-              )) ||
-              (scheduleTypeId != undefined && (
-                <Button
-                  type="primary"
-                  onClick={handleToggleMode}
-                  className="mb-4"
-                >
-                  {isEditMode ? "Lưu" : "Chỉnh sửa"}
-                </Button>
-              ))}
-          </div>
+              )}
+            </div>
+          )}
         </div>
 
         <VisitorSearchModal
@@ -823,7 +978,7 @@ const DetailCustomerVisit: React.FC = () => {
           onVisitorSelected={handleVisitorSelected}
         />
       </Content>
-      <Modal
+      {/* <Modal
         title="Chi tiết lịch sử từng người"
         visible={isHistoryModalVisible}
         onCancel={handleCloseHistoryModal}
@@ -832,8 +987,8 @@ const DetailCustomerVisit: React.FC = () => {
         {selectedRecord && (
           <ListHistorySesson data={selectedRecord.visitDetailId} />
         )}
-      </Modal>
-      <Modal
+      </Modal> */}
+      {/* <Modal
         title="Lịch sử lượt ra vào"
         visible={isHistoryAllModalVisible}
         onCancel={() => setIsHistoryAllModalVisible(false)}
@@ -843,7 +998,7 @@ const DetailCustomerVisit: React.FC = () => {
         {selectedVisitId && (
           <ListHistorySessonVisit visitId={selectedVisitId} />
         )}
-      </Modal>
+      </Modal> */}
     </Layout>
   );
 };

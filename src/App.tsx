@@ -2,7 +2,7 @@ import React from "react";
 import { Provider } from "react-redux";
 import { ToastContainer } from "react-toastify";
 import ContentRouter from "./router/router";
-import { store } from "./redux/store";
+import { store } from "./redux/store/store";
 import "react-toastify/dist/ReactToastify.css";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { ConfigProvider } from "antd";
@@ -12,7 +12,7 @@ const queryClient = new QueryClient();
 
 const App = () => {
   return (
-    <React.StrictMode>
+    // <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <ConfigProvider locale={locale}>
           <Provider store={store}>
@@ -21,7 +21,7 @@ const App = () => {
           </Provider>
       </ConfigProvider>
     </QueryClientProvider>
-    </React.StrictMode>
+    // </React.StrictMode>
   );
 };
 

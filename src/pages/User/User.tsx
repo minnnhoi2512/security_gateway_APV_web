@@ -9,6 +9,7 @@ import {
   Divider,
   Select,
   Card,
+  notification,
 } from "antd";
 import { useState, useEffect } from "react";
 import UserType from "../../types/userType";
@@ -28,6 +29,7 @@ import {
 import { useGetListDepartmentsQuery } from "../../services/department.service";
 import CreateUser from "../../form/CreateUser";
 import DetailUser from "./DetailUser";
+import { Plus } from "lucide-react";
 
 const { Content } = Layout;
 const { Option } = Select;
@@ -73,7 +75,7 @@ const User = () => {
       .toLowerCase()
       .includes(searchText.toLowerCase());
     const matchesDepartment =
-      department === "All" || user.department?.departmentName === department;
+      department === "All" || user?.department?.departmentName === department;
 
     // For DepartmentManager - only show Staff from their department
     if (userRole === "DepartmentManager") {
@@ -117,12 +119,16 @@ const User = () => {
     if (userIdToDelete) {
       try {
         await deleteUser(userIdToDelete).unwrap();
-        message.success("Xóa người dùng thành công");
+        notification.success({
+          message: "Thay đổi trạng thái người dùng thành công",
+        });
         setIsModalVisible(false);
         setUserIdToDelete(null);
         refetchUserData();
       } catch (error) {
-        message.error("Xóa người dùng thất bại");
+        notification.error({
+          message: "Thay đổi trạng thái người dùng thất bại",
+        });
       }
     }
   };
@@ -171,11 +177,11 @@ const User = () => {
       width: "20%",
       render: (text: any) => (
         <span style={{ fontSize: "14px", color: "#000" }}>
-          {text.departmentName === "Manager"
+          {text?.departmentName === "Manager"
             ? "Phòng Quản lý"
-            : text.departmentName === "Security"
+            : text?.departmentName === "Security"
             ? "Phòng Bảo vệ"
-            : text.departmentName}
+            : text?.departmentName}
         </span>
       ),
     },
@@ -233,173 +239,73 @@ const User = () => {
   ];
 
   return (
-    // <Layout className="min-h-screen bg-white">
-    //   <Content className="p-8">
-    //     <div className="flex justify-between items-center mb-4">
-    //       <div className="flex items-center bg-white rounded-full shadow-sm p-2 border border-gray-300 focus-within:border-blue-500 transition-all duration-200 ease-in-out">
-    //         <SearchOutlined className="text-gray-500 ml-2" />
-    //         <Input
-    //           placeholder="Tìm kiếm theo tên"
-    //           value={searchText}
-    //           onChange={handleSearchChange}
-    //           className="ml-2 bg-transparent border-none focus:outline-none text-gray-700 placeholder-gray-400"
-    //           style={{ width: 300 }}
-    //         />
-    //       </div>
-    //       <Button
-    //         type="primary"
-    //         icon={<PlusOutlined />}
-    //         className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 shadow-sm"
-    //         onClick={() => setIsCreateUserModalVisible(true)}
-    //       >
-    //         Tạo mới người dùng
-    //       </Button>
-    //     </div>
-
-    //     <div className="flex items-center mb-4">
-    //       {userRole !== "DepartmentManager" && (
-    //         <Select
-    //           value={role}
-    //           onChange={(value) => setRole(value)}
-    //           style={{ width: 200 }}
-    //         >
-    //           <Option value="All">Tất cả</Option>
-    //           {userRole === "Admin" && <Option value="Manager">Quản lý</Option>}
-    //           {userRole !== "DepartmentManager" && (
-    //             <Option value="DepartmentManager">Quản lý phòng ban</Option>
-    //           )}
-    //           <Option value="Staff">Nhân viên</Option>
-    //           <Option value="Security">Bảo vệ</Option>
-    //         </Select>
-    //       )}
-
-    //       {userRole !== "DepartmentManager" && (
-    //         <Select
-    //           value={department}
-    //           onChange={(value) => setDepartment(value)}
-    //           style={{ width: 200 }}
-    //           disabled={userRole === "DepartmentManager"} // Disable for DepartmentManager
-    //         >
-    //           <Option value="All">Tất cả phòng ban</Option>
-    //           {departmentData
-    //             ?.filter((dept: any) => {
-    //               if (userRole === "Admin") {
-    //                 return dept.departmentName !== "Admin";
-    //               }
-    //               if (userRole === "Manager") {
-    //                 return (
-    //                   dept.departmentName !== "Admin" &&
-    //                   dept.departmentName !== "Manager"
-    //                 );
-    //               }
-    //               if (userRole === "DepartmentManager") {
-    //                 return dept.departmentId === Number(departmentId);
-    //               }
-    //               return true;
-    //             })
-    //             ?.map((dept: any) => (
-    //               <Option key={dept.departmentId} value={dept.departmentName}>
-    //                 {dept.departmentName === "Manager"
-    //                   ? "Phòng Quản lý"
-    //                   : dept.departmentName === "Security"
-    //                   ? "Phòng Bảo vệ"
-    //                   : dept.departmentName}
-    //               </Option>
-    //             ))}
-    //         </Select>
-    //       )}
-    //     </div>
-
-    //     {/* Divider Line */}
-    //     <Divider />
-
-    //     <Table
-    //       columns={columns}
-    //       dataSource={filteredData}
-    //       pagination={{
-    //         total: filteredData?.length,
-    //         showSizeChanger: true,
-    //         pageSizeOptions: ["5", "10", "20"],
-    //         size: "small",
-    //       }}
-    //       loading={isLoadingUser}
-    //       rowKey={"userId"}
-    //       bordered
-    //       className="bg-white shadow-md rounded-lg"
-    //     />
-
-    //     {/* Image Modal for Enlarged View */}
-    //     <Modal
-    //       title="Ảnh phóng to"
-    //       visible={isImageModalVisible}
-    //       footer={null}
-    //       onCancel={() => setIsImageModalVisible(false)}
-    //       className="rounded-lg"
-    //     >
-    //       <img
-    //         src={enlargedImage}
-    //         alt="Enlarged"
-    //         className="w-full h-auto rounded"
-    //       />
-    //     </Modal>
-
-    //     {/* Delete Confirmation Modal */}
-    //     <Modal
-    //       title={<span className="text-xl font-semibold">Xác nhận xóa</span>}
-    //       visible={isModalVisible}
-    //       onOk={handleDeleteUser}
-    //       onCancel={() => setIsModalVisible(false)}
-    //       okText="Xóa"
-    //       cancelText="Hủy"
-    //       className="rounded-lg"
-    //       bodyStyle={{ padding: "20px" }}
-    //     >
-    //       <p>Bạn có chắc chắn muốn xóa người dùng này?</p>
-    //     </Modal>
-
-    //     {/* User Detail Modal */}
-    //     <Modal
-    //       title="Chi tiết người dùng"
-    //       visible={isDetailModalVisible}
-    //       footer={null}
-    //       onCancel={() => setIsDetailModalVisible(false)}
-    //       className="rounded-lg"
-    //     >
-    //       {selectedUser && (
-    //         <DetailUser
-    //           userId={Number(selectedUser.userId)}
-    //           onSuccess={handleUpdateSuccess}
-    //         />
-    //       )}
-    //     </Modal>
-
-    //     {/* Create User Modal */}
-    //     <Modal
-    //       visible={isCreateUserModalVisible}
-    //       footer={null}
-    //       onCancel={() => setIsCreateUserModalVisible(false)}
-    //       className="rounded-lg"
-    //     >
-    //       <CreateUser onSuccess={handleCreateSuccess} />
-    //     </Modal>
-    //   </Content>
-    // </Layout>
-    <Layout className="min-h-screen bg-white">
-      <Content className="p-8">
-        {/* Search and Create Button Row */}
-        <div className="flex justify-between items-center mb-6">
+    <Content className="p-2 max-w-[1200px] mx-auto mt-10">
+      <div className="flex gap-4 mb-4">
+        <div className="flex flex-1 gap-2">
+          <Input
+            placeholder="Tìm kiếm theo tên"
+            value={searchText}
+            onChange={handleSearchChange}
+            prefix={<SearchOutlined className="text-gray-400" />}
+            className="max-w-xs h-8"
+          />
           <div className="flex items-center space-x-4">
-            <div className="flex items-center bg-white rounded-lg shadow-sm border border-gray-200 focus-within:border-blue-500 transition-all">
-              <SearchOutlined className="text-gray-400 ml-3" />
-              <Input
-                placeholder="Tìm kiếm theo tên"
-                value={searchText}
-                onChange={handleSearchChange}
-                className="border-none focus:outline-none text-gray-700"
-                style={{ width: 300 }}
-              />
-            </div>
+            {userRole !== "DepartmentManager" && (
+              <Select
+                value={role}
+                onChange={(value) => setRole(value)}
+                style={{ width: 200 }}
+              >
+                <Option value="All">Tất cả</Option>
+                {userRole === "Admin" && (
+                  <Option value="Manager">Quản lý</Option>
+                )}
+                {userRole !== "DepartmentManager" && (
+                  <Option value="DepartmentManager">Quản lý phòng ban</Option>
+                )}
+                <Option value="Staff">Nhân viên</Option>
+                <Option value="Security">Bảo vệ</Option>
+              </Select>
+            )}
 
+            {userRole !== "DepartmentManager" && (
+              <Select
+                value={department}
+                onChange={(value) => setDepartment(value)}
+                style={{ width: 200 }}
+                disabled={userRole === "DepartmentManager"} // Disable for DepartmentManager
+              >
+                <Option value="All">Tất cả phòng ban</Option>
+                {departmentData
+                  ?.filter((dept: any) => {
+                    if (userRole === "Admin") {
+                      return dept?.departmentName !== "Admin";
+                    }
+                    if (userRole === "Manager") {
+                      return (
+                        dept?.departmentName !== "Admin" &&
+                        dept?.departmentName !== "Manager"
+                      );
+                    }
+                    if (userRole === "DepartmentManager") {
+                      return dept?.departmentId === Number(departmentId);
+                    }
+                    return true;
+                  })
+                  ?.map((dept: any) => (
+                    <Option
+                      key={dept?.departmentId}
+                      value={dept?.departmentName}
+                    >
+                      {dept?.departmentName === "Manager"
+                        ? "Phòng Quản lý"
+                        : dept?.departmentName === "Security"
+                        ? "Phòng Bảo vệ"
+                        : dept?.departmentName}
+                    </Option>
+                  ))}
+              </Select>
+            )}
             {/* <Select
               value={role}
               onChange={(value) => setRole(value)}
@@ -420,107 +326,112 @@ const User = () => {
          
             </Select> */}
           </div>
-
-          {/* <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => setIsCreateUserModalVisible(true)}
-            className="bg-blue-500 hover:bg-blue-600 flex items-center h-10 px-4 rounded-lg"
-          >
-            Tạo mới người dùng
-          </Button> */}
-          <Button
-            icon={<PlusOutlined />}
-            onClick={() => setIsCreateUserModalVisible(true)}
-            className="px-4 py-4 text-lg   rounded-lg bg-buttonColor hover:bg-opacity-90 transition-all   shadow-md text-white flex items-center justify-center"
-          >
-            <span className="mb-[2px]"> Tạo mới</span>
-          </Button>
         </div>
-
-        {/* Table Section */}
-        <Card className="shadow-lg rounded-xl border-0">
-          <Table
-            columns={columns}
-            showSorterTooltip={false}
-            dataSource={filteredData}
-            pagination={{
-              total: filteredData?.length,
-              showSizeChanger: true,
-              pageSizeOptions: ["10", "20", "50"],
-              size: "small",
-              showTotal: (total) => `Tổng ${total} người dùng`,
-              className: "mt-5",
-            }}
-            loading={isLoadingUser}
-            rowKey="userId"
-            className={`w-full [&_.ant-table-thead_th]:!bg-[#34495e] [&_.ant-table-thead_th]:!text-white [&_.ant-table-thead_th]:!font-medium [&_.ant-table-thead_th]:!py-3 [&_.ant-table-thead_th]:!text-sm hover:[&_.ant-table-tbody_tr]:bg-blue-50/30 [&_.ant-table]:!rounded-none [&_.ant-table-container]:!rounded-none [&_.ant-table-thead>tr>th:first-child]:!rounded-tl-none [&_.ant-table-thead>tr>th:last-child]:!rounded-tr-none [&_.ant-table-thead_th]:!transition-none`}
-            size="middle"
-            rowClassName="hover:bg-gray-50"
-          />
-        </Card>
-
-        {/* Modals */}
-        <Modal
-          title={<div className="text-lg font-medium px-2">Ảnh phóng to</div>}
-          visible={isImageModalVisible}
-          footer={null}
-          onCancel={() => setIsImageModalVisible(false)}
-          className="rounded-lg"
+        <Button
+          onClick={() => setIsCreateUserModalVisible(true)}
+          className="group relative px-6 py-4 bg-buttonColor hover:!bg-buttonColor hover:!border-buttonColor rounded-lg shadow-lg hover:!shadow-green-500/50 transition-all duration-300 transform hover:!scale-105"
         >
-          <img
-            src={enlargedImage}
-            alt="Enlarged"
-            className="w-full h-auto rounded-lg"
-          />
-        </Modal>
+          <div className="flex items-center gap-2 text-white">
+            <Plus className="w-6 h-6 group-hover:!rotate-180 transition-transform duration-500" />
+            <span className="font-medium text-lg">Tạo mới</span>
+          </div>
+        </Button>
+      </div>
 
-        <Modal
-          title={
-            <div className="text-lg font-medium text-red-500 px-2">
-              Xác nhận xóa
-            </div>
-          }
-          visible={isModalVisible}
-          onOk={handleDeleteUser}
-          onCancel={() => setIsModalVisible(false)}
-          okText="Xóa"
-          cancelText="Hủy"
-          okButtonProps={{
-            className: "bg-red-500 hover:bg-red-600",
+      {/* Table Section */}
+      <Card className="shadow-lg rounded-xl border-0">
+        <Table
+          columns={columns}
+          showSorterTooltip={false}
+          dataSource={filteredData}
+          pagination={{
+            total: filteredData?.length,
+            showSizeChanger: true,
+            pageSizeOptions: ["10", "20", "50"],
+            size: "small",
+            showTotal: (total) => `Tổng ${total} người dùng`,
+            className: "mt-4",
           }}
-          className="rounded-lg"
-        >
-          <p className="px-2">Bạn có chắc chắn muốn xóa người dùng này?</p>
-        </Modal>
+          loading={isLoadingUser}
+          rowKey="userId"
+          className={`w-full [&_.ant-table-thead_th]:!bg-[#34495e] [&_.ant-table-thead_th]:!text-white [&_.ant-table-thead_th]:!font-medium [&_.ant-table-thead_th]:!py-3 [&_.ant-table-thead_th]:!text-sm hover:[&_.ant-table-tbody_tr]:bg-blue-50/30 [&_.ant-table]:!rounded-none [&_.ant-table-container]:!rounded-none [&_.ant-table-thead>tr>th:first-child]:!rounded-tl-none [&_.ant-table-thead>tr>th:last-child]:!rounded-tr-none [&_.ant-table-thead_th]:!transition-none`}
+          size="middle"
+          rowClassName="hover:bg-gray-50"
+        />
+      </Card>
 
-        <Modal
-          title={
-            <div className="text-lg font-medium px-2">Chi tiết người dùng</div>
-          }
-          visible={isDetailModalVisible}
-          footer={null}
-          onCancel={() => setIsDetailModalVisible(false)}
-          className="rounded-lg"
-        >
-          {selectedUser && (
-            <DetailUser
-              userId={Number(selectedUser.userId)}
-              onSuccess={handleUpdateSuccess}
-            />
-          )}
-        </Modal>
+      {/* Modals */}
+      <Modal
+        title={<div className="text-lg font-medium px-2">Ảnh phóng to</div>}
+        visible={isImageModalVisible}
+        footer={null}
+        onCancel={() => setIsImageModalVisible(false)}
+        className="rounded-lg"
+      >
+        <img
+          src={enlargedImage}
+          alt="Enlarged"
+          className="w-full h-auto rounded-lg"
+        />
+      </Modal>
 
-        <Modal
-          visible={isCreateUserModalVisible}
-          footer={null}
-          onCancel={() => setIsCreateUserModalVisible(false)}
-          className="rounded-lg"
-        >
-          <CreateUser onSuccess={handleCreateSuccess} />
-        </Modal>
-      </Content>
-    </Layout>
+      <Modal
+        title={
+          <div className="text-lg font-medium text-red-500 px-2">
+            Xác nhận thay đổi trạng thái
+          </div>
+        }
+        visible={isModalVisible}
+        onOk={handleDeleteUser}
+        onCancel={() => setIsModalVisible(false)}
+        okText="Thay đổi"
+        cancelText="Hủy"
+        okButtonProps={{
+          className: "bg-red-500 hover:bg-red-600",
+        }}
+        className="rounded-lg"
+      >
+        <p className="px-2">
+          Bạn có chắc chắn muốn thay đổi trạng thái người dùng này?
+        </p>
+      </Modal>
+
+      <Modal
+        title={
+          <div className="text-lg font-medium px-2">Chi tiết người dùng</div>
+        }
+        visible={isDetailModalVisible}
+        footer={null}
+        onCancel={() => setIsDetailModalVisible(false)}
+        className="rounded-lg ml-[140px]"
+        centered
+        bodyStyle={{ padding: 0 }}
+        destroyOnClose
+      >
+        {selectedUser && (
+          <DetailUser
+            userId={Number(selectedUser.userId)}
+            onSuccess={handleUpdateSuccess}
+          />
+        )}
+      </Modal>
+
+      <Modal
+        visible={isCreateUserModalVisible}
+        footer={null}
+        onCancel={() => setIsCreateUserModalVisible(false)}
+        centered
+        className="rounded-lg ml-[140px]"
+        styles={{
+          body: {
+            overflow: "auto",
+            padding: 0,
+          },
+        }}
+      >
+        <CreateUser onSuccess={handleCreateSuccess} />
+      </Modal>
+    </Content>
   );
 };
 

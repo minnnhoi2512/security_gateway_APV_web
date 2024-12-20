@@ -30,7 +30,7 @@ const CreateQRCard = () => {
         return; 
       }
 
-      await createQRCard(cardGuid).unwrap();
+      // await createQRCard(cardGuid).unwrap();
       notification.success({
         message: "Thẻ QR đã được tạo thành công",
       });
