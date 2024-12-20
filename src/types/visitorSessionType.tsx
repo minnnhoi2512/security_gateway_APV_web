@@ -21,6 +21,8 @@ type VisitorSessionType = {
   gateOut: GateRes;
   status: String;
   images: SessionsImageRes[];
+  isVehicleSession? : Boolean;
+  vehicleImage?: VehicleSessionRes | null; 
 };
 type SecurityRes = {
   userId?: Number;
@@ -35,6 +37,20 @@ type SessionsImageRes = {
   visitorSessionsImageId?: Number;
   imageType?: String;
   imageURL: string;
+};
+
+type VehicleImageRes = {
+  vehicleSessionImageId: Number;
+  imageType: String;
+  imageURL: string;
+};
+
+type VehicleSessionRes = {
+  images: VehicleImageRes[];
+  licensePlate: String;
+  status: String | null;
+  vehicleSessionId: Number;
+  visitorSessionId: Number;
 };
 
 export default VisitorSessionType;

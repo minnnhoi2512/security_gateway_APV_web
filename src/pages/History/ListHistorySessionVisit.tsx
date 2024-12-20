@@ -22,6 +22,7 @@ import {
   AlertCircle,
   ArrowLeft,
   ArrowRight,
+  Car,
   Check,
   LogIn,
   LogOut,
@@ -29,6 +30,7 @@ import {
   Shield,
   User,
 } from "lucide-react";
+import { useGetImageVehicleSessionByVisitQuery } from "../../services/sessionImage.service";
 
 const { Content } = Layout;
 
@@ -137,6 +139,8 @@ const convertImageType = (type: String): string => {
     CheckOut_Body: "Ảnh toàn thân lúc ra",
     CheckIn_Shoe: "Ảnh giày lúc vào",
     CheckOut_Shoe: "Ảnh giày lúc ra",
+    CheckIn_Vehicle: "Ảnh xe lúc vào",
+    LicensePlate_Out: "Ảnh xe lúc ra",
   };
   return typeMap[typeStr] || typeStr;
 };
@@ -239,12 +243,16 @@ const ListHistorySessionVisit = () => {
   const [selectedImageType, setSelectedImageType] = useState<string | null>(
     null
   );
-
+  const { data: vehicleImageArray } = useGetImageVehicleSessionByVisitQuery({
+    visitId: Number(id),
+  });
+  // console.log(vehicleImage);
   const handleImageClick = (imageUrl: string, imageType: String) => {
     setSelectedImage(String(imageUrl).valueOf());
     setSelectedImageType(String(imageType).valueOf());
   };
   useEffect(() => {
+    // console.log("image xe : ", vehicleImageArray);
     const fetchData = async () => {
       setLoading(true);
       const body = makeQuery(Number(id));
@@ -253,8 +261,25 @@ const ListHistorySessionVisit = () => {
         const visitorData =
           (payload.data.visitorSession?.items as VisitorSessionType[]) ||
           ([] as VisitorSessionType[]);
-        setResult(visitorData);
-        dispatch(setListOfVisitorSession(visitorData));
+
+        // Add vehicleImage attribute to each item in visitorData based on visitorSessionId
+        const updatedVisitorData = visitorData.map((item) => {
+          const vehicleImageForSession = vehicleImageArray.find(
+            (session) => session.visitorSessionId === item.visitorSessionId
+          );
+          // console.log(vehicleImageForSession)
+          // console.log("item : ", item);
+          return {
+            ...item,
+            vehicleImage: vehicleImageForSession
+              ? vehicleImageForSession
+              : null,
+          };
+        });
+
+        setResult(updatedVisitorData);
+        dispatch(setListOfVisitorSession(updatedVisitorData));
+        console.log("co image xe: ", updatedVisitorData);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -262,9 +287,8 @@ const ListHistorySessionVisit = () => {
       }
     };
     fetchData();
-  }, [id, dispatch, postGraphql]);
+  }, [id, dispatch, postGraphql, vehicleImageArray]);
 
-  console.log(result);
   function makeQuery(visitId: number) {
     return {
       query: `
@@ -283,7 +307,10 @@ const ListHistorySessionVisit = () => {
               visitor {
                 visitorId,
                 visitorName,
-                companyName
+                companyName,
+                visitCard{
+                      visitCardId
+                }
               },
               checkinTime,
               checkoutTime,
@@ -351,7 +378,7 @@ const ListHistorySessionVisit = () => {
         </div>
       </div>
     );
-}
+  }
 
   return (
     // <Content className="p-6 bg-gray-100">
@@ -389,7 +416,10 @@ const ListHistorySessionVisit = () => {
           {/* Visit Details */}
           <Row gutter={[16, 16]} className="mb-4">
             <Col span={24}>
-              <HistoryCard label="Chuyến thăm" value={session.visit.visitName} />
+              <HistoryCard
+                label="Chuyến thăm"
+                value={session.visit.visitName}
+              />
             </Col>
           </Row>
 
@@ -501,6 +531,64 @@ const ListHistorySessionVisit = () => {
               </Row>
             </div>
           )}
+          <div className="mt-4">
+            <div className="flex items-center gap-2 mb-2">
+              <IconWrapper>
+                <Car />
+              </IconWrapper>
+              <span className="text-sm font-medium">Thông tin xe</span>
+            </div>
+
+            {session.vehicleImage ? (
+              <>
+                <div className="bg-gray-50 p-3 rounded-lg mb-3">
+                  <Row gutter={[8, 8]}>
+                    <Col span={24}>
+                      <HistoryCard
+                        label="Biển số xe"
+                        value={session.vehicleImage.licensePlate}
+                      />
+                    </Col>
+                  </Row>
+                </div>
+                <Row gutter={[8, 8]}>
+                  {session.vehicleImage.images.map((image, index) => (
+                    <Col
+                      key={`vehicle-image-${session.visitorSessionId}-${index}`}
+                      xs={12}
+                      sm={8}
+                      md={6}
+                    >
+                      <div
+                        className="cursor-pointer relative group"
+                        onClick={() =>
+                          handleImageClick(image.imageURL, image.imageType)
+                        }
+                      >
+                        <img
+                          src={image.imageURL.replace(/"+$/, "")} // Remove any trailing quotes in URL
+                          alt={`Vehicle Image ${index + 1}`}
+                          className="w-full h-32 object-cover rounded"
+                        />
+                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center">
+                          <EyeOutlined className="text-white opacity-0 group-hover:opacity-100" />
+                        </div>
+                        <div className="text-xs text-center mt-1 px-2 py-1 bg-gray-100 rounded">
+                          {image.imageType === "CheckIn_Vehicle"
+                            ? "Ảnh xe lúc vào"
+                            : "Ảnh xe lúc ra"}
+                        </div>
+                      </div>
+                    </Col>
+                  ))}
+                </Row>
+              </>
+            ) : (
+              <div className="bg-gray-50 p-4 rounded-lg text-center text-gray-500">
+                Khách không có phương tiện đi kèm
+              </div>
+            )}
+          </div>
         </Card>
       ))}
 
