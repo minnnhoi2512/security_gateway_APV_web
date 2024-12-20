@@ -13,6 +13,7 @@ import { Camera, Plus } from "lucide-react";
 import { useCreateVisitorMutation } from "../services/visitor.service";
 import detectAPI from "../api/detectAPI";
 import { isEntityError } from "../utils/helpers";
+import GuideModal from "./GuideModal";
 
 const { Option } = Select;
 
@@ -99,37 +100,43 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
     }
   };
 
-  const base64ToFile = (base64String: string, fileName: string = 'image.jpg'): File => {
+  const base64ToFile = (
+    base64String: string,
+    fileName: string = "image.jpg"
+  ): File => {
     try {
       // Remove data URI prefix if present
-      const base64Content = base64String.replace(/^data:image\/(png|jpeg|jpg);base64,/, '');
-      
+      const base64Content = base64String.replace(
+        /^data:image\/(png|jpeg|jpg);base64,/,
+        ""
+      );
+
       // Convert base64 to binary
       const byteString = window.atob(base64Content);
-      
+
       // Create array buffer
       const arrayBuffer = new ArrayBuffer(byteString.length);
       const uint8Array = new Uint8Array(arrayBuffer);
-      
+
       // Fill array buffer
       for (let i = 0; i < byteString.length; i++) {
         uint8Array[i] = byteString.charCodeAt(i);
       }
-      
+
       // Create Blob and File
-      const blob = new Blob([arrayBuffer], { type: 'image/jpeg' });
-      return new File([blob], fileName, { type: 'image/jpeg' });
+      const blob = new Blob([arrayBuffer], { type: "image/jpeg" });
+      return new File([blob], fileName, { type: "image/jpeg" });
     } catch (error) {
       // console.error('Error converting base64 to file:', error);
-      throw new Error('Failed to convert base64 to file');
+      throw new Error("Failed to convert base64 to file");
     }
   };
   const capitalizeFirstLetter = (str: string) => {
     return str
       .toLowerCase()
-      .split(' ')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
   };
   const callDetectAPI = async (formData: any) => {
     setIsDetecting(true);
@@ -154,8 +161,7 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
         });
       }
 
-      const { id, name, birth ,imgblur} = response.data;
-
+      const { id, name, birth, imgblur } = response.data;
 
       if (!birth.toString().includes("/")) {
         setFormData((prev) => ({
@@ -163,11 +169,11 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
           visitorName: "",
           companyName: "",
           phoneNumber: "",
-          email : "",
+          email: "",
           credentialsCard: "",
-          imgBlur : null,
+          imgBlur: null,
           visitorCredentialFrontImageFromRequest: null,
-          visitorCredentialBackImageFromRequest: null ,
+          visitorCredentialBackImageFromRequest: null,
         }));
         return notification.warning({
           message: `Hệ thống không nhận diện được ảnh`,
@@ -175,13 +181,13 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
         });
       }
       const formattedName = capitalizeFirstLetter(name);
-      const convertFile = base64ToFile(imgblur)
+      const convertFile = base64ToFile(imgblur);
       // console.log(convertFile);
       setFormData((prevData) => ({
         ...prevData,
         visitorName: formattedName,
         credentialsCard: id,
-        imgBlur : convertFile,
+        imgBlur: convertFile,
       }));
     } catch (error) {
       setFormData((prev) => ({
@@ -189,11 +195,11 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
         visitorName: "",
         companyName: "",
         phoneNumber: "",
-        email : "",
+        email: "",
         credentialsCard: "",
-        imgBlur : null,
-        visitorCredentialFrontImageFromRequest: null ,
-        visitorCredentialBackImageFromRequest: null ,
+        imgBlur: null,
+        visitorCredentialFrontImageFromRequest: null,
+        visitorCredentialBackImageFromRequest: null,
       }));
       notification.warning({
         message: `Hệ thống không nhận diện được ảnh`,
@@ -204,7 +210,6 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
     }
   };
 
-
   const handleOk = async () => {
     if (!formData.visitorCredentialFrontImageFromRequest) {
       notification.error({ message: "Vui lòng nhập hình ảnh thẻ!" });
@@ -212,7 +217,7 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
     }
     try {
       const response = await createVisitor(formData).unwrap();
-      console.log(response)
+      console.log(response);
       onVisitorCreated?.(response);
       setIsModalVisible(false);
       setFormData({
@@ -220,9 +225,9 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
         companyName: "",
         phoneNumber: "",
         credentialCardTypeId: 0,
-        email : "",
+        email: "",
         credentialsCard: "",
-        imgBlur : null as File | null,
+        imgBlur: null as File | null,
         visitorCredentialFrontImageFromRequest: null as File | null,
         visitorCredentialBackImageFromRequest: null as File | null,
       });
@@ -244,10 +249,10 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
       visitorName: "",
       companyName: "",
       phoneNumber: "",
-      email : "",
+      email: "",
       credentialCardTypeId: 0,
       credentialsCard: "",
-      imgBlur :  null as File | null,
+      imgBlur: null as File | null,
       visitorCredentialFrontImageFromRequest: null as File | null,
       visitorCredentialBackImageFromRequest: null as File | null,
     });
@@ -265,15 +270,16 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
     handleFileChange(event, typeImage);
   };
 
-
   return (
     <Modal
-      title={ <div className="flex items-center gap-3 px-2 py-3">
-        <Plus className="w-6 h-6 text-buttonColor" />
-        <h3 className="text-xl font-semibold text-buttonColor">
-          Tạo mới khách
-        </h3>
-      </div>}
+      title={
+        <div className="flex items-center gap-3 px-2 py-3">
+          <Plus className="w-6 h-6 text-buttonColor" />
+          <h3 className="text-xl font-semibold text-buttonColor">
+            Tạo mới khách
+          </h3>
+        </div>
+      }
       open={isModalVisible}
       onOk={handleOk}
       confirmLoading={isCreating}
@@ -316,7 +322,7 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
     >
       <div className="flex gap-8 mt-6">
         <div className="w-2/5 space-y-6">
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-700">
               Loại nhận dạng
             </label>
@@ -329,6 +335,26 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
               <Option value={1}>Căn cước công dân</Option>
               <Option value={2}>Giấy phép lái xe</Option>
             </Select>
+          </div> */}
+
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Loại nhận dạng
+            </label>
+            <div className="flex items-center gap-2">
+              <Select
+                value={formData.credentialCardTypeId}
+                onChange={handleSelectChange}
+                placeholder="Chọn loại thẻ"
+                className="flex-1"
+              >
+                <Option value={1}>Căn cước công dân</Option>
+                <Option value={2}>Giấy phép lái xe</Option>
+              </Select>
+              {formData.credentialCardTypeId > 0 && (
+                <GuideModal credentialType={formData.credentialCardTypeId} />
+              )}
+            </div>
           </div>
 
           <div className="space-y-4">
@@ -353,7 +379,6 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
                   </div>
                 </div>
               ) : (
-       
                 <div className="flex flex-col items-center space-y-3 py-8 max-h-32">
                   <Upload className="w-8 h-8 text-gray-400 group-hover:text-blue-500 transition-colors" />
                   <p className="text-sm text-gray-500">Tải lên mặt trước thẻ</p>
@@ -386,7 +411,7 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
                     )}
                     alt="Selected Image"
                     preview={false}
-                   className="max-h-32  object-contain rounded-lg"
+                    className="max-h-32  object-contain rounded-lg"
                   />
                   <div className="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center rounded-lg">
                     <Camera className="text-white w-8 h-8" />
@@ -515,6 +540,20 @@ const CreateNewVisitor: React.FC<CreateNewVisitorProps> = ({
           ) : null}
         </div>
       </div>
+      {/* <div className="relative mt-6">
+        <Select
+          value={formData.credentialCardTypeId}
+          onChange={handleSelectChange}
+          placeholder="Chọn loại thẻ"
+          className="w-full"
+        >
+          <Option value={1}>Ảnh mẫu Căn cước công dân</Option>
+          <Option value={2}>Ảnh mẫu Giấy phép lái xe</Option>
+        </Select>
+        {formData.credentialCardTypeId > 0 && (
+          <GuideModal credentialType={formData.credentialCardTypeId} />
+        )}
+      </div> */}
     </Modal>
   );
 };
