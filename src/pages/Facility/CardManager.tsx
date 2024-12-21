@@ -35,12 +35,13 @@ import { CardStatusType, typeCardStatusMap } from "../../types/Enum/CardStatus";
 import { CardType, typeCardMap } from "../../types/Enum/CardType";
 import { v4 as uuidv4 } from "uuid";
 import { Plus } from "lucide-react";
-import Logo from '../../assets/logo.png';
+import Logo from "../../assets/logo.png";
 
 const { Option } = Select;
 const CardManager = () => {
   const [searchText, setSearchText] = useState<string>("");
   const [filterStatus, setFilterStatus] = useState<string | null>(null);
+  const userRole = localStorage.getItem("userRole");
   const [filterType, setFilterType] = useState<string | null>(null);
   const [cardTypeFilter, setCardTypeFilter] = useState<string | null>(null);
   const { data, isLoading, error, refetch } = useGetListQRCardQuery({
@@ -100,7 +101,11 @@ const CardManager = () => {
       [key]: !prev[key],
     }));
   };
-  const convertUrlToFile = async (url: string, filename: string, mimeType: string) => {
+  const convertUrlToFile = async (
+    url: string,
+    filename: string,
+    mimeType: string
+  ) => {
     const response = await fetch(url);
     const buffer = await response.arrayBuffer();
     return new File([buffer], filename, { type: mimeType });
@@ -110,14 +115,14 @@ const CardManager = () => {
       const values = await form.validateFields();
       const numberOfCards = Number(values.numberOfCards);
       const cardTypeId = values.cardType;
-      const imageLogo = await convertUrlToFile(Logo, 'logo.png', 'image/png');
+      const imageLogo = await convertUrlToFile(Logo, "logo.png", "image/png");
 
       for (let i = 0; i < numberOfCards; i++) {
         const cardVerified = uuidv4();
         await createQRCard({
           CardTypeId: cardTypeId,
           CardVerified: cardVerified,
-          ImageLogo : imageLogo
+          ImageLogo: imageLogo,
         });
       }
       refetch();
@@ -309,15 +314,17 @@ const CardManager = () => {
               />
             </Popover>
           </div>
-          <Button
-            onClick={showModal}
-            className="group relative px-6 py-4 bg-buttonColor hover:!bg-buttonColor hover:!border-buttonColor rounded-lg shadow-lg hover:!shadow-green-500/50 transition-all duration-300 transform hover:!scale-105"
-          >
-            <div className="flex items-center gap-2 text-white">
-              <Plus className="w-6 h-6 group-hover:!rotate-180 transition-transform duration-500" />
-              <span className="font-medium text-lg">Tạo mới</span>
-            </div>
-          </Button>
+          {userRole != "Manager" && (
+            <Button
+              onClick={showModal}
+              className="group relative px-6 py-4 bg-buttonColor hover:!bg-buttonColor hover:!border-buttonColor rounded-lg shadow-lg hover:!shadow-green-500/50 transition-all duration-300 transform hover:!scale-105"
+            >
+              <div className="flex items-center gap-2 text-white">
+                <Plus className="w-6 h-6 group-hover:!rotate-180 transition-transform duration-500" />
+                <span className="font-medium text-lg">Tạo mới</span>
+              </div>
+            </Button>
+          )}
         </div>
       </div>
 
@@ -345,7 +352,6 @@ const CardManager = () => {
               <Option value="2">Thẻ cho ra vào theo lịch trình</Option>
             </Select>
           </Form.Item>
-        
         </Form>
       </Modal>
       {error ? (

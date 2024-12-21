@@ -300,7 +300,7 @@ const CreateNewVisitList: React.FC = () => {
               currentDate.getMonth(),
               currentDate.getDate(),
               hours,
-              minutes + 1,
+              minutes + 3,
               seconds
             );
 
@@ -316,10 +316,10 @@ const CreateNewVisitList: React.FC = () => {
         // if (!isSubmitting) return;
       }
       if (!validData) {
-        notification.warning({
+        return notification.warning({
           message: "Giờ bắt đầu dự kiến không được trước thời gian hiện tại!",
         });
-        return;
+        
       }
       if (
         scheduleTypeName === "ProcessWeek" ||
@@ -351,9 +351,14 @@ const CreateNewVisitList: React.FC = () => {
         refetch();
         navigate(-1);
       } catch (error: any) {
-        if (error.data.status === 400) {
-          notification.error({
-            message: "Vui lòng kiểm tra thông tin đã nhập.",
+        if (error.data.status === 410) {
+          return notification.error({
+            message: "Giờ ra vào công ty cần trong khoảng thời gian 7 giờ sáng đến 20 giờ tối.",
+          });
+        }
+        if (error.data.status === 411) {
+          return notification.error({
+            message: "Giờ ra vào không chính xác.",
           });
         }
         setIsSubmitting(false);

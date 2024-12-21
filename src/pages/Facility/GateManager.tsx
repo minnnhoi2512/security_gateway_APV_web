@@ -14,6 +14,7 @@ const { Content } = Layout;
 
 const GateManager = () => {
   const [searchText, setSearchText] = useState<string>("");
+  const userRole = localStorage.getItem("userRole");
   const navigate = useNavigate();
   const { data } = useGetListGateQuery({});
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -101,18 +102,22 @@ const GateManager = () => {
 
   return (
     <Content className="p-2 max-w-[1200px] mx-auto mt-10">
-      <div className="flex gap-4 mb-4">
-        <div className="flex flex-1 gap-2"></div>
-        <Button
-          className="group relative px-6 py-4 bg-buttonColor hover:!bg-buttonColor hover:!border-buttonColor rounded-lg shadow-lg hover:!shadow-green-500/50 transition-all duration-300 transform hover:!scale-105"
-          onClick={() => navigate("/gate/createGate")}
-        >
-          <div className="flex items-center gap-2 text-white">
-            <Plus className="w-6 h-6 group-hover:!rotate-180 transition-transform duration-500" />
-            <span className="font-medium text-lg">Tạo mới</span>
-          </div>
-        </Button>
-      </div>
+      {
+        <div className="flex gap-4 mb-4">
+          <div className="flex flex-1 gap-2"></div>
+          {userRole !== "Manager" && (
+            <Button
+              className="group relative px-6 py-4 bg-buttonColor hover:!bg-buttonColor hover:!border-buttonColor rounded-lg shadow-lg hover:!shadow-green-500/50 transition-all duration-300 transform hover:!scale-105"
+              onClick={() => navigate("/gate/createGate")}
+            >
+              <div className="flex items-center gap-2 text-white">
+                <Plus className="w-6 h-6 group-hover:!rotate-180 transition-transform duration-500" />
+                <span className="font-medium text-lg">Tạo mới</span>
+              </div>
+            </Button>
+          )}
+        </div>
+      }
 
       <StreamingModal
         selectedGate={selectedGate}

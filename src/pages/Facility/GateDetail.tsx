@@ -34,9 +34,7 @@ import LoadingState from "../../components/State/LoadingState";
 
 const { Option } = Select;
 const { Title, Text } = Typography;
-interface GateDetailProps {
-  selectedGate: Gate;
-}
+
 const GateDetail: React.FC = () => {
   const [form] = Form.useForm();
   const [cameraForm] = Form.useForm();
@@ -51,10 +49,12 @@ const GateDetail: React.FC = () => {
   const { data: cameraTypes } = useGetListCameraTypeQuery({});
   const [updateGate] = useUpdateGateMutation();
   const { refetch } = useGetListGateQuery({});
+  const userRole = localStorage.getItem("userRole");
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [isPreviewVisible, setIsPreviewVisible] = useState(false);
   const [isCameraModalVisible, setIsCameraModalVisible] = useState(false);
   const navigate = useNavigate();
+
   const handlePreview = () => {
     const camera = cameraForm.getFieldsValue();
     if (camera?.cameraURL) {
@@ -65,8 +65,6 @@ const GateDetail: React.FC = () => {
     }
   };
 
-  // console.log("Gate detail:", cameraTypes);
-
   useEffect(() => {
     refetchGate();
     if (!isLoading && selectedGate) {
@@ -74,22 +72,16 @@ const GateDetail: React.FC = () => {
     }
   }, [selectedGate, form, isLoading, isSuccess]);
 
-  // console.log(selectedGate);
-  // console.log(
-  //   form.getFieldValue(["cameras", 0, "cameraURL"]) + "libs/index.m3u8"
-  // );
   const handleAddCamera = () => {
     cameraForm
       .validateFields()
       .then((values) => {
-        // console.log(values);
         const cameras = form.getFieldValue("cameras") || [];
         form.setFieldsValue({
           cameras: [
             ...cameras,
             {
               ...values,
-
               cameraType: {
                 cameraTypeId: values.cameraTypeId,
               },
@@ -125,10 +117,10 @@ const GateDetail: React.FC = () => {
       form.resetFields();
       notification.success({ message: "Chỉnh sửa cổng thành công!" });
     } catch (error) {
-      // console.error("Error creating gate:", error);
       notification.error({ message: "Có lỗi xảy ra chỉnh sửa cổng!" });
     }
   };
+
   if (isLoading) {
     return (
       <div>
@@ -137,234 +129,6 @@ const GateDetail: React.FC = () => {
     );
   } else {
     return (
-      // <>
-      //   <Card style={{ margin: "auto" }}>
-      //     <Form form={form} onFinish={onFinish} layout="vertical">
-      //       <Form.Item
-      //         className="hidden"
-      //         name="gateId"
-      //         label="ID cổng"
-      //         rules={[{ required: true, message: "Vui lòng nhập tên cổng!" }]}
-      //       >
-      //         <Input placeholder="Nhập tên cổng" />
-      //       </Form.Item>
-      //       <Form.Item
-      //         name="gateName"
-      //         label="Tên cổng"
-      //         rules={[{ required: true, message: "Vui lòng nhập tên cổng!" }]}
-      //       >
-      //         <Input placeholder="Nhập tên cổng" />
-      //       </Form.Item>
-
-      //       <Form.Item
-      //         name="description"
-      //         label="Mô tả"
-      //         rules={[{ required: true, message: "Vui lòng nhập mô tả!" }]}
-      //       >
-      //         <Input.TextArea placeholder="Nhập mô tả" />
-      //       </Form.Item>
-
-      //       <Form.List name="cameras">
-      //         {(fields, { remove }) => (
-      //           <>
-      //             {fields.map(
-      //               ({ key, name, fieldKey, ...restField }, index) => (
-      //                 <div
-      //                   key={key}
-      //                   style={{
-      //                     display: "flex",
-      //                     flexWrap: "wrap",
-      //                     marginBottom: 8,
-      //                     width: "50%",
-      //                     paddingRight: index % 2 === 0 ? 8 : 0,
-      //                     paddingLeft: index % 2 !== 0 ? 8 : 0,
-      //                   }}
-      //                 >
-      //                   <div style={{ flex: "1 1 100%" }}>
-      //                     <Form.Item
-      //                       {...restField}
-      //                       name={[name, "cameraURL"]}
-      //                       fieldKey={[fieldKey, "cameraURL"]}
-      //                       rules={[
-      //                         {
-      //                           required: true,
-      //                           message: "Please input the stream cameraURL!",
-      //                         },
-      //                       ]}
-      //                       className="hidden"
-      //                     >
-      //                       <Input
-      //                         placeholder="cameraURL"
-      //                         style={{ width: "100%" }}
-      //                       />
-      //                     </Form.Item>
-      //                     <Form.Item
-      //                       {...restField}
-      //                       name={[name, "description"]}
-      //                       fieldKey={[fieldKey, "description"]}
-      //                       rules={[
-      //                         {
-      //                           required: true,
-      //                           message: "Please input the camera description!",
-      //                         },
-      //                       ]}
-      //                     >
-      //                       <span style={{ width: "100%" }}>
-      //                         {form.getFieldValue([
-      //                           "cameras",
-      //                           index,
-      //                           "description",
-      //                         ])}
-      //                       </span>
-      //                     </Form.Item>
-      //                     <Form.Item
-      //                       {...restField}
-      //                       name={[name, "cameraType", "cameraTypeId"]}
-      //                       fieldKey={[fieldKey, "cameraType", "cameraTypeId"]}
-      //                       rules={[
-      //                         {
-      //                           required: true,
-      //                           message: "Please select the camera type!",
-      //                         },
-      //                       ]}
-      //                     >
-      //                       <span style={{ width: "100%" }}>
-      //                         {
-      //                           cameraTypes?.find(
-      //                             (type: any) =>
-      //                               type.cameraTypeId ===
-      //                               form.getFieldValue([
-      //                                 "cameras",
-      //                                 index,
-      //                                 "cameraType",
-      //                                 "cameraTypeId",
-      //                               ])
-      //                           )?.description
-      //                         }
-      //                       </span>
-      //                     </Form.Item>
-      //                   </div>
-      //                   <div style={{ flex: "1 1 100%", marginTop: 8 }}>
-      //                     <ReactPlayer
-      //                       url={
-      //                         form.getFieldValue([
-      //                           "cameras",
-      //                           index,
-      //                           "cameraURL",
-      //                         ]) + "libs/index.m3u8"
-      //                       }
-      //                       playing
-      //                       controls
-      //                       width="100%"
-      //                       height="100px"
-      //                     />
-      //                     <MinusCircleOutlined
-      //                       onClick={() => remove(name)}
-      //                       style={{ marginTop: 8 }}
-      //                     />
-      //                   </div>
-      //                 </div>
-      //               )
-      //             )}
-      //             <Form.Item>
-      //               <Button
-      //                 type="dashed"
-      //                 onClick={() => setIsCameraModalVisible(true)}
-      //                 block
-      //                 icon={<PlusOutlined />}
-      //               >
-      //                 Thêm mới Camera
-      //               </Button>
-      //             </Form.Item>
-      //           </>
-      //         )}
-      //       </Form.List>
-
-      //       <Form.Item>
-      //         <Button type="primary" htmlType="submit">
-      //           Cập nhật
-      //         </Button>
-      //       </Form.Item>
-      //     </Form>
-      //   </Card>
-
-      //   <Modal
-      //     title="Xem thử Camera"
-      //     open={isPreviewVisible}
-      //     onCancel={() => setIsPreviewVisible(false)}
-      //     footer={null}
-      //     width={800}
-      //   >
-      //     {previewUrl && (
-      //       <ReactPlayer
-      //         url={previewUrl}
-      //         controls
-      //         width="100%"
-      //         height="auto"
-      //         playing
-      //       />
-      //     )}
-      //   </Modal>
-
-      //   <Modal
-      //     title="Thêm mới Camera"
-      //     open={isCameraModalVisible}
-      //     onCancel={() => setIsCameraModalVisible(false)}
-      //     footer={[
-      //       <Button key="cancel" onClick={() => setIsCameraModalVisible(false)}>
-      //         Hủy
-      //       </Button>,
-      //       <Button key="preview" type="primary" onClick={handlePreview}>
-      //         Xem thử
-      //       </Button>,
-      //       <Button key="submit" type="primary" onClick={handleAddCamera}>
-      //         Thêm
-      //       </Button>,
-      //     ]}
-      //   >
-      //     <Form form={cameraForm} layout="vertical">
-      //       <Form.Item
-      //         name="cameraURL"
-      //         label="URL"
-      //         rules={[
-      //           {
-      //             required: true,
-      //             message: "Please input the stream cameraURL!",
-      //           },
-      //         ]}
-      //       >
-      //         <Input placeholder="cameraURL" />
-      //       </Form.Item>
-      //       <Form.Item
-      //         name="description"
-      //         label="Mô tả"
-      //         rules={[
-      //           {
-      //             required: true,
-      //             message: "Please input the camera description!",
-      //           },
-      //         ]}
-      //       >
-      //         <Input placeholder="Mô tả camera" />
-      //       </Form.Item>
-      //       <Form.Item
-      //         name="cameraTypeId"
-      //         label="Loại camera"
-      //         rules={[
-      //           { required: true, message: "Please select the camera type!" },
-      //         ]}
-      //       >
-      //         <Select placeholder="Chọn loại camera">
-      //           {cameraTypes?.map((type: any) => (
-      //             <Option key={type.cameraTypeId} value={type.cameraTypeId}>
-      //               {type.description}
-      //             </Option>
-      //           ))}
-      //         </Select>
-      //       </Form.Item>
-      //     </Form>
-      //   </Modal>
-      // </>
       <div className="max-w-7xl mx-auto px-4 py-6 bg-gray-50 min-h-screen">
         <Card
           title={
@@ -395,7 +159,7 @@ const GateDetail: React.FC = () => {
                 label="ID cổng"
                 rules={[{ required: true, message: "Vui lòng nhập tên cổng!" }]}
               >
-                <Input />
+                <Input disabled={userRole === "Manager"} />
               </Form.Item>
 
               <Card className="!border-none shadow-md">
@@ -415,6 +179,7 @@ const GateDetail: React.FC = () => {
                     placeholder="Nhập tên cổng"
                     className="rounded-lg h-11"
                     size="large"
+                    disabled={userRole === "Manager"}
                   />
                 </Form.Item>
               </Card>
@@ -436,6 +201,7 @@ const GateDetail: React.FC = () => {
                     className="rounded-lg"
                     rows={4}
                     style={{ resize: "none" }}
+                    disabled={userRole === "Manager"}
                   />
                 </Form.Item>
               </Card>
@@ -465,7 +231,7 @@ const GateDetail: React.FC = () => {
                             fieldKey={[fieldKey, "cameraURL"]}
                             className="hidden"
                           >
-                            <Input />
+                            <Input disabled={userRole === "Manager"} />
                           </Form.Item>
 
                           <div className="aspect-video rounded-t-lg overflow-hidden bg-black">
@@ -518,6 +284,7 @@ const GateDetail: React.FC = () => {
                               icon={<MinusCircleOutlined />}
                               onClick={() => remove(name)}
                               className="w-full h-12 flex items-center justify-center gap-2 hover:bg-red-50"
+                              disabled={userRole === "Manager"}
                             >
                               Xóa camera
                             </Button>
@@ -527,21 +294,23 @@ const GateDetail: React.FC = () => {
                     )
                   )}
 
-                  <Card
-                    className="flex items-center justify-center min-h-[300px] border-2 border-dashed 
+                  {userRole !== "Manager" && (
+                    <Card
+                      className="flex items-center justify-center min-h-[300px] border-2 border-dashed 
                            border-gray-200 hover:border-blue-400 transition-colors cursor-pointer
                            hover:bg-blue-50/50"
-                    onClick={() => setIsCameraModalVisible(true)}
-                  >
-                    <div className="text-center space-y-3">
-                      <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mx-auto">
-                        <PlusOutlined className="text-xl text-blue-500" />
+                      onClick={() => setIsCameraModalVisible(true)}
+                    >
+                      <div className="text-center space-y-3">
+                        <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mx-auto">
+                          <PlusOutlined className="text-xl text-blue-500" />
+                        </div>
+                        <div className="text-gray-600 font-medium">
+                          Thêm Camera mới
+                        </div>
                       </div>
-                      <div className="text-gray-600 font-medium">
-                        Thêm Camera mới
-                      </div>
-                    </div>
-                  </Card>
+                    </Card>
+                  )}
                 </div>
               )}
             </Form.List>
@@ -552,6 +321,7 @@ const GateDetail: React.FC = () => {
                 htmlType="submit"
                 size="large"
                 className="min-w-[140px] h-12 flex items-center justify-center"
+                disabled={userRole === "Manager"}
               >
                 <span className="text-base">Cập nhật</span>
               </Button>
